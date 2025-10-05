@@ -125,22 +125,29 @@ export class PayPalService {
 			throw new Error("PayPal client ID is not configured")
 		}
 
-		this.initializePayPal()
+		// Initialize PayPal asynchronously
+		this.initializePayPal().catch((error) => {
+			console.error("Failed to initialize PayPal:", error)
+		})
 	}
 
 	/**
 	 * Initialize PayPal SDK
 	 */
-	private initializePayPal(): void {
+	private async initializePayPal(): Promise<void> {
 		try {
-			// In a real implementation, this would import and initialize PayPal
-			// const paypal = require('@paypal/checkout-server-sdk')
-			// const environment = this.config.environment === 'production'
-			//   ? new paypal.core.LiveEnvironment(this.config.clientId, this.config.clientSecret)
-			//   : new paypal.core.SandboxEnvironment(this.config.clientId, this.config.clientSecret)
-			// this.paypal = new paypal.core.PayPalHttpClient(environment)
+			// Import PayPal SDK dynamically
+			const paypal = await import("@paypal/checkout-server-sdk")
 
-			// For now, we'll simulate the PayPal interface
+			const environment =
+				this.config.environment === "production"
+					? new paypal.core.LiveEnvironment(this.config.clientId, this.config.clientSecret)
+					: new paypal.core.SandboxEnvironment(this.config.clientId, this.config.clientSecret)
+
+			this.paypal = new paypal.core.PayPalHttpClient(environment)
+		} catch (error) {
+			// Fallback to mock implementation if PayPal SDK is not available
+			console.warn("PayPal SDK not available, using mock implementation:", error)
 			this.paypal = {
 				orders: this.createOrdersAPI(),
 				subscriptions: this.createSubscriptionsAPI(),
@@ -148,8 +155,15 @@ export class PayPalService {
 				plans: this.createPlansAPI(),
 				webhooks: this.createWebhooksAPI(),
 			}
-		} catch (error) {
-			throw new Error(`Failed to initialize PayPal: ${error}`)
+		}
+	}
+
+	/**
+	 * Ensure PayPal is initialized before use
+	 */
+	private async ensureInitialized(): Promise<void> {
+		if (!this.paypal) {
+			await this.initializePayPal()
 		}
 	}
 
@@ -211,33 +225,45 @@ export class PayPalService {
 	 */
 	async createPaymentIntent(data: CreatePaymentIntentData): Promise<PayPalOrder> {
 		try {
-			const _accessToken = await this.getAccessToken()
+			await this.ensureInitialized()
 
-			const order = await this.paypal.orders.create({
+			// Create order request
+			const orderRequest = {
 				intent: "CAPTURE",
 				purchase_units: [
 					{
 						amount: {
-							currency_code: data.currency,
+							currency_code: data.currency.toUpperCase(),
 							value: (data.amount / 100).toFixed(2),
 						},
 						description: data.description,
+						custom_id: data.customerId,
 					},
 				],
 				application_context: {
 					return_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
 					cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancel`,
+					brand_name: process.env.NEXT_PUBLIC_APP_NAME || "Your App",
+					landing_page: "BILLING",
+					user_action: "PAY_NOW",
 				},
-			})
+			}
+
+			// Create order using PayPal SDK
+			const request = new (await import("@paypal/checkout-server-sdk")).orders.OrdersCreateRequest()
+			request.prefer("return=representation")
+			request.requestBody(orderRequest)
+
+			const order = await this.paypal.execute(request)
 
 			return {
-				id: order.id,
-				status: order.status,
+				id: order.result.id,
+				status: order.result.status,
 				amount: {
 					total: (data.amount / 100).toFixed(2),
 					currency: data.currency,
 				},
-				links: order.links,
+				links: order.result.links,
 			}
 		} catch (error) {
 			throw this.handlePayPalError(error)
@@ -249,13 +275,17 @@ export class PayPalService {
 	 */
 	async processPayment(paymentIntent: PaymentIntent, _paymentMethod: PaymentMethod): Promise<PaymentTransaction> {
 		try {
-			const _accessToken = await this.getAccessToken()
+			await this.ensureInitialized()
 
 			// Capture the PayPal order
-			const capture = await this.paypal.orders.capture(paymentIntent.id)
+			const captureRequest = new (await import("@paypal/checkout-server-sdk")).orders.OrdersCaptureRequest(paymentIntent.id)
+			captureRequest.prefer("return=representation")
+			captureRequest.requestBody({})
 
-			if (capture.status !== "COMPLETED") {
-				throw new Error(`Payment failed with status: ${capture.status}`)
+			const capture = await this.paypal.execute(captureRequest)
+
+			if (capture.result.status !== "COMPLETED") {
+				throw new Error(`Payment failed with status: ${capture.result.status}`)
 			}
 
 			const fees = calculateFees(paymentIntent.amount, "paypal", paymentIntent.currency)
@@ -267,7 +297,7 @@ export class PayPalService {
 				currency: paymentIntent.currency,
 				status: "completed",
 				provider: "paypal",
-				providerTransactionId: capture.id,
+				providerTransactionId: capture.result.id,
 				fees: fees.fee,
 				netAmount: fees.netAmount,
 				description: paymentIntent.description,

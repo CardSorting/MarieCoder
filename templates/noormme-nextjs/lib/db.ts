@@ -527,9 +527,35 @@ export class NOORMMEDatabase {
 	}
 }
 
-// Global database instance
-const dbConfig: DatabaseConfig = {
-	connectionString: process.env.DATABASE_URL || "file:./dev.db",
-}
+// Global database instance using the new unified service
+import { createEnvironmentConfig, DatabaseServiceFactory } from "./services/database/ServiceFactory"
 
-export const db = new NOORMMEDatabase(dbConfig)
+const environment = (process.env.NODE_ENV as "development" | "production" | "test") || "development"
+const dbConfig = createEnvironmentConfig(environment)
+
+// Initialize the service factory
+const serviceFactory = DatabaseServiceFactory.getInstance()
+
+// Initialize services asynchronously
+let db: any = null
+serviceFactory
+	.initialize(dbConfig)
+	.then(() => {
+		db = serviceFactory.getUnifiedService()
+	})
+	.catch((error) => {
+		console.error("Failed to initialize database services:", error)
+		// Fallback to legacy implementation
+		db = new NOORMMEDatabase({
+			connectionString: process.env.DATABASE_URL || "file:./dev.db",
+		})
+	})
+
+// Export the unified database service for backward compatibility
+export { db }
+
+// Export the service factory for advanced usage
+export { serviceFactory }
+
+// Legacy NOORMMEDatabase class for backward compatibility
+export { NOORMMEDatabase }

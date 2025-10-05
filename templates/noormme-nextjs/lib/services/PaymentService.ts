@@ -1,5 +1,4 @@
 import { getPaymentConfig } from "@/config/payment.config"
-import { PaymentRepository } from "@/repositories/PaymentRepository"
 import type {
 	CreatePaymentIntentData,
 	CreateSubscriptionData,
@@ -12,6 +11,7 @@ import type {
 	SubscriptionPlan,
 } from "@/types/payment"
 import { BaseService } from "./BaseService"
+import { DatabaseServiceFactory } from "./database/ServiceFactory"
 import { PaymentNotificationService } from "./PaymentNotificationService"
 import { PaymentValidationService } from "./PaymentValidationService"
 import { PayPalService } from "./PayPalService"
@@ -23,7 +23,7 @@ import { StripeService } from "./StripeService"
  */
 export class PaymentService extends BaseService<any> {
 	private static instance: PaymentService
-	private paymentRepository: PaymentRepository
+	private paymentDatabaseService: any
 	private stripeService: StripeService
 	private paypalService: PayPalService
 	private validationService: PaymentValidationService
@@ -32,8 +32,9 @@ export class PaymentService extends BaseService<any> {
 
 	static async getInstance(): Promise<PaymentService> {
 		if (!PaymentService.instance) {
-			const db = await PaymentService.getDB()
-			const paymentRepo = new PaymentRepository(db)
+			const serviceFactory = DatabaseServiceFactory.getInstance()
+			const services = serviceFactory.getServices()
+			const paymentDatabaseService = services.payment
 			const stripeService = new StripeService()
 			const paypalService = new PayPalService()
 			const validationService = new PaymentValidationService()
@@ -41,8 +42,8 @@ export class PaymentService extends BaseService<any> {
 			const config = getPaymentConfig()
 
 			PaymentService.instance = new PaymentService(
-				paymentRepo,
-				db,
+				paymentDatabaseService,
+				paymentDatabaseService,
 				stripeService,
 				paypalService,
 				validationService,
@@ -54,7 +55,7 @@ export class PaymentService extends BaseService<any> {
 	}
 
 	constructor(
-		repository: PaymentRepository,
+		repository: any,
 		db: any,
 		stripeService: StripeService,
 		paypalService: PayPalService,
@@ -63,7 +64,7 @@ export class PaymentService extends BaseService<any> {
 		config: any,
 	) {
 		super(repository, db)
-		this.paymentRepository = repository
+		this.paymentDatabaseService = repository
 		this.stripeService = stripeService
 		this.paypalService = paypalService
 		this.validationService = validationService
@@ -82,7 +83,7 @@ export class PaymentService extends BaseService<any> {
 			const providerMethod = await providerService.createPaymentMethod(customerId, paymentMethodData)
 
 			// Save to database
-			const paymentMethod = await this.paymentRepository.createPaymentMethod({
+			const paymentMethod = await this.paymentDatabaseService.createPaymentMethod({
 				type: paymentMethodData.type,
 				provider: paymentMethodData.provider,
 				lastFour: providerMethod.lastFour,
@@ -94,7 +95,7 @@ export class PaymentService extends BaseService<any> {
 			})
 
 			// Set as default if it's the first payment method
-			const existingMethods = await this.paymentRepository.getPaymentMethodsByCustomer(customerId)
+			const existingMethods = await this.paymentDatabaseService.getPaymentMethodsByCustomer(customerId)
 			if (existingMethods.length === 0) {
 				await this.setDefaultPaymentMethod(paymentMethod.id)
 			}
@@ -109,7 +110,7 @@ export class PaymentService extends BaseService<any> {
 
 	async getPaymentMethods(customerId: string): Promise<PaymentMethod[]> {
 		try {
-			return await this.paymentRepository.getPaymentMethodsByCustomer(customerId)
+			return await this.paymentDatabaseService.getPaymentMethodsByCustomer(customerId)
 		} catch (error) {
 			throw this.handlePaymentError(error, "Failed to get payment methods")
 		}
@@ -117,21 +118,21 @@ export class PaymentService extends BaseService<any> {
 
 	async setDefaultPaymentMethod(paymentMethodId: string): Promise<PaymentMethod> {
 		try {
-			const paymentMethod = await this.paymentRepository.getPaymentMethodById(paymentMethodId)
+			const paymentMethod = await this.paymentDatabaseService.getPaymentMethodById(paymentMethodId)
 			if (!paymentMethod) {
 				throw new Error("Payment method not found")
 			}
 
 			// Remove default flag from other payment methods
-			const allMethods = await this.paymentRepository.getPaymentMethodsByCustomer(paymentMethod.customerId)
+			const allMethods = await this.paymentDatabaseService.getPaymentMethodsByCustomer(paymentMethod.customerId)
 			for (const method of allMethods) {
 				if (method.id !== paymentMethodId && method.isDefault) {
-					await this.paymentRepository.updatePaymentMethod(method.id, { isDefault: false })
+					await this.paymentDatabaseService.updatePaymentMethod((method as any).id, { isDefault: false })
 				}
 			}
 
 			// Set this payment method as default
-			return await this.paymentRepository.updatePaymentMethod(paymentMethodId, { isDefault: true })
+			return await this.paymentDatabaseService.updatePaymentMethod(paymentMethodId, { isDefault: true })
 		} catch (error) {
 			throw this.handlePaymentError(error, "Failed to set default payment method")
 		}
@@ -139,7 +140,7 @@ export class PaymentService extends BaseService<any> {
 
 	async deletePaymentMethod(paymentMethodId: string): Promise<boolean> {
 		try {
-			const paymentMethod = await this.paymentRepository.getPaymentMethodById(paymentMethodId)
+			const paymentMethod = await this.paymentDatabaseService.getPaymentMethodById(paymentMethodId)
 			if (!paymentMethod) {
 				throw new Error("Payment method not found")
 			}
@@ -149,7 +150,7 @@ export class PaymentService extends BaseService<any> {
 			await providerService.deletePaymentMethod(paymentMethodId)
 
 			// Delete from database
-			const deleted = await this.paymentRepository.deletePaymentMethod(paymentMethodId)
+			const deleted = await this.paymentDatabaseService.deletePaymentMethod(paymentMethodId)
 
 			if (deleted) {
 				await this.notificationService.notifyPaymentMethodDeleted(paymentMethod)
@@ -172,7 +173,7 @@ export class PaymentService extends BaseService<any> {
 			const providerIntent = await providerService.createPaymentIntent(data)
 
 			// Save to database
-			const paymentIntent = await this.paymentRepository.createPaymentIntent({
+			const paymentIntent = await this.paymentDatabaseService.createPaymentIntent({
 				id: providerIntent.id,
 				amount: data.amount,
 				currency: data.currency,
@@ -192,7 +193,7 @@ export class PaymentService extends BaseService<any> {
 
 	async processPayment(paymentIntentId: string, paymentMethodId?: string): Promise<PaymentTransaction> {
 		try {
-			const paymentIntent = await this.paymentRepository.getPaymentIntentById(paymentIntentId)
+			const paymentIntent = await this.paymentDatabaseService.getPaymentIntentById(paymentIntentId)
 			if (!paymentIntent) {
 				throw new Error("Payment intent not found")
 			}
@@ -204,10 +205,10 @@ export class PaymentService extends BaseService<any> {
 			// Get payment method
 			let paymentMethod: PaymentMethod | null = null
 			if (paymentMethodId) {
-				paymentMethod = await this.paymentRepository.getPaymentMethodById(paymentMethodId)
+				paymentMethod = await this.paymentDatabaseService.getPaymentMethodById(paymentMethodId)
 			} else {
 				// Use default payment method
-				const methods = await this.paymentRepository.getPaymentMethodsByCustomer(paymentIntent.customerId)
+				const methods = await this.paymentDatabaseService.getPaymentMethodsByCustomer(paymentIntent.customerId)
 				paymentMethod = methods.find((m) => m.isDefault) || null
 			}
 
@@ -220,10 +221,10 @@ export class PaymentService extends BaseService<any> {
 			const providerTransaction = await providerService.processPayment(paymentIntent, paymentMethod)
 
 			// Update payment intent status
-			await this.paymentRepository.updatePaymentIntentStatus(paymentIntentId, "succeeded")
+			await this.paymentDatabaseService.updatePaymentIntentStatus(paymentIntentId, "succeeded")
 
 			// Create payment transaction record
-			const transaction = await this.paymentRepository.createPaymentTransaction({
+			const transaction = await this.paymentDatabaseService.createPaymentTransaction({
 				paymentIntentId,
 				amount: paymentIntent.amount,
 				currency: paymentIntent.currency,
@@ -240,14 +241,14 @@ export class PaymentService extends BaseService<any> {
 			return transaction
 		} catch (error) {
 			// Update payment intent status to failed
-			await this.paymentRepository.updatePaymentIntentStatus(paymentIntentId, "failed")
+			await this.paymentDatabaseService.updatePaymentIntentStatus(paymentIntentId, "failed")
 			throw this.handlePaymentError(error, "Failed to process payment")
 		}
 	}
 
 	async getPaymentHistory(customerId: string, limit = 50, offset = 0): Promise<PaymentIntent[]> {
 		try {
-			return await this.paymentRepository.getPaymentIntentsByCustomer(customerId, limit, offset)
+			return await this.paymentDatabaseService.getPaymentIntentsByCustomer(customerId, limit, offset)
 		} catch (error) {
 			throw this.handlePaymentError(error, "Failed to get payment history")
 		}
@@ -260,7 +261,7 @@ export class PaymentService extends BaseService<any> {
 			await this.validationService.validateSubscription(data)
 
 			// Get subscription plan
-			const plan = await this.paymentRepository.getSubscriptionPlanById(data.planId)
+			const plan = await this.paymentDatabaseService.getSubscriptionPlanById(data.planId)
 			if (!plan) {
 				throw new Error("Subscription plan not found")
 			}
@@ -270,7 +271,7 @@ export class PaymentService extends BaseService<any> {
 			const providerSubscription = await providerService.createSubscription(data, plan)
 
 			// Save to database
-			const subscription = await this.paymentRepository.createSubscription({
+			const subscription = await this.paymentDatabaseService.createSubscription({
 				id: providerSubscription.id,
 				customerId: data.customerId,
 				planId: data.planId,
@@ -289,7 +290,7 @@ export class PaymentService extends BaseService<any> {
 
 	async cancelSubscription(subscriptionId: string, cancelAtPeriodEnd = true): Promise<Subscription> {
 		try {
-			const subscription = await this.paymentRepository.getSubscriptionById(subscriptionId)
+			const subscription = await this.paymentDatabaseService.getSubscriptionById(subscriptionId)
 			if (!subscription) {
 				throw new Error("Subscription not found")
 			}
@@ -299,7 +300,7 @@ export class PaymentService extends BaseService<any> {
 			await providerService.cancelSubscription(subscriptionId, cancelAtPeriodEnd)
 
 			// Update subscription status
-			const updatedSubscription = await this.paymentRepository.updateSubscriptionStatus(
+			const updatedSubscription = await this.paymentDatabaseService.updateSubscriptionStatus(
 				subscriptionId,
 				cancelAtPeriodEnd ? "active" : "canceled",
 			)
@@ -314,8 +315,8 @@ export class PaymentService extends BaseService<any> {
 
 	async getActiveSubscriptions(customerId: string): Promise<Subscription[]> {
 		try {
-			const subscriptions = await this.paymentRepository.getSubscriptionsByCustomer(customerId)
-			return subscriptions.filter((sub) => sub.status === "active")
+			const subscriptions = await this.paymentDatabaseService.getSubscriptionsByCustomer(customerId)
+			return subscriptions.filter((sub: any) => sub.status === "active")
 		} catch (error) {
 			throw this.handlePaymentError(error, "Failed to get active subscriptions")
 		}
@@ -324,7 +325,7 @@ export class PaymentService extends BaseService<any> {
 	// Subscription Plans
 	async getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
 		try {
-			return await this.paymentRepository.getActiveSubscriptionPlans()
+			return await this.paymentDatabaseService.getActiveSubscriptionPlans()
 		} catch (error) {
 			throw this.handlePaymentError(error, "Failed to get subscription plans")
 		}
@@ -340,7 +341,7 @@ export class PaymentService extends BaseService<any> {
 			const providerPlan = await providerService.createSubscriptionPlan(planData)
 
 			// Save to database
-			const plan = await this.paymentRepository.createSubscriptionPlan({
+			const plan = await this.paymentDatabaseService.createSubscriptionPlan({
 				id: providerPlan.id,
 				name: planData.name,
 				description: planData.description,
@@ -365,7 +366,7 @@ export class PaymentService extends BaseService<any> {
 	// Refunds
 	async createRefund(transactionId: string, amount?: number, reason = "requested_by_customer"): Promise<Refund> {
 		try {
-			const transaction = await this.paymentRepository.getPaymentTransactionById(transactionId)
+			const transaction = await this.paymentDatabaseService.getPaymentTransactionById(transactionId)
 			if (!transaction) {
 				throw new Error("Payment transaction not found")
 			}
@@ -381,7 +382,7 @@ export class PaymentService extends BaseService<any> {
 			const _providerRefund = await providerService.createRefund(transaction.providerTransactionId, refundAmount, reason)
 
 			// Save refund to database
-			const refund = await this.paymentRepository.createRefund({
+			const refund = await this.paymentDatabaseService.createRefund({
 				transactionId,
 				amount: refundAmount,
 				reason: reason as "duplicate" | "fraudulent" | "requested_by_customer",
@@ -406,7 +407,7 @@ export class PaymentService extends BaseService<any> {
 			await this.validationService.validateWebhook(provider, payload)
 
 			// Save webhook to database
-			const webhook = await this.paymentRepository.createPaymentWebhook({
+			const webhook = await this.paymentDatabaseService.createPaymentWebhook({
 				provider,
 				eventType,
 				payload,
@@ -418,7 +419,7 @@ export class PaymentService extends BaseService<any> {
 			await providerService.processWebhookEvent(eventType, payload)
 
 			// Mark webhook as processed
-			await this.paymentRepository.markWebhookProcessed(webhook.id)
+			await this.paymentDatabaseService.markWebhookProcessed(webhook.id)
 
 			await this.notificationService.notifyWebhookProcessed(webhook)
 		} catch (error) {
