@@ -98,6 +98,21 @@ export interface DatabaseSchema {
 		user_agent?: string
 		created_at: string
 	}
+	jobs: {
+		id: string
+		type: string
+		payload: string // JSON string
+		status: "pending" | "processing" | "completed" | "failed" | "cancelled"
+		priority: number
+		attempts: number
+		max_attempts: number
+		error_message?: string
+		scheduled_at?: string
+		started_at?: string
+		completed_at?: string
+		created_at: string
+		updated_at: string
+	}
 }
 
 export interface DatabaseConfig {
@@ -106,7 +121,6 @@ export interface DatabaseConfig {
 }
 
 export class NOORMMEDatabase {
-	private config: DatabaseConfig
 	private kysely: Kysely<DatabaseSchema>
 	private sqlite: Database.Database
 
@@ -340,6 +354,25 @@ export class NOORMMEDatabase {
       )
     `)
 
+		// Create jobs table for queue system
+		await this.sqlite.exec(`
+      CREATE TABLE IF NOT EXISTS jobs (
+        id TEXT PRIMARY KEY,
+        type TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        priority INTEGER NOT NULL DEFAULT 0,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        max_attempts INTEGER NOT NULL DEFAULT 3,
+        error_message TEXT,
+        scheduled_at TEXT,
+        started_at TEXT,
+        completed_at TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    `)
+
 		// Create indexes for better performance
 		await this.sqlite.exec(`
       CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -352,6 +385,11 @@ export class NOORMMEDatabase {
       CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
       CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
       CREATE INDEX IF NOT EXISTS idx_audit_logs_resource ON audit_logs(resource_type, resource_id);
+      CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
+      CREATE INDEX IF NOT EXISTS idx_jobs_type ON jobs(type);
+      CREATE INDEX IF NOT EXISTS idx_jobs_priority ON jobs(priority DESC);
+      CREATE INDEX IF NOT EXISTS idx_jobs_scheduled_at ON jobs(scheduled_at);
+      CREATE INDEX IF NOT EXISTS idx_jobs_status_priority ON jobs(status, priority DESC);
     `)
 
 		// Seed initial data
@@ -538,18 +576,6 @@ const serviceFactory = DatabaseServiceFactory.getInstance()
 
 // Initialize services asynchronously
 let db: any = null
-serviceFactory
-	.initialize(dbConfig)
-	.then(() => {
-		db = serviceFactory.getUnifiedService()
-	})
-	.catch((error) => {
-		console.error("Failed to initialize database services:", error)
-		// Fallback to legacy implementation
-		db = new NOORMMEDatabase({
-			connectionString: process.env.DATABASE_URL || "file:./dev.db",
-		})
-	})
 
 // Export the unified database service for backward compatibility
 export { db }
@@ -559,3 +585,28 @@ export { serviceFactory }
 
 // Legacy NOORMMEDatabase class for backward compatibility
 export { NOORMMEDatabase }
+
+// Initialize queue system when database is ready
+import { initializeQueue } from "./queue/init"
+
+// Initialize queue system after database is ready
+serviceFactory
+	.initialize(dbConfig)
+	.then(async () => {
+		db = serviceFactory.getUnifiedService()
+		// Initialize queue system
+		await initializeQueue()
+	})
+	.catch(async (error) => {
+		console.error("Failed to initialize database services:", error)
+		// Fallback to legacy implementation
+		db = new NOORMMEDatabase({
+			connectionString: process.env.DATABASE_URL || "file:./dev.db",
+		})
+		// Still try to initialize queue system
+		try {
+			await initializeQueue()
+		} catch (queueError) {
+			console.error("Failed to initialize queue system:", queueError)
+		}
+	})

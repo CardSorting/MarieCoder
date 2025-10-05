@@ -6,7 +6,7 @@ alwaysApply: true
 
 # NOORMME Database Guidelines
 
-## Marie Kondo Principle
+## NORMIE DEV Principle
 **CRITICAL**: Database code must spark joy. Delete legacy patterns, keep only what works beautifully.
 
 ## SQLite Configuration

@@ -1,10 +1,10 @@
 ---
-description: Marie Kondo methodology for NOORMME development
+description: NORMIE DEV methodology for NOORMME development
 globs: '**/*.{ts,tsx,js,jsx,md}'
 alwaysApply: true
 ---
 
-# Marie Kondo Methodology for NOORMME
+# NORMIE DEV Methodology for NOORMME
 
 ## Core Philosophy
 
@@ -145,7 +145,7 @@ const user = await userRepo.findByEmail('john@example.com')
 
 ## Conclusion
 
-The Marie Kondo methodology ensures NOORMME:
+The NORMIE DEV methodology ensures NOORMME:
 - **DELETES complexity** that doesn't add value
 - **DELETES legacy systems** completely
 - **DELETES backward compatibility** entirely

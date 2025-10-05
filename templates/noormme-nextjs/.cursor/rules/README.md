@@ -1,19 +1,19 @@
-# NOORMME Marie Kondo Methodology - AI Coding Assistant Rules
+# NOORMME NORMIE DEV Methodology - AI Coding Assistant Rules
 
 ## Overview
 
-This directory contains the complete set of rules that enforce the Marie Kondo methodology for NOORMME development. These rules are automatically applied by AI coding assistants to ensure all code changes follow the principle of **"sparking joy"** through clean, unified architecture.
+This directory contains the complete set of rules that enforce the NORMIE DEV methodology for NOORMME development. These rules are automatically applied by AI coding assistants to ensure all code changes follow the principle of **"sparking joy"** through clean, unified architecture.
 
 ## Rule Files
 
 ### `architecture.mdc`
-- **Core architectural principles** and Marie Kondo methodology enforcement
+- **Core architectural principles** and NORMIE DEV methodology enforcement
 - **Migration strategy** with zero tolerance for legacy systems
 - **Decision framework** for architectural choices
 - **Legacy elimination protocol** with mandatory actions
 
 ### `coding-style.mdc`
-- **Code style guidelines** with Marie Kondo principles
+- **Code style guidelines** with NORMIE DEV principles
 - **TypeScript standards** with mandatory legacy deletion
 - **Legacy code elimination** rules and enforcement
 
@@ -23,7 +23,7 @@ This directory contains the complete set of rules that enforce the Marie Kondo m
 - **Legacy database elimination** rules
 
 ### `marie-kondo.mdc`
-- **Core philosophy** of the Marie Kondo methodology
+- **Core philosophy** of the NORMIE DEV methodology
 - **Implementation guidelines** with zero tolerance for complexity
 - **Legacy elimination protocol** with mandatory and forbidden actions
 - **Decision framework** and success metrics
@@ -45,7 +45,7 @@ These rules are automatically applied by AI coding assistants when working on NO
 
 ### Key Principles
 
-#### Marie Kondo Methodology - STRICT ENFORCEMENT
+#### NORMIE DEV Methodology - STRICT ENFORCEMENT
 **CRITICAL**: This methodology is MANDATORY for all architectural decisions. No exceptions.
 
 #### The Three-Step Process:
@@ -128,7 +128,7 @@ These rules are automatically applied by AI coding assistants when working on NO
 
 ## Conclusion
 
-The Marie Kondo methodology ensures NOORMME:
+The NORMIE DEV methodology ensures NOORMME:
 - **DELETES complexity** that doesn't add value
 - **DELETES legacy systems** completely
 - **DELETES backward compatibility** entirely

@@ -8,7 +8,7 @@ alwaysApply: true
 
 ## Core Principles
 
-### Marie Kondo Methodology - STRICT ENFORCEMENT
+### NORMIE DEV Methodology - STRICT ENFORCEMENT
 **CRITICAL**: This methodology is MANDATORY for all architectural decisions. No exceptions.
 
 #### The Three-Step Process:
@@ -116,7 +116,7 @@ export { UnifiedPaymentService as PaymentService } from './UnifiedPaymentService
 - **Modern Patterns**: Use current best practices only
 - **Performance First**: Optimize for speed and efficiency
 
-## Decision Framework - Marie Kondo Questions
+## Decision Framework - NORMIE DEV Questions
 
 ### For Every Architectural Decision, Ask:
 
