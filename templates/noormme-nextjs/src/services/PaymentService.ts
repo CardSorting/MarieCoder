@@ -450,7 +450,7 @@ export class PaymentService extends BaseService<any> {
 	}
 
 	private static async getDB() {
-		const { getDB } = await import("@/lib/db")
-		return await getDB()
+		const { db } = await import("@/lib/db")
+		return db
 	}
 }
