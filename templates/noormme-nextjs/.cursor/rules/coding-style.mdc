@@ -1,4 +1,13 @@
+---
+description: NOORMME coding style and conventions
+globs: '**/*.{ts,tsx,js,jsx}'
+alwaysApply: true
+---
+
 # NOORMME Coding Style Guidelines
+
+## Marie Kondo Principle
+**CRITICAL**: All code must spark joy. If it doesn't, delete it and rewrite it cleanly.
 
 ## General Style
 
@@ -18,10 +27,11 @@
 
 ### TypeScript Specific
 - Use strict TypeScript configuration
-- Avoid `any` types - use proper typing
+- **FORBIDDEN**: `any` types - use proper typing or delete the code
 - Use interfaces for object shapes
 - Use type aliases for unions and primitives
 - Include JSDoc comments for all public functions and classes
+- **MANDATORY**: Delete legacy type definitions when creating new ones
 
 ## NOORMME-Specific Conventions
 
@@ -72,3 +82,9 @@ export class NOORMError extends Error {
 - Document complex business logic
 - Provide usage examples in comments
 - Keep documentation up-to-date with code changes
+
+## Legacy Code Elimination
+- **MANDATORY**: Delete old implementations when creating new ones
+- **FORBIDDEN**: Maintaining multiple versions of the same functionality
+- **REQUIRED**: Update all imports to use new services immediately
+- **PROHIBITED**: Backward compatibility wrappers or legacy exports

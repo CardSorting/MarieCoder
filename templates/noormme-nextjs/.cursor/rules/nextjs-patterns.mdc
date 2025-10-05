@@ -1,4 +1,13 @@
+---
+description: Next.js organizational patterns for NOORMME
+globs: '**/*.{tsx,ts}'
+alwaysApply: true
+---
+
 # NOORMME Next.js Patterns
+
+## Marie Kondo Principle
+**CRITICAL**: Next.js code must spark joy. Delete legacy patterns, use only clean, modern approaches.
 
 ## App Router Structure
 
@@ -158,4 +167,11 @@ export class AuthMiddleware extends BaseMiddleware {
     return this.next(req, context)
   }
 }
+```
+
+## Legacy Pattern Elimination
+- **MANDATORY**: Delete old Next.js patterns (Pages Router, getServerSideProps, etc.)
+- **FORBIDDEN**: Mixing App Router with Pages Router
+- **REQUIRED**: Use only App Router with Server Components
+- **PROHIBITED**: Legacy data fetching patterns or old authentication approaches
 ```

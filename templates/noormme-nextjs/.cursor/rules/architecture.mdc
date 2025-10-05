@@ -1,0 +1,149 @@
+---
+description: NOORMME architectural principles and patterns
+globs: '**/*.ts'
+alwaysApply: true
+---
+
+# NOORMME Architecture Guidelines
+
+## Core Principles
+
+### Marie Kondo Methodology - STRICT ENFORCEMENT
+**CRITICAL**: This methodology is MANDATORY for all architectural decisions. No exceptions.
+
+#### The Three-Step Process:
+1. **Thank** - Acknowledge what taught us valuable lessons
+2. **Let Go** - Eliminate ALL legacy systems, backward compatibility, and technical debt
+3. **Organize** - Keep only what sparks joy with proven patterns
+
+#### What We Thank and Let Go:
+- ❌ **Legacy Services** - Delete old implementations completely
+- ❌ **Backward Compatibility** - No legacy wrappers or compatibility layers
+- ❌ **Technical Debt** - Remove all accumulated complexity
+- ❌ **Duplicate Code** - Eliminate redundant implementations
+- ❌ **Complex Abstractions** - Remove unnecessary layers
+- ❌ **Legacy Patterns** - Abandon outdated architectural approaches
+
+#### What We Keep (Sparks Joy):
+- ✅ **Clean, Unified Services** - Single responsibility, clear interfaces
+- ✅ **Modern Patterns** - Current best practices only
+- ✅ **Type Safety** - Full TypeScript compliance
+- ✅ **Performance** - Optimized, efficient implementations
+- ✅ **Maintainability** - Easy to understand and modify
+- ✅ **Developer Experience** - Delightful to work with
+
+### Composition over Creation
+- Use existing excellent tools (Next.js, Kysely, NextAuth, SQLite)
+- Apply proven organizational patterns (Django, Laravel, Rails)
+- Compose solutions instead of creating new frameworks
+- Maintain flexibility and avoid lock-in
+
+## Architectural Layers
+
+### Layer 1: Core Tools (Existing)
+- Next.js: App Router, Server Components, Server Actions
+- Kysely: Type-safe SQL query builder
+- NextAuth: Authentication for Next.js
+- SQLite: Simple, reliable database with WAL mode
+- TypeScript: Full type safety
+
+### Layer 2: NOORMME Automation (New)
+- Auto-Discovery: Schema introspection and type generation
+- Repository Pattern: Type-safe CRUD operations
+- Performance Optimization: WAL mode, caching, index recommendations
+- CLI Tools: Database management and project scaffolding
+
+### Layer 3: Organizational Patterns (New)
+- Django Structure: Organized folders, clear separation of concerns
+- Laravel Services: Service classes, repository patterns
+- Rails Conventions: Naming conventions, file organization
+- Next.js Patterns: App Router, Server Components
+
+### Layer 4: Templates (New)
+- Project Templates: Pre-organized Next.js projects
+- Code Templates: Common patterns and utilities
+- Configuration Templates: Smart defaults and conventions
+
+## Migration Strategy - ZERO TOLERANCE FOR LEGACY
+
+### When Refactoring Systems:
+1. **DELETE** all legacy files immediately
+2. **REPLACE** with clean, unified implementations
+3. **NO** backward compatibility wrappers
+4. **NO** legacy service exports
+5. **NO** gradual migration - complete replacement only
+
+### Enforcement Rules:
+- **MANDATORY**: Delete legacy files when creating new implementations
+- **FORBIDDEN**: Creating compatibility layers or wrappers
+- **REQUIRED**: Update all imports to use new services immediately
+- **PROHIBITED**: Maintaining old and new systems simultaneously
+
+### Example Migration Pattern:
+```typescript
+// ❌ FORBIDDEN - Legacy compatibility
+export { LegacyPaymentService as PaymentService } from './LegacyPaymentService'
+export { UnifiedPaymentService } from './UnifiedPaymentService'
+
+// ✅ REQUIRED - Clean replacement
+export { UnifiedPaymentService as PaymentService } from './UnifiedPaymentService'
+```
+
+## Implementation Guidelines
+
+### Modular Architecture
+- Organize code into distinct modules within `src/` directory
+- Separate concerns: database, services, components, utilities
+- Use dependency injection for loose coupling
+- Ensure all modules are stateless and pure functions where possible
+
+### Service Layer Pattern
+- Encapsulate business logic in service classes
+- Use repository pattern for data access
+- Implement middleware for cross-cutting concerns
+- Follow single responsibility principle
+
+### Error Handling
+- Use standardized error types with actionable messages
+- Implement error recovery mechanisms
+- Provide comprehensive error documentation
+- Handle errors gracefully with user-friendly messages
+
+### Clean Architecture Enforcement
+- **Single Source of Truth**: One service per domain
+- **No Duplication**: Eliminate redundant implementations
+- **Clear Interfaces**: Well-defined, type-safe APIs
+- **Modern Patterns**: Use current best practices only
+- **Performance First**: Optimize for speed and efficiency
+
+## Decision Framework - Marie Kondo Questions
+
+### For Every Architectural Decision, Ask:
+
+#### 1. Does This Spark Joy?
+- **Developer Experience**: Is this delightful to work with?
+- **Performance**: Does this improve speed and efficiency?
+- **Maintainability**: Is this easy to understand and modify?
+- **Simplicity**: Does this reduce complexity?
+
+#### 2. Can We Let Go of Legacy?
+- **Legacy Systems**: Can we delete old implementations?
+- **Backward Compatibility**: Can we remove compatibility layers?
+- **Technical Debt**: Can we eliminate accumulated complexity?
+- **Duplicate Code**: Can we consolidate redundant implementations?
+
+#### 3. How Do We Organize What Remains?
+- **Proven Patterns**: Use established, battle-tested approaches
+- **Clear Structure**: Organize with logical, intuitive hierarchies
+- **Type Safety**: Ensure full TypeScript compliance
+- **Documentation**: Provide clear, actionable guidance
+
+### Decision Matrix:
+| Question | Legacy System | New Implementation |
+|----------|---------------|-------------------|
+| Sparks Joy? | ❌ No - Complex, outdated | ✅ Yes - Clean, modern |
+| Can Let Go? | ✅ Yes - Delete immediately | ❌ No - Keep and organize |
+| Organization | ❌ Poor - Scattered, inconsistent | ✅ Excellent - Unified, clear |
+
+### Final Rule:
+**If it doesn't spark joy, thank it for its service and let it go. If it sparks joy, organize it with proven patterns.**
