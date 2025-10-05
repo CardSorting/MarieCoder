@@ -4,10 +4,8 @@
  * Following NOORMME service layer pattern with comprehensive webhook handling
  */
 
-import { getPaymentConfig } from "@/config/payment.config"
-import { DatabaseServiceFactory } from "./database/ServiceFactory"
-import { PayPalService } from "./PayPalService"
-import { StripeService } from "./StripeService"
+import { getPaymentConfig } from "../config/payment.config"
+import { PaymentServiceFactory } from "./payment/PaymentServiceFactory"
 import { PayPalWebhookProcessor } from "./webhooks/processors/PayPalWebhookProcessor"
 import { StripeWebhookProcessor } from "./webhooks/processors/StripeWebhookProcessor"
 import { WebhookRetryService } from "./webhooks/retry/WebhookRetryService"
@@ -31,9 +29,7 @@ export interface WebhookProcessingResult {
 
 export class PaymentWebhookService {
 	private static instance: PaymentWebhookService
-	private paymentDatabaseService: any
-	private stripeService: StripeService
-	private paypalService: PayPalService
+	private paymentServiceFactory: PaymentServiceFactory
 	private stripeProcessor: StripeWebhookProcessor
 	private paypalProcessor: PayPalWebhookProcessor
 	private retryService: WebhookRetryService
@@ -41,20 +37,17 @@ export class PaymentWebhookService {
 
 	static async getInstance(): Promise<PaymentWebhookService> {
 		if (!PaymentWebhookService.instance) {
-			const serviceFactory = DatabaseServiceFactory.getInstance()
-			const services = serviceFactory.getServices()
-			const paymentDatabaseService = services.payment
-			const stripeService = new StripeService()
-			const paypalService = new PayPalService()
+			const paymentServiceFactory = PaymentServiceFactory.getInstance()
+			await paymentServiceFactory.initialize()
+			const services = paymentServiceFactory.getServices()
+			const paymentDatabaseService = services.unified.databaseService
 			const stripeProcessor = new StripeWebhookProcessor(paymentDatabaseService)
 			const paypalProcessor = new PayPalWebhookProcessor(paymentDatabaseService)
 			const retryService = new WebhookRetryService(paymentDatabaseService)
 			const config = getPaymentConfig()
 
 			PaymentWebhookService.instance = new PaymentWebhookService(
-				paymentDatabaseService,
-				stripeService,
-				paypalService,
+				paymentServiceFactory,
 				stripeProcessor,
 				paypalProcessor,
 				retryService,
@@ -65,17 +58,13 @@ export class PaymentWebhookService {
 	}
 
 	constructor(
-		paymentDatabaseService: any,
-		stripeService: StripeService,
-		paypalService: PayPalService,
+		paymentServiceFactory: PaymentServiceFactory,
 		stripeProcessor: StripeWebhookProcessor,
 		paypalProcessor: PayPalWebhookProcessor,
 		retryService: WebhookRetryService,
 		config: any,
 	) {
-		this.paymentDatabaseService = paymentDatabaseService
-		this.stripeService = stripeService
-		this.paypalService = paypalService
+		this.paymentServiceFactory = paymentServiceFactory
 		this.stripeProcessor = stripeProcessor
 		this.paypalProcessor = paypalProcessor
 		this.retryService = retryService
@@ -102,7 +91,8 @@ export class PaymentWebhookService {
 			const event = validation.event!
 
 			// Save webhook to database
-			const webhook = await this.paymentDatabaseService.createPaymentWebhook({
+			const services = this.paymentServiceFactory.getServices()
+			const webhook = await services.unified.databaseService.createPaymentWebhook({
 				provider: "stripe",
 				eventType: event.type,
 				payload: event,
@@ -114,7 +104,7 @@ export class PaymentWebhookService {
 
 			if (result.success) {
 				// Mark webhook as processed
-				await this.paymentDatabaseService.markWebhookProcessed(webhook.id)
+				await services.unified.databaseService.markWebhookProcessed(webhook.id)
 			} else {
 				// Schedule for retry if retryable
 				if (result.retryable) {
@@ -155,7 +145,8 @@ export class PaymentWebhookService {
 			const event = validation.event!
 
 			// Save webhook to database
-			const webhook = await this.paymentDatabaseService.createPaymentWebhook({
+			const services = this.paymentServiceFactory.getServices()
+			const webhook = await services.unified.databaseService.createPaymentWebhook({
 				provider: "paypal",
 				eventType: event.event_type,
 				payload: event,
@@ -167,7 +158,7 @@ export class PaymentWebhookService {
 
 			if (result.success) {
 				// Mark webhook as processed
-				await this.paymentDatabaseService.markWebhookProcessed(webhook.id)
+				await services.unified.databaseService.markWebhookProcessed(webhook.id)
 			} else {
 				// Schedule for retry if retryable
 				if (result.retryable) {
@@ -193,7 +184,8 @@ export class PaymentWebhookService {
 	 */
 	async processUnprocessedWebhooks(): Promise<void> {
 		try {
-			const unprocessedWebhooks = await this.paymentDatabaseService.getUnprocessedWebhooks()
+			const services = this.paymentServiceFactory.getServices()
+			const unprocessedWebhooks = await services.unified.databaseService.getUnprocessedWebhooks()
 
 			for (const webhook of unprocessedWebhooks) {
 				try {
@@ -210,7 +202,7 @@ export class PaymentWebhookService {
 
 					if (result.success) {
 						// Mark as processed
-						await this.paymentDatabaseService.markWebhookProcessed(webhook.id)
+						await services.unified.databaseService.markWebhookProcessed(webhook.id)
 					} else if (result.retryable) {
 						// Schedule for retry
 						await this.retryService.scheduleRetry(webhook.id, result.error || "Processing failed")
@@ -235,8 +227,9 @@ export class PaymentWebhookService {
 		byProvider: Record<string, { total: number; processed: number; unprocessed: number }>
 	}> {
 		try {
-			const allWebhooks = await this.paymentDatabaseService.getUnprocessedWebhooks()
-			const processedWebhooks = await this.paymentDatabaseService.getUnprocessedWebhooks() // This should be a different method
+			const services = this.paymentServiceFactory.getServices()
+			const allWebhooks = await services.unified.databaseService.getUnprocessedWebhooks()
+			const processedWebhooks = await services.unified.databaseService.getUnprocessedWebhooks() // This should be a different method
 
 			// This is a simplified version - in reality, you'd have proper database queries
 			const stats = {

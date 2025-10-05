@@ -21,10 +21,6 @@ export { AuditService } from "./AuditService"
 export * from "./analytics"
 // Database Services
 export * from "./database"
-export { PaymentNotificationService } from "./PaymentNotificationService"
-export { PaymentService } from "./PaymentService"
-export { PaymentValidationService } from "./PaymentValidationService"
-export { PayPalService } from "./PayPalService"
 export type {
 	CreatePermissionData,
 	PermissionStats,
@@ -33,6 +29,15 @@ export type {
 	UpdatePermissionData,
 } from "./PermissionService"
 export { PermissionService } from "./PermissionService"
+// Payment Services - Clean unified architecture
+export {
+	PaymentProviderFactory,
+	PaymentService,
+	PaymentServiceFactory,
+	PayPalProvider,
+	StripeProvider,
+	UnifiedPaymentService,
+} from "./payment"
 export type { AssignRoleData, CreateRoleData, RoleStats, RoleWithPermissions, UpdateRoleData } from "./RoleService"
 export { RoleService } from "./RoleService"
 // Service Factory
@@ -46,8 +51,12 @@ export {
 	serviceFactory,
 	userService,
 } from "./ServiceFactory"
-export { StripeService } from "./StripeService"
+// Legacy services removed - use UnifiedPaymentService instead
 export type { CreateUserData, UpdateUserData, UserSearchData, UserSearchResult, UserStats, UserWithRoles } from "./UserService"
 export { UserService } from "./UserService"
-// Webhook Services
-export * from "./webhooks"
+// Webhook Services - Explicit exports to avoid conflicts
+export {
+	PayPalWebhookProcessor,
+	StripeWebhookProcessor,
+	WebhookRetryService,
+} from "./webhooks"

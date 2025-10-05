@@ -180,26 +180,12 @@ export interface UpdatePaymentMethodData {
 }
 
 export interface PaymentProviderConfig {
-	stripe?: {
-		publishableKey: string
-		secretKey: string
-		webhookSecret: string
-	}
-	paypal?: {
-		clientId: string
-		clientSecret: string
-		environment: "sandbox" | "production"
-	}
-	square?: {
-		applicationId: string
-		accessToken: string
-		environment: "sandbox" | "production"
-	}
-	razorpay?: {
-		keyId: string
-		keySecret: string
-		webhookSecret: string
-	}
+	apiKey: string
+	environment: "test" | "live" | "sandbox" | "production"
+	webhookSecret: string
+	apiVersion: string
+	maxRetries: number
+	timeout: number
 }
 
 export interface PaymentError extends Error {
@@ -214,4 +200,7 @@ export interface PaymentError extends Error {
 	decline_code?: string
 	param?: string
 	message: string
+	details?: Record<string, any>
+	timestamp?: Date
+	retryable?: boolean
 }

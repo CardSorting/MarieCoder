@@ -52,10 +52,11 @@ export class PaymentAnalyticsService {
 
 	static async getInstance(): Promise<PaymentAnalyticsService> {
 		if (!PaymentAnalyticsService.instance) {
-			const { DatabaseServiceFactory } = await import("../database/ServiceFactory")
-			const serviceFactory = DatabaseServiceFactory.getInstance()
-			const services = serviceFactory.getServices()
-			const paymentDatabaseService = services.payment
+			const { PaymentServiceFactory } = await import("../payment/PaymentServiceFactory")
+			const paymentServiceFactory = PaymentServiceFactory.getInstance()
+			await paymentServiceFactory.initialize()
+			const services = paymentServiceFactory.getServices()
+			const paymentDatabaseService = services.unified.databaseService
 			const revenueService = new RevenueReportingService(paymentDatabaseService)
 
 			PaymentAnalyticsService.instance = new PaymentAnalyticsService(paymentDatabaseService, revenueService)
