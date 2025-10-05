@@ -1,30 +1,53 @@
 {
-	"name": "noormme-payment-services",
+	"name": "noormme-nextjs-template",
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
-		"build": "tsc",
-		"dev": "tsx watch src/index.ts",
-		"start": "node dist/index.js",
+		"dev": "next dev",
+		"build": "next build",
+		"start": "next start",
+		"lint": "next lint",
 		"type-check": "tsc --noEmit",
 		"migrate": "tsx scripts/migrate.ts",
-		"seed": "tsx scripts/seed.ts"
+		"seed": "tsx scripts/seed.ts",
+		"install-deps": "./install-dependencies.sh",
+		"setup": "npm install && cp env.example .env.local"
 	},
 	"dependencies": {
-		"typescript": "^5.0.0"
+		"next": "^15.0.0",
+		"react": "^18.0.0",
+		"react-dom": "^18.0.0",
+		"next-auth": "^4.24.0",
+		"kysely": "^0.27.0",
+		"better-sqlite3": "^9.0.0",
+		"stripe": "^14.0.0",
+		"@paypal/checkout-server-sdk": "^1.0.3",
+		"typescript": "^5.0.0",
+		"bcryptjs": "^2.4.3",
+		"zod": "^3.22.0"
 	},
 	"devDependencies": {
 		"@types/node": "^20.0.0",
-		"tsx": "^4.0.0"
+		"@types/react": "^18.0.0",
+		"@types/react-dom": "^18.0.0",
+		"@types/better-sqlite3": "^7.6.0",
+		"@types/bcryptjs": "^2.4.6",
+		"tsx": "^4.0.0",
+		"eslint": "^8.0.0",
+		"eslint-config-next": "^15.0.0",
+		"tailwindcss": "^3.3.0",
+		"autoprefixer": "^10.4.0",
+		"postcss": "^8.4.0"
 	},
 	"keywords": [
 		"noormme",
+		"nextjs",
 		"payment",
 		"services",
 		"typescript",
 		"template"
 	],
-	"description": "NOORMME payment services template with TypeScript",
+	"description": "NOORMME Next.js template with payment services",
 	"author": "NOORMME Team",
 	"license": "MIT"
 }
