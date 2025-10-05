@@ -1,1 +1,1 @@
-export { default as NormieDevChatHeader } from './NormieDevChatHeader'
+export { default as NormieDevChatHeader } from "./NormieDevChatHeader"

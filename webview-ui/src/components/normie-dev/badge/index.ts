@@ -1,1 +1,1 @@
-export { default as NormieDevBadge } from './NormieDevBadge'
+export { default as NormieDevBadge } from "./NormieDevBadge"

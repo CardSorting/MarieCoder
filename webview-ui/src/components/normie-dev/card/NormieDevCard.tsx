@@ -1,9 +1,9 @@
-import React from 'react'
+import React from "react"
 
 interface NormieDevCardProps {
 	children: React.ReactNode
 	className?: string
-	variant?: 'default' | 'subtle' | 'accent'
+	variant?: "default" | "subtle" | "accent"
 	onClick?: () => void
 	disabled?: boolean
 }
@@ -11,25 +11,29 @@ interface NormieDevCardProps {
 const NormieDevCard: React.FC<NormieDevCardProps> = ({
 	children,
 	className = "",
-	variant = 'default',
+	variant = "default",
 	onClick,
-	disabled = false
+	disabled = false,
 }) => {
 	const getVariantStyles = () => {
 		switch (variant) {
-			case 'subtle':
-				return 'normie-dev-subtle'
-			case 'accent':
-				return 'normie-dev-accent'
+			case "subtle":
+				return "normie-dev-subtle"
+			case "accent":
+				return "normie-dev-accent"
 			default:
-				return 'bg-[var(--vscode-editor-background)] border border-[var(--vscode-input-border)]'
+				return "bg-[var(--vscode-editor-background)] border border-[var(--vscode-input-border)]"
 		}
 	}
 
 	const getCursorStyle = () => {
-		if (disabled) return 'cursor-not-allowed opacity-50'
-		if (onClick) return 'cursor-pointer'
-		return ''
+		if (disabled) {
+			return "cursor-not-allowed opacity-50"
+		}
+		if (onClick) {
+			return "cursor-pointer"
+		}
+		return ""
 	}
 
 	return (
@@ -40,8 +44,7 @@ const NormieDevCard: React.FC<NormieDevCardProps> = ({
 				rounded-lg p-4 marie-kondo-clean
 				${className}
 			`.trim()}
-			onClick={disabled ? undefined : onClick}
-		>
+			onClick={disabled ? undefined : onClick}>
 			{children}
 		</div>
 	)

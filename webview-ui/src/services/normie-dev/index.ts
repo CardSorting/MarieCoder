@@ -1,2 +1,2 @@
 // NormieDev Services - Simple, focused exports
-export * from './projectService'
+export * from "./projectService"

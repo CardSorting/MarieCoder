@@ -1,1 +1,1 @@
-export { default as NormieDevHeader } from './NormieDevHeader'
+export { default as NormieDevHeader } from "./NormieDevHeader"

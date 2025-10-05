@@ -1,1 +1,1 @@
-export { default as NormieDevCard } from './NormieDevCard'
+export { default as NormieDevCard } from "./NormieDevCard"

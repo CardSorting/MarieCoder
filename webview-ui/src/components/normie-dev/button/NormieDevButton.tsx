@@ -1,11 +1,11 @@
-import React from 'react'
-import { VSCodeButton } from '@vscode/webview-ui-toolkit/react'
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import React from "react"
 
 interface NormieDevButtonProps {
 	children: React.ReactNode
 	onClick?: () => void
-	variant?: 'primary' | 'secondary' | 'accent' | 'ghost'
-	size?: 'sm' | 'md' | 'lg'
+	variant?: "primary" | "secondary" | "accent" | "ghost"
+	size?: "sm" | "md" | "lg"
 	disabled?: boolean
 	className?: string
 	icon?: React.ReactNode
@@ -14,19 +14,19 @@ interface NormieDevButtonProps {
 const NormieDevButton: React.FC<NormieDevButtonProps> = ({
 	children,
 	onClick,
-	variant = 'primary',
-	size = 'md',
+	variant = "primary",
+	size = "md",
 	disabled = false,
 	className = "",
-	icon
+	icon,
 }) => {
 	const getVariantStyles = () => {
 		switch (variant) {
-			case 'secondary':
+			case "secondary":
 				return 'appearance="secondary"'
-			case 'accent':
+			case "accent":
 				return 'appearance="primary" className="normie-dev-accent"'
-			case 'ghost':
+			case "ghost":
 				return 'appearance="secondary" className="bg-transparent border-transparent hover:normie-dev-subtle"'
 			default:
 				return 'appearance="primary"'
@@ -35,12 +35,12 @@ const NormieDevButton: React.FC<NormieDevButtonProps> = ({
 
 	const getSizeStyles = () => {
 		switch (size) {
-			case 'sm':
-				return 'text-xs px-3 py-1'
-			case 'lg':
-				return 'text-base px-6 py-3'
+			case "sm":
+				return "text-xs px-3 py-1"
+			case "lg":
+				return "text-base px-6 py-3"
 			default:
-				return 'text-sm px-4 py-2'
+				return "text-sm px-4 py-2"
 		}
 	}
 
@@ -48,9 +48,8 @@ const NormieDevButton: React.FC<NormieDevButtonProps> = ({
 		<VSCodeButton
 			{...getVariantStyles()}
 			className={`${getSizeStyles()} marie-kondo-clean ${className}`}
-			onClick={onClick}
 			disabled={disabled}
-		>
+			onClick={onClick}>
 			{icon && <span className="mr-2">{icon}</span>}
 			{children}
 		</VSCodeButton>

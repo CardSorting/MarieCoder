@@ -1,1 +1,1 @@
-export { default as WelcomeExample } from './WelcomeExample'
+export { default as WelcomeExample } from "./WelcomeExample"
