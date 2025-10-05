@@ -1,16 +1,16 @@
-# NOORMME Next.js Template
+# NOORMME Payment Services Template
 
-A comprehensive Next.js template with integrated payment services, following NOORMME architecture guidelines.
+A comprehensive TypeScript backend template with integrated payment services, following NOORMME architecture guidelines.
 
 ## Features
 
-- ✅ **Next.js 14** with App Router
 - ✅ **TypeScript** with strict configuration
-- ✅ **Tailwind CSS** for styling
 - ✅ **Payment Services** (Stripe & PayPal)
 - ✅ **NOORMME Architecture** patterns
 - ✅ **Type-safe** database operations
 - ✅ **Repository Pattern** implementation
+- ✅ **Service Layer** architecture
+- ✅ **Database Migration** scripts
 
 ## Getting Started
 
@@ -21,15 +21,23 @@ A comprehensive Next.js template with integrated payment services, following NOO
 
 2. **Set up environment variables:**
    ```bash
-   cp .env.example .env.local
+   cp .env.example .env
    ```
 
-3. **Run the development server:**
+3. **Run database migrations:**
+   ```bash
+   npm run migrate
+   ```
+
+4. **Seed the database:**
+   ```bash
+   npm run seed
+   ```
+
+5. **Start development server:**
    ```bash
    npm run dev
    ```
-
-4. **Open [http://localhost:3000](http://localhost:3000)** in your browser.
 
 ## Payment Services
 
@@ -60,22 +68,24 @@ This template follows NOORMME architecture principles:
 
 ```
 src/
-├── app/                    # Next.js App Router
 ├── config/                 # Configuration files
+├── lib/                    # Database and core utilities
 ├── providers/              # Payment providers
 ├── repositories/           # Data access layer
 ├── services/               # Business logic
 ├── types/                  # TypeScript types
-└── utils/                  # Utility functions
+├── utils/                  # Utility functions
+└── index.ts               # Main application entry point
 ```
 
 ## Scripts
 
-- `npm run dev` - Start development server
+- `npm run dev` - Start development server with hot reload
 - `npm run build` - Build for production
 - `npm run start` - Start production server
-- `npm run lint` - Run ESLint
 - `npm run type-check` - Run TypeScript checks
+- `npm run migrate` - Run database migrations
+- `npm run seed` - Seed database with initial data
 
 ## License
 
