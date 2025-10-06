@@ -4,6 +4,7 @@
  */
 
 import "@testing-library/jest-dom"
+import React from "react"
 import { TextDecoder, TextEncoder } from "util"
 
 // Mock Next.js router
@@ -31,21 +32,15 @@ jest.mock("next/image", () => ({
 	__esModule: true,
 	default: (props: any) => {
 		// eslint-disable-next-line @next/next/no-img-element
-		return <img {...props} />
+		return React.createElement("img", props)
 	},
 }))
 
 // Mock Next.js Link component
 jest.mock("next/link", () => ({
 	__esModule: true,
-	default: ({ children, href, ...props }: any) => {
-		return (
-      <a href={href}
-		...props
-		>
-		children
-		</a>
-		)
+	default: ({ children, ...props }: any) => {
+		return React.createElement("a", props, children)
 	},
 }))
 
@@ -55,11 +50,15 @@ process.env.DATABASE_URL = ":memory:"
 process.env.NEXTAUTH_URL = "http://localhost:3000"
 process.env.NEXTAUTH_SECRET = "test-secret-key-for-testing-only"
 process.env.APP_NAME = "NOORMME SAAS Test"
-process.env.NODE_ENV = "test"
+// Set NODE_ENV for testing
+Object.defineProperty(process.env, 'NODE_ENV', {
+	value: 'test',
+	writable: true
+})
 
 // Global test utilities
 global.TextEncoder = TextEncoder
-global.TextDecoder = TextDecoder
+global.TextDecoder = TextDecoder as any
 
 // Mock console methods in test environment
 if (process.env.NODE_ENV === "test") {
