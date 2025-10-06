@@ -10,8 +10,11 @@
 		"type-check": "tsc --noEmit",
 		"migrate": "tsx scripts/migrate.ts",
 		"seed": "tsx scripts/seed.ts",
+		"setup": "npm install && cp env.example .env.local",
+		"setup-queue": "tsx scripts/setup-queue.ts",
 		"install-deps": "./install-dependencies.sh",
-		"setup": "npm install && cp env.example .env.local"
+		"tailwind:check": "npx tailwindcss --version",
+		"tailwind:build": "npx tailwindcss -i ./app/globals.css -o ./dist/output.css --watch"
 	},
 	"dependencies": {
 		"next": "^15.0.0",
