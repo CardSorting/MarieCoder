@@ -18,9 +18,21 @@ This directory contains the complete set of rules that enforce the NORMIE DEV me
 - **Legacy code elimination** rules and enforcement
 
 ### `database.mdc`
-- **Database patterns** and SQLite optimization
-- **Repository patterns** with clean architecture
-- **Legacy database elimination** rules
+- **Database patterns** and SQLite optimization with Kysely integration
+- **Repository patterns** with clean architecture leveraging Kysely fully
+- **Legacy database elimination** rules and Kysely best practices
+
+### `database-guidelines.mdc`
+- **Comprehensive database guidelines** with Kysely integration strategies
+- **Repository patterns** leveraging Kysely's native capabilities
+- **Query builder integration** exposing Kysely directly
+- **Migration management** using Kysely transactions
+
+### `kysely-integration.mdc`
+- **Kysely integration patterns** and best practices
+- **Direct Kysely usage** without custom wrappers
+- **Type safety** with proper assertions for Kysely's complex types
+- **Error handling** and caching integration with Kysely
 
 ### `marie-kondo.mdc`
 - **Core philosophy** of the NORMIE DEV methodology
@@ -68,6 +80,7 @@ These rules are automatically applied by AI coding assistants when working on NO
 - ✅ **Performance** - Optimized, efficient implementations
 - ✅ **Maintainability** - Easy to understand and modify
 - ✅ **Developer Experience** - Delightful to work with
+- ✅ **Kysely Integration** - Leverage Kysely's native capabilities fully
 
 ## Enforcement Rules
 
@@ -83,6 +96,51 @@ These rules are automatically applied by AI coding assistants when working on NO
 - ❌ Creating wrapper services
 - ❌ Gradual migration strategies
 - ❌ Keeping old and new systems simultaneously
+- ❌ Wrapping Kysely's core query building functionality
+- ❌ Recreating query building logic that Kysely already provides
+
+## Kysely Integration Principles
+
+### Core Philosophy
+**LEVERAGE KYSELY FULLY** - Don't recreate query building, use Kysely's native capabilities:
+
+#### ✅ DO's:
+- **Direct Access** - Expose Kysely's query builders directly (`selectFrom`, `insertInto`, `updateTable`, `deleteFrom`)
+- **Type Safety** - Use Kysely's generics and type inference with proper assertions
+- **Native Methods** - Use Kysely's built-in functionality without wrapping
+- **Transaction Support** - Leverage Kysely's transaction system for atomic operations
+- **Error Handling** - Integrate NOORMError with Kysely operations
+
+#### ❌ DON'Ts:
+- **Custom Wrappers** - Don't wrap Kysely's core functionality
+- **Recreating Logic** - Don't rebuild what Kysely already provides
+- **Legacy Patterns** - Don't use old query builders or database patterns
+- **Type Bypassing** - Don't use `any` without proper type assertions
+
+### Integration Strategy
+```typescript
+// ✅ CORRECT - Direct Kysely usage
+const users = await db
+  .selectFrom('users')
+  .selectAll()
+  .where('status', '=', 'active')
+  .orderBy('createdAt', 'desc')
+  .execute()
+
+// ✅ CORRECT - Repository leveraging Kysely
+export class UserRepository extends BaseRepository<'users'> {
+  async findByEmail(email: string): Promise<Database['users'] | null> {
+    return await this.findOneBy({ email: email.toLowerCase() })
+  }
+}
+
+// ❌ WRONG - Wrapping Kysely unnecessarily
+export class CustomQueryBuilder {
+  async customSelect(table: string, where: any) {
+    return this.db.selectFrom(table).where(where).execute()
+  }
+}
+```
 
 ## Decision Framework
 
