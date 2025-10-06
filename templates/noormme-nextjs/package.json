@@ -1,7 +1,7 @@
 {
 	"name": "noormme-nextjs-template",
 	"version": "1.0.0",
-	"description": "A clean Next.js template with NOORMME integration following NORMIE DEV methodology",
+	"description": "A production-ready Next.js SAAS template with NOORMME integration following NORMIE DEV methodology",
 	"private": true,
 	"scripts": {
 		"dev": "next dev",
@@ -14,7 +14,27 @@
 		"dev:full": "npm run setup && npm run dev",
 		"reset": "rm -f database.sqlite && npm run setup",
 		"migrate": "tsx scripts/migrate.ts",
-		"seed": "tsx scripts/seed.ts"
+		"seed": "tsx scripts/seed.ts",
+		"test": "jest",
+		"test:watch": "jest --watch",
+		"test:coverage": "jest --coverage",
+		"build:production": "NODE_ENV=production npm run type-check && npm run lint && npm run build",
+		"deploy": "npm run build:production && npm run start",
+		"health-check": "tsx scripts/health-check.ts",
+		"backup": "tsx scripts/backup.ts",
+		"artisan": "tsx scripts/artisan.ts",
+		"make:component": "npm run artisan make:component",
+		"make:service": "npm run artisan make:service",
+		"make:migration": "npm run artisan make:migration",
+		"make:page": "npm run artisan make:page",
+		"make:api": "npm run artisan make:api",
+		"make:middleware": "npm run artisan make:middleware",
+		"install:auth": "npm run artisan install:auth",
+		"install:admin": "npm run artisan install:admin",
+		"db:migrate": "npm run artisan db:migrate",
+		"db:seed": "npm run artisan db:seed",
+		"serve": "npm run artisan serve",
+		"postinstall": "npm run setup"
 	},
 	"dependencies": {
 		"@radix-ui/react-dialog": "^1.0.0",
@@ -43,11 +63,16 @@
 		"tailwindcss-animate": "^1.0.0"
 	},
 	"devDependencies": {
+		"@types/jest": "^29.5.0",
 		"@types/node": "^20.0.0",
 		"@types/react": "^18.0.0",
 		"@types/react-dom": "^18.0.0",
+		"@typescript-eslint/eslint-plugin": "^6.0.0",
+		"@typescript-eslint/parser": "^6.0.0",
 		"eslint": "^8.0.0",
 		"eslint-config-next": "^15.0.0",
+		"jest": "^29.5.0",
+		"jest-environment-jsdom": "^29.5.0",
 		"tsx": "^4.0.0",
 		"typescript": "^5.0.0"
 	},

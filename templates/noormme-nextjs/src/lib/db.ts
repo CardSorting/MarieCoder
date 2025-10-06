@@ -1,6 +1,7 @@
 /**
  * Enhanced Database Configuration for NOORMME SAAS
  * Following NORMIE DEV methodology - optimized, reliable, performant
+ * Compatible with MCP server and production deployment
  */
 
 import { cacheManager, globalCache } from "./database/cache"
@@ -10,17 +11,17 @@ import { MigrationManager } from "./database/migration"
 import { QueryBuilderFactory, SAASQueryPatterns } from "./database/query-builder"
 import { PaymentRepository, SubscriptionRepository, UserRepository } from "./database/repository"
 
-// Database configuration
+// Database configuration - Production-ready with MCP compatibility
 const databaseConfig = {
 	database: process.env.DATABASE_URL || "./database.sqlite",
-	wal: true,
-	cacheSize: -64000, // 64MB
-	synchronous: "NORMAL" as const,
+	wal: process.env.NODE_ENV !== 'test', // Disable WAL in test environment
+	cacheSize: process.env.NODE_ENV === 'production' ? -128000 : -64000, // 128MB in production, 64MB in dev
+	synchronous: (process.env.NODE_ENV === 'production' ? "FULL" : "NORMAL") as "FULL" | "NORMAL" | "OFF",
 	tempStore: "MEMORY" as const,
 	foreignKeys: true,
 	optimize: true,
-	timeout: 30000,
-	busyTimeout: 5000,
+	timeout: process.env.NODE_ENV === 'production' ? 60000 : 30000,
+	busyTimeout: process.env.NODE_ENV === 'production' ? 10000 : 5000,
 }
 
 // Initialize database manager and related services
@@ -58,7 +59,7 @@ async function warmupCaches() {
 				{
 					key: "active-users",
 					queryFn: async () => {
-						const userRepo = new UserRepository(dbManager!.getDatabase())
+						const userRepo = new UserRepository(dbManager!.getDatabase().getKysely() as any)
 						return await userRepo.findActiveUsers()
 					},
 				},
@@ -67,8 +68,8 @@ async function warmupCaches() {
 				{
 					key: "active-plans",
 					queryFn: async () => {
-						const queryBuilder = dbManager!.getQueryBuilder()
-						return await queryBuilder.create("plans").whereActive().execute()
+						const kysely = dbManager!.getDatabase().getKysely()
+						return await kysely.selectFrom("plans").where("status", "=", "active").execute()
 					},
 				},
 			],
@@ -76,8 +77,8 @@ async function warmupCaches() {
 				{
 					key: "public-settings",
 					queryFn: async () => {
-						const queryBuilder = dbManager!.getQueryBuilder()
-						return await queryBuilder.create("system_settings").where("isPublic", "=", true).execute()
+						const kysely = dbManager!.getDatabase().getKysely()
+						return await kysely.selectFrom("system_settings").where("isPublic", "=", true).execute()
 					},
 				},
 			],
@@ -158,21 +159,21 @@ export const getUserRepository = (): UserRepository => {
 	if (!dbManager) {
 		throw new Error("Database not initialized")
 	}
-	return new UserRepository(dbManager.getDatabase())
+	return new UserRepository(dbManager.getDatabase().getKysely() as any)
 }
 
 export const getSubscriptionRepository = (): SubscriptionRepository => {
 	if (!dbManager) {
 		throw new Error("Database not initialized")
 	}
-	return new SubscriptionRepository(dbManager.getDatabase())
+	return new SubscriptionRepository(dbManager.getDatabase().getKysely() as any)
 }
 
 export const getPaymentRepository = (): PaymentRepository => {
 	if (!dbManager) {
 		throw new Error("Database not initialized")
 	}
-	return new PaymentRepository(dbManager.getDatabase())
+	return new PaymentRepository(dbManager.getDatabase().getKysely() as any)
 }
 
 // Cache exports

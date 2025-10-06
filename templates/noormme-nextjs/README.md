@@ -50,6 +50,16 @@ A comprehensive, production-ready Next.js SAAS template with NOORMME integration
 
 ## 🚀 Quick Start
 
+### Automated Setup (Recommended)
+```bash
+# Clone and setup in one command
+git clone <repository-url> my-saas-app
+cd my-saas-app
+npm run setup
+npm run dev
+```
+
+### Manual Setup
 1. **Install dependencies:**
    ```bash
    npm install
@@ -75,6 +85,22 @@ A comprehensive, production-ready Next.js SAAS template with NOORMME integration
    - Main app: http://localhost:3000
    - Admin panel: http://localhost:3000/admin
    - API docs: http://localhost:3000/api
+
+### Using NOORMME Artisan (MCP Server)
+```bash
+# Create components, services, and more
+npm run make:component Button --type=ui --with-tests
+npm run make:service UserService --with-repository
+npm run make:migration create_posts_table --action=create --table=posts
+
+# Database operations
+npm run db:migrate
+npm run db:seed
+
+# Development commands
+npm run serve --port=3000
+npm run test --coverage
+```
 
 ## 📁 Project Structure
 
@@ -122,15 +148,44 @@ src/
 
 ## 🛠️ Available Scripts
 
+### Development
 - `npm run dev` - Start development server
+- `npm run dev:full` - Setup database and start development server
 - `npm run build` - Build for production
 - `npm run start` - Start production server
+- `npm run serve` - Start development server with database integration
+
+### Database
 - `npm run setup` - Initialize database with migrations and seed data
 - `npm run reset` - Reset database and reinitialize
 - `npm run migrate` - Run database migrations
 - `npm run seed` - Seed database with sample data
+- `npm run db:migrate` - Run database migrations (Artisan)
+- `npm run db:seed` - Seed database (Artisan)
+
+### Code Quality
 - `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint issues
 - `npm run type-check` - Run TypeScript checks
+- `npm test` - Run tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage
+
+### NOORMME Artisan Commands
+- `npm run make:component <name>` - Create React component
+- `npm run make:service <name>` - Create service class
+- `npm run make:migration <name>` - Create database migration
+- `npm run make:page <name>` - Create Next.js page
+- `npm run make:api <name>` - Create API route
+- `npm run make:middleware <name>` - Create middleware
+- `npm run install:auth` - Install authentication system
+- `npm run install:admin` - Install admin panel
+
+### Production
+- `npm run build:production` - Production build with checks
+- `npm run deploy` - Deploy to production
+- `npm run health-check` - Check application health
+- `npm run backup` - Backup database
 
 ## 🔧 Configuration
 
