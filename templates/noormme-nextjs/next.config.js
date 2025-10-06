@@ -1,16 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	experimental: {
-		serverComponentsExternalPackages: ["better-sqlite3"],
-	},
-	typescript: {
-		ignoreBuildErrors: false,
-	},
-	eslint: {
-		ignoreDuringBuilds: false,
+		appDir: true,
 	},
 	images: {
-		domains: ["lh3.googleusercontent.com", "avatars.githubusercontent.com"],
+		domains: ["localhost"],
+	},
+	// Enable SQLite in production
+	env: {
+		DATABASE_URL: process.env.DATABASE_URL,
 	},
 }
 

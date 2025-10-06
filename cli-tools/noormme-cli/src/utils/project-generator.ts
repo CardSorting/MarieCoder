@@ -288,6 +288,8 @@ module.exports = {
 				reset: "rm -f database.sqlite && npm run setup",
 				"type-check": "tsc --noEmit",
 				"lint:fix": "next lint --fix",
+				migrate: "tsx scripts/migrate.ts",
+				seed: "tsx scripts/seed.ts",
 			}
 
 			await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2))

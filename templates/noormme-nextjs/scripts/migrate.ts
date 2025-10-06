@@ -1,43 +1,47 @@
-#!/usr/bin/env tsx
-
-/**
- * Database migration script
- * This script handles database schema migrations
- */
-
 import { db } from "../src/lib/db"
 
 async function migrate() {
 	try {
-		console.log("Starting database migration...")
+		console.log("🔄 Running database migrations...")
 
-		// Connect to database
-		await db.connect()
+		// Create users table
+		await db.execute(`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        role TEXT DEFAULT 'user',
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
 
-		// Example migration queries would go here
-		console.log("Creating tables...")
+		// Create payments table
+		await db.execute(`
+      CREATE TABLE IF NOT EXISTS payments (
+        id TEXT PRIMARY KEY,
+        userId TEXT NOT NULL,
+        amount REAL NOT NULL,
+        currency TEXT DEFAULT 'USD',
+        status TEXT DEFAULT 'pending',
+        provider TEXT NOT NULL,
+        providerId TEXT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users (id)
+      )
+    `)
 
-		// Users table
-		console.log("✓ Users table created")
+		// Create indexes
+		await db.execute("CREATE INDEX IF NOT EXISTS idx_users_email ON users (email)")
+		await db.execute("CREATE INDEX IF NOT EXISTS idx_payments_userId ON payments (userId)")
+		await db.execute("CREATE INDEX IF NOT EXISTS idx_payments_status ON payments (status)")
 
-		// Payments table
-		console.log("✓ Payments table created")
-
-		// Transactions table
-		console.log("✓ Transactions table created")
-
-		console.log("✅ Migration completed successfully")
+		console.log("✅ Database migrations completed successfully")
 	} catch (error) {
 		console.error("❌ Migration failed:", error)
 		process.exit(1)
-	} finally {
-		await db.disconnect()
 	}
 }
 
-// Run migration if this file is executed directly
-if (require.main === module) {
-	migrate()
-}
-
-export { migrate }
+migrate()

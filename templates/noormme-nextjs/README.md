@@ -1,228 +1,141 @@
 # NOORMME Next.js Template
 
-A comprehensive Next.js 15 application template with integrated payment services, role-based access control (RBAC), and admin panel, following NOORMME architecture guidelines.
+A clean, organized Next.js template with NOORMME integration following the **NORMIE DEV methodology**.
 
-## Features
+## ✨ Features
 
-- ✅ **Next.js 15** with App Router
-- ✅ **TypeScript** with strict configuration
-- ✅ **NextAuth.js** authentication with RBAC
-- ✅ **Role-Based Access Control** (RBAC) system
-- ✅ **Admin Panel** with user and role management
-- ✅ **Payment Services** (Stripe & PayPal)
-- ✅ **Queue System** with two-tier architecture
-- ✅ **NOORMME Architecture** patterns
-- ✅ **SQLite** with Kysely query builder
-- ✅ **Type-safe** database operations
-- ✅ **Repository Pattern** implementation
-- ✅ **Service Layer** architecture
-- ✅ **Tailwind CSS v3.3.0** for styling
-- ✅ **Audit Logging** system
+- **Next.js 15** with App Router
+- **NOORMME** database integration with SQLite
+- **NextAuth** authentication
+- **Tailwind CSS** for styling
+- **TypeScript** with strict configuration
+- **Unified service architecture**
+- **Queue system** for background jobs
+- **Admin panel** with role-based access
 
-## Getting Started
+## 🚀 Quick Start
 
 1. **Install dependencies:**
    ```bash
    npm install
    ```
 
-2. **Set up environment variables:**
+2. **Set up environment:**
    ```bash
    cp env.example .env.local
+   # Edit .env.local with your configuration
    ```
 
-3. **Configure your environment variables in `.env.local`:**
-   - Add your OAuth provider credentials (Google, GitHub)
-   - Add your payment provider credentials (Stripe, PayPal)
-   - Set your NextAuth secret
-
-4. **Run database migrations:**
+3. **Initialize database:**
    ```bash
-   npm run migrate
+   npm run setup
    ```
 
-5. **Seed the database:**
-   ```bash
-   npm run seed
-   ```
-
-6. **Start development server:**
+4. **Start development server:**
    ```bash
    npm run dev
    ```
 
-7. **Open [http://localhost:3000](http://localhost:3000) in your browser**
-
-8. **Test the Queue System:**
-   ```bash
-   # Visit the interactive demo
-   http://localhost:3000/queue-demo
-   
-   # Or validate your queue setup
-   npm run setup-queue
-   ```
-
-## Payment Services
-
-This template includes comprehensive payment processing capabilities:
-
-### Stripe Integration
-- Payment intents and confirmations
-- Subscription management
-- Webhook handling
-- Customer management
-
-### PayPal Integration
-- Express Checkout
-- Subscription billing
-- Webhook handling
-- Order management
-
-## Authentication & Authorization
-
-- **NextAuth.js** with multiple providers
-- **Google OAuth** integration
-- **GitHub OAuth** integration
-- **Credentials** authentication with bcrypt
-- **Session management** with JWT
-- **Role-Based Access Control** (RBAC)
-- **Permission-based** authorization
-- **Admin panel** access control
-
-## Queue System
-
-This template includes a robust two-tier job queue system:
-
-### Two-Tier Architecture
-- **In-Memory Queue**: Fast, lightweight processing for request-scoped operations
-- **Persistent Queue**: Reliable background job processing that survives server restarts
-
-### Pre-built Handlers
-- **Email Handler**: Transactional emails, newsletters, bulk sending
-- **Image Handler**: Processing, thumbnails, batch operations
-- **Webhook Handler**: Delivery with retry logic and rate limiting
-
-### Features
-- ✅ Automatic retry with exponential backoff
-- ✅ Job scheduling and priority system
-- ✅ Rate limiting for API calls
-- ✅ Batch processing capabilities
-- ✅ Comprehensive monitoring APIs
-- ✅ Automatic cleanup of old jobs
-
-### Quick Start
-```typescript
-import { getQueueManagerInstance } from "@/lib/queue/init"
-
-// Send an email
-const queueManager = getQueueManagerInstance()
-const jobId = await queueManager.addJob("email", {
-  to: "user@example.com",
-  subject: "Welcome!",
-  html: "<h1>Welcome!</h1>"
-})
-```
-
-### Documentation
-- **Setup Guide**: [QUEUE_SETUP_GUIDE.md](./QUEUE_SETUP_GUIDE.md)
-- **Comprehensive Docs**: [lib/queue/README.md](./lib/queue/README.md)
-- **Interactive Demo**: `/queue-demo`
-- **API Documentation**: Inline comments in API routes
-
-## Tailwind CSS
-
-This template uses **Tailwind CSS v3.3.0** with proper Next.js integration:
-
-- ✅ **Tailwind CSS v3.3.0** - Stable and production-ready
-- ✅ **Automatic CSS processing** with PostCSS
-- ✅ **IntelliSense support** with VS Code configuration
-- ✅ **Optimized build** with unused style purging
-- ✅ **Custom theme** with CSS variables
-
-### Quick Start
-```tsx
-export default function MyComponent() {
-  return (
-    <div className="bg-blue-500 text-white p-4 rounded-lg">
-      <h1 className="text-2xl font-bold">Hello Tailwind!</h1>
-    </div>
-  )
-}
-```
-
-### Documentation
-- **Setup Guide**: [TAILWIND_SETUP.md](./TAILWIND_SETUP.md)
-- **Configuration**: `tailwind.config.js`
-- **Styles**: `app/globals.css`
-
-## Architecture
-
-This template follows NOORMME architecture principles:
-
-- **Composition over Creation**: Uses proven tools (Next.js, TypeScript, Tailwind)
-- **Marie Kondo Methodology**: Keeps only what sparks joy (simplicity, performance)
-- **Repository Pattern**: Type-safe data access with Kysely
-- **Service Layer**: Business logic encapsulation
-- **App Router**: Modern Next.js routing and layouts
-
-## Project Structure
+## 📁 Project Structure
 
 ```
-app/
-├── (auth)/                # Auth route group
-│   ├── signin/           # Sign-in page
-│   └── signup/           # Sign-up page
-├── admin/                # Admin panel (RBAC protected)
-│   ├── users/            # User management
-│   ├── roles/            # Role management
-│   └── layout.tsx        # Admin layout
-├── api/                  # API routes
-│   ├── auth/             # NextAuth API routes
-│   ├── admin/            # Admin API routes (RBAC protected)
-│   │   ├── users/        # User management API
-│   │   └── roles/        # Role management API
-│   ├── health/           # Health check endpoint
-│   └── payments/         # Payment API routes
-│       └── webhooks/     # Payment webhooks
-├── dashboard/            # Protected dashboard
-├── payments/             # Payment management
-├── layout.tsx            # Root layout
-├── page.tsx              # Home page
-├── providers.tsx         # Client providers
-└── globals.css           # Global styles
-
-lib/
-├── auth.ts               # NextAuth configuration with RBAC
-├── db.ts                 # Database connection with RBAC schema
-├── rbac.ts               # RBAC utilities and service
-├── middleware.ts         # RBAC middleware
-├── config/               # Configuration files
-├── repositories/         # Data access layer
-├── services/             # Business logic
-├── types/                # TypeScript types
-└── utils/                # Utility functions
+src/
+├── app/                    # Next.js App Router
+│   ├── (auth)/            # Auth route group
+│   ├── admin/             # Admin panel
+│   ├── api/               # API routes
+│   ├── dashboard/         # Protected dashboard
+│   └── layout.tsx         # Root layout
+├── lib/
+│   ├── auth.ts            # NextAuth configuration
+│   ├── db.ts              # NOORMME database
+│   ├── middleware.ts      # Authentication middleware
+│   ├── services/          # Business logic
+│   └── queue/             # Background jobs
+└── components/
+    ├── ui/                # Reusable UI components
+    ├── admin/             # Admin components
+    └── auth/              # Auth components
 ```
 
-## Scripts
+## 🛠️ Available Scripts
 
-- `npm run dev` - Start development server with hot reload
+- `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run start` - Start production server
+- `npm run setup` - Initialize database
+- `npm run reset` - Reset database
 - `npm run lint` - Run ESLint
 - `npm run type-check` - Run TypeScript checks
-- `npm run migrate` - Run database migrations
-- `npm run seed` - Seed database with initial data
 
-## Deployment
+## 🔧 Configuration
 
-This template is ready for deployment on platforms like:
-- **Vercel** (recommended)
-- **Netlify**
-- **Railway**
-- **DigitalOcean App Platform**
+### Environment Variables
 
-Make sure to set up your environment variables in your deployment platform.
+Copy `env.example` to `.env.local` and configure:
 
-## License
+```env
+# Database
+DATABASE_URL="file:./database.sqlite"
 
-MIT
+# NextAuth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key"
+
+# OAuth Providers (optional)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
+```
+
+### Database
+
+The template uses SQLite with WAL mode for optimal performance. The database is automatically initialized with:
+
+- WAL mode enabled
+- 64MB cache size
+- Foreign key constraints
+- Memory-based temporary storage
+
+## 🏗️ Architecture
+
+This template follows the **NORMIE DEV methodology**:
+
+- **Single Source of Truth**: One service per domain
+- **No Duplication**: Eliminated redundant implementations
+- **Clean Interfaces**: Well-defined, type-safe APIs
+- **Modern Patterns**: Current best practices only
+- **Performance First**: Optimized for speed and efficiency
+
+### Services
+
+- `UserService` - User management
+- `PaymentService` - Payment processing
+- `BaseService` - Common functionality
+
+### Queue System
+
+Simple, efficient job processing for:
+- Email sending
+- Image processing
+- Webhook delivery
+
+## 📚 Documentation
+
+- [Setup Guide](docs/SETUP_GUIDE.md)
+- [Queue System](docs/QUEUE_SETUP_GUIDE.md)
+- [Tailwind Setup](docs/TAILWIND_SETUP.md)
+
+## 🤝 Contributing
+
+This template follows the NORMIE DEV methodology. When making changes:
+
+1. **Does this spark joy?** - Improve developer experience
+2. **Can we delete legacy code?** - Eliminate old implementations
+3. **Does this add value?** - Solve real problems
+4. **Can we compose this?** - Use existing tools
+
+## 📄 License
+
+MIT License - see LICENSE file for details.
