@@ -1,17 +1,52 @@
-# NOORMME Next.js Template
+# NOORMME SAAS Template
 
-A clean, organized Next.js template with NOORMME integration following the **NORMIE DEV methodology**.
+A comprehensive, production-ready Next.js SAAS template with NOORMME integration following the **NORMIE DEV methodology**. This template provides everything you need to build a modern SAAS application with user management, subscriptions, billing, and admin functionality.
 
 ## ✨ Features
 
-- **Next.js 15** with App Router
-- **NOORMME** database integration with SQLite
-- **NextAuth** authentication
-- **Tailwind CSS** for styling
+### 🏗️ Core Architecture
+- **Next.js 15** with App Router and Server Components
+- **NOORMME** database integration with SQLite WAL mode
+- **NextAuth** authentication with multiple providers
 - **TypeScript** with strict configuration
-- **Unified service architecture**
-- **Queue system** for background jobs
-- **Admin panel** with role-based access
+- **Tailwind CSS** for modern, responsive design
+
+### 👥 User Management
+- **Role-based access control** (Customer, Admin, Super Admin)
+- **User profiles** with preferences and settings
+- **Account status management** (Active, Inactive, Suspended, Deleted)
+- **Audit logging** for all user actions
+- **Session management** with JWT tokens
+
+### 💳 Subscription & Billing
+- **Multiple subscription plans** with features and limits
+- **Payment processing** with Stripe integration
+- **Subscription lifecycle management** (Active, Canceled, Past Due, etc.)
+- **Billing history** and payment tracking
+- **Proration** and plan changes
+- **Trial periods** and automatic renewals
+
+### 🔔 Notifications
+- **In-app notifications** with read/unread status
+- **Email notifications** for important events
+- **Notification preferences** per user
+- **Bulk notification** capabilities for admins
+
+### 🛡️ Admin Panel
+- **Comprehensive dashboard** with system statistics
+- **User management** with search and filtering
+- **Subscription management** and analytics
+- **Payment monitoring** and refund processing
+- **System settings** configuration
+- **Audit logs** with detailed activity tracking
+- **System health monitoring**
+
+### 🚀 Performance & Scalability
+- **SQLite with WAL mode** for concurrent access
+- **Optimized database queries** with proper indexing
+- **Background job processing** for heavy operations
+- **Caching strategies** for improved performance
+- **Database connection pooling**
 
 ## 🚀 Quick Start
 
@@ -36,26 +71,53 @@ A clean, organized Next.js template with NOORMME integration following the **NOR
    npm run dev
    ```
 
+5. **Access the application:**
+   - Main app: http://localhost:3000
+   - Admin panel: http://localhost:3000/admin
+   - API docs: http://localhost:3000/api
+
 ## 📁 Project Structure
 
 ```
 src/
 ├── app/                    # Next.js App Router
 │   ├── (auth)/            # Auth route group
+│   │   ├── signin/        # Sign-in page
+│   │   ├── signup/        # Sign-up page
+│   │   └── layout.tsx     # Auth layout
 │   ├── admin/             # Admin panel
+│   │   ├── users/         # User management
+│   │   ├── subscriptions/ # Subscription management
+│   │   ├── payments/      # Payment management
+│   │   ├── settings/      # System settings
+│   │   └── layout.tsx     # Admin layout
 │   ├── api/               # API routes
-│   ├── dashboard/         # Protected dashboard
+│   │   ├── users/         # User CRUD operations
+│   │   ├── subscriptions/ # Subscription management
+│   │   ├── payments/      # Payment processing
+│   │   ├── notifications/ # Notification system
+│   │   └── admin/         # Admin-only endpoints
+│   ├── dashboard/         # Customer dashboard
+│   ├── billing/           # Billing management
+│   ├── profile/           # User profile
+│   ├── settings/          # User settings
 │   └── layout.tsx         # Root layout
 ├── lib/
 │   ├── auth.ts            # NextAuth configuration
-│   ├── db.ts              # NOORMME database
+│   ├── db.ts              # NOORMME database instance
 │   ├── middleware.ts      # Authentication middleware
-│   ├── services/          # Business logic
-│   └── queue/             # Background jobs
+│   ├── services/          # Business logic layer
+│   │   ├── UserService.ts      # User management
+│   │   ├── SubscriptionService.ts # Subscription logic
+│   │   ├── PaymentService.ts    # Payment processing
+│   │   ├── NotificationService.ts # Notifications
+│   │   └── AdminService.ts      # Admin functions
+│   └── queue/             # Background job processing
 └── components/
     ├── ui/                # Reusable UI components
-    ├── admin/             # Admin components
-    └── auth/              # Auth components
+    ├── admin/             # Admin panel components
+    ├── auth/              # Authentication components
+    └── dashboard/         # Dashboard components
 ```
 
 ## 🛠️ Available Scripts
@@ -63,8 +125,10 @@ src/
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run start` - Start production server
-- `npm run setup` - Initialize database
-- `npm run reset` - Reset database
+- `npm run setup` - Initialize database with migrations and seed data
+- `npm run reset` - Reset database and reinitialize
+- `npm run migrate` - Run database migrations
+- `npm run seed` - Seed database with sample data
 - `npm run lint` - Run ESLint
 - `npm run type-check` - Run TypeScript checks
 

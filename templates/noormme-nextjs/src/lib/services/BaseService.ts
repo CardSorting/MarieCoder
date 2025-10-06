@@ -1,4 +1,4 @@
-import { NOORMME } from "noormme"
+import type { NOORMME } from "@/types/database"
 
 /**
  * Base service class following NORMIE DEV methodology
