@@ -1,11 +1,13 @@
 # NOORMME MCP Servers
 
-This directory contains the Model Context Protocol (MCP) servers for NOORMME development. These servers provide specialized tools for database management, project generation, and Laravel Artisan-style development commands, adhering to the NORMIE DEV methodology.
+This directory contains the Model Context Protocol (MCP) servers for NOORMME development. Following the NORMIE DEV methodology, we have consolidated all functionality into a single, unified server that sparks joy through simplicity and power.
 
-## 🚀 Servers Overview
+## 🚀 Unified Architecture
 
-### 1. `noormme-database`
-A dedicated MCP server for managing SQLite databases with NOORMME optimizations. It exposes tools for:
+### `noormme-artisan` ⭐ **THE UNIFIED SERVER**
+A comprehensive Laravel Artisan-style command system that provides **ALL** NOORMME functionality in one place:
+
+#### **Database Operations**
 - **Database Initialization** - Set up databases with WAL mode, foreign keys, and cache optimizations
 - **Table Management** - Get table information, schema details, and database statistics
 - **Query Execution** - Execute raw SQL queries with proper error handling
@@ -13,20 +15,24 @@ A dedicated MCP server for managing SQLite databases with NOORMME optimizations.
 - **Health Monitoring** - Check database health status and performance metrics
 - **Optimization** - Run ANALYZE, VACUUM, and other optimization operations
 
-### 2. `noormme-project`
-A dedicated MCP server for generating Next.js projects and various code components following NOORMME architectural patterns. It exposes tools for:
+#### **Project Management**
 - **Project Creation** - Generate new Next.js projects with customizable templates
+- **Project Analysis** - Automatically detect project structure and provide context-aware commands
+- **Template Management** - Comprehensive template system for all code generation
+
+#### **Code Generation**
 - **Component Generation** - Create React components (UI, page, layout, feature, admin, auth)
 - **Service Generation** - Generate service classes with repository and business logic
+- **Migration Generation** - Create database migrations with proper structure
+- **API Generation** - Generate API routes and handlers
+- **Middleware Generation** - Create middleware for authentication and authorization
 - **Cursor Rules Generation** - Create Cursor IDE rules for NOORMME projects
-- **Database Setup** - Initialize database schema and seed data for new projects
 
-### 3. `noormme-artisan` ⭐ **NEW**
-A Laravel Artisan-style command system for intuitive Next.js development. It provides:
+#### **Development Tools**
 - **Make Commands** - Generate components, services, migrations, and more
 - **Database Commands** - Run migrations, seed data, and manage database operations
 - **Development Commands** - Start servers, run tests, and manage development workflow
-- **Project Analysis** - Automatically detect project structure and provide context-aware commands
+- **Installation Commands** - Set up authentication and admin panels
 
 ## 🛠️ Installation and Setup
 
@@ -35,23 +41,19 @@ A Laravel Artisan-style command system for intuitive Next.js development. It pro
 - TypeScript 5+
 - npm or yarn
 
-### Build All Servers
+### Build the Unified Server
 ```bash
-# Build all MCP servers
-npm run mcp:build
-
-# Or build individually
-npm run mcp:build:database
-npm run mcp:build:project
+# Build the unified NOORMME Artisan server
 npm run mcp:build:artisan
+
+# Or build from the server directory
+cd mcp-servers/noormme-artisan && npm run build
 ```
 
 ### Install Dependencies
 ```bash
-# Install dependencies for all servers
-cd mcp-servers/noormme-database && npm install
-cd ../noormme-project && npm install
-cd ../noormme-artisan && npm install
+# Install dependencies for the unified server
+cd mcp-servers/noormme-artisan && npm install
 ```
 
 ## 🎯 Artisan Commands (Laravel-style)
@@ -174,21 +176,24 @@ The AI agent can suggest appropriate commands based on:
 
 ## 🎨 NORMIE DEV Integration
 
-All servers follow the NORMIE DEV methodology:
+The unified server follows the NORMIE DEV methodology perfectly:
 
 ### **"Does this spark joy?"**
+- ✅ **Single Server** - One unified server instead of multiple confusing ones
 - ✅ **Intuitive Commands** - Laravel Artisan-style commands that feel natural
 - ✅ **Auto-completion** - Smart suggestions and validation
 - ✅ **Clear Output** - Beautiful, informative command output
 - ✅ **Fast Execution** - Optimized for speed and efficiency
 
 ### **"Thank it for its service and let it go"**
+- ❌ **Multiple Servers** - DELETED noormme-database and noormme-project (duplicates)
 - ❌ **Complex Setup** - No manual configuration required
 - ❌ **Legacy Patterns** - Modern Next.js and TypeScript patterns only
 - ❌ **Verbose Commands** - Simple, clear command syntax
 - ❌ **Manual Integration** - Automatic project detection and setup
 
 ### **"Keep only what sparks joy"**
+- ✅ **Unified Architecture** - All functionality in one clean, powerful server
 - ✅ **Clean Architecture** - Well-organized, modular code structure
 - ✅ **Type Safety** - Full TypeScript support with strict typing
 - ✅ **Error Handling** - Comprehensive error messages and recovery
@@ -235,7 +240,7 @@ npm run artisan -- help make:service
 
 **1. Command not found**
 ```bash
-# Ensure the server is built
+# Ensure the unified server is built
 npm run mcp:build:artisan
 
 # Check if command exists
@@ -252,26 +257,25 @@ npm run artisan -- project:status
 
 **3. Build errors**
 ```bash
-# Clean and rebuild
-npm run mcp:clean:artisan
-npm run mcp:build:artisan
+# Clean and rebuild the unified server
+cd mcp-servers/noormme-artisan && npm run clean && npm run build
 ```
 
 ## 📚 Development
 
 ### Adding New Commands
-1. Create command file in `src/commands/[category]/[command].ts`
+1. Create command file in `mcp-servers/noormme-artisan/src/commands/[category]/[command].ts`
 2. Define command interface with `ArtisanCommand` type
-3. Register command in `src/index.ts`
+3. Register command in `mcp-servers/noormme-artisan/src/index.ts`
 4. Add npm script to main `package.json`
 
 ### Extending Project Analyzer
-1. Add new detection logic to `ProjectAnalyzer` class
+1. Add new detection logic to `ProjectAnalyzer` class in the unified server
 2. Update `ProjectStructure` interface if needed
 3. Add new command options based on detected features
 
 ### Customizing Templates
-1. Modify template functions in command files
+1. Modify template functions in command files within the unified server
 2. Add new template options to command interfaces
 3. Update help documentation
 
