@@ -1,12 +1,6 @@
----
-description: Kysely integration patterns and best practices for NOORMME
-globs: '**/*.{ts,js}'
-alwaysApply: true
----
+# NOORMME Database Guidelines
 
-# Kysely Integration Guide
-
-## Core Philosophy
+## 🎯 Core Philosophy
 
 ### "Leverage Kysely Fully"
 **CRITICAL**: Don't recreate query building - use Kysely's native capabilities:
@@ -16,7 +10,7 @@ alwaysApply: true
 - ❌ **Custom Wrappers** - Don't wrap Kysely's core functionality
 - ❌ **Recreating Logic** - Don't rebuild what Kysely already provides
 
-## Database Connection Pattern
+## 🏗️ Database Connection Pattern
 
 ### ✅ CORRECT - Direct Kysely Integration
 ```typescript
@@ -76,19 +70,17 @@ export class DatabaseConnection {
 }
 ```
 
-## Repository Pattern with Kysely
+## 📊 Repository Pattern with Kysely
 
 ### ✅ CORRECT - Leveraging Kysely Fully
 ```typescript
 export abstract class BaseRepository<T extends keyof Database> {
   protected tableName: T
   protected db: Kysely<Database>
-  protected queryBuilder: QueryBuilderFactory | null
 
-  constructor(tableName: T, db: Kysely<Database>, options: RepositoryOptions = {}) {
+  constructor(tableName: T, db: Kysely<Database>) {
     this.tableName = tableName
     this.db = db
-    this.queryBuilder = null // Set by database instance
   }
 
   // ✅ CORRECT - Direct Kysely usage with proper error handling
@@ -98,17 +90,12 @@ export abstract class BaseRepository<T extends keyof Database> {
         throw new ValidationError("Valid ID is required", "Please provide a valid record ID")
       }
 
-      let query = this.db
+      const result = await this.db
         .selectFrom(this.tableName)
         .selectAll()
         .where("id" as any, "=", id)
+        .executeTakeFirst()
 
-      // Apply soft delete filter if enabled
-      if (this.options.enableSoftDelete) {
-        query = query.where("status" as any, "!=", "deleted")
-      }
-
-      const result = await query.executeTakeFirst()
       return (result as unknown as Database[T]) || null
     } catch (error) {
       if (error instanceof NOORMError) {
@@ -125,8 +112,6 @@ export abstract class BaseRepository<T extends keyof Database> {
   // ✅ CORRECT - Transaction support with Kysely
   async create(data: Partial<Database[T]>): Promise<Database[T]> {
     try {
-      await this.validateCreateData(data)
-
       const now = new Date()
       const createData = {
         ...data,
@@ -149,16 +134,6 @@ export abstract class BaseRepository<T extends keyof Database> {
         )
       }
 
-      // Audit log if enabled
-      if (this.options.auditLog) {
-        await this.logAudit("CREATE", (result as any).id, createData)
-      }
-
-      // Invalidate cache
-      if (this.cache) {
-        await this.invalidateRelatedCache()
-      }
-
       return result as unknown as Database[T]
     } catch (error) {
       if (error instanceof NOORMError) {
@@ -174,178 +149,7 @@ export abstract class BaseRepository<T extends keyof Database> {
 }
 ```
 
-## Query Builder Integration
-
-### ✅ CORRECT - Exposing Kysely Directly
-```typescript
-export class QueryBuilder<T extends keyof Database, O = Database[T]> {
-  private db: Kysely<Database>
-  private table: T
-  private cache?: QueryCache
-
-  constructor(db: Kysely<Database>, table: T, cache?: QueryCache) {
-    this.db = db
-    this.table = table
-    this.cache = cache
-  }
-
-  // ✅ CORRECT - Direct access to Kysely's query builders
-  selectFrom(): SelectQueryBuilder<Database, T, O> {
-    return this.db.selectFrom(this.table) as SelectQueryBuilder<Database, T, O>
-  }
-
-  insertInto(): InsertQueryBuilder<Database, T, O> {
-    return this.db.insertInto(this.table) as InsertQueryBuilder<Database, T, O>
-  }
-
-  updateTable(): UpdateQueryBuilder<Database, T, T, O> {
-    return this.db.updateTable(this.table) as UpdateQueryBuilder<Database, T, T, O>
-  }
-
-  deleteFrom(): DeleteQueryBuilder<Database, T, O> {
-    return this.db.deleteFrom(this.table) as DeleteQueryBuilder<Database, T, O>
-  }
-
-  // ✅ CORRECT - Helper methods built on top of Kysely
-  async findById(id: string): Promise<Database[T] | null> {
-    try {
-      if (!id || typeof id !== "string" || id.trim() === "") {
-        throw new ValidationError("Valid ID is required", "Please provide a valid record ID")
-      }
-
-      // Check cache first
-      if (this.cache) {
-        const cacheKey = `findById:${id}`
-        const cached = await this.cache.get(cacheKey)
-        if (cached) {
-          return cached as Database[T]
-        }
-      }
-
-      const result = await this.db.selectFrom(this.table).selectAll().where("id" as any, "=", id).executeTakeFirst()
-
-      // Cache result if found
-      if (this.cache && result) {
-        this.cache.set(cacheKey, result as unknown as Database[T])
-      }
-
-      return (result as unknown as Database[T]) || null
-    } catch (error) {
-      if (error instanceof NOORMError) {
-        throw error
-      }
-      throw new NOORMError(
-        `Failed to find ${String(this.table)} by ID: ${error instanceof Error ? error.message : "Unknown error"}`,
-        "FIND_BY_ID_ERROR",
-        "Please check the ID and try again"
-      )
-    }
-  }
-}
-```
-
-### ❌ WRONG - Recreating Query Building
-```typescript
-// DON'T DO THIS - Recreating Kysely's functionality
-export class QueryBuilder<T extends keyof Database> {
-  private db: Kysely<Database>
-  private table: T
-
-  // DON'T - Custom query building methods
-  async customFind(conditions: any) {
-    // Custom query building logic that Kysely already provides
-    let query = this.db.selectFrom(this.table)
-    
-    if (conditions.where) {
-      Object.entries(conditions.where).forEach(([key, value]) => {
-        query = query.where(key as any, "=", value)
-      })
-    }
-    
-    return query.execute()
-  }
-  
-  // DON'T - Wrapping Kysely's methods unnecessarily
-  async wrappedSelect() {
-    return this.db.selectFrom(this.table).selectAll().execute()
-  }
-}
-```
-
-## Migration Management with Kysely
-
-### ✅ CORRECT - Using Kysely Transactions
-```typescript
-export class MigrationManager {
-  private db: Kysely<Database>
-
-  constructor(db: Kysely<Database>) {
-    this.db = db
-  }
-
-  // ✅ CORRECT - Using Kysely's transaction system
-  async executeMigration(migration: Migration): Promise<MigrationResult> {
-    const startTime = Date.now()
-
-    try {
-      if (!migration || !migration.version || !migration.name || !migration.up) {
-        throw new ValidationError(
-          "Valid migration object is required",
-          "Please provide a migration with version, name, and up function"
-        )
-      }
-
-      // Execute migration in transaction
-      const result = await this.db.transaction().execute(async (trx) => {
-        // Execute migration
-        await migration.up(trx)
-
-        // Record migration
-        const executionTime = Date.now() - startTime
-        const checksum = this.generateChecksum(migration)
-        const now = new Date().toISOString()
-
-        await trx.executeQuery({
-          sql: `
-            INSERT INTO schema_migrations 
-            (id, version, name, description, execution_time_ms, checksum, executed_at, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-          `,
-          parameters: [
-            migration.id,
-            migration.version,
-            migration.name,
-            migration.description,
-            executionTime,
-            checksum,
-            now,
-            now,
-            now
-          ]
-        } as any)
-
-        return { executionTime, checksum }
-      })
-
-      return {
-        success: true,
-        migration,
-        executionTime: result.executionTime
-      }
-    } catch (error) {
-      const executionTime = Date.now() - startTime
-      return {
-        success: false,
-        migration,
-        executionTime,
-        error: error instanceof Error ? error.message : "Unknown error"
-      }
-    }
-  }
-}
-```
-
-## Type Safety with Kysely
+## 🎯 Type Safety with Kysely
 
 ### ✅ CORRECT - Proper Type Assertions
 ```typescript
@@ -389,7 +193,7 @@ const result = await this.db
 return result as any // Too broad, loses type safety
 ```
 
-## Error Handling Integration
+## 🚨 Error Handling Integration
 
 ### ✅ CORRECT - Comprehensive Error Handling
 ```typescript
@@ -421,38 +225,24 @@ try {
 }
 ```
 
-## Caching Integration
+## 📊 SQLite Configuration
 
-### ✅ CORRECT - Cache Integration with Kysely
-```typescript
-// ✅ CORRECT - Cache integration with Kysely queries
-async findById(id: string): Promise<Database[T] | null> {
-  // Check cache first
-  if (this.cache) {
-    const cacheKey = `findById:${id}`
-    const cached = await this.cache.get(cacheKey)
-    if (cached) {
-      return cached as Database[T]
-    }
-  }
-
-  const result = await this.db
-    .selectFrom(this.tableName)
-    .selectAll()
-    .where("id" as any, "=", id)
-    .executeTakeFirst()
-
-  // Cache result if found
-  if (this.cache && result) {
-    const cacheKey = `findById:${id}`
-    await this.cache.set(cacheKey, result as unknown as Database[T])
-  }
-
-  return (result as unknown as Database[T]) || null
-}
+### WAL Mode Setup
+```sql
+PRAGMA journal_mode=WAL;
+PRAGMA synchronous=NORMAL;
+PRAGMA cache_size=-64000;
+PRAGMA temp_store=MEMORY;
+PRAGMA foreign_keys=ON;
 ```
 
-## Best Practices
+### Performance Optimization
+- Enable WAL mode for concurrent access
+- Set optimal cache size (-64000 = 64MB)
+- Use memory-based temporary storage
+- Enable foreign key constraints
+
+## 🎯 Best Practices
 
 ### DO's ✅
 - Use Kysely's query builders directly (`selectFrom`, `insertInto`, `updateTable`, `deleteFrom`)
@@ -476,7 +266,7 @@ async findById(id: string): Promise<Database[T] | null> {
 - Don't create custom query builders that duplicate Kysely's functionality
 - Don't use overly broad type assertions that lose type safety
 
-## Common Patterns
+## 🚀 Common Patterns
 
 ### Direct Kysely Usage
 ```typescript
@@ -504,24 +294,6 @@ export class UserRepository extends BaseRepository<'users'> {
       orderBy: 'createdAt', 
       orderDirection: 'desc' 
     })
-  }
-}
-```
-
-### Query Builder Factory
-```typescript
-// ✅ CORRECT - Query builder factory
-export class QueryBuilderFactory {
-  private db: Kysely<Database>
-  private cacheManager: CacheManager
-
-  constructor(db: Kysely<Database>, cacheManager: CacheManager) {
-    this.db = db
-    this.cacheManager = cacheManager
-  }
-
-  create<T extends keyof Database>(table: T): QueryBuilder<T> {
-    return new QueryBuilder(this.db, table, this.cacheManager.getCache(String(table)))
   }
 }
 ```

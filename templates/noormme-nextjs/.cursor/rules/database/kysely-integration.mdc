@@ -1,27 +1,29 @@
 ---
-description: NOORMME database patterns and SQLite optimization with Kysely integration
-globs: '**/*.{ts,js}'
+description: Database patterns and Kysely integration for NOORMME
+globs: '**/*.{ts,tsx}'
 alwaysApply: true
+priority: 3
 ---
 
 # NOORMME Database Guidelines
 
-## NORMIE DEV Principle
-**CRITICAL**: Database code must spark joy. Delete legacy patterns, keep only what works beautifully with Kysely's full capabilities.
+## 🎯 **Core Philosophy**
 
-## Kysely Integration Strategy
-
-### Core Philosophy
-**LEVERAGE KYSELY FULLY** - Don't recreate query building, use Kysely's native capabilities:
-- ✅ **Direct Kysely Access** - Expose Kysely's query builders directly
+### "Leverage Kysely Fully"
+**CRITICAL**: Don't recreate query building - use Kysely's native capabilities:
+- ✅ **Direct Access** - Expose Kysely's query builders directly
 - ✅ **Type Safety** - Use Kysely's generics and type inference
 - ✅ **Native Methods** - Use `selectFrom()`, `insertInto()`, `updateTable()`, `deleteFrom()`
 - ❌ **Custom Wrappers** - Don't wrap Kysely's core functionality
 - ❌ **Recreating Logic** - Don't rebuild what Kysely already provides
 
-### Database Connection Pattern
+## 🏗️ **Database Connection Pattern**
+
+### ✅ CORRECT - Direct Kysely Integration
 ```typescript
-// ✅ CORRECT - Direct Kysely integration
+import { Kysely } from 'kysely'
+import { Database } from '@/types/database'
+
 export class DatabaseConnection {
   private db: Kysely<Database>
   
@@ -55,9 +57,29 @@ export class DatabaseConnection {
 }
 ```
 
-## Repository Pattern with Kysely
+### ❌ WRONG - Wrapping Kysely
+```typescript
+// DON'T DO THIS - Wrapping Kysely's functionality
+export class DatabaseConnection {
+  private db: Kysely<Database>
+  
+  // DON'T - Creating custom query methods
+  async customSelect(table: string, where: any) {
+    return this.db.selectFrom(table).where(where).execute()
+  }
+  
+  // DON'T - Recreating Kysely's query building
+  buildQuery(table: string, conditions: any) {
+    let query = this.db.selectFrom(table)
+    // Custom query building logic...
+    return query
+  }
+}
+```
 
-### Base Repository - Leveraging Kysely Fully
+## 📊 **Repository Pattern with Kysely**
+
+### ✅ CORRECT - Leveraging Kysely Fully
 ```typescript
 export abstract class BaseRepository<T extends keyof Database> {
   protected tableName: T
@@ -153,9 +175,9 @@ export abstract class BaseRepository<T extends keyof Database> {
 }
 ```
 
-## Query Builder Integration
+## 🔧 **Query Builder Integration**
 
-### QueryBuilder Pattern - Exposing Kysely Directly
+### ✅ CORRECT - Exposing Kysely Directly
 ```typescript
 export class QueryBuilder<T extends keyof Database, O = Database[T]> {
   private db: Kysely<Database>
@@ -223,9 +245,37 @@ export class QueryBuilder<T extends keyof Database, O = Database[T]> {
 }
 ```
 
-## Migration Management with Kysely
+### ❌ WRONG - Recreating Query Building
+```typescript
+// DON'T DO THIS - Recreating Kysely's functionality
+export class QueryBuilder<T extends keyof Database> {
+  private db: Kysely<Database>
+  private table: T
 
-### Migration Pattern - Using Kysely Transactions
+  // DON'T - Custom query building methods
+  async customFind(conditions: any) {
+    // Custom query building logic that Kysely already provides
+    let query = this.db.selectFrom(this.table)
+    
+    if (conditions.where) {
+      Object.entries(conditions.where).forEach(([key, value]) => {
+        query = query.where(key as any, "=", value)
+      })
+    }
+    
+    return query.execute()
+  }
+  
+  // DON'T - Wrapping Kysely's methods unnecessarily
+  async wrappedSelect() {
+    return this.db.selectFrom(this.table).selectAll().execute()
+  }
+}
+```
+
+## 🔄 **Migration Management with Kysely**
+
+### ✅ CORRECT - Using Kysely Transactions
 ```typescript
 export class MigrationManager {
   private db: Kysely<Database>
@@ -296,9 +346,9 @@ export class MigrationManager {
 }
 ```
 
-## Type Safety with Kysely
+## 🎯 **Type Safety with Kysely**
 
-### Proper Type Assertions
+### ✅ CORRECT - Proper Type Assertions
 ```typescript
 // ✅ CORRECT - Use proper type assertions for Kysely's complex types
 const result = await this.db
@@ -320,9 +370,29 @@ query = query.where("status" as any, "!=", "deleted")
 query = query.orderBy("createdAt" as any, "desc")
 ```
 
-## Error Handling Integration
+### ❌ WRONG - Incorrect Type Handling
+```typescript
+// DON'T DO THIS - Incorrect type assertions
+const result = await this.db
+  .selectFrom(this.tableName)
+  .selectAll()
+  .where("id", "=", id) // This will cause type errors
+  .executeTakeFirst()
 
-### NOORMError Integration
+return result as Database[T] // This will cause type errors
+
+// DON'T DO THIS - Using any without proper context
+const result = await this.db
+  .selectFrom(this.tableName)
+  .selectAll()
+  .executeTakeFirst()
+
+return result as any // Too broad, loses type safety
+```
+
+## 🚨 **Error Handling Integration**
+
+### ✅ CORRECT - Comprehensive Error Handling
 ```typescript
 // ✅ CORRECT - Comprehensive error handling
 try {
@@ -352,9 +422,9 @@ try {
 }
 ```
 
-## Caching Integration
+## 💾 **Caching Integration**
 
-### QueryCache with Kysely
+### ✅ CORRECT - Cache Integration with Kysely
 ```typescript
 // ✅ CORRECT - Cache integration with Kysely queries
 async findById(id: string): Promise<Database[T] | null> {
@@ -383,7 +453,7 @@ async findById(id: string): Promise<Database[T] | null> {
 }
 ```
 
-## SQLite Configuration
+## 📊 **SQLite Configuration**
 
 ### WAL Mode Setup
 ```sql
@@ -400,14 +470,7 @@ PRAGMA foreign_keys=ON;
 - Use memory-based temporary storage
 - Enable foreign key constraints
 
-## Legacy Database Elimination
-- **MANDATORY**: Delete old database services when creating unified ones
-- **FORBIDDEN**: Multiple database connection patterns
-- **REQUIRED**: Use unified database service architecture only
-- **PROHIBITED**: Legacy repository patterns or old query builders
-- **CRITICAL**: Always leverage Kysely's native capabilities instead of recreating them
-
-## Developer Guidelines
+## 🎯 **Best Practices**
 
 ### DO's ✅
 - Use Kysely's query builders directly (`selectFrom`, `insertInto`, `updateTable`, `deleteFrom`)
@@ -417,6 +480,8 @@ PRAGMA foreign_keys=ON;
 - Use caching integration with QueryCache
 - Apply input validation before database operations
 - Use Kysely's type inference and generics
+- Expose Kysely's native methods directly
+- Build helper methods on top of Kysely, not instead of it
 
 ### DON'Ts ❌
 - Don't wrap Kysely's core query building functionality
@@ -426,3 +491,57 @@ PRAGMA foreign_keys=ON;
 - Don't bypass Kysely's transaction system for multi-step operations
 - Don't use legacy database patterns or old query builders
 - Don't mix different database access patterns in the same codebase
+- Don't create custom query builders that duplicate Kysely's functionality
+- Don't use overly broad type assertions that lose type safety
+
+## 🚀 **Common Patterns**
+
+### Direct Kysely Usage
+```typescript
+// ✅ CORRECT - Direct Kysely usage
+const users = await db
+  .selectFrom('users')
+  .selectAll()
+  .where('status', '=', 'active')
+  .orderBy('createdAt', 'desc')
+  .limit(10)
+  .execute()
+```
+
+### Repository with Kysely
+```typescript
+// ✅ CORRECT - Repository leveraging Kysely
+export class UserRepository extends BaseRepository<'users'> {
+  async findByEmail(email: string): Promise<Database['users'] | null> {
+    return await this.findOneBy({ email: email.toLowerCase() })
+  }
+  
+  async findActiveUsers(limit: number = 100): Promise<Database['users'][]> {
+    return await this.findBy({ status: 'active' }, { 
+      limit, 
+      orderBy: 'createdAt', 
+      orderDirection: 'desc' 
+    })
+  }
+}
+```
+
+### Query Builder Factory
+```typescript
+// ✅ CORRECT - Query builder factory
+export class QueryBuilderFactory {
+  private db: Kysely<Database>
+  private cacheManager: CacheManager
+
+  constructor(db: Kysely<Database>, cacheManager: CacheManager) {
+    this.db = db
+    this.cacheManager = cacheManager
+  }
+
+  create<T extends keyof Database>(table: T): QueryBuilder<T> {
+    return new QueryBuilder(this.db, table, this.cacheManager.getCache(String(table)))
+  }
+}
+```
+
+This guide ensures developers understand how to properly integrate with Kysely while maintaining type safety, error handling, and performance optimization.

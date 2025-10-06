@@ -1,49 +1,66 @@
-# NOORMME NORMIE DEV Methodology - AI Coding Assistant Rules
+# NOORMME NORMIE DEV Methodology - Centralized Rule Architecture
 
-## Overview
+## 🎯 **Overview**
 
-This directory contains the complete set of rules that enforce the NORMIE DEV methodology for NOORMME development. These rules are automatically applied by AI coding assistants to ensure all code changes follow the principle of **"sparking joy"** through clean, unified architecture.
+This directory contains a **centralized but supporting module architecture** for cursor rules that enforce the NORMIE DEV methodology for NOORMME development. The rules are organized using the same modular approach applied to the MCP servers and template engine.
 
-## Rule Files
+## 🏗️ **Rule Architecture**
 
-### `architecture.mdc`
-- **Core architectural principles** and NORMIE DEV methodology enforcement
-- **Migration strategy** with zero tolerance for legacy systems
-- **Decision framework** for architectural choices
-- **Legacy elimination protocol** with mandatory actions
+### Central Orchestrator
+- **`core-rules.mdc`** - Main coordinator that delegates to specialized rule modules
+- **`rule-registry.mdc`** - Central registry coordinating all rule modules
 
-### `coding-style.mdc`
-- **Code style guidelines** with NORMIE DEV principles
-- **TypeScript standards** with mandatory legacy deletion
-- **Legacy code elimination** rules and enforcement
+### Supporting Rule Modules
+- **`methodology/`** - NORMIE DEV core principles and philosophy
+- **`architecture/`** - System architecture and design patterns  
+- **`database/`** - Database patterns and Kysely integration
+- **`coding/`** - Code style and TypeScript standards
+- **`frameworks/`** - Next.js and React patterns
+- **`quality/`** - Testing, validation, and quality gates
 
-### `database.mdc`
-- **Database patterns** and SQLite optimization with Kysely integration
-- **Repository patterns** with clean architecture leveraging Kysely fully
-- **Legacy database elimination** rules and Kysely best practices
+## 📁 **Rule Module Structure**
 
-### `database-guidelines.mdc`
-- **Comprehensive database guidelines** with Kysely integration strategies
-- **Repository patterns** leveraging Kysely's native capabilities
-- **Query builder integration** exposing Kysely directly
-- **Migration management** using Kysely transactions
+### Core Orchestrator
+- **`core-rules.mdc`** - Central rule orchestrator (Priority: 1)
+  - Coordinates all rule modules
+  - Enforces NORMIE DEV methodology
+  - Provides decision framework
 
-### `kysely-integration.mdc`
-- **Kysely integration patterns** and best practices
-- **Direct Kysely usage** without custom wrappers
-- **Type safety** with proper assertions for Kysely's complex types
-- **Error handling** and caching integration with Kysely
+### Methodology Rules
+- **`methodology/normie-dev.mdc`** - Core philosophy and principles (Priority: 1)
+  - NORMIE DEV methodology enforcement
+  - Legacy elimination protocols
+  - Decision framework
 
-### `marie-kondo.mdc`
-- **Core philosophy** of the NORMIE DEV methodology
-- **Implementation guidelines** with zero tolerance for complexity
-- **Legacy elimination protocol** with mandatory and forbidden actions
-- **Decision framework** and success metrics
+### Architecture Rules
+- **`architecture/patterns.mdc`** - System architecture patterns (Priority: 2)
+  - Clean architecture principles
+  - Service layer patterns
+  - Component organization
 
-### `nextjs-patterns.mdc`
-- **Next.js organizational patterns** with clean architecture
-- **App Router structure** and modern patterns
-- **Legacy pattern elimination** rules
+### Database Rules
+- **`database/kysely-integration.mdc`** - Database and Kysely patterns (Priority: 3)
+  - Kysely integration best practices
+  - Repository patterns
+  - Type-safe database operations
+
+### Coding Rules
+- **`coding/typescript-standards.mdc`** - TypeScript coding standards (Priority: 4)
+  - Code style and conventions
+  - Type safety requirements
+  - Documentation standards
+
+### Framework Rules
+- **`frameworks/nextjs-patterns.mdc`** - Next.js and React patterns (Priority: 5)
+  - App Router patterns
+  - Component architecture
+  - Performance optimization
+
+### Quality Rules
+- **`quality/testing-validation.mdc`** - Testing and quality standards (Priority: 6)
+  - Testing patterns and requirements
+  - Code coverage standards
+  - Quality gates
 
 ## How It Works
 

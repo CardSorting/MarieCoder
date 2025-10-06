@@ -1,0 +1,194 @@
+---
+description: Central NOORMME rule orchestrator - coordinates all rule modules
+globs: '**/*.{ts,tsx,js,jsx,md}'
+alwaysApply: true
+priority: 1
+---
+
+# NOORMME Central Rules Orchestrator
+
+## 🎯 **Core Mission**
+**SPARK JOY** through clean, unified architecture. This central orchestrator coordinates all NOORMME development rules to ensure consistent application of the NORMIE DEV methodology.
+
+## 🏗️ **Rule Architecture**
+
+### Central Orchestrator
+This file coordinates all rule modules and ensures consistent application across the entire codebase.
+
+### Supporting Rule Modules
+- **`methodology/`** - NORMIE DEV core principles and philosophy
+- **`architecture/`** - System architecture and design patterns  
+- **`database/`** - Database patterns and Kysely integration
+- **`coding/`** - Code style and TypeScript standards
+- **`frameworks/`** - Next.js and React patterns
+- **`quality/`** - Testing, validation, and quality gates
+
+## 🚀 **NORMIE DEV Methodology - STRICT ENFORCEMENT**
+
+### The Three-Step Process (MANDATORY):
+
+#### 1. **Thank** - Acknowledge What Taught Us
+- Recognize valuable lessons from existing systems
+- Document what worked and what didn't
+- Understand the context and constraints
+
+#### 2. **Let Go** - DELETE IMMEDIATELY
+- ❌ **Legacy Services** - Delete old implementations completely
+- ❌ **Backward Compatibility** - No legacy wrappers or compatibility layers
+- ❌ **Technical Debt** - Remove all accumulated complexity
+- ❌ **Duplicate Code** - Eliminate redundant implementations
+- ❌ **Complex Abstractions** - Remove unnecessary layers
+- ❌ **Legacy Patterns** - Abandon outdated architectural approaches
+
+#### 3. **Organize** - Keep Only What Sparks Joy
+- ✅ **Clean, Unified Services** - Single responsibility, clear interfaces
+- ✅ **Modern Patterns** - Current best practices only
+- ✅ **Type Safety** - Full TypeScript compliance
+- ✅ **Performance** - Optimized, efficient implementations
+- ✅ **Maintainability** - Easy to understand and modify
+- ✅ **Developer Experience** - Delightful to work with
+
+## 📋 **Rule Application Matrix**
+
+| Domain | Rule Module | Priority | Auto-Apply |
+|--------|-------------|----------|------------|
+| Core Philosophy | `methodology/normie-dev.mdc` | 1 | ✅ |
+| Architecture | `architecture/patterns.mdc` | 2 | ✅ |
+| Database | `database/kysely-integration.mdc` | 3 | ✅ |
+| Code Style | `coding/typescript-standards.mdc` | 4 | ✅ |
+| Next.js | `frameworks/nextjs-patterns.mdc` | 5 | ✅ |
+| Quality | `quality/testing-validation.mdc` | 6 | ✅ |
+
+## 🔄 **Rule Enforcement Protocol**
+
+### MANDATORY Actions (Zero Tolerance):
+1. **DELETE** all legacy files immediately when creating new implementations
+2. **DELETE** backward compatibility layers and wrappers
+3. **DELETE** old service implementations and patterns
+4. **DELETE** complex abstractions that don't add value
+5. **REPLACE** with clean, unified architecture only
+
+### FORBIDDEN Actions (Strict Prohibition):
+- ❌ Maintaining legacy code "for compatibility"
+- ❌ Creating wrapper services around existing tools
+- ❌ Gradual migration strategies with dual systems
+- ❌ Keeping old and new systems simultaneously
+- ❌ Wrapping Kysely's core query building functionality
+- ❌ Recreating query building logic that Kysely already provides
+
+## 🎯 **Decision Framework**
+
+### For Every Architectural Decision:
+1. **Does This Spark Joy?**
+   - Developer Experience: Is this delightful to work with?
+   - Performance: Does this improve speed and efficiency?
+   - Maintainability: Is this easy to understand and modify?
+   - Simplicity: Does this reduce complexity?
+
+2. **Can We Let Go of Legacy?**
+   - Legacy Systems: Can we delete old implementations?
+   - Backward Compatibility: Can we remove compatibility layers?
+   - Technical Debt: Can we eliminate accumulated complexity?
+   - Duplicate Code: Can we consolidate redundant implementations?
+
+3. **How Do We Organize What Remains?**
+   - Proven Patterns: Use established, battle-tested approaches
+   - Clear Structure: Organize with logical, intuitive hierarchies
+   - Type Safety: Ensure full TypeScript compliance
+   - Documentation: Provide clear, actionable guidance
+
+## 📊 **Success Metrics**
+
+### Developer Joy
+- Setup time < 5 minutes
+- Learning curve < 1 hour  
+- Error messages are actionable
+- Documentation is clear and helpful
+
+### Simplicity
+- Zero configuration required
+- Smart defaults everywhere
+- No vendor lock-in
+- Standard tools and patterns
+
+### Performance
+- < 50ms query times
+- < 100ms page loads
+- Minimal bundle size
+- Fast development cycles
+
+## 🔧 **Rule Module Integration**
+
+This central orchestrator automatically applies the following rule modules:
+
+```typescript
+// Rule application order (priority-based)
+const ruleModules = [
+  'methodology/normie-dev.mdc',        // Core philosophy
+  'architecture/patterns.mdc',         // System design
+  'database/kysely-integration.mdc',   // Database patterns
+  'coding/typescript-standards.mdc',   // Code quality
+  'frameworks/nextjs-patterns.mdc',    // Framework patterns
+  'quality/testing-validation.mdc'     // Quality gates
+]
+```
+
+## 🎨 **Rule Composition Strategy**
+
+### Dynamic Rule Application
+Rules are composed dynamically based on:
+- **File Type** - Different rules for `.ts`, `.tsx`, `.js`, `.jsx`, `.md`
+- **Directory Context** - Different rules for `src/`, `lib/`, `components/`
+- **Project Phase** - Development, testing, production rules
+- **Feature Type** - Database, API, UI, documentation rules
+
+### Rule Inheritance
+- **Base Rules** - Apply to all files
+- **Domain Rules** - Apply to specific domains
+- **Feature Rules** - Apply to specific features
+- **Override Rules** - Project-specific customizations
+
+## 🚨 **Emergency Protocols**
+
+### Legacy Detection
+When legacy code is detected:
+1. **IMMEDIATELY DELETE** the legacy implementation
+2. **CREATE** clean, unified replacement
+3. **UPDATE** all references to use new implementation
+4. **VALIDATE** that no legacy references remain
+
+### Complexity Detection
+When complexity is detected:
+1. **IDENTIFY** the complexity source
+2. **DELETE** unnecessary abstractions
+3. **SIMPLIFY** to use standard patterns
+4. **DOCUMENT** the simplified approach
+
+## 📝 **Rule Documentation Standards**
+
+All rule modules must include:
+- **Purpose** - Clear description of what the rule enforces
+- **Scope** - What files and contexts it applies to
+- **Examples** - Clear before/after examples
+- **Exceptions** - When the rule doesn't apply
+- **Enforcement** - How violations are handled
+
+## 🔍 **Rule Validation**
+
+### Continuous Validation
+- **Real-time** rule checking during development
+- **Pre-commit** validation of all rule compliance
+- **CI/CD** integration for automated rule enforcement
+- **Metrics** tracking for rule effectiveness
+
+### Rule Effectiveness Metrics
+- **Compliance Rate** - Percentage of code following rules
+- **Developer Satisfaction** - Survey feedback on rule usefulness
+- **Performance Impact** - Effect on build and runtime performance
+- **Maintenance Cost** - Time spent on rule-related issues
+
+---
+
+**Remember**: Software development should spark joy, not frustration. **DELETE everything that doesn't spark joy.**
+
+This central orchestrator ensures that all NOORMME development follows the NORMIE DEV methodology consistently and effectively across all domains and contexts.

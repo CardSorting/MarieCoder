@@ -1,0 +1,675 @@
+---
+description: Next.js patterns and organizational guidelines for NOORMME
+globs: '**/*.{ts,tsx,js,jsx}'
+alwaysApply: true
+priority: 5
+---
+
+# NOORMME Next.js Patterns
+
+## 🎯 **Core Philosophy**
+
+### Marie Kondo Principle
+**CRITICAL**: Next.js code must spark joy. Delete legacy patterns, use only clean, modern approaches.
+
+## 🏗️ **App Router Structure**
+
+### Folder Organization (Django-style)
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── (auth)/            # Auth route group
+│   │   ├── signin/        # Sign-in page
+│   │   ├── signup/        # Sign-up page
+│   │   └── layout.tsx     # Auth layout
+│   ├── admin/             # Admin panel
+│   │   ├── users/         # User management
+│   │   ├── dashboard/     # Admin dashboard
+│   │   └── layout.tsx     # Admin layout
+│   ├── api/               # API routes
+│   │   ├── auth/          # Auth API routes
+│   │   └── admin/         # Admin API routes
+│   ├── dashboard/         # Protected dashboard
+│   ├── layout.tsx         # Root layout
+│   ├── page.tsx           # Home page
+│   └── providers.tsx      # Client providers
+├── lib/
+│   ├── db.ts              # NOORMME database instance
+│   ├── auth.ts            # NextAuth configuration
+│   ├── services/          # Service layer
+│   ├── repositories/      # Repository layer
+│   ├── middleware/        # Middleware layer
+│   └── utils/             # Utility functions
+├── components/
+│   ├── ui/                # Reusable UI components
+│   ├── admin/             # Admin panel components
+│   └── auth/              # Auth components
+└── types/
+    ├── database.ts        # Auto-generated types
+    └── api.ts             # API types
+```
+
+## 📱 **Server Components**
+
+### Data Fetching
+```typescript
+// app/dashboard/page.tsx
+import { db } from '@/lib/db'
+import { auth } from '@/lib/auth'
+
+export default async function DashboardPage() {
+  const session = await auth()
+  
+  if (!session) {
+    redirect('/auth/signin')
+  }
+
+  const userRepo = db.getRepository('users')
+  const users = await userRepo.findAll()
+
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      <UserList users={users} />
+    </div>
+  )
+}
+```
+
+### Server Actions
+```typescript
+// app/admin/users/actions.ts
+'use server'
+
+import { db } from '@/lib/db'
+import { revalidatePath } from 'next/cache'
+
+export async function createUser(formData: FormData) {
+  const userRepo = db.getRepository('users')
+  
+  const user = await userRepo.create({
+    name: formData.get('name') as string,
+    email: formData.get('email') as string
+  })
+
+  revalidatePath('/admin/users')
+  return user
+}
+```
+
+## 🔐 **Authentication Integration**
+
+### NextAuth Configuration
+```typescript
+// lib/auth.ts
+import NextAuth from 'next-auth'
+import { NoormmeAdapter } from 'noormme/adapters/nextauth'
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: NoormmeAdapter(db),
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    })
+  ],
+  session: { strategy: 'database' }
+})
+```
+
+### Protected Routes
+```typescript
+// middleware.ts
+import { auth } from '@/lib/auth'
+import { NextResponse } from 'next/server'
+
+export default auth((req) => {
+  if (!req.auth && req.nextUrl.pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/auth/signin', req.url))
+  }
+})
+```
+
+## 🏗️ **Service Layer Integration**
+
+### Laravel-style Services
+```typescript
+// lib/services/user.service.ts
+export class UserService extends BaseService<User> {
+  constructor(db: NOORMME) {
+    super(db.getRepository('users'), db)
+  }
+
+  async createUser(data: CreateUserData): Promise<User> {
+    // Business logic here
+    const user = await this.repository.create(data)
+    
+    // Additional processing
+    await this.sendWelcomeEmail(user.email)
+    
+    return user
+  }
+}
+```
+
+### Middleware Patterns
+```typescript
+// lib/middleware/auth.middleware.ts
+export class AuthMiddleware extends BaseMiddleware {
+  async execute(req: NextRequest, context: any): Promise<NextResponse | void> {
+    const session = await auth()
+    
+    if (!session) {
+      return NextResponse.redirect(new URL('/auth/signin', req.url))
+    }
+
+    return this.next(req, context)
+  }
+}
+```
+
+## 🎨 **Component Patterns**
+
+### Server Component
+```typescript
+// components/UserList.tsx
+import { db } from '@/lib/db'
+
+interface UserListProps {
+  initialUsers?: User[]
+}
+
+export async function UserList({ initialUsers }: UserListProps) {
+  const users = initialUsers || await db.getRepository('users').findAll()
+  
+  return (
+    <div className="space-y-4">
+      {users.map((user) => (
+        <div key={user.id} className="p-4 border rounded">
+          <h3>{user.name}</h3>
+          <p>{user.email}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+```
+
+### Client Component
+```typescript
+// components/UserForm.tsx
+'use client'
+
+import { useState } from 'react'
+import { createUser } from '@/app/admin/users/actions'
+
+export function UserForm() {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  async function handleSubmit(formData: FormData) {
+    setIsSubmitting(true)
+    try {
+      await createUser(formData)
+      // Handle success
+    } catch (error) {
+      // Handle error
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <form action={handleSubmit}>
+      <input name="name" placeholder="Name" required />
+      <input name="email" type="email" placeholder="Email" required />
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? 'Creating...' : 'Create User'}
+      </button>
+    </form>
+  )
+}
+```
+
+### Compound Components
+```typescript
+// components/ui/Card.tsx
+interface CardProps {
+  children: React.ReactNode
+  className?: string
+}
+
+export function Card({ children, className = '' }: CardProps) {
+  return (
+    <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
+      {children}
+    </div>
+  )
+}
+
+Card.Header = function CardHeader({ children }: { children: React.ReactNode }) {
+  return <div className="mb-4">{children}</div>
+}
+
+Card.Content = function CardContent({ children }: { children: React.ReactNode }) {
+  return <div>{children}</div>
+}
+
+Card.Footer = function CardFooter({ children }: { children: React.ReactNode }) {
+  return <div className="mt-4 pt-4 border-t">{children}</div>
+}
+
+// Usage
+<Card>
+  <Card.Header>
+    <h2>User Details</h2>
+  </Card.Header>
+  <Card.Content>
+    <p>User information here</p>
+  </Card.Content>
+  <Card.Footer>
+    <button>Edit</button>
+  </Card.Footer>
+</Card>
+```
+
+## 🎯 **Custom Hooks**
+
+### Data Fetching Hook
+```typescript
+// hooks/useUsers.ts
+import { useState, useEffect } from 'react'
+
+export function useUsers() {
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/users')
+        const data = await response.json()
+        setUsers(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch users')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUsers()
+  }, [])
+
+  return { users, loading, error }
+}
+```
+
+### Form Hook
+```typescript
+// hooks/useForm.ts
+import { useState } from 'react'
+
+interface UseFormOptions<T> {
+  initialValues: T
+  onSubmit: (values: T) => Promise<void> | void
+  validate?: (values: T) => Partial<Record<keyof T, string>>
+}
+
+export function useForm<T extends Record<string, any>>({
+  initialValues,
+  onSubmit,
+  validate
+}: UseFormOptions<T>) {
+  const [values, setValues] = useState<T>(initialValues)
+  const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleChange = (name: keyof T, value: any) => {
+    setValues(prev => ({ ...prev, [name]: value }))
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }))
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // Validate
+    if (validate) {
+      const validationErrors = validate(values)
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors)
+        return
+      }
+    }
+
+    setIsSubmitting(true)
+    try {
+      await onSubmit(values)
+    } catch (error) {
+      // Handle error
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return {
+    values,
+    errors,
+    isSubmitting,
+    handleChange,
+    handleSubmit
+  }
+}
+```
+
+## 🔄 **API Routes**
+
+### RESTful API Pattern
+```typescript
+// app/api/users/route.ts
+import { NextRequest, NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import { auth } from '@/lib/auth'
+
+export async function GET() {
+  try {
+    const session = await auth()
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const users = await db.getRepository('users').findAll()
+    return NextResponse.json(users)
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to fetch users' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const user = await db.getRepository('users').create(body)
+    
+    return NextResponse.json(user, { status: 201 })
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to create user' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+### Dynamic Routes
+```typescript
+// app/api/users/[id]/route.ts
+import { NextRequest, NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const user = await db.getRepository('users').findById(params.id)
+    
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    return NextResponse.json(user)
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to fetch user' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+## 🎨 **Styling Patterns**
+
+### Tailwind CSS Classes
+```typescript
+// components/ui/Button.tsx
+interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'danger'
+  size?: 'sm' | 'md' | 'lg'
+  children: React.ReactNode
+  onClick?: () => void
+  disabled?: boolean
+}
+
+export function Button({ 
+  variant = 'primary', 
+  size = 'md', 
+  children, 
+  onClick,
+  disabled 
+}: ButtonProps) {
+  const baseClasses = 'font-medium rounded-md focus:outline-none focus:ring-2'
+  
+  const variantClasses = {
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
+    secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500',
+    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
+  }
+  
+  const sizeClasses = {
+    sm: 'px-3 py-1.5 text-sm',
+    md: 'px-4 py-2 text-base',
+    lg: 'px-6 py-3 text-lg'
+  }
+
+  return (
+    <button
+      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${
+        disabled ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {children}
+    </button>
+  )
+}
+```
+
+## 📊 **State Management**
+
+### Server State with React Query
+```typescript
+// lib/query-client.ts
+import { QueryClient } from '@tanstack/react-query'
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1 minute
+      cacheTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+})
+
+// hooks/useUsersQuery.ts
+import { useQuery } from '@tanstack/react-query'
+
+export function useUsersQuery() {
+  return useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const response = await fetch('/api/users')
+      return response.json()
+    }
+  })
+}
+```
+
+### Client State with Zustand
+```typescript
+// lib/stores/user-store.ts
+import { create } from 'zustand'
+
+interface UserState {
+  currentUser: User | null
+  setCurrentUser: (user: User | null) => void
+  clearUser: () => void
+}
+
+export const useUserStore = create<UserState>((set) => ({
+  currentUser: null,
+  setCurrentUser: (user) => set({ currentUser: user }),
+  clearUser: () => set({ currentUser: null })
+}))
+```
+
+## 🚨 **Error Handling**
+
+### Error Boundaries
+```typescript
+// components/ErrorBoundary.tsx
+'use client'
+
+import React from 'react'
+
+interface ErrorBoundaryState {
+  hasError: boolean
+  error?: Error
+}
+
+export class ErrorBoundary extends React.Component<
+  React.PropsWithChildren<{}>,
+  ErrorBoundaryState
+> {
+  constructor(props: React.PropsWithChildren<{}>) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Error caught by boundary:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-4 border border-red-200 rounded-md bg-red-50">
+          <h2 className="text-lg font-semibold text-red-800">Something went wrong</h2>
+          <p className="text-red-600">Please refresh the page and try again.</p>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
+```
+
+### Global Error Page
+```typescript
+// app/error.tsx
+'use client'
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string }
+  reset: () => void
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <h2 className="text-2xl font-bold mb-4">Something went wrong!</h2>
+      <button
+        onClick={reset}
+        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+      >
+        Try again
+      </button>
+    </div>
+  )
+}
+```
+
+## 🚀 **Performance Optimization**
+
+### Image Optimization
+```typescript
+import Image from 'next/image'
+
+export function UserAvatar({ user }: { user: User }) {
+  return (
+    <Image
+      src={user.avatar || '/default-avatar.png'}
+      alt={`${user.name}'s avatar`}
+      width={48}
+      height={48}
+      className="rounded-full"
+      priority={false}
+    />
+  )
+}
+```
+
+### Dynamic Imports
+```typescript
+import dynamic from 'next/dynamic'
+
+const AdminPanel = dynamic(() => import('@/components/AdminPanel'), {
+  loading: () => <div>Loading admin panel...</div>,
+  ssr: false
+})
+
+export function Dashboard() {
+  const [showAdmin, setShowAdmin] = useState(false)
+
+  return (
+    <div>
+      <button onClick={() => setShowAdmin(true)}>
+        Open Admin Panel
+      </button>
+      {showAdmin && <AdminPanel />}
+    </div>
+  )
+}
+```
+
+## 🚨 **Legacy Pattern Elimination**
+
+### MANDATORY Actions:
+- **DELETE** old Next.js patterns (Pages Router, getServerSideProps, etc.)
+- **FORBIDDEN**: Mixing App Router with Pages Router
+- **REQUIRED**: Use only App Router with Server Components
+- **PROHIBITED**: Legacy data fetching patterns or old authentication approaches
+
+### Migration Checklist:
+- [ ] Convert Pages Router to App Router
+- [ ] Replace getServerSideProps with Server Components
+- [ ] Replace getStaticProps with static generation
+- [ ] Update API routes to new format
+- [ ] Convert class components to functional components
+- [ ] Replace legacy authentication with NextAuth v5
+- [ ] Update middleware to new format
+- [ ] Remove legacy CSS-in-JS in favor of Tailwind
+
+This ensures that all Next.js code follows modern patterns and provides an excellent developer experience while maintaining high performance and maintainability.
