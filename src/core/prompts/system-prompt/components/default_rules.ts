@@ -181,8 +181,8 @@ throw new NOORMError(
 **Remember**: Software development should spark joy, not frustration. **DELETE everything that doesn't spark joy.**`
 
 export async function getDefaultRulesSection(variant: PromptVariant, context: SystemPromptContext): Promise<string | undefined> {
-	// Only include default rules if no user rules are present
-	// This ensures user rules take precedence over built-in rules
+	// Only include default rules if no user rules are present AND no NORMIE_RULES are being used
+	// This ensures user rules and NORMIE_RULES take precedence over built-in rules
 	const hasUserRules = !!(
 		context.globalClineRulesFileInstructions ||
 		context.localClineRulesFileInstructions ||
@@ -191,7 +191,9 @@ export async function getDefaultRulesSection(variant: PromptVariant, context: Sy
 		context.localWindsurfRulesFileInstructions
 	)
 
-	if (hasUserRules) {
+	const hasNormieRules = variant.componentOrder.includes(SystemPromptSection.NORMIE_RULES)
+
+	if (hasUserRules || hasNormieRules) {
 		return undefined
 	}
 

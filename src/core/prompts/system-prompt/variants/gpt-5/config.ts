@@ -27,6 +27,7 @@ export const config = createVariant(ModelFamily.GPT_5)
 		SystemPromptSection.CAPABILITIES,
 		SystemPromptSection.FEEDBACK,
 		SystemPromptSection.RULES,
+		SystemPromptSection.NORMIE_RULES,
 		SystemPromptSection.SYSTEM_INFO,
 		SystemPromptSection.OBJECTIVE,
 		SystemPromptSection.USER_INSTRUCTIONS,

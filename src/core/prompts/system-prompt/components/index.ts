@@ -7,6 +7,7 @@ import { getDefaultRulesSection } from "./default_rules"
 import { getEditingFilesSection } from "./editing_files"
 import { getFeedbackSection } from "./feedback"
 import { getMcp } from "./mcp"
+import { getNormieRulesSection } from "./normie_rules"
 import { getObjectiveSection } from "./objective"
 import { getRulesSection } from "./rules"
 import { getSystemInfo } from "./system_info"
@@ -39,6 +40,7 @@ export function getSystemPromptComponents() {
 			fn: getCapabilitiesSection,
 		},
 		{ id: SystemPromptSection.RULES, fn: getRulesSection },
+		{ id: SystemPromptSection.NORMIE_RULES, fn: getNormieRulesSection },
 		{ id: SystemPromptSection.DEFAULT_RULES, fn: getDefaultRulesSection },
 		{ id: SystemPromptSection.OBJECTIVE, fn: getObjectiveSection },
 		{

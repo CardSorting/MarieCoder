@@ -20,6 +20,7 @@ export const config = createVariant(ModelFamily.XS)
 	.components(
 		SystemPromptSection.AGENT_ROLE,
 		SystemPromptSection.RULES,
+		SystemPromptSection.NORMIE_RULES,
 		SystemPromptSection.ACT_VS_PLAN,
 		SystemPromptSection.CAPABILITIES,
 		SystemPromptSection.EDITING_FILES,

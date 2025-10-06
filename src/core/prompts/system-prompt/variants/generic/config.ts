@@ -24,6 +24,7 @@ export const config = createVariant(ModelFamily.GENERIC)
 		SystemPromptSection.TODO,
 		SystemPromptSection.CAPABILITIES,
 		SystemPromptSection.RULES,
+		SystemPromptSection.NORMIE_RULES,
 		SystemPromptSection.SYSTEM_INFO,
 		SystemPromptSection.OBJECTIVE,
 		SystemPromptSection.USER_INSTRUCTIONS,
