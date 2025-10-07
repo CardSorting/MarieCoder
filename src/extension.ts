@@ -33,8 +33,6 @@ import { abortCommitGeneration, generateCommitMessage } from "./hosts/vscode/com
 import { VscodeDiffViewProvider } from "./hosts/vscode/VscodeDiffViewProvider"
 import { VscodeWebviewProvider } from "./hosts/vscode/VscodeWebviewProvider"
 import { ExtensionRegistryInfo } from "./registry"
-import { AuthService } from "./services/auth/AuthService"
-import { telemetryService } from "./services/telemetry"
 import { SharedUriHandler } from "./services/uri/SharedUriHandler"
 import { ShowMessageType } from "./shared/proto/host/window"
 import { fileExistsAtPath } from "./utils/fs"
@@ -54,7 +52,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const webview = (await initialize(context)) as VscodeWebviewProvider
 
-	Logger.log("Cline extension activated")
+	Logger.log("NormieDev extension activated")
 
 	const testModeWatchers = await initializeTestMode(webview)
 	// Initialize test mode and add disposables to context
@@ -341,7 +339,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 			// Send focus event
 			sendFocusChatInputEvent()
-			telemetryService.captureButtonClick("command_focusChatInput", webview.controller?.task?.ulid)
 		}),
 	)
 
@@ -349,7 +346,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand(commands.Walkthrough, async () => {
 			await vscode.commands.executeCommand("workbench.action.openWalkthrough", `${context.extension.id}#ClineWalkthrough`)
-			telemetryService.captureButtonClick("command_openWalkthrough")
 		}),
 	)
 
@@ -358,7 +354,6 @@ export async function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand(commands.ReconstructTaskHistory, async () => {
 			const { reconstructTaskHistory } = await import("./core/commands/reconstructTaskHistory")
 			await reconstructTaskHistory()
-			telemetryService.captureButtonClick("command_reconstructTaskHistory")
 		}),
 	)
 
@@ -372,26 +367,6 @@ export async function activate(context: vscode.ExtensionContext) {
 		}),
 	)
 
-	context.subscriptions.push(
-		context.secrets.onDidChange(async (event) => {
-			if (event.key === "clineAccountId") {
-				// Check if the secret was removed (logout) or added/updated (login)
-				const secretValue = await context.secrets.get("clineAccountId")
-				const activeWebview = WebviewProvider.getVisibleInstance()
-				const controller = activeWebview?.controller
-
-				const authService = AuthService.getInstance(controller)
-				if (secretValue) {
-					// Secret was added or updated - restore auth info (login from another window)
-					authService?.restoreRefreshTokenAndRetrieveAuthInfo()
-				} else {
-					// Secret was removed - handle logout for all windows
-					authService?.handleDeauth()
-				}
-			}
-		}),
-	)
-
 	return createClineAPI(webview.controller)
 }
 
@@ -400,7 +375,7 @@ function setupHostProvider(context: ExtensionContext) {
 
 	const createWebview = () => new VscodeWebviewProvider(context)
 	const createDiffView = () => new VscodeDiffViewProvider()
-	const outputChannel = vscode.window.createOutputChannel("Cline")
+	const outputChannel = vscode.window.createOutputChannel("NormieDev")
 	context.subscriptions.push(outputChannel)
 
 	const getCallbackUrl = async () => `${vscode.env.uriScheme || "vscode"}://${context.extension.id}`
@@ -450,7 +425,7 @@ export async function deactivate() {
 	// Clean up test mode
 	cleanupTestMode()
 
-	Logger.log("Cline extension deactivated")
+	Logger.log("NormieDev extension deactivated")
 }
 
 // TODO: Find a solution for automatically removing DEV related content from production builds.

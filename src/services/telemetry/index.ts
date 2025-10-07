@@ -1,55 +1,34 @@
-export type {
-	ITelemetryProvider,
-	TelemetrySettings,
-} from "./providers/ITelemetryProvider"
-export { PostHogTelemetryProvider } from "./providers/PostHogTelemetryProvider"
-export {
-	type TelemetryProviderConfig,
-	TelemetryProviderFactory,
-	type TelemetryProviderType,
-} from "./TelemetryProviderFactory"
-
-// Export the enums for terminal telemetry
-export {
-	TerminalHangStage,
-	TerminalOutputFailureReason,
-	TerminalUserInterventionAction,
-} from "./TelemetryService"
-
-// Create a singleton instance for easy access throughout the application
-import { TelemetryService } from "./TelemetryService"
-
-let _telemetryServiceInstance: TelemetryService | null = null
-
 /**
- * Get the singleton telemetry service instance
- * @param distinctId Optional distinct ID for the telemetry provider
- * @returns TelemetryService instance
+ * No-op Telemetry Service
+ *
+ * This is a stub implementation that provides the telemetry interface without
+ * actually collecting any data. All methods are no-ops.
  */
-export async function getTelemetryService(): Promise<TelemetryService> {
-	if (!_telemetryServiceInstance) {
-		_telemetryServiceInstance = await TelemetryService.create()
-	}
-	return _telemetryServiceInstance
+
+export enum TerminalHangStage {
+	COMMAND_EXECUTION = "command_execution",
+	OUTPUT_RETRIEVAL = "output_retrieval",
 }
 
-/**
- * Reset the telemetry service instance (useful for testing)
- */
-export function resetTelemetryService(): void {
-	_telemetryServiceInstance = null
+export enum TerminalUserInterventionAction {
+	MANUAL_TERMINATION = "manual_termination",
+	TIMEOUT = "timeout",
 }
 
-export const telemetryService = new Proxy({} as TelemetryService, {
-	get(_target, prop, _receiver) {
-		// Return a function that will call the method on the actual service
-		return async (...args: any[]) => {
-			const service: TelemetryService = await getTelemetryService()
-			const method = Reflect.get(service, prop, service)
-			if (typeof method === "function") {
-				return method.apply(service, args)
-			}
-			return method
-		}
-	},
-})
+export enum TerminalOutputFailureReason {
+	TIMEOUT = "timeout",
+	NO_TERMINAL = "no_terminal",
+	CLIPBOARD_ERROR = "clipboard_error",
+}
+
+class TelemetryService {
+	captureExtensionActivated(): void {}
+	captureButtonClick(_button: string, _taskId?: string): void {}
+	captureToolUse(_tool: string, _properties?: Record<string, unknown>): void {}
+	captureTerminalHang(_stage: TerminalHangStage, _action: TerminalUserInterventionAction): void {}
+	captureTerminalOutputFailure(_reason: TerminalOutputFailureReason): void {}
+	capture(_event: string, _properties?: Record<string, unknown>): void {}
+	dispose(): void {}
+}
+
+export const telemetryService = new TelemetryService()

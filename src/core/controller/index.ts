@@ -5,7 +5,6 @@ import { setupWorkspaceManager } from "@core/workspace/setup"
 import { WorkspaceRootManager } from "@core/workspace/WorkspaceRootManager"
 import { cleanupLegacyCheckpoints } from "@integrations/checkpoints/CheckpointMigration"
 import { downloadTask } from "@integrations/misc/export-markdown"
-import { ClineAccountService } from "@services/account/ClineAccountService"
 import { McpHub } from "@services/mcp/McpHub"
 import { ApiProvider, ModelInfo } from "@shared/api"
 import { ChatContent } from "@shared/ChatContent"
@@ -24,8 +23,6 @@ import * as vscode from "vscode"
 import { clineEnvConfig } from "@/config"
 import { HostProvider } from "@/hosts/host-provider"
 import { ExtensionRegistryInfo } from "@/registry"
-import { AuthService } from "@/services/auth/AuthService"
-import { OcaAuthService } from "@/services/auth/oca/OcaAuthService"
 import { featureFlagsService } from "@/services/feature-flags"
 import { getDistinctId } from "@/services/logging/distinctId"
 import { telemetryService } from "@/services/telemetry"
@@ -57,9 +54,6 @@ export class Controller {
 	task?: Task
 
 	mcpHub: McpHub
-	accountService: ClineAccountService
-	authService: AuthService
-	ocaAuthService: OcaAuthService
 	readonly stateManager: StateManager
 
 	// NEW: Add workspace manager (optional initially)
@@ -67,12 +61,8 @@ export class Controller {
 
 	constructor(readonly context: vscode.ExtensionContext) {
 		PromptRegistry.getInstance() // Ensure prompts and tools are registered
-		HostProvider.get().logToChannel("ClineProvider instantiated")
+		HostProvider.get().logToChannel("NormieProvider instantiated")
 		this.stateManager = StateManager.get()
-		this.authService = AuthService.getInstance(this)
-		this.ocaAuthService = OcaAuthService.initialize(this)
-		this.accountService = ClineAccountService.getInstance()
-		this.authService.restoreRefreshTokenAndRetrieveAuthInfo()
 
 		StateManager.get().registerCallbacks({
 			onPersistenceError: async ({ error }: PersistenceErrorEvent) => {
@@ -122,51 +112,7 @@ export class Controller {
 		console.error("Controller disposed")
 	}
 
-	// Auth methods
-	async handleSignOut() {
-		try {
-			// TODO: update to clineAccountId and then move clineApiKey to a clear function.
-			this.stateManager.setSecret("clineAccountId", undefined)
-			this.stateManager.setGlobalState("userInfo", undefined)
-
-			// Update API providers through cache service
-			const apiConfiguration = this.stateManager.getApiConfiguration()
-			const updatedConfig = {
-				...apiConfiguration,
-				planModeApiProvider: "openrouter" as ApiProvider,
-				actModeApiProvider: "openrouter" as ApiProvider,
-			}
-			this.stateManager.setApiConfiguration(updatedConfig)
-
-			await this.postStateToWebview()
-			HostProvider.window.showMessage({
-				type: ShowMessageType.INFORMATION,
-				message: "Successfully logged out of Cline",
-			})
-		} catch (_error) {
-			HostProvider.window.showMessage({
-				type: ShowMessageType.INFORMATION,
-				message: "Logout failed",
-			})
-		}
-	}
-
-	// Oca Auth methods
-	async handleOcaSignOut() {
-		try {
-			await this.ocaAuthService.handleDeauth()
-			await this.postStateToWebview()
-			HostProvider.window.showMessage({
-				type: ShowMessageType.INFORMATION,
-				message: "Successfully logged out of OCA",
-			})
-		} catch (_error) {
-			HostProvider.window.showMessage({
-				type: ShowMessageType.INFORMATION,
-				message: "OCA Logout failed",
-			})
-		}
-	}
+	// Auth methods removed - standalone extension no longer requires auth
 
 	async setUserInfo(info?: UserInfo) {
 		this.stateManager.setGlobalState("userInfo", info)
@@ -347,106 +293,12 @@ export class Controller {
 		}
 	}
 
-	async handleAuthCallback(customToken: string, provider: string | null = null) {
-		try {
-			await this.authService.handleAuthCallback(customToken, provider ? provider : "google")
-
-			const clineProvider: ApiProvider = "cline"
-
-			// Get current settings to determine how to update providers
-			const planActSeparateModelsSetting = this.stateManager.getGlobalSettingsKey("planActSeparateModelsSetting")
-
-			const currentMode = this.stateManager.getGlobalSettingsKey("mode")
-
-			// Get current API configuration from cache
-			const currentApiConfiguration = this.stateManager.getApiConfiguration()
-
-			const updatedConfig = { ...currentApiConfiguration }
-
-			if (planActSeparateModelsSetting) {
-				// Only update the current mode's provider
-				if (currentMode === "plan") {
-					updatedConfig.planModeApiProvider = clineProvider
-				} else {
-					updatedConfig.actModeApiProvider = clineProvider
-				}
-			} else {
-				// Update both modes to keep them in sync
-				updatedConfig.planModeApiProvider = clineProvider
-				updatedConfig.actModeApiProvider = clineProvider
-			}
-
-			// Update the API configuration through cache service
-			this.stateManager.setApiConfiguration(updatedConfig)
-
-			// Mark welcome view as completed since user has successfully logged in
-			this.stateManager.setGlobalState("welcomeViewCompleted", true)
-
-			if (this.task) {
-				this.task.api = ApiService.createHandler({ ...updatedConfig, ulid: this.task.ulid }, currentMode)
-			}
-
-			await this.postStateToWebview()
-		} catch (error) {
-			console.error("Failed to handle auth callback:", error)
-			HostProvider.window.showMessage({
-				type: ShowMessageType.ERROR,
-				message: "Failed to log in to Cline",
-			})
-			// Even on login failure, we preserve any existing tokens
-			// Only clear tokens on explicit logout
-		}
+	async handleAuthCallback(_customToken: string, _provider: string | null = null) {
+		// Auth callback removed - standalone extension no longer requires auth
 	}
 
-	async handleOcaAuthCallback(code: string, state: string) {
-		try {
-			await this.ocaAuthService.handleAuthCallback(code, state)
-
-			const ocaProvider: ApiProvider = "oca"
-
-			// Get current settings to determine how to update providers
-			const planActSeparateModelsSetting = this.stateManager.getGlobalSettingsKey("planActSeparateModelsSetting")
-
-			const currentMode = this.stateManager.getGlobalSettingsKey("mode")
-
-			// Get current API configuration from cache
-			const currentApiConfiguration = this.stateManager.getApiConfiguration()
-
-			const updatedConfig = { ...currentApiConfiguration }
-
-			if (planActSeparateModelsSetting) {
-				// Only update the current mode's provider
-				if (currentMode === "plan") {
-					updatedConfig.planModeApiProvider = ocaProvider
-				} else {
-					updatedConfig.actModeApiProvider = ocaProvider
-				}
-			} else {
-				// Update both modes to keep them in sync
-				updatedConfig.planModeApiProvider = ocaProvider
-				updatedConfig.actModeApiProvider = ocaProvider
-			}
-
-			// Update the API configuration through cache service
-			this.stateManager.setApiConfiguration(updatedConfig)
-
-			// Mark welcome view as completed since user has successfully logged in
-			this.stateManager.setGlobalState("welcomeViewCompleted", true)
-
-			if (this.task) {
-				this.task.api = ApiService.createHandler({ ...updatedConfig, ulid: this.task.ulid }, currentMode)
-			}
-
-			await this.postStateToWebview()
-		} catch (error) {
-			console.error("Failed to handle auth callback:", error)
-			HostProvider.window.showMessage({
-				type: ShowMessageType.ERROR,
-				message: "Failed to log in to OCA",
-			})
-			// Even on login failure, we preserve any existing tokens
-			// Only clear tokens on explicit logout
-		}
+	async handleOcaAuthCallback(_code: string, _state: string) {
+		// OCA auth callback removed - standalone extension no longer requires auth
 	}
 
 	async handleTaskCreation(prompt: string) {
@@ -703,9 +555,7 @@ export class Controller {
 		const terminalReuseEnabled = this.stateManager.getGlobalStateKey("terminalReuseEnabled")
 		const defaultTerminalProfile = this.stateManager.getGlobalSettingsKey("defaultTerminalProfile")
 		const isNewUser = this.stateManager.getGlobalStateKey("isNewUser")
-		const welcomeViewCompleted = Boolean(
-			this.stateManager.getGlobalStateKey("welcomeViewCompleted") || this.authService.getInfo()?.user?.uid,
-		)
+		const welcomeViewCompleted = Boolean(this.stateManager.getGlobalStateKey("welcomeViewCompleted"))
 		const customPrompt = this.stateManager.getGlobalSettingsKey("customPrompt")
 		const mcpResponsesCollapsed = this.stateManager.getGlobalStateKey("mcpResponsesCollapsed")
 		const terminalOutputLineLimit = this.stateManager.getGlobalSettingsKey("terminalOutputLineLimit")
