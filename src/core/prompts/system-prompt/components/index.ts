@@ -27,27 +27,27 @@ export * from "./utils/ComponentUtils"
 // Registry helper function
 import { SystemPromptSection } from "../templates"
 import { getAgentRoleSection } from "./agent_identity"
-import { getFileOperationsSection } from "./file_operations"
-import { getMcpServersSection } from "./mcp_servers"
-import { getMissionStatementSection } from "./mission_statement"
-import { getPlanningModesSection } from "./planning_modes"
+import { getEditingFilesSection } from "./file_operations"
+import { getMcp } from "./mcp_servers"
+import { getObjectiveSection } from "./mission_statement"
+import { getActVsPlanModeSection } from "./planning_modes"
 import { getRulesSection } from "./rules"
-import { getSystemEnvironmentSection } from "./system_environment"
+import { getSystemEnv } from "./system_environment"
 import { getTaskProgressSection } from "./task_progress"
-import { getToolsAndCapabilitiesSection } from "./tools_and_capabilities"
-import { getUserContextSection } from "./user_context"
+import { getToolUseSection } from "./tools_and_capabilities"
+import { getUserInstructions } from "./user_context"
 
 export function getSystemPromptComponents() {
 	return [
 		{ id: SystemPromptSection.AGENT_ROLE, fn: getAgentRoleSection },
-		{ id: SystemPromptSection.FILE_OPERATIONS, fn: getFileOperationsSection },
-		{ id: SystemPromptSection.MCP_SERVERS, fn: getMcpServersSection },
-		{ id: SystemPromptSection.MISSION, fn: getMissionStatementSection },
-		{ id: SystemPromptSection.PLANNING_MODES, fn: getPlanningModesSection },
+		{ id: SystemPromptSection.EDITING_FILES, fn: getEditingFilesSection },
+		{ id: SystemPromptSection.MCP_INFO, fn: getMcp },
+		{ id: SystemPromptSection.OBJECTIVE, fn: getObjectiveSection },
+		{ id: SystemPromptSection.ACT_VS_PLAN_MODE, fn: getActVsPlanModeSection },
 		{ id: SystemPromptSection.RULES, fn: getRulesSection },
-		{ id: SystemPromptSection.SYSTEM_INFO, fn: getSystemEnvironmentSection },
+		{ id: SystemPromptSection.SYSTEM_INFO, fn: getSystemEnv },
 		{ id: SystemPromptSection.TASK_PROGRESS, fn: getTaskProgressSection },
-		{ id: SystemPromptSection.TOOL_USE, fn: getToolsAndCapabilitiesSection },
-		{ id: SystemPromptSection.USER_CONTEXT, fn: getUserContextSection },
+		{ id: SystemPromptSection.TOOL_USE, fn: getToolUseSection },
+		{ id: SystemPromptSection.USER_INSTRUCTIONS, fn: getUserInstructions },
 	]
 }

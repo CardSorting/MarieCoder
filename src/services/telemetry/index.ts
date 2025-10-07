@@ -27,79 +27,79 @@ export enum TerminalOutputFailureReason {
 
 export class TelemetryService {
 	captureExtensionActivated(): void {}
-	captureButtonClick(_button: string, _taskId?: string): void {}
-	captureToolUse(_tool: string, _properties?: Record<string, unknown>): void {}
+	captureButtonClick(..._args: any[]): void {}
+	captureToolUse(..._args: any[]): void {}
 	captureTerminalHang(_stage: TerminalHangStage, _action: TerminalUserInterventionAction): void {}
 	captureTerminalOutputFailure(_reason: TerminalOutputFailureReason): void {}
-	capture(_event: string, _properties?: Record<string, unknown>): void {}
+	capture(..._args: any[]): void {}
 
 	// Voice/Dictation
-	captureVoiceRecordingStopped(_properties?: Record<string, unknown>): void {}
-	captureVoiceRecordingStarted(_properties?: Record<string, unknown>): void {}
-	captureVoiceTranscriptionStarted(_properties?: Record<string, unknown>): void {}
-	captureVoiceTranscriptionError(_properties?: Record<string, unknown>): void {}
-	captureVoiceTranscriptionCompleted(_properties?: Record<string, unknown>): void {}
+	captureVoiceRecordingStopped(..._args: any[]): void {}
+	captureVoiceRecordingStarted(..._args: any[]): void {}
+	captureVoiceTranscriptionStarted(..._args: any[]): void {}
+	captureVoiceTranscriptionError(..._args: any[]): void {}
+	captureVoiceTranscriptionCompleted(..._args: any[]): void {}
 
 	// Focus Chain
-	captureFocusChainListOpened(_properties?: Record<string, unknown>): void {}
-	captureFocusChainListWritten(_properties?: Record<string, unknown>): void {}
-	captureFocusChainProgressFirst(_properties?: Record<string, unknown>): void {}
-	captureFocusChainProgressUpdate(_properties?: Record<string, unknown>): void {}
-	captureFocusChainIncompleteOnCompletion(_properties?: Record<string, unknown>): void {}
-	captureFocusChainToggle(_properties?: Record<string, unknown>): void {}
+	captureFocusChainListOpened(..._args: any[]): void {}
+	captureFocusChainListWritten(..._args: any[]): void {}
+	captureFocusChainProgressFirst(..._args: any[]): void {}
+	captureFocusChainProgressUpdate(..._args: any[]): void {}
+	captureFocusChainIncompleteOnCompletion(..._args: any[]): void {}
+	captureFocusChainToggle(..._args: any[]): void {}
 
 	// Mentions
-	captureMentionFailed(_properties?: Record<string, unknown>): void {}
-	captureMentionUsed(_properties?: Record<string, unknown>): void {}
-	captureMentionSearchResults(_properties?: Record<string, unknown>): void {}
+	captureMentionFailed(..._args: any[]): void {}
+	captureMentionUsed(..._args: any[]): void {}
+	captureMentionSearchResults(..._args: any[]): void {}
 
 	// Settings & State
-	captureClineRuleToggled(_properties?: Record<string, unknown>): void {}
-	updateTelemetryState(_properties?: Record<string, unknown>): void {}
-	captureModeSwitch(_properties?: Record<string, unknown>): void {}
-	captureModelFavoritesUsage(_properties?: Record<string, unknown>): void {}
-	captureYoloModeToggle(_properties?: Record<string, unknown>): void {}
-	captureAutoCondenseToggle(_properties?: Record<string, unknown>): void {}
+	captureClineRuleToggled(..._args: any[]): void {}
+	updateTelemetryState(..._args: any[]): void {}
+	captureModeSwitch(..._args: any[]): void {}
+	captureModelFavoritesUsage(..._args: any[]): void {}
+	captureYoloModeToggle(..._args: any[]): void {}
+	captureAutoCondenseToggle(..._args: any[]): void {}
 
 	// Tasks
-	captureTaskFeedback(_properties?: Record<string, unknown>): void {}
-	captureTaskRestarted(_properties?: Record<string, unknown>): void {}
-	captureTaskCreated(_properties?: Record<string, unknown>): void {}
-	captureTaskCompleted(_properties?: Record<string, unknown>): void {}
-	captureTaskInitialization(_properties?: Record<string, unknown>): void {}
-	captureSummarizeTask(_properties?: Record<string, unknown>): void {}
+	captureTaskFeedback(..._args: any[]): void {}
+	captureTaskRestarted(..._args: any[]): void {}
+	captureTaskCreated(..._args: any[]): void {}
+	captureTaskCompleted(..._args: any[]): void {}
+	captureTaskInitialization(..._args: any[]): void {}
+	captureSummarizeTask(..._args: any[]): void {}
 
 	// Tools
-	captureToolUsage(_tool: string, _properties?: Record<string, unknown>): void {}
-	captureSlashCommandUsed(_properties?: Record<string, unknown>): void {}
+	captureToolUsage(..._args: any[]): void {}
+	captureSlashCommandUsed(..._args: any[]): void {}
 
 	// Conversation
-	captureConversationTurnEvent(_properties?: Record<string, unknown>): void {}
-	captureOptionSelected(_properties?: Record<string, unknown>): void {}
-	captureOptionsIgnored(_properties?: Record<string, unknown>): void {}
+	captureConversationTurnEvent(..._args: any[]): void {}
+	captureOptionSelected(..._args: any[]): void {}
+	captureOptionsIgnored(..._args: any[]): void {}
 
 	// Terminal
-	captureTerminalUserIntervention(_properties?: Record<string, unknown>): void {}
-	captureTerminalExecution(_properties?: Record<string, unknown>): void {}
+	captureTerminalUserIntervention(..._args: any[]): void {}
+	captureTerminalExecution(..._args: any[]): void {}
 
 	// Workspace
-	captureWorkspacePathResolved(_properties?: Record<string, unknown>): void {}
-	captureWorkspaceSearchPattern(_properties?: Record<string, unknown>): void {}
-	captureWorkspaceInitialized(_properties?: Record<string, unknown>): void {}
-	captureWorkspaceInitError(_properties?: Record<string, unknown>): void {}
+	captureWorkspacePathResolved(..._args: any[]): void {}
+	captureWorkspaceSearchPattern(..._args: any[]): void {}
+	captureWorkspaceInitialized(..._args: any[]): void {}
+	captureWorkspaceInitError(..._args: any[]): void {}
 
 	// Checkpoints
-	captureCheckpointUsage(_properties?: Record<string, unknown>): void {}
-	captureMultiRootCheckpoint(_properties?: Record<string, unknown>): void {}
+	captureCheckpointUsage(..._args: any[]): void {}
+	captureMultiRootCheckpoint(..._args: any[]): void {}
 
 	// Browser
-	captureBrowserToolStart(_properties?: Record<string, unknown>): void {}
-	captureBrowserError(_properties?: Record<string, unknown>): void {}
-	captureBrowserToolEnd(_properties?: Record<string, unknown>): void {}
+	captureBrowserToolStart(..._args: any[]): void {}
+	captureBrowserError(..._args: any[]): void {}
+	captureBrowserToolEnd(..._args: any[]): void {}
 
 	// Provider & API
-	captureProviderApiError(_properties?: Record<string, unknown>): void {}
-	captureDiffEditFailure(_properties?: Record<string, unknown>): void {}
+	captureProviderApiError(..._args: any[]): void {}
+	captureDiffEditFailure(..._args: any[]): void {}
 
 	dispose(): void {}
 }

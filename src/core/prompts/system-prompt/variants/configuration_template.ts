@@ -15,8 +15,8 @@ import { ClineDefaultTool } from "@/shared/tools"
 import { PromptVariant } from ".."
 import { SystemPromptSection } from "../templates/section_definitions"
 import { baseTemplate } from "./generic/template"
-import { createVariant } from "./variant-builder"
-import { validateVariant } from "./variant-validator"
+import { createVariant } from "./variant_builder"
+import { validateVariant } from "./variant_validator"
 
 // Type-safe variant configuration using the builder pattern
 export const config: Omit<PromptVariant, "id"> = createVariant(ModelFamily.GENERIC) // Change to your target model family

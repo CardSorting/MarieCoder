@@ -14,6 +14,10 @@ export class OcaAuthService {
 		return null
 	}
 
+	getAuthToken(): string | null {
+		return null
+	}
+
 	isAuthenticated(): boolean {
 		return false
 	}
