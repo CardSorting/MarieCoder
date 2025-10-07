@@ -310,6 +310,40 @@ export class StateManager {
 	}
 
 	/**
+	 * Clears an arbitrary workspace state key by setting it to undefined
+	 *
+	 * This is a low-level method for cleanup operations (migrations, orphaned key removal).
+	 * Use only for keys that don't fit the typed LocalState interface.
+	 *
+	 * @param key - The workspace state key to clear
+	 */
+	clearArbitraryWorkspaceStateKey(key: string): void {
+		if (!this.isInitialized) {
+			throw new Error(STATE_MANAGER_NOT_INITIALIZED)
+		}
+
+		// Directly access the underlying VSCode workspace state API
+		// This bypasses the typed interface for cleanup operations
+		this.context.workspaceState.update(key, undefined)
+	}
+
+	/**
+	 * Gets all workspace state keys
+	 *
+	 * This is a low-level method for cleanup operations where you need to iterate
+	 * over all keys, including dynamic ones not in the LocalState type.
+	 *
+	 * @returns Array of all workspace state keys
+	 */
+	getAllWorkspaceStateKeys(): readonly string[] {
+		if (!this.isInitialized) {
+			throw new Error(STATE_MANAGER_NOT_INITIALIZED)
+		}
+
+		return this.context.workspaceState.keys()
+	}
+
+	/**
 	 * Initialize chokidar watcher for the taskHistory.json file
 	 * Updates in-memory cache on external changes without writing back to disk.
 	 */

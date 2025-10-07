@@ -3,9 +3,9 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { ApiHandler, ApiHandlerModel, ApiService } from "@core/api"
 import { ApiStream } from "@core/api/transform/stream"
 import { parseAssistantMessageV2 } from "@core/assistant-message"
-import { ContextManager } from "@core/context/context-management/ContextManager"
+import { ContextManager } from "@core/context/context-management/context_manager"
+import { getContextWindowInfo } from "@core/context/context-management/context_window_utils"
 import { checkContextWindowExceededError } from "@core/context/context-management/context-error-handling"
-import { getContextWindowInfo } from "@core/context/context-management/context-window-utils"
 import { FileContextTracker } from "@core/context/context-tracking/FileContextTracker"
 import { ModelContextTracker } from "@core/context/context-tracking/ModelContextTracker"
 import {
@@ -21,8 +21,8 @@ import {
 import { sendPartialMessageEvent } from "@core/controller/ui/subscribeToPartialMessage"
 import { ClineIgnoreController } from "@core/ignore/ClineIgnoreController"
 import { parseMentions } from "@core/mentions"
-import { summarizeTask } from "@core/prompts/contextManagement"
-import { formatResponse } from "@core/prompts/responses"
+import { summarizeTask } from "@core/prompts/context_summarization"
+import { formatResponse } from "@core/prompts/response_formatters"
 import { parseSlashCommands } from "@core/slash-commands"
 import {
 	ensureRulesDirectoryExists,
@@ -1298,7 +1298,7 @@ export class Task {
 	private async handleContextWindowExceededError(): Promise<void> {
 		const apiConversationHistory = this.messageStateHandler.getApiConversationHistory()
 
-		this.taskState.conversationHistoryDeletedRange = this.contextManager.getNextTruncationRange(
+		this.taskState.conversationHistoryDeletedRange = this.contextManager.calculateTruncationRange(
 			apiConversationHistory,
 			this.taskState.conversationHistoryDeletedRange,
 			"quarter", // Force aggressive truncation

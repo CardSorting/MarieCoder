@@ -7,8 +7,8 @@ import * as sinon from "sinon"
 import * as vscode from "vscode"
 import { Controller } from "@/core/controller"
 import { setVscodeHostProviderMock } from "@/test/host-provider-test-utils"
-import type { FileMetadataEntry, TaskMetadata } from "./ContextTrackerTypes"
-import { FileContextTracker } from "./FileContextTracker"
+import type { FileMetadataEntry, TaskMetadata } from "./context_tracker_types"
+import { FileContextTracker } from "./file_context_tracker"
 
 describe("FileContextTracker", () => {
 	const filePath = "src/test-file.ts"

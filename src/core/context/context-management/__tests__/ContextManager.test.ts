@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { expect } from "chai"
-import { ContextManager } from "../ContextManager"
+import { ContextManager } from "../context_manager"
 
 describe("ContextManager", () => {
 	function createMessages(count: number): Anthropic.Messages.MessageParam[] {
@@ -23,7 +23,7 @@ describe("ContextManager", () => {
 		return messages
 	}
 
-	describe("getNextTruncationRange", () => {
+	describe("calculateTruncationRange", () => {
 		let contextManager: ContextManager
 
 		beforeEach(() => {
@@ -32,33 +32,33 @@ describe("ContextManager", () => {
 
 		it("first truncation with half keep", () => {
 			const messages = createMessages(11)
-			const result = contextManager.getNextTruncationRange(messages, undefined, "half")
+			const result = contextManager.calculateTruncationRange(messages, undefined, "half")
 
 			expect(result).to.deep.equal([2, 5])
 		})
 
 		it("first truncation with quarter keep", () => {
 			const messages = createMessages(11)
-			const result = contextManager.getNextTruncationRange(messages, undefined, "quarter")
+			const result = contextManager.calculateTruncationRange(messages, undefined, "quarter")
 
 			expect(result).to.deep.equal([2, 7])
 		})
 
 		it("sequential truncation with half keep", () => {
 			const messages = createMessages(21)
-			const firstRange = contextManager.getNextTruncationRange(messages, undefined, "half")
+			const firstRange = contextManager.calculateTruncationRange(messages, undefined, "half")
 			expect(firstRange).to.deep.equal([2, 9])
 
 			// Pass the previous range for sequential truncation
-			const secondRange = contextManager.getNextTruncationRange(messages, firstRange, "half")
+			const secondRange = contextManager.calculateTruncationRange(messages, firstRange, "half")
 			expect(secondRange).to.deep.equal([2, 13])
 		})
 
 		it("sequential truncation with quarter keep", () => {
 			const messages = createMessages(41)
-			const firstRange = contextManager.getNextTruncationRange(messages, undefined, "quarter")
+			const firstRange = contextManager.calculateTruncationRange(messages, undefined, "quarter")
 
-			const secondRange = contextManager.getNextTruncationRange(messages, firstRange, "quarter")
+			const secondRange = contextManager.calculateTruncationRange(messages, firstRange, "quarter")
 
 			expect(secondRange[0]).to.equal(2)
 			expect(secondRange[1]).to.be.greaterThan(firstRange[1])
@@ -66,7 +66,7 @@ describe("ContextManager", () => {
 
 		it("ensures the last message in range is a user message", () => {
 			const messages = createMessages(14)
-			const result = contextManager.getNextTruncationRange(messages, undefined, "half")
+			const result = contextManager.calculateTruncationRange(messages, undefined, "half")
 
 			// Check if the message at the end of range is an assistant message
 			const lastRemovedMessage = messages[result[1]]
@@ -79,14 +79,14 @@ describe("ContextManager", () => {
 
 		it("handles small message arrays", () => {
 			const messages = createMessages(3)
-			const result = contextManager.getNextTruncationRange(messages, undefined, "half")
+			const result = contextManager.calculateTruncationRange(messages, undefined, "half")
 
 			expect(result).to.deep.equal([2, 1])
 		})
 
 		it("preserves the message structure when truncating", () => {
 			const messages = createMessages(20)
-			const result = contextManager.getNextTruncationRange(messages, undefined, "half")
+			const result = contextManager.calculateTruncationRange(messages, undefined, "half")
 
 			// Get messages after removing the range
 			const effectiveMessages = [...messages.slice(0, result[0]), ...messages.slice(result[1] + 1)]

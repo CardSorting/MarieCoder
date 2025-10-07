@@ -10,7 +10,7 @@ import { Logger } from "./services/logging/Logger"
 import "./utils/path" // necessary to have access to String.prototype.toPosix
 
 import { HostProvider } from "@/hosts/host-provider"
-import { FileContextTracker } from "./core/context/context-tracking/FileContextTracker"
+import { FileContextTracker } from "./core/context/context-tracking/file_context_tracker"
 import { StateManager } from "./core/storage/StateManager"
 import { ExtensionRegistryInfo } from "./registry"
 import { audioRecordingService } from "./services/dictation/AudioRecordingService"
@@ -61,7 +61,7 @@ export async function initialize(context: vscode.ExtensionContext): Promise<Webv
 	await migrateTaskHistoryToFile(context)
 
 	// Clean up orphaned file context warnings (startup cleanup)
-	await FileContextTracker.cleanupOrphanedWarnings(context)
+	await FileContextTracker.cleanupOrphanedWarnings(StateManager.get())
 
 	const webview = HostProvider.get().createWebviewProvider()
 
