@@ -1,206 +1,220 @@
 # NormieDev ⚡
 
-**AI coding that sparks joy**
+**Community-driven AI coding assistant**
 
 [![Discord](https://img.shields.io/badge/Discord-Join-7289da?logo=discord)](https://discord.gg/VPxMugw2g9) • [![GitHub](https://img.shields.io/badge/GitHub-Star-blue?logo=github)](https://github.com/CardSorting/NormieDev) • [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](./LICENSE)
 
 ---
 
-## What is this?
+## What is NormieDev?
 
-An AI coding assistant that works like you actually think. Chat with your codebase, ship features faster, and enjoy the process.
+NormieDev is a community fork of [Cline](https://github.com/cline/cline), the open-source AI coding assistant that's democratizing AI-assisted development. We're building on their incredible foundation to explore additional features and workflows that serve our community's needs.
 
-```
-You: "Add dark mode to this app"
-NormieDev: *analyzes your code, creates the files, updates the styles*
-You: *clicks approve*
-Done. That simple.
-```
+**Part of the democratic development movement** - AI coding tools should be open, transparent, and controlled by users, not corporations.
 
-## Why NormieDev?
+## What It Does
 
-Because most AI coding tools are either:
-- Too simple (glorified autocomplete)
-- Too complex (enterprise feature bloat)
-- Too opinionated (forces you into their workflow)
+Chat with an AI that can:
+- Create and edit files in your codebase
+- Run terminal commands (with your approval)
+- Browse and test your web apps
+- Fix bugs with full context
+- Extend itself with custom tools
 
-**NormieDev is different:**
-- Powerful enough for production apps
-- Simple enough to use immediately
-- Flexible enough to work YOUR way
+Every action requires your approval. You're always in control.
 
 ## Quick Start
 
-1. Install in VS Code
+```bash
+1. Install NormieDev in VS Code
 2. Add your AI API key (or use free local models)
-3. Open the chat and say what you want
-4. Approve the changes you like
+3. Start chatting about what you want to build
+4. Review and approve changes
 5. Ship it
+```
 
-No setup, no config files, no "getting started" tutorials to slog through.
+## Standing on the Shoulders of Giants
 
-## What Can It Do?
+The [Cline project](https://github.com/cline/cline) pioneered something revolutionary: proving that powerful AI coding assistants don't need to be proprietary black boxes. They can be:
+- **Open source** - fully transparent codebase
+- **User controlled** - you approve every action
+- **Model agnostic** - use any AI provider you want
+- **Community driven** - built with and for developers
 
-### Code
-- Create new files and features
-- Refactor existing code
-- Fix bugs and errors
-- Explain complex logic
-- Update dependencies
+NormieDev carries forward this mission. We're not replacing Cline - we're contributing to the ecosystem they created. Both projects share the same core values and vision for democratic development.
 
-### Run Things
-- Execute terminal commands
-- Start dev servers
-- Run tests
-- Install packages
-- Deploy apps
+**Huge respect to the Cline team** for making this possible. Their openness and commitment to user autonomy inspired us to build alongside them.
 
-### Test Things
-- Launch browsers
-- Click and test UI
-- Capture screenshots
-- Read console logs
-- Find visual bugs
+## Core Features
 
-### Extend Itself
-- Connect to databases via MCP
-- Add custom tools
-- Integrate APIs
-- Create workflows
+### 💬 Smart Conversations
+Talk to your codebase in natural language. NormieDev understands context, patterns, and project structure.
 
-## Real Examples
+### 📝 File Operations
+Create, edit, and refactor files. See diffs before accepting. Give feedback and iterate until it's right.
 
-**"Build a todo app with React and local storage"**  
-→ Creates components, adds state, handles persistence. 2 minutes.
+### ⚡ Terminal Integration
+Execute commands, install packages, run tests, start servers. NormieDev monitors output and adapts as it works.
 
-**"This button isn't working, here's a screenshot"**  
-→ Analyzes the image, finds the issue, fixes it. Done.
+### 🌐 Browser Testing
+Launch browsers, interact with your UI, capture screenshots, read console logs. Perfect for web development.
 
-**"Refactor this to TypeScript"**  
-→ Converts files, adds types, updates imports. Zero errors.
+### 🔌 MCP Integration
+Connect to databases, APIs, and external services using Model Context Protocol. Create custom tools for your workflow.
 
-**"Add authentication with Supabase"**  
-→ Sets up auth flow, creates components, handles sessions. Works.
+### 🎯 Context Control
+Use `@file`, `@folder`, `@url`, and `@problems` to give NormieDev exactly what it needs.
+
+### 📸 Visual Development
+Drop in screenshots or mockups. NormieDev recreates them as working code.
+
+### 💾 Checkpoints
+Every step is saved. Compare versions, restore any previous state, experiment freely.
 
 ## Choose Your AI
 
-Use whatever fits your needs:
+NormieDev works with any AI provider:
 
-| Provider | Best For | Cost |
-|----------|----------|------|
-| **Ollama** | Privacy, free usage | $0 |
-| **Anthropic Claude** | Best quality | ~$3/hour |
-| **OpenAI GPT** | Balanced | ~$1/hour |
-| **OpenRouter** | 200+ models | Varies |
-| **Gemini** | Fast & cheap | ~$0.50/hour |
+**Cloud Providers:**
+- Anthropic Claude (high quality)
+- OpenAI GPT (well-rounded)
+- Google Gemini (fast & affordable)
+- OpenRouter (200+ models)
+- AWS Bedrock, Azure, GCP Vertex
 
-Switch between them anytime. Use cheap models for simple tasks, powerful ones for complex work.
+**Local & Private:**
+- Ollama (free, runs on your machine)
+- LM Studio (user-friendly local interface)
 
-## Smart Context
+Switch between them anytime. Use what fits your budget and privacy needs.
+
+## Real Examples
+
+**"Build a React dashboard with charts"**  
+Creates components, adds visualization library, implements data flow. Fast.
+
+**"This form validation isn't working"**  
+Analyzes the code, finds the logic error, fixes it, tests it. Done.
+
+**"Refactor this to use async/await"**  
+Updates functions, handles errors properly, maintains behavior. Clean.
+
+**"Add dark mode throughout the app"**  
+Updates styles, adds toggle, persists preference. Works everywhere.
+
+## Context Tools
 
 Give NormieDev exactly what it needs:
 
 ```
-@file src/app.js                    → Include specific file
-@folder components/                  → Include entire folder
-@url https://docs.stripe.com         → Fetch and include docs
-@problems                            → Include all workspace errors
+@file src/components/Header.tsx    → Include specific file
+@folder src/utils/                  → Include entire folder  
+@url https://api-docs.example.com   → Fetch external docs
+@problems                           → Include all VS Code errors
 ```
 
-No more copy-pasting. No wasted tokens.
+Efficient and precise.
 
-## You're In Control
+## How We Work
 
-Every action requires approval:
-- ✅ File changes → See full diff before accepting
-- ✅ Terminal commands → Review before running
-- ✅ Browser actions → Approve each interaction
+**User Control First**  
+Every file change, terminal command, and browser action requires approval. No surprises.
 
-Don't like something? Give feedback and iterate.
+**See Everything**  
+Full diffs for file changes. Clear explanations for actions. Complete transparency.
 
-## Checkpoints
+**Iterate Freely**  
+Don't like something? Give feedback. NormieDev adapts and tries again.
 
-NormieDev saves snapshots as it works:
-- Compare any version to current state
-- Restore to any previous point
-- Experiment without fear
-- Roll back instantly
-
-Perfect for trying different approaches.
-
-## Standing on the Shoulders of Giants
-
-NormieDev is built on [Cline](https://github.com/cline/cline), a groundbreaking open-source project that's democratizing AI-assisted development. The Cline team proved that powerful AI coding tools don't have to be locked behind corporate walls - they can be open, accessible, and community-driven.
-
-Their mission inspired us to contribute to this movement. NormieDev is our way of participating in the democratic development ecosystem they pioneered. We're exploring different approaches and features while honoring the same core values: transparency, user control, and making AI coding accessible to everyone.
-
-Both projects share the same goal - empowering developers with AI tools that respect their autonomy and creativity. We're honored to be part of the community and movement that Cline started.
+**Save Checkpoints**  
+Restore to any previous state. Experiment without risk.
 
 ## Getting Started
 
-### Install
+### Installation
 ```
 VS Code → Extensions → Search "NormieDev" → Install
 ```
 
-### Configure AI
-Click the NormieDev icon → Settings → Choose your AI provider → Add API key
+### Configuration
+Click NormieDev icon → Settings → Choose AI provider → Add API key
 
-### Start Coding
-Open NormieDev chat → Type what you want → Review → Approve → Done
+### Start Building
+Open chat → Describe what you want → Review changes → Approve → Done
 
-That's it. Seriously.
+## Tips for Success
 
-## Pro Tips
-
-**Be direct:** "Add pagination" not "Can you maybe add pagination please?"
+**Be specific:** "Add pagination to the user table" beats "improve the UI"
 
 **Use context:** `@file` and `@folder` help NormieDev understand your project
 
-**Iterate fast:** Quick feedback loops > perfect first try
+**Iterate quickly:** Fast feedback loops get better results
 
-**Trust the process:** Review changes but don't overthink
+**Break it down:** Smaller, focused tasks work best
 
-**Save money:** Use cheaper models for simple tasks
+**Mix models:** Use cheaper models for simple tasks, powerful ones for complex work
 
-## Join the Community
+## Community
 
-- 💬 [Discord](https://discord.gg/VPxMugw2g9) - Daily discussions, help, tips
-- 🐛 [Issues](https://github.com/CardSorting/NormieDev/issues) - Report bugs
+We're building together:
+
+- 💬 [Discord](https://discord.gg/VPxMugw2g9) - Daily discussions and support
+- 🐛 [GitHub Issues](https://github.com/CardSorting/NormieDev/issues) - Bug reports
 - 💡 [Discussions](https://github.com/CardSorting/NormieDev/discussions) - Ideas and feedback
-- ⭐ [Star on GitHub](https://github.com/CardSorting/NormieDev) - Support the project
+- ⭐ [Star the Project](https://github.com/CardSorting/NormieDev) - Show support
+
+Both NormieDev and Cline communities welcome you. We're all building the future of democratic development together.
 
 ## FAQ
 
-**Q: How much does it cost?**  
-A: Extension is free. AI usage varies ($0-$3/hour depending on model).
+**How much does it cost?**  
+Extension is free. AI usage costs vary ($0 with Ollama to ~$3/hour with Claude Sonnet).
 
-**Q: Is my code private?**  
-A: Cloud providers see your code. Use Ollama for 100% local/private.
+**Is my code private?**  
+Depends on AI provider. Cloud services process your code. Use Ollama for complete privacy.
 
-**Q: What languages work?**  
-A: All of them. JavaScript, Python, Go, Rust, whatever.
+**What can it build?**  
+Anything you can build in VS Code. Works with all languages and frameworks.
 
-**Q: Can it build complete apps?**  
-A: Yes. Break big projects into focused tasks for best results.
+**How is this different from Copilot?**  
+Copilot autocompletes. NormieDev plans, builds, tests, debugs, and iterates with you.
 
-**Q: How is this different from Copilot?**  
-A: Copilot autocompletes. NormieDev builds, tests, debugs, and ships.
+**Can I use both Cline and NormieDev?**  
+Yes! Both are part of the same ecosystem. Try both and use what works for you.
 
-**Q: Do I need to know how to code?**  
-A: Helps if you do, but you'll learn fast by using it.
+**Why fork instead of contribute to Cline?**  
+We're exploring different features and approaches while maintaining the same core mission. Both projects benefit from diverse experimentation.
 
 ## Contributing
 
-Pull requests welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-## License
+Whether you contribute to NormieDev, Cline, or both - you're helping build the democratic development movement.
 
-Apache 2.0 - See [LICENSE](./LICENSE)
+## License & Attribution
 
-Based on [Cline](https://github.com/cline/cline) by Cline Bot Inc.  
-Rebuilt by the NormieDev community.
+**NormieDev** is licensed under [Apache 2.0](./LICENSE)  
+Built by the NormieDev community
+
+**Built on [Cline](https://github.com/cline/cline)** - Apache 2.0 © Cline Bot Inc.  
+Cline pioneered democratic AI-assisted development and made it open source.
+
+We're deeply grateful to the Cline team for:
+- Creating an incredible foundation
+- Championing open-source AI tools  
+- Proving that users should control their AI assistants
+- Inspiring a movement toward democratic development
+
+Their vision made projects like NormieDev possible.
 
 ---
 
-**Built for developers who ship.** ⚡
+<div align="center">
+
+**Democratic development for everyone** ⚡
+
+*Join the movement. Build openly. Ship freely.*
+
+[Try NormieDev](https://github.com/CardSorting/NormieDev) • [Try Cline](https://github.com/cline/cline)
+
+</div>
