@@ -1,8 +1,6 @@
-import { refreshClineRulesToggles } from "@core/context/instructions/user-instructions/cline-rules"
-import { createRuleFile as createRuleFileImpl } from "@core/context/instructions/user-instructions/rule-helpers"
+import { createRuleFile as createRuleFileImpl, refreshAllToggles } from "@core/context/instructions/user-instructions/rule_loader"
 import { getWorkspaceBasename } from "@core/workspace"
 import { RuleFile, RuleFileRequest } from "@shared/proto/cline/file"
-import { refreshWorkflowToggles } from "@/core/context/instructions/user-instructions/workflows"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import { getCwd, getDesktopDir } from "@/utils/path"
@@ -50,11 +48,7 @@ export async function createRuleFile(controller: Controller, request: RuleFileRe
 		// Still open it for editing
 		await openFile(controller, { value: filePath })
 	} else {
-		if (request.type === "workflow") {
-			await refreshWorkflowToggles(controller, cwd)
-		} else {
-			await refreshClineRulesToggles(controller, cwd)
-		}
+		await refreshAllToggles(controller, cwd)
 		await controller.postStateToWebview()
 
 		await openFile(controller, { value: filePath })

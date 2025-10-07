@@ -1,6 +1,4 @@
-import { refreshClineRulesToggles } from "@core/context/instructions/user-instructions/cline-rules"
-import { refreshExternalRulesToggles } from "@core/context/instructions/user-instructions/external-rules"
-import { refreshWorkflowToggles } from "@core/context/instructions/user-instructions/workflows"
+import { refreshAllToggles } from "@core/context/instructions/user-instructions/rule_loader"
 import { EmptyRequest } from "@shared/proto/cline/common"
 import { RefreshedRules } from "@shared/proto/cline/file"
 import { getCwd, getDesktopDir } from "@/utils/path"
@@ -15,17 +13,15 @@ import type { Controller } from "../index"
 export async function refreshRules(controller: Controller, _request: EmptyRequest): Promise<RefreshedRules> {
 	try {
 		const cwd = await getCwd(getDesktopDir())
-		const { globalToggles, localToggles } = await refreshClineRulesToggles(controller, cwd)
-		const { cursorLocalToggles, windsurfLocalToggles } = await refreshExternalRulesToggles(controller, cwd)
-		const { localWorkflowToggles, globalWorkflowToggles } = await refreshWorkflowToggles(controller, cwd)
+		const allToggles = await refreshAllToggles(controller, cwd)
 
 		return RefreshedRules.create({
-			globalClineRulesToggles: { toggles: globalToggles },
-			localClineRulesToggles: { toggles: localToggles },
-			localCursorRulesToggles: { toggles: cursorLocalToggles },
-			localWindsurfRulesToggles: { toggles: windsurfLocalToggles },
-			localWorkflowToggles: { toggles: localWorkflowToggles },
-			globalWorkflowToggles: { toggles: globalWorkflowToggles },
+			globalClineRulesToggles: { toggles: allToggles.globalClineRules },
+			localClineRulesToggles: { toggles: allToggles.localClineRules },
+			localCursorRulesToggles: { toggles: allToggles.cursorRules },
+			localWindsurfRulesToggles: { toggles: allToggles.windsurfRules },
+			localWorkflowToggles: { toggles: allToggles.localWorkflows },
+			globalWorkflowToggles: { toggles: allToggles.globalWorkflows },
 		})
 	} catch (error) {
 		console.error("Failed to refresh rules:", error)

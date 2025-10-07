@@ -1,4 +1,4 @@
-import { deleteRuleFile as deleteRuleFileImpl } from "@core/context/instructions/user-instructions/rule-helpers"
+import { deleteRuleFile as deleteRuleFileImpl } from "@core/context/instructions/user-instructions/rule_loader"
 import { getWorkspaceBasename } from "@core/workspace"
 import { RuleFile, RuleFileRequest } from "@shared/proto/cline/file"
 import { HostProvider } from "@/hosts/host-provider"

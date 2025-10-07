@@ -11,26 +11,16 @@ import { ModelContextTracker } from "@core/context/context-tracking/ModelContext
 import {
 	getGlobalClineRules,
 	getLocalClineRules,
-	refreshClineRulesToggles,
-} from "@core/context/instructions/user-instructions/cline-rules"
-import {
 	getLocalCursorRules,
 	getLocalWindsurfRules,
-	refreshExternalRulesToggles,
-} from "@core/context/instructions/user-instructions/external-rules"
+} from "@core/context/instructions/user-instructions/rule_loader"
 import { sendPartialMessageEvent } from "@core/controller/ui/subscribeToPartialMessage"
 import { ClineIgnoreController } from "@core/ignore/ClineIgnoreController"
 import { parseMentions } from "@core/mentions"
 import { summarizeTask } from "@core/prompts/context_summarization"
 import { formatResponse } from "@core/prompts/response_formatters"
 import { parseSlashCommands } from "@core/slash-commands"
-import {
-	ensureRulesDirectoryExists,
-	ensureTaskDirectoryExists,
-	GlobalFileNames,
-	getSavedApiConversationHistory,
-	getSavedClineMessages,
-} from "@core/storage/disk"
+import { ensureTaskDirectoryExists, getSavedApiConversationHistory, getSavedClineMessages } from "@core/storage/disk"
 import { isMultiRootEnabled } from "@core/workspace/multi-root-utils"
 import { WorkspaceRootManager } from "@core/workspace/WorkspaceRootManager"
 import { buildCheckpointManager, shouldUseMultiRoot } from "@integrations/checkpoints/factory"
@@ -72,8 +62,7 @@ import { ErrorService } from "@/services/error"
 import { TerminalHangStage, TerminalUserInterventionAction, telemetryService } from "@/services/telemetry"
 import { ShowMessageType } from "@/shared/proto/index.host"
 import { isInTestMode } from "../../services/test/TestMode"
-import { ensureLocalClineDirExists } from "../context/instructions/user-instructions/rule-helpers"
-import { refreshWorkflowToggles } from "../context/instructions/user-instructions/workflows"
+import { refreshAllToggles } from "../context/instructions/user-instructions/rule_loader"
 import { Controller } from "../controller"
 import { StateManager } from "../storage/StateManager"
 import { FocusChainManager } from "./focus-chain"
@@ -1337,18 +1326,16 @@ export class Task {
 				? `# Preferred Language\n\nSpeak in ${preferredLanguage}.`
 				: ""
 
-		const { globalToggles, localToggles } = await refreshClineRulesToggles(this.controller, this.cwd)
-		const { windsurfLocalToggles, cursorLocalToggles } = await refreshExternalRulesToggles(this.controller, this.cwd)
+		const allToggles = await refreshAllToggles(this.controller, this.cwd)
 
-		const globalClineRulesFilePath = await ensureRulesDirectoryExists()
-		const globalClineRulesFileInstructions = await getGlobalClineRules(globalClineRulesFilePath, globalToggles)
+		const globalClineRulesFileInstructions = await getGlobalClineRules(allToggles.globalClineRules)
 
-		const localClineRulesFileInstructions = await getLocalClineRules(this.cwd, localToggles)
+		const localClineRulesFileInstructions = await getLocalClineRules(this.cwd, allToggles.localClineRules)
 		const [localCursorRulesFileInstructions, localCursorRulesDirInstructions] = await getLocalCursorRules(
 			this.cwd,
-			cursorLocalToggles,
+			allToggles.cursorRules,
 		)
-		const localWindsurfRulesFileInstructions = await getLocalWindsurfRules(this.cwd, windsurfLocalToggles)
+		const localWindsurfRulesFileInstructions = await getLocalWindsurfRules(this.cwd, allToggles.windsurfRules)
 
 		const clineIgnoreContent = this.clineIgnoreController.clineIgnoreContent
 		let clineIgnoreInstructions: string | undefined
@@ -2305,10 +2292,8 @@ export class Task {
 		includeFileDetails: boolean = false,
 		useCompactPrompt = false,
 	): Promise<[UserContent, string, boolean]> {
-		// Track if we need to check clinerulesFile
-		let needsClinerulesFileCheck = false
-
-		const { localWorkflowToggles, globalWorkflowToggles } = await refreshWorkflowToggles(this.controller, this.cwd)
+		const allToggles = await refreshAllToggles(this.controller, this.cwd)
+		const { localWorkflows: localWorkflowToggles, globalWorkflows: globalWorkflowToggles } = allToggles
 
 		const processUserContent = async () => {
 			// This is a temporary solution to dynamically load context mentions from tool results. It checks for the presence of tags that indicate that the tool was rejected and feedback was provided (see formatToolDeniedFeedback, attemptCompletion, executeCommand, and consecutiveMistakeCount >= 3) or "<answer>" (see askFollowupQuestion), we place all user generated content in these tags so they can effectively be used as markers for when we should parse mentions). However if we allow multiple tools responses in the future, we will need to parse mentions specifically within the user content tags.
@@ -2332,17 +2317,13 @@ export class Task {
 							)
 
 							// when parsing slash commands, we still want to allow the user to provide their desired context
-							const { processedText, needsClinerulesFileCheck: needsCheck } = await parseSlashCommands(
+							const { processedText } = await parseSlashCommands(
 								parsedText,
 								localWorkflowToggles,
 								globalWorkflowToggles,
 								this.ulid,
 								this.stateManager.getGlobalSettingsKey("focusChainSettings"),
 							)
-
-							if (needsCheck) {
-								needsClinerulesFileCheck = true
-							}
 
 							return {
 								...block,
@@ -2362,10 +2343,8 @@ export class Task {
 		])
 
 		// After processing content, check clinerulesData if needed
-		let clinerulesError = false
-		if (needsClinerulesFileCheck) {
-			clinerulesError = await ensureLocalClineDirExists(this.cwd, GlobalFileNames.clineRules)
-		}
+		// Note: Directory creation is now handled automatically by rule_loader
+		const clinerulesError = false
 
 		// Add focu chain list instructions if needed
 		if (!useCompactPrompt && this.FocusChainManager?.shouldIncludeFocusChainInstructions()) {
