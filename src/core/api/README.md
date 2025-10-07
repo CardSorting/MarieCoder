@@ -1,297 +1,216 @@
-# Refactored API Architecture
+# API Module - Simplified Provider System
 
 ## Overview
 
-This directory contains the refactored API architecture that follows the NORMIE DEV methodology: clean, unified, no duplication. The new architecture replaces the massive switch statement and duplicated code with a centralized, maintainable system.
+This module provides a clean, simplified API for interacting with AI providers. Following the KonMari Method principles, we've ruthlessly eliminated complexity and only support two providers:
 
-## Architecture Components
+- **Anthropic** - Primary provider with advanced reasoning capabilities
+- **OpenRouter** - Unified access to 100+ models from various providers
 
-### 1. Provider Registry (`registry/`)
-- **`provider-registry.ts`**: Centralized registry for managing all API providers
-- **`registrations/`**: Modular provider registration definitions
+## Supported Providers
 
-### 2. Base Classes (`base/`)
-- **`base-provider.ts`**: Abstract base class for all providers
-- **`http-provider.ts`**: Base class for HTTP-based providers
+### Anthropic
+- **Provider ID**: `anthropic`
+- **Features**: Advanced reasoning, code generation, vision, long context (200k tokens)
+- **Configuration**:
+  ```typescript
+  {
+    apiKey: "sk-ant-...",
+    planModeApiProvider: "anthropic",
+    apiModelId: "claude-3-5-sonnet-20241022"
+  }
+  ```
 
-### 3. Services (`services/`)
-- **`configuration-service.ts`**: Centralized configuration management
-- **`error-service.ts`**: Unified error handling and retry logic
-- **`provider-factory.ts`**: Provider creation and management
+### OpenRouter
+- **Provider ID**: `openrouter`
+- **Features**: Access to 100+ models, unified API, cost optimization, provider failover
+- **Configuration**:
+  ```typescript
+  {
+    openRouterApiKey: "sk-or-...",
+    planModeApiProvider: "openrouter",
+    openRouterModelId: "anthropic/claude-3.5-sonnet"
+  }
+  ```
 
-### 4. Utilities (`utils/`)
-- **`message-transformers.ts`**: Message format conversion utilities
-
-### 5. Providers (`providers/`)
-- **`anthropic.ts`**: Clean Anthropic provider implementation
-- **`openai.ts`**: Clean OpenAI provider implementation
-- **`ollama.ts`**: Clean Ollama provider implementation
-
-## Key Benefits
-
-### 1. Reduced Code Duplication
-- **Before**: 400+ lines of switch statement
-- **After**: Clean registry with ~10 lines per provider
-
-### 2. Consistent Error Handling
-- Standardized error types and retry logic
-- Provider-specific error messages
-- Automatic retry with exponential backoff
-
-### 3. Centralized Configuration
-- Mode-specific configuration extraction
-- Validation and normalization
-- Default configuration management
-
-### 4. Type Safety
-- Strong typing throughout the system
-- Compile-time validation
-- Runtime error prevention
-
-### 5. Easy Testing
-- Each service can be tested independently
-- Mock-friendly architecture
-- Comprehensive test coverage
-
-## Usage Examples
+## Usage
 
 ### Basic Usage
-```typescript
-import { buildApiHandler } from './api'
 
-const handler = buildApiHandler(configuration, 'plan')
+```typescript
+import { ApiService } from '@core/api'
+
+// Create a handler for Anthropic
+const handler = ApiService.createHandler(configuration, "plan", {})
+
+// Create a message stream
 const stream = handler.createMessage(systemPrompt, messages)
+for await (const chunk of stream) {
+  if (chunk.type === "text") {
+    console.log(chunk.text)
+  }
+}
 ```
 
-### Advanced Usage
+### With Fallback
+
 ```typescript
-import { ProviderFactoryService } from './api/services/provider-factory'
-
-// Create handler with fallback
-const handler = ProviderFactoryService.createHandlerWithFallback(
+// Automatically fall back to OpenRouter if Anthropic fails
+const handler = ApiService.createHandlerWithFallback(
   configuration,
-  'plan',
+  "plan",
   {},
-  'anthropic'
-)
-
-// Create handler with retry logic
-const handler = await ProviderFactoryService.createHandlerWithRetry(
-  configuration,
-  'plan',
-  {},
-  3
+  ["anthropic", "openrouter"]
 )
 ```
 
-### Error Handling
+## Architecture
+
+### Core Components
+
+1. **ApiService** - Main entry point for creating handlers
+2. **BaseProvider** - Base class for all providers
+3. **HttpProvider** - Base class for HTTP-based providers
+4. **EnhancedProviderRegistry** - Provider registration and discovery
+
+### Provider Structure
+
+```
+src/core/api/
+├── api_service.ts              # Main API service
+├── base/                       # Base provider classes
+│   ├── base-provider.ts
+│   └── http-provider.ts
+├── providers/                  # Provider implementations
+│   ├── core/
+│   │   ├── anthropic.ts       # Anthropic provider
+│   │   └── openrouter.ts      # OpenRouter provider
+│   └── shared.ts              # Shared types
+├── registry/                   # Provider registration
+│   └── enhanced-registrations/
+│       ├── index.ts
+│       └── supported_providers.ts
+├── services/                   # Support services
+│   ├── configuration-service.ts
+│   ├── error-service.ts
+│   └── provider-factory.ts
+├── transform/                  # Stream transformations
+│   ├── openrouter-stream.ts
+│   └── stream.ts
+└── utils/                      # Utility functions
+    └── message-transformers.ts
+```
+
+## Design Principles
+
+Following the KonMari Method applied to code:
+
+1. **Simplicity** - Only two providers, no complex abstractions
+2. **Clear Value** - Every file and function has a clear purpose
+3. **Self-Explanatory** - Names clearly describe functionality
+4. **No Legacy** - All unsupported providers have been removed
+5. **Type Safety** - Strong typing throughout, no `any` types
+
+## Provider Discovery
+
 ```typescript
-import { ErrorService } from './api/services/error-service'
+// Get all supported providers
+const providers = ApiService.getSupportedProviders()
+// Returns: ["anthropic", "openrouter"]
+
+// Check if provider is supported
+const isSupported = ApiService.isProviderSupported("anthropic")
+
+// Get provider metadata
+const metadata = ApiService.getProviderMetadata("anthropic")
+
+// Get provider capabilities
+const capabilities = ApiService.getProviderCapabilities("openrouter")
+```
+
+## Error Handling
+
+All errors are properly typed and include actionable messages:
+
+```typescript
+import { ApiError, ErrorService } from '@core/api'
 
 try {
-  const result = await handler.createMessage(systemPrompt, messages)
+  const handler = ApiService.createHandler(configuration, "plan")
 } catch (error) {
-  const apiError = ErrorService.parseError(error, 'anthropic')
-  
-  if (apiError.isRetriable()) {
-    // Handle retry logic
-    const delay = apiError.getRetryDelay()
-    await new Promise(resolve => setTimeout(resolve, delay))
-  }
-  
-  ErrorService.logError(apiError, 'createMessage')
-}
-```
-
-### Configuration Management
-```typescript
-import { ConfigurationService } from './api/services/configuration-service'
-
-// Extract mode-specific configuration
-const modeConfig = ConfigurationService.extractModeConfiguration(config, 'plan')
-
-// Validate configuration
-const validation = ConfigurationService.validateConfiguration(config, 'anthropic', 'plan')
-if (!validation.isValid) {
-  console.error('Configuration errors:', validation.errors)
-}
-```
-
-## Provider Implementation
-
-### Creating a New Provider
-
-1. **Extend Base Class**:
-```typescript
-export class CustomProvider extends BaseProvider {
-  protected createClient(): any {
-    // Create your client
-  }
-
-  protected getModelInfo(): ModelInfo {
-    // Return model information
-  }
-
-  async *createMessage(systemPrompt: string, messages: any[]): ApiStream {
-    // Implement message creation
+  if (error instanceof ApiError) {
+    console.error(`Error: ${error.message}`)
+    console.error(`Type: ${error.type}`)
+    console.error(`Action: ${error.actionable}`)
   }
 }
 ```
 
-2. **Register Provider**:
-```typescript
-providerRegistry.registerProvider({
-  providerId: 'custom',
-  handlerClass: CustomProvider,
-  requiredOptions: ['apiKey'],
-  optionalOptions: ['baseUrl']
-})
-```
-
-### HTTP-Based Providers
-
-For HTTP-based providers, extend `HttpProvider`:
+## Configuration Validation
 
 ```typescript
-export class CustomHttpProvider extends HttpProvider {
-  protected createHttpClient(config: any): any {
-    // Create HTTP client
-  }
+// Validate configuration before use
+const validation = ApiService.validateProviderConfiguration(
+  "anthropic",
+  configuration,
+  "plan"
+)
 
-  protected processStreamResponse(response: any): ApiStream {
-    // Process streaming response
-  }
+if (!validation) {
+  console.error("Invalid configuration")
 }
 ```
 
-## Testing
+## Migration from Legacy Providers
 
-### Unit Tests
+If you were using any of these providers, they are no longer supported:
+
+- ❌ OpenAI → Use OpenRouter with `openrouter/openai/*` models
+- ❌ Gemini → Use OpenRouter with `google/*` models
+- ❌ Ollama → Use OpenRouter or run local models separately
+- ❌ Bedrock → Use OpenRouter or Anthropic directly
+- ❌ Groq → Use OpenRouter with `groq/*` models
+- ❌ All other providers → Use OpenRouter for unified access
+
+### Migration Example
+
+**Before:**
 ```typescript
-import { ProviderFactoryService } from '../services/provider-factory'
-
-describe('ProviderFactoryService', () => {
-  it('should create handlers for supported providers', () => {
-    const handler = ProviderFactoryService.createHandler(config, 'plan')
-    expect(handler).toBeDefined()
-  })
-})
+{
+  planModeApiProvider: "gemini",
+  geminiApiKey: "...",
+  geminiModelId: "gemini-1.5-pro"
+}
 ```
 
-### Integration Tests
+**After:**
 ```typescript
-import { buildApiHandler } from '../index'
-
-describe('API Integration', () => {
-  it('should handle end-to-end message creation', async () => {
-    const handler = buildApiHandler(config, 'plan')
-    const stream = handler.createMessage(systemPrompt, messages)
-    
-    for await (const chunk of stream) {
-      expect(chunk.type).toBeDefined()
-    }
-  })
-})
+{
+  planModeApiProvider: "openrouter",
+  openRouterApiKey: "...",
+  openRouterModelId: "google/gemini-1.5-pro"
+}
 ```
-
-## Architecture Overview
-
-The API architecture follows the NORMIE DEV methodology with clean, unified patterns:
-
-### Key Components
-1. **Provider Registry**: Centralized provider management
-2. **Base Classes**: Common functionality for all providers
-3. **Services**: Configuration, error handling, and factory services
-4. **Utilities**: Message transformers and format converters
-
-### Quick Start
-1. Import from the main API module
-2. Use `ErrorService` for consistent error handling
-3. Use `ConfigurationService` for configuration management
-4. Register new providers with the registry
-
-## Performance Considerations
-
-### Caching
-- Provider clients are cached and reused
-- Configuration is normalized and cached
-- Error handling is optimized for performance
-
-### Memory Management
-- Streams are properly cleaned up
-- Clients are disposed when no longer needed
-- Memory leaks are prevented through proper lifecycle management
-
-### Retry Logic
-- Exponential backoff with jitter
-- Configurable retry limits
-- Provider-specific retry strategies
-
-## Security
-
-### API Key Management
-- Keys are validated before use
-- Secure storage and transmission
-- No logging of sensitive information
-
-### Error Handling
-- No sensitive information in error messages
-- Proper error sanitization
-- Secure error logging
-
-## Monitoring and Observability
-
-### Error Tracking
-- Standardized error types
-- Provider-specific error context
-- Retry attempt tracking
-
-### Performance Metrics
-- Request/response timing
-- Retry attempt counts
-- Success/failure rates
-
-### Logging
-- Structured logging with context
-- Configurable log levels
-- Provider-specific log formatting
-
-## Future Enhancements
-
-### Planned Features
-1. **Load Balancing**: Support for multiple provider instances
-2. **Circuit Breaker**: Automatic failover for unreliable providers
-3. **Metrics Collection**: Detailed performance and usage metrics
-4. **Provider Health Checks**: Automatic provider health monitoring
-5. **Dynamic Configuration**: Runtime configuration updates
-
-### Extension Points
-1. **Custom Error Handlers**: Provider-specific error handling
-2. **Custom Retry Strategies**: Provider-specific retry logic
-3. **Custom Transformers**: Provider-specific message transformations
-4. **Custom Validators**: Provider-specific configuration validation
 
 ## Contributing
 
-### Adding New Providers
-1. Create provider class extending appropriate base class
-2. Implement required methods
-3. Add comprehensive tests
-4. Register provider in registry
-5. Update documentation
+When adding new features:
 
-### Adding New Features
-1. Follow existing patterns and conventions
-2. Add comprehensive tests
-3. Update documentation
-4. Ensure backward compatibility
+1. Apply the 3-step decision process:
+   - Does this add clear value?
+   - Can we delete anything?
+   - Is this the simplest solution?
 
-## Support
+2. Follow naming conventions:
+   - Use `snake_case` for files
+   - Use descriptive names (no abbreviations)
+   - Every name should be self-explanatory
 
-For questions or issues:
-1. Check the test files for usage examples
-2. Review the service documentation
-3. Use the error service for debugging
-4. Refer to the migration guide
+3. Maintain type safety:
+   - No `any` types
+   - Proper error handling
+   - Input validation
 
-The new architecture provides a solid foundation for future development while maintaining clean, maintainable code that follows the NORMIE DEV methodology.
+## License
+
+See the main project LICENSE file.

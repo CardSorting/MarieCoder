@@ -1,12 +1,13 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 
 /**
- * Message transformation utilities for different providers
- * Centralizes message format conversions to reduce duplication
+ * Message transformation utilities for supported providers
+ * Only Anthropic and OpenRouter are supported
+ * OpenRouter uses OpenAI-compatible format
  */
 
 /**
- * Convert Anthropic messages to OpenAI format
+ * Convert Anthropic messages to OpenAI format (used by OpenRouter)
  */
 export function convertToOpenAiMessages(messages: Anthropic.Messages.MessageParam[]): any[] {
 	return messages.map((message) => {
@@ -26,109 +27,25 @@ export function convertToOpenAiMessages(messages: Anthropic.Messages.MessagePara
 }
 
 /**
- * Convert Anthropic messages to Ollama format
- */
-export function convertToOllamaMessages(messages: Anthropic.Messages.MessageParam[]): any[] {
-	return messages.map((message) => ({
-		role: message.role,
-		content: typeof message.content === "string" ? message.content : JSON.stringify(message.content),
-	}))
-}
-
-/**
- * Convert Anthropic messages to Gemini format
- */
-export function convertAnthropicMessageToGemini(message: Anthropic.Messages.MessageParam): any {
-	if (typeof message.content === "string") {
-		return {
-			role: message.role === "assistant" ? "model" : "user",
-			parts: [{ text: message.content }],
-		}
-	}
-
-	// Handle complex content types
-	return {
-		role: message.role === "assistant" ? "model" : "user",
-		parts: Array.isArray(message.content)
-			? message.content.map((part) => ({ text: typeof part === "string" ? part : JSON.stringify(part) }))
-			: [{ text: JSON.stringify(message.content) }],
-	}
-}
-
-/**
- * Convert messages to R1 format (for reasoning models)
- */
-export function convertToR1Format(messages: Anthropic.Messages.MessageParam[]): any[] {
-	return messages.map((message) => ({
-		role: message.role === "assistant" ? "assistant" : "user",
-		content: typeof message.content === "string" ? message.content : JSON.stringify(message.content),
-	}))
-}
-
-/**
- * Convert messages to Mistral format
- */
-export function convertToMistralFormat(messages: Anthropic.Messages.MessageParam[]): any[] {
-	return messages.map((message) => ({
-		role: message.role,
-		content: typeof message.content === "string" ? message.content : JSON.stringify(message.content),
-	}))
-}
-
-/**
  * Convert messages to provider-specific format
+ * Only supports anthropic and openrouter
  */
 export function convertMessages(messages: Anthropic.Messages.MessageParam[], provider: string): any[] {
 	switch (provider) {
-		case "openai":
-		case "openai-native":
-		case "deepseek":
-		case "fireworks":
-		case "together":
-		case "mistral":
-		case "groq":
-		case "baseten":
-		case "sambanova":
-		case "cerebras":
-		case "xai":
-		case "huggingface":
-		case "nebius":
-		case "asksage":
-		case "dify":
-		case "vercel-ai-gateway":
-		case "zai":
-		case "oca":
-		case "litellm":
 		case "openrouter":
 			return convertToOpenAiMessages(messages)
 
-		case "ollama":
-		case "lmstudio":
-			return convertToOllamaMessages(messages)
-
-		case "gemini":
-		case "vertex":
-			return messages.map(convertAnthropicMessageToGemini)
-
-		case "qwen":
-		case "qwen-code":
-		case "doubao":
-		case "moonshot":
-		case "huawei-cloud-maas":
-			return convertToMistralFormat(messages)
-
-		case "claude-code":
-			return convertToR1Format(messages)
-
+		case "anthropic":
 		default:
-			return convertToOpenAiMessages(messages)
+			// Anthropic uses native format, no conversion needed
+			return messages
 	}
 }
 
 /**
  * Validate message format for provider
  */
-export function validateMessageFormat(messages: any[], provider: string): boolean {
+export function validateMessageFormat(messages: any[], _provider: string): boolean {
 	if (!Array.isArray(messages)) {
 		return false
 	}
@@ -136,27 +53,6 @@ export function validateMessageFormat(messages: any[], provider: string): boolea
 	for (const message of messages) {
 		if (!message.role || !message.content) {
 			return false
-		}
-
-		// Provider-specific validation
-		switch (provider) {
-			case "gemini":
-			case "vertex":
-				if (!Array.isArray(message.parts)) {
-					return false
-				}
-				break
-
-			case "ollama":
-			case "lmstudio":
-				if (typeof message.content !== "string") {
-					return false
-				}
-				break
-
-			default:
-				// Most providers accept string or complex content
-				break
 		}
 	}
 

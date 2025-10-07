@@ -207,6 +207,7 @@ export class ErrorService {
 
 	/**
 	 * Create provider-specific error messages
+	 * Only supports Anthropic and OpenRouter
 	 */
 	static createProviderErrorMessage(provider: string, error: ApiError): string {
 		const baseMessage = error.message
@@ -214,14 +215,8 @@ export class ErrorService {
 		switch (provider) {
 			case "anthropic":
 				return `Anthropic API error: ${baseMessage}`
-			case "openai":
-				return `OpenAI API error: ${baseMessage}`
-			case "gemini":
-				return `Google Gemini API error: ${baseMessage}`
-			case "ollama":
-				return `Ollama API error: ${baseMessage}`
-			case "bedrock":
-				return `AWS Bedrock API error: ${baseMessage}`
+			case "openrouter":
+				return `OpenRouter API error: ${baseMessage}`
 			default:
 				return `${provider} API error: ${baseMessage}`
 		}

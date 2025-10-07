@@ -24,7 +24,7 @@ export interface ModeConfiguration {
 
 /**
  * Configuration management service
- * Centralizes configuration handling and validation
+ * Only supports Anthropic and OpenRouter
  * Follows NORMIE DEV methodology: clean, unified, no duplication
  */
 export class ConfigurationService {
@@ -92,62 +92,23 @@ export class ConfigurationService {
 
 	/**
 	 * Extract provider-specific configuration
+	 * Only includes keys for Anthropic and OpenRouter
 	 */
 	private static extractProviderSpecificConfig(configuration: ApiConfiguration, mode: Mode): Record<string, any> {
 		const providerConfig: Record<string, any> = {}
 		const _modePrefix = mode === "plan" ? "planMode" : "actMode"
 
-		// Extract common provider configurations
+		// Extract common provider configurations for supported providers only
 		const commonKeys = [
 			"apiKey",
 			"baseUrl",
 			"headers",
 			"timeout",
-			"openAiApiKey",
-			"openAiBaseUrl",
-			"azureApiVersion",
 			"anthropicBaseUrl",
-			"geminiApiKey",
-			"geminiBaseUrl",
-			"ollamaBaseUrl",
-			"ollamaApiKey",
-			"ollamaModelId",
-			"vertexProjectId",
-			"vertexRegion",
-			"awsAccessKey",
-			"awsSecretKey",
-			"awsRegion",
-			"groqApiKey",
-			"groqModelId",
-			"fireworksApiKey",
-			"fireworksModelId",
-			"togetherApiKey",
-			"togetherModelId",
-			"mistralApiKey",
-			"deepSeekApiKey",
-			"qwenApiKey",
-			"doubaoApiKey",
-			"moonshotApiKey",
-			"huggingFaceApiKey",
-			"nebiusApiKey",
-			"asksageApiKey",
-			"xaiApiKey",
-			"sambanovaApiKey",
-			"cerebrasApiKey",
-			"basetenApiKey",
-			"sapAiCoreClientId",
-			"sapAiCoreClientSecret",
-			"claudeCodePath",
-			"huaweiCloudMaasApiKey",
-			"difyApiKey",
-			"vercelAiGatewayApiKey",
-			"zaiApiKey",
-			"ocaBaseUrl",
-			"liteLlmApiKey",
-			"liteLlmBaseUrl",
-			"liteLlmModelId",
 			"openRouterApiKey",
 			"openRouterModelId",
+			"openRouterModelInfo",
+			"openRouterProviderSorting",
 			"clineAccountId",
 		]
 
@@ -163,13 +124,14 @@ export class ConfigurationService {
 
 	/**
 	 * Validate provider-specific configuration
+	 * Only Anthropic and OpenRouter are supported
 	 */
 	private static validateProviderSpecificConfig(
 		configuration: ApiConfiguration,
 		providerId: string,
 		mode: Mode,
 		errors: string[],
-		warnings: string[],
+		_warnings: string[],
 	): void {
 		const modeConfig = ConfigurationService.extractModeConfiguration(configuration, mode)
 
@@ -180,50 +142,15 @@ export class ConfigurationService {
 				}
 				break
 
-			case "openai":
-				if (!modeConfig.openAiApiKey && !configuration.openAiApiKey) {
-					errors.push("OpenAI API key is required")
+			case "openrouter":
+				if (!modeConfig.openRouterApiKey && !configuration.openRouterApiKey) {
+					errors.push("OpenRouter API key is required")
 				}
 				break
 
-			case "gemini":
-				if (!modeConfig.geminiApiKey && !configuration.geminiApiKey) {
-					if (!modeConfig.vertexProjectId && !configuration.vertexProjectId) {
-						errors.push("Gemini API key or Vertex project ID is required")
-					}
-				}
-				break
-
-			case "ollama":
-				if (!modeConfig.ollamaModelId) {
-					errors.push("Ollama model ID is required")
-				}
-				break
-
-			case "bedrock":
-				if (!modeConfig.awsAccessKey && !configuration.awsAccessKey) {
-					errors.push("AWS access key is required for Bedrock")
-				}
-				if (!modeConfig.awsSecretKey && !configuration.awsSecretKey) {
-					errors.push("AWS secret key is required for Bedrock")
-				}
-				if (!modeConfig.awsRegion && !configuration.awsRegion) {
-					errors.push("AWS region is required for Bedrock")
-				}
-				break
-
-			case "vertex":
-				if (!modeConfig.vertexProjectId && !configuration.vertexProjectId) {
-					errors.push("Vertex project ID is required")
-				}
-				break
-
-			// Add more provider-specific validations as needed
 			default:
-				// Generic validation for unknown providers
-				if (!modeConfig.apiKey && !configuration.apiKey) {
-					warnings.push(`API key not found for provider: ${providerId}`)
-				}
+				// Unsupported provider
+				errors.push(`Unsupported provider: ${providerId}. Only 'anthropic' and 'openrouter' are supported.`)
 				break
 		}
 	}
@@ -248,6 +175,7 @@ export class ConfigurationService {
 
 	/**
 	 * Get default configuration for a provider
+	 * Only Anthropic and OpenRouter are supported
 	 */
 	static getDefaultConfiguration(providerId: string): Partial<ApiConfiguration> {
 		const defaults: Record<string, Partial<ApiConfiguration>> = {
@@ -255,16 +183,8 @@ export class ConfigurationService {
 				apiKey: "",
 				anthropicBaseUrl: "https://api.anthropic.com",
 			},
-			openai: {
-				openAiApiKey: "",
-				openAiBaseUrl: "https://api.openai.com/v1",
-			},
-			gemini: {
-				geminiApiKey: "",
-				geminiBaseUrl: "https://generativelanguage.googleapis.com/v1beta",
-			},
-			ollama: {
-				ollamaBaseUrl: "http://localhost:11434",
+			openrouter: {
+				openRouterApiKey: "",
 			},
 		}
 
