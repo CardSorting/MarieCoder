@@ -29,7 +29,7 @@ export class TelemetryService {
 	captureExtensionActivated(): void {}
 	captureButtonClick(..._args: any[]): void {}
 	captureToolUse(..._args: any[]): void {}
-	captureTerminalHang(_stage: TerminalHangStage, _action: TerminalUserInterventionAction): void {}
+	captureTerminalHang(_stage: TerminalHangStage, _action?: TerminalUserInterventionAction): void {}
 	captureTerminalOutputFailure(_reason: TerminalOutputFailureReason): void {}
 	capture(..._args: any[]): void {}
 
@@ -100,6 +100,9 @@ export class TelemetryService {
 	// Provider & API
 	captureProviderApiError(..._args: any[]): void {}
 	captureDiffEditFailure(..._args: any[]): void {}
+
+	// MCP
+	captureMcpToolCall(..._args: any[]): void {}
 
 	dispose(): void {}
 }

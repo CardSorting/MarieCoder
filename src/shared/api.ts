@@ -219,7 +219,7 @@ export interface ModelInfo {
 	cacheWritesPrice?: number
 	cacheReadsPrice?: number
 	description?: string
-	tiers?: {
+	tiers?: readonly {
 		contextWindow: number
 		inputPrice?: number
 		outputPrice?: number

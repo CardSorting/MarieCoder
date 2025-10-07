@@ -1,4 +1,4 @@
-import { ApiHandlerModel } from "@core/api"
+import { ApiHandlerModel, ProviderInfo } from "@core/api"
 import { AnthropicModelId, anthropicModels } from "@/shared/api"
 
 export function modelDoesntSupportWebp(apiHandlerModel: ApiHandlerModel): boolean {
@@ -53,7 +53,7 @@ export function isNextGenModelFamily(id: string): boolean {
 	)
 }
 
-export function isLocalModel(providerInfo: ApiProviderInfo): boolean {
+export function isLocalModel(providerInfo: ProviderInfo): boolean {
 	const localProviders = ["lmstudio", "ollama"]
 	return localProviders.includes(normalize(providerInfo.providerId))
 }

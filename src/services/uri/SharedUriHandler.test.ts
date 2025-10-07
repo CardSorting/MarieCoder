@@ -1,7 +1,6 @@
 import { expect } from "chai"
 import { afterEach, beforeEach, describe, it } from "mocha"
 import * as sinon from "sinon"
-import { ErrorService } from "@/core/api/services/error-service"
 import { WebviewProvider } from "@/core/webview"
 import { Logger } from "../logging/Logger"
 import { SharedUriHandler } from "./SharedUriHandler"
@@ -18,19 +17,20 @@ describe("SharedUriHandler", () => {
 		sandbox.stub(Logger, "info").returns()
 		sandbox.stub(Logger, "error").returns()
 		// Mock ErrorService to avoid telemetry dependency
-		const mockErrorService = {
-			logMessage: sandbox.stub(),
-			logException: sandbox.stub(),
-			toClineError: sandbox.stub(),
-			isEnabled: sandbox.stub().returns(false),
-			getSettings: sandbox.stub().returns({ enabled: false, hostEnabled: false }),
-			getProvider: sandbox.stub(),
-			dispose: sandbox.stub().resolves(),
-		}
-		sandbox.stub(ErrorService, "initialize").resolves(mockErrorService as any)
-		sandbox.stub(ErrorService, "get").returns(mockErrorService as any)
-
-		await ErrorService.initialize()
+		// TODO: Update mocks when ErrorService is properly implemented
+		// const mockErrorService = {
+		// 	logMessage: sandbox.stub(),
+		// 	logException: sandbox.stub(),
+		// 	toClineError: sandbox.stub(),
+		// 	isEnabled: sandbox.stub().returns(false),
+		// 	getSettings: sandbox.stub().returns({ enabled: false, hostEnabled: false }),
+		// 	getProvider: sandbox.stub(),
+		// 	dispose: sandbox.stub().resolves(),
+		// }
+		// sandbox.stub(ErrorService, "initialize").resolves(mockErrorService as any)
+		// sandbox.stub(ErrorService, "get").returns(mockErrorService as any)
+		//
+		// await ErrorService.initialize()
 
 		handleOpenRouterCallbackStub = sandbox.stub().resolves()
 		handleAuthCallbackStub = sandbox.stub().resolves()

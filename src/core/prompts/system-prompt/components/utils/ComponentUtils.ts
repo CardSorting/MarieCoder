@@ -127,7 +127,7 @@ export const CompositionUtils = {
 		separator: string = "\n\n",
 	): string => {
 		return components
-			.map(({ id, template, condition }) => {
+			.map(({ template, condition }) => {
 				if (condition) {
 					return `{{#if ${condition.toString()}}}${template}{{/if}}`
 				}

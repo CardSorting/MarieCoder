@@ -2,6 +2,7 @@
  * Enhanced type definitions for better type safety and developer experience
  */
 
+import type { ProviderInfo } from "@/core/api/api_service"
 import type { McpHub } from "@/services/mcp/McpHub"
 import type { BrowserSettings } from "@/shared/BrowserSettings"
 import type { FocusChainSettings } from "@/shared/FocusChainSettings"
@@ -88,9 +89,11 @@ export interface VersionMetadata {
  * Enhanced system prompt context with better typing
  */
 export interface SystemPromptContext {
-	readonly providerInfo: ApiProviderInfo
+	readonly providerInfo: ProviderInfo
 	readonly cwd?: string
 	readonly ide: string
+	readonly os?: string
+	readonly user?: string
 	readonly supportsBrowserUse?: boolean
 	readonly mcpHub?: McpHub
 	readonly focusChainSettings?: FocusChainSettings

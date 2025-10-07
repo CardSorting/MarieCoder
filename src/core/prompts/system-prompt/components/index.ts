@@ -32,7 +32,7 @@ import { getMcp } from "./mcp_servers"
 import { getObjectiveSection } from "./mission_statement"
 import { getActVsPlanModeSection } from "./planning_modes"
 import { getRulesSection } from "./rules"
-import { getSystemEnv } from "./system_environment"
+import { getSystemInfo } from "./system_environment"
 import { getTaskProgressSection } from "./task_progress"
 import { getToolUseSection } from "./tools_and_capabilities"
 import { getUserInstructions } from "./user_context"
@@ -41,11 +41,11 @@ export function getSystemPromptComponents() {
 	return [
 		{ id: SystemPromptSection.AGENT_ROLE, fn: getAgentRoleSection },
 		{ id: SystemPromptSection.EDITING_FILES, fn: getEditingFilesSection },
-		{ id: SystemPromptSection.MCP_INFO, fn: getMcp },
+		{ id: SystemPromptSection.MCP, fn: getMcp },
 		{ id: SystemPromptSection.OBJECTIVE, fn: getObjectiveSection },
-		{ id: SystemPromptSection.ACT_VS_PLAN_MODE, fn: getActVsPlanModeSection },
+		{ id: SystemPromptSection.ACT_VS_PLAN, fn: getActVsPlanModeSection },
 		{ id: SystemPromptSection.RULES, fn: getRulesSection },
-		{ id: SystemPromptSection.SYSTEM_INFO, fn: getSystemEnv },
+		{ id: SystemPromptSection.SYSTEM_INFO, fn: getSystemInfo },
 		{ id: SystemPromptSection.TASK_PROGRESS, fn: getTaskProgressSection },
 		{ id: SystemPromptSection.TOOL_USE, fn: getToolUseSection },
 		{ id: SystemPromptSection.USER_INSTRUCTIONS, fn: getUserInstructions },

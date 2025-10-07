@@ -1,4 +1,3 @@
-import { ErrorService } from "@/core/api/services/error-service"
 import { HostProvider } from "@/hosts/host-provider"
 
 /**
@@ -8,12 +7,14 @@ export class Logger {
 	public readonly channelName = "Cline Dev Logger"
 	static error(message: string, error?: Error) {
 		Logger.#output("ERROR", message, error)
-		ErrorService.get().logMessage(message, "error")
-		error && ErrorService.get().logException(error)
+		// TODO: Implement error logging service
+		// ErrorService.get().logMessage(message, "error")
+		// error && ErrorService.get().logException(error)
 	}
 	static warn(message: string) {
 		Logger.#output("WARN", message)
-		ErrorService.get().logMessage(message, "warning")
+		// TODO: Implement warning logging service
+		// ErrorService.get().logMessage(message, "warning")
 	}
 	static log(message: string) {
 		Logger.#output("LOG", message)

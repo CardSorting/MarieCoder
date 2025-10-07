@@ -1,6 +1,6 @@
 import { setTimeout as setTimeoutPromise } from "node:timers/promises"
 import { Anthropic } from "@anthropic-ai/sdk"
-import { ApiHandler, ApiHandlerModel, ApiService } from "@core/api"
+import { ApiHandler, ApiService, ProviderInfo } from "@core/api"
 import { ApiStream } from "@core/api/transform/stream"
 import { parseAssistantMessageV2 } from "@core/assistant-message"
 import { ContextManager } from "@core/context/context-management/context_manager"
@@ -55,7 +55,6 @@ import pWaitFor from "p-wait-for"
 import * as path from "path"
 import { ulid } from "ulid"
 import * as vscode from "vscode"
-import { ErrorService } from "@/core/api/services/error-service"
 import type { SystemPromptContext } from "@/core/prompts/system-prompt"
 import { getSystemPrompt } from "@/core/prompts/system-prompt"
 import { HostProvider } from "@/hosts/host-provider"
@@ -1267,13 +1266,23 @@ export class Task {
 		}
 	}
 
-	private getCurrentProviderInfo(): { model: ApiHandlerModel; providerId: string; customPrompt?: string } {
+	private getCurrentProviderInfo(): ProviderInfo {
 		const model = this.api.getModel()
 		const apiConfig = this.stateManager.getApiConfiguration()
 		const mode = this.stateManager.getGlobalSettingsKey("mode")
 		const providerId = (mode === "plan" ? apiConfig.planModeApiProvider : apiConfig.actModeApiProvider) as string
 		const customPrompt = this.stateManager.getGlobalSettingsKey("customPrompt")
-		return { model, providerId, customPrompt }
+		const capabilities = this.api.getCapabilities()
+		const metadata = this.api.getProviderMetadata()
+
+		return {
+			model,
+			providerId,
+			customPrompt,
+			capabilities,
+			status: metadata.status,
+			category: metadata.category,
+		}
 	}
 
 	private getApiRequestIdSafe(): string | undefined {
@@ -1404,13 +1413,14 @@ export class Task {
 			this.taskState.isWaitingForFirstChunk = false
 		} catch (error) {
 			const isContextWindowExceededError = checkContextWindowExceededError(error)
-			const { model, providerId } = this.getCurrentProviderInfo()
-			const clineError = ErrorService.get().toClineError(error, model.id, providerId)
+			// TODO: Implement toClineError method in ErrorService
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const clineError = { message: errorMessage, serialize: () => errorMessage }
 
 			// Capture provider failure telemetry using clineError
 			// TODO: Move into errorService
-			ErrorService.get().logMessage(clineError.message)
-			ErrorService.get().logException(clineError)
+			// ErrorService.get().logMessage(clineError.message)
+			// ErrorService.get().logException(clineError)
 
 			if (isContextWindowExceededError && !this.taskState.didAutomaticallyRetryFailedApiRequest) {
 				await this.handleContextWindowExceededError()
@@ -2108,7 +2118,9 @@ export class Task {
 				// abandoned happens when extension is no longer waiting for the cline instance to finish aborting (error is thrown here when any function in the for loop throws due to this.abort)
 				if (!this.taskState.abandoned) {
 					this.abortTask() // if the stream failed, there's various states the task could be in (i.e. could have streamed some tools the user may have executed), so we just resort to replicating a cancel task
-					const clineError = ErrorService.get().toClineError(error, this.api.getModel().id)
+					// TODO: Implement toClineError method in ErrorService
+					const errorText = error instanceof Error ? error.message : String(error)
+					const clineError = { message: errorText, serialize: () => errorText }
 					const errorMessage = clineError.serialize()
 
 					await abortStream("streaming_failed", errorMessage)
