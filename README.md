@@ -1,146 +1,204 @@
-<div align="center"><sub>
-English | <a href="https://github.com/cline/cline/blob/main/locales/es/README.md" target="_blank">Español</a> | <a href="https://github.com/cline/cline/blob/main/locales/de/README.md" target="_blank">Deutsch</a> | <a href="https://github.com/cline/cline/blob/main/locales/ja/README.md" target="_blank">日本語</a> | <a href="https://github.com/cline/cline/blob/main/locales/zh-cn/README.md" target="_blank">简体中文</a> | <a href="https://github.com/cline/cline/blob/main/locales/zh-tw/README.md" target="_blank">繁體中文</a> | <a href="https://github.com/cline/cline/blob/main/locales/ko/README.md" target="_blank">한국어</a>
-</sub></div>
+# NormieDev ⚡
 
-# Cline – \#1 on OpenRouter
+**AI coding that sparks joy**
 
-<p align="center">
-  <img src="https://media.githubusercontent.com/media/cline/cline/main/assets/docs/demo.gif" width="100%" />
-</p>
-
-<div align="center">
-<table>
-<tbody>
-<td align="center">
-<a href="https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev" target="_blank"><strong>Download on VS Marketplace</strong></a>
-</td>
-<td align="center">
-<a href="https://discord.gg/cline" target="_blank"><strong>Discord</strong></a>
-</td>
-<td align="center">
-<a href="https://www.reddit.com/r/cline/" target="_blank"><strong>r/cline</strong></a>
-</td>
-<td align="center">
-<a href="https://github.com/cline/cline/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop" target="_blank"><strong>Feature Requests</strong></a>
-</td>
-<td align="center">
-<a href="https://docs.cline.bot/getting-started/for-new-coders" target="_blank"><strong>Getting Started</strong></a>
-</td>
-</tbody>
-</table>
-</div>
-
-Meet Cline, an AI assistant that can use your **CLI** a**N**d **E**ditor.
-
-Thanks to [Claude Sonnet's agentic coding capabilities](https://www.anthropic.com/claude/sonnet), Cline can handle complex software development tasks step-by-step. With tools that let him create & edit files, explore large projects, use the browser, and execute terminal commands (after you grant permission), he can assist you in ways that go beyond code completion or tech support. Cline can even use the Model Context Protocol (MCP) to create new tools and extend his own capabilities. While autonomous AI scripts traditionally run in sandboxed environments, this extension provides a human-in-the-loop GUI to approve every file change and terminal command, providing a safe and accessible way to explore the potential of agentic AI.
-
-1. Enter your task and add images to convert mockups into functional apps or fix bugs with screenshots.
-2. Cline starts by analyzing your file structure & source code ASTs, running regex searches, and reading relevant files to get up to speed in existing projects. By carefully managing what information is added to context, Cline can provide valuable assistance even for large, complex projects without overwhelming the context window.
-3. Once Cline has the information he needs, he can:
-    - Create and edit files + monitor linter/compiler errors along the way, letting him proactively fix issues like missing imports and syntax errors on his own.
-    - Execute commands directly in your terminal and monitor their output as he works, letting him e.g., react to dev server issues after editing a file.
-    - For web development tasks, Cline can launch the site in a headless browser, click, type, scroll, and capture screenshots + console logs, allowing him to fix runtime errors and visual bugs.
-4. When a task is completed, Cline will present the result to you with a terminal command like `open -a "Google Chrome" index.html`, which you run with a click of a button.
-
-> [!TIP]
-> Use the `CMD/CTRL + Shift + P` shortcut to open the command palette and type "Cline: Open In New Tab" to open the extension as a tab in your editor. This lets you use Cline side-by-side with your file explorer, and see how he changes your workspace more clearly.
+[![Discord](https://img.shields.io/badge/Discord-Join-7289da?logo=discord)](https://discord.gg/VPxMugw2g9) • [![GitHub](https://img.shields.io/badge/GitHub-Star-blue?logo=github)](https://github.com/CardSorting/NormieDev) • [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](./LICENSE)
 
 ---
 
-<img align="right" width="340" src="https://github.com/user-attachments/assets/3cf21e04-7ce9-4d22-a7b9-ba2c595e88a4">
+## What is this?
 
-### Use any API and Model
+An AI coding assistant that works like you actually think. Chat with your codebase, ship features faster, and enjoy the process.
 
-Cline supports API providers like OpenRouter, Anthropic, OpenAI, Google Gemini, AWS Bedrock, Azure, GCP Vertex, Cerebras and Groq. You can also configure any OpenAI compatible API, or use a local model through LM Studio/Ollama. If you're using OpenRouter, the extension fetches their latest model list, allowing you to use the newest models as soon as they're available.
+```
+You: "Add dark mode to this app"
+NormieDev: *analyzes your code, creates the files, updates the styles*
+You: *clicks approve*
+Done. That simple.
+```
 
-The extension also keeps track of total tokens and API usage cost for the entire task loop and individual requests, keeping you informed of spend every step of the way.
+## Why NormieDev?
 
-<!-- Transparent pixel to create line break after floating image -->
+Because most AI coding tools are either:
+- Too simple (glorified autocomplete)
+- Too complex (enterprise feature bloat)
+- Too opinionated (forces you into their workflow)
 
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
+**NormieDev is different:**
+- Powerful enough for production apps
+- Simple enough to use immediately
+- Flexible enough to work YOUR way
 
-<img align="left" width="370" src="https://github.com/user-attachments/assets/81be79a8-1fdb-4028-9129-5fe055e01e76">
+## Quick Start
 
-### Run Commands in Terminal
+1. Install in VS Code
+2. Add your AI API key (or use free local models)
+3. Open the chat and say what you want
+4. Approve the changes you like
+5. Ship it
 
-Thanks to the new [shell integration updates in VSCode v1.93](https://code.visualstudio.com/updates/v1_93#_terminal-shell-integration-api), Cline can execute commands directly in your terminal and receive the output. This allows him to perform a wide range of tasks, from installing packages and running build scripts to deploying applications, managing databases, and executing tests, all while adapting to your dev environment & toolchain to get the job done right.
+No setup, no config files, no "getting started" tutorials to slog through.
 
-For long running processes like dev servers, use the "Proceed While Running" button to let Cline continue in the task while the command runs in the background. As Cline works he’ll be notified of any new terminal output along the way, letting him react to issues that may come up, such as compile-time errors when editing files.
+## What Can It Do?
 
-<!-- Transparent pixel to create line break after floating image -->
+### Code
+- Create new files and features
+- Refactor existing code
+- Fix bugs and errors
+- Explain complex logic
+- Update dependencies
 
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
+### Run Things
+- Execute terminal commands
+- Start dev servers
+- Run tests
+- Install packages
+- Deploy apps
 
-<img align="right" width="400" src="https://github.com/user-attachments/assets/c5977833-d9b8-491e-90f9-05f9cd38c588">
+### Test Things
+- Launch browsers
+- Click and test UI
+- Capture screenshots
+- Read console logs
+- Find visual bugs
 
-### Create and Edit Files
+### Extend Itself
+- Connect to databases via MCP
+- Add custom tools
+- Integrate APIs
+- Create workflows
 
-Cline can create and edit files directly in your editor, presenting you a diff view of the changes. You can edit or revert Cline's changes directly in the diff view editor, or provide feedback in chat until you're satisfied with the result. Cline also monitors linter/compiler errors (missing imports, syntax errors, etc.) so he can fix issues that come up along the way on his own.
+## Real Examples
 
-All changes made by Cline are recorded in your file's Timeline, providing an easy way to track and revert modifications if needed.
+**"Build a todo app with React and local storage"**  
+→ Creates components, adds state, handles persistence. 2 minutes.
 
-<!-- Transparent pixel to create line break after floating image -->
+**"This button isn't working, here's a screenshot"**  
+→ Analyzes the image, finds the issue, fixes it. Done.
 
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
+**"Refactor this to TypeScript"**  
+→ Converts files, adds types, updates imports. Zero errors.
 
-<img align="left" width="370" src="https://github.com/user-attachments/assets/bc2e85ba-dfeb-4fe6-9942-7cfc4703cbe5">
+**"Add authentication with Supabase"**  
+→ Sets up auth flow, creates components, handles sessions. Works.
 
-### Use the Browser
+## Choose Your AI
 
-With Claude Sonnet's new [Computer Use](https://www.anthropic.com/news/3-5-models-and-computer-use) capability, Cline can launch a browser, click elements, type text, and scroll, capturing screenshots and console logs at each step. This allows for interactive debugging, end-to-end testing, and even general web use! This gives him autonomy to fixing visual bugs and runtime issues without you needing to handhold and copy-pasting error logs yourself.
+Use whatever fits your needs:
 
-Try asking Cline to "test the app", and watch as he runs a command like `npm run dev`, launches your locally running dev server in a browser, and performs a series of tests to confirm that everything works. [See a demo here.](https://x.com/sdrzn/status/1850880547825823989)
+| Provider | Best For | Cost |
+|----------|----------|------|
+| **Ollama** | Privacy, free usage | $0 |
+| **Anthropic Claude** | Best quality | ~$3/hour |
+| **OpenAI GPT** | Balanced | ~$1/hour |
+| **OpenRouter** | 200+ models | Varies |
+| **Gemini** | Fast & cheap | ~$0.50/hour |
 
-<!-- Transparent pixel to create line break after floating image -->
+Switch between them anytime. Use cheap models for simple tasks, powerful ones for complex work.
 
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
+## Smart Context
 
-<img align="right" width="350" src="https://github.com/user-attachments/assets/ac0efa14-5c1f-4c26-a42d-9d7c56f5fadd">
+Give NormieDev exactly what it needs:
 
-### "add a tool that..."
+```
+@file src/app.js                    → Include specific file
+@folder components/                  → Include entire folder
+@url https://docs.stripe.com         → Fetch and include docs
+@problems                            → Include all workspace errors
+```
 
-Thanks to the [Model Context Protocol](https://github.com/modelcontextprotocol), Cline can extend his capabilities through custom tools. While you can use [community-made servers](https://github.com/modelcontextprotocol/servers), Cline can instead create and install tools tailored to your specific workflow. Just ask Cline to "add a tool" and he will handle everything, from creating a new MCP server to installing it into the extension. These custom tools then become part of Cline's toolkit, ready to use in future tasks.
+No more copy-pasting. No wasted tokens.
 
--   "add a tool that fetches Jira tickets": Retrieve ticket ACs and put Cline to work
--   "add a tool that manages AWS EC2s": Check server metrics and scale instances up or down
--   "add a tool that pulls the latest PagerDuty incidents": Fetch details and ask Cline to fix bugs
+## You're In Control
 
-<!-- Transparent pixel to create line break after floating image -->
+Every action requires approval:
+- ✅ File changes → See full diff before accepting
+- ✅ Terminal commands → Review before running
+- ✅ Browser actions → Approve each interaction
 
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
+Don't like something? Give feedback and iterate.
 
-<img align="left" width="360" src="https://github.com/user-attachments/assets/7fdf41e6-281a-4b4b-ac19-020b838b6970">
+## Checkpoints
 
-### Add Context
+NormieDev saves snapshots as it works:
+- Compare any version to current state
+- Restore to any previous point
+- Experiment without fear
+- Roll back instantly
 
-**`@url`:** Paste in a URL for the extension to fetch and convert to markdown, useful when you want to give Cline the latest docs
+Perfect for trying different approaches.
 
-**`@problems`:** Add workspace errors and warnings ('Problems' panel) for Cline to fix
+## Built on Cline
 
-**`@file`:** Adds a file's contents so you don't have to waste API requests approving read file (+ type to search files)
+NormieDev is built on the excellent [Cline](https://github.com/cline/cline) project. We've rebuilt ~80% to explore a different direction focused on streamlined workflows and community-driven features.
 
-**`@folder`:** Adds folder's files all at once to speed up your workflow even more
+Huge thanks to the Cline team for creating such a solid foundation.
 
-<!-- Transparent pixel to create line break after floating image -->
+## Getting Started
 
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
+### Install
+```
+VS Code → Extensions → Search "NormieDev" → Install
+```
 
-<img align="right" width="350" src="https://github.com/user-attachments/assets/140c8606-d3bf-41b9-9a1f-4dbf0d4c90cb">
+### Configure AI
+Click the NormieDev icon → Settings → Choose your AI provider → Add API key
 
-### Checkpoints: Compare and Restore
+### Start Coding
+Open NormieDev chat → Type what you want → Review → Approve → Done
 
-As Cline works through a task, the extension takes a snapshot of your workspace at each step. You can use the 'Compare' button to see a diff between the snapshot and your current workspace, and the 'Restore' button to roll back to that point.
+That's it. Seriously.
 
-For example, when working with a local web server, you can use 'Restore Workspace Only' to quickly test different versions of your app, then use 'Restore Task and Workspace' when you find the version you want to continue building from. This lets you safely explore different approaches without losing progress.
+## Pro Tips
 
-<!-- Transparent pixel to create line break after floating image -->
+**Be direct:** "Add pagination" not "Can you maybe add pagination please?"
 
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
+**Use context:** `@file` and `@folder` help NormieDev understand your project
+
+**Iterate fast:** Quick feedback loops > perfect first try
+
+**Trust the process:** Review changes but don't overthink
+
+**Save money:** Use cheaper models for simple tasks
+
+## Join the Community
+
+- 💬 [Discord](https://discord.gg/VPxMugw2g9) - Daily discussions, help, tips
+- 🐛 [Issues](https://github.com/CardSorting/NormieDev/issues) - Report bugs
+- 💡 [Discussions](https://github.com/CardSorting/NormieDev/discussions) - Ideas and feedback
+- ⭐ [Star on GitHub](https://github.com/CardSorting/NormieDev) - Support the project
+
+## FAQ
+
+**Q: How much does it cost?**  
+A: Extension is free. AI usage varies ($0-$3/hour depending on model).
+
+**Q: Is my code private?**  
+A: Cloud providers see your code. Use Ollama for 100% local/private.
+
+**Q: What languages work?**  
+A: All of them. JavaScript, Python, Go, Rust, whatever.
+
+**Q: Can it build complete apps?**  
+A: Yes. Break big projects into focused tasks for best results.
+
+**Q: How is this different from Copilot?**  
+A: Copilot autocompletes. NormieDev builds, tests, debugs, and ships.
+
+**Q: Do I need to know how to code?**  
+A: Helps if you do, but you'll learn fast by using it.
 
 ## Contributing
 
-To contribute to the project, start with our [Contributing Guide](CONTRIBUTING.md) to learn the basics. You can also join our [Discord](https://discord.gg/cline) to chat with other contributors in the `#contributors` channel. If you're looking for full-time work, check out our open positions on our [careers page](https://cline.bot/join-us)!
+Pull requests welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-[Apache 2.0 © 2025 Cline Bot Inc.](./LICENSE)
+Apache 2.0 - See [LICENSE](./LICENSE)
+
+Based on [Cline](https://github.com/cline/cline) by Cline Bot Inc.  
+Rebuilt by the NormieDev community.
+
+---
+
+**Built for developers who ship.** ⚡
