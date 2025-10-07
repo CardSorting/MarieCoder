@@ -1,5 +1,4 @@
-import { buildApiHandler } from "@core/api"
-
+import { ApiService } from "@core/api"
 import { Empty } from "@shared/proto/cline/common"
 import {
 	PlanActMode,
@@ -48,7 +47,7 @@ export async function updateSettings(controller: Controller, request: UpdateSett
 					...convertedApiConfigurationFromProto,
 					ulid: controller.task.ulid,
 				}
-				controller.task.api = buildApiHandler(apiConfigForHandler, currentMode)
+				controller.task.api = ApiService.createHandler(apiConfigForHandler, currentMode)
 			}
 		}
 

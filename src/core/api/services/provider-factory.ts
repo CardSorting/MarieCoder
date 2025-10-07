@@ -15,12 +15,15 @@ export class ProviderFactoryService {
 	 * Create API handler for specified provider and mode
 	 */
 	static createHandler(configuration: ApiConfiguration, mode: Mode, options: CommonApiHandlerOptions = {}): ApiHandler {
-		try {
-			// Normalize configuration
-			const normalizedConfig = ConfigurationService.normalizeConfiguration(configuration)
+		// Extract mode-specific configuration first (needed in catch block)
+		const normalizedConfig = ConfigurationService.normalizeConfiguration(configuration)
+		const modeConfig = ConfigurationService.extractModeConfiguration(normalizedConfig, mode)
 
-			// Extract mode-specific configuration
-			const modeConfig = ConfigurationService.extractModeConfiguration(normalizedConfig, mode)
+		try {
+			// Validate provider is set
+			if (!modeConfig.apiProvider) {
+				throw new Error(`API provider is required for ${mode} mode`)
+			}
 
 			// Validate configuration
 			const validation = ConfigurationService.validateConfiguration(normalizedConfig, modeConfig.apiProvider, mode)
@@ -37,7 +40,7 @@ export class ProviderFactoryService {
 			// Create handler using registry
 			return providerRegistry.createHandler(modeConfig.apiProvider, normalizedConfig, mode, options)
 		} catch (error) {
-			const apiError = ErrorService.parseError(error, modeConfig?.apiProvider)
+			const apiError = ErrorService.parseError(error, modeConfig.apiProvider)
 			ErrorService.logError(apiError, "ProviderFactoryService.createHandler")
 			throw apiError
 		}
@@ -173,7 +176,16 @@ export class ProviderFactoryService {
 		supportsCache: boolean
 		maxTokens?: number
 	} {
-		const capabilities: Record<string, any> = {
+		const capabilities: Record<
+			string,
+			{
+				supportsStreaming: boolean
+				supportsThinking: boolean
+				supportsReasoning: boolean
+				supportsCache: boolean
+				maxTokens?: number
+			}
+		> = {
 			anthropic: {
 				supportsStreaming: true,
 				supportsThinking: true,

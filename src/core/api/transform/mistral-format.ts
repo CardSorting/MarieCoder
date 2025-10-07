@@ -37,13 +37,20 @@ export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.M
 									},
 								}
 							}
-							return { type: "text", text: part.text }
+							// Type guard: we know it's text since we filtered for text/image and it's not image
+							if (part.type === "text") {
+								return { type: "text", text: part.text }
+							}
+							// Fallback for type safety (should never reach here due to filter)
+							return { type: "text", text: "" }
 						}),
 					})
 				}
 			} else if (anthropicMessage.role === "assistant") {
 				// Only process text blocks - assistant cannot send images or other content types in Mistral's API format
-				const textBlocks = anthropicMessage.content.filter((part) => part.type === "text")
+				const textBlocks = anthropicMessage.content.filter(
+					(part): part is Anthropic.Messages.TextBlockParam => part.type === "text",
+				)
 
 				if (textBlocks.length > 0) {
 					const content = textBlocks.map((part) => part.text).join("\n")

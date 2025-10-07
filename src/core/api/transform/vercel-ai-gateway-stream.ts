@@ -33,7 +33,10 @@ export async function createVercelAIGatewayStream(
 			}
 			if (Array.isArray(msg.content)) {
 				// Find the last text part in the message content
-				const lastTextPart = msg.content.filter((part) => part.type === "text").pop()
+				const textParts = msg.content.filter(
+					(part): part is OpenAI.Chat.ChatCompletionContentPartText => part.type === "text",
+				)
+				const lastTextPart = textParts.pop()
 
 				if (lastTextPart && lastTextPart.text && lastTextPart.text.length > 0) {
 					// @ts-ignore-next-line

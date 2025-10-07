@@ -1,4 +1,4 @@
-import { buildApiHandler } from "@core/api"
+import { ApiService } from "@core/api"
 import * as vscode from "vscode"
 import { StateManager } from "@/core/storage/StateManager"
 import { HostProvider } from "@/hosts/host-provider"
@@ -83,7 +83,7 @@ async function performCommitGeneration(stateManager: StateManager, gitDiff: stri
 		const currentMode = "act"
 
 		// Build the API handler
-		const apiHandler = buildApiHandler(apiConfiguration, currentMode)
+		const apiHandler = ApiService.createHandler(apiConfiguration, currentMode)
 
 		// Create a system prompt
 		const systemPrompt = PROMPT.system

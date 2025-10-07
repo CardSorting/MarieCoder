@@ -181,16 +181,14 @@ export function normalizeMessageContent(content: any): string {
 /**
  * Extract text content from message
  */
-export function extractTextContent(message: any): string {
+export function extractTextContent(message: Anthropic.Messages.MessageParam): string {
 	if (typeof message.content === "string") {
 		return message.content
 	}
 
 	if (Array.isArray(message.content)) {
-		return message.content
-			.filter((part) => part.type === "text")
-			.map((part) => part.text)
-			.join("")
+		const textParts = message.content.filter((part): part is Anthropic.Messages.TextBlockParam => part.type === "text")
+		return textParts.map((part) => part.text).join("")
 	}
 
 	return ""

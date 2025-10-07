@@ -1,6 +1,6 @@
 import { setTimeout as setTimeoutPromise } from "node:timers/promises"
 import { Anthropic } from "@anthropic-ai/sdk"
-import { ApiHandler, ApiProviderInfo, buildApiHandler } from "@core/api"
+import { ApiHandler, ApiHandlerModel, ApiService } from "@core/api"
 import { ApiStream } from "@core/api/transform/stream"
 import { parseAssistantMessageV2 } from "@core/assistant-message"
 import { ContextManager } from "@core/context/context-management/ContextManager"
@@ -363,7 +363,7 @@ export class Task {
 		}
 
 		// Now that ulid is initialized, we can build the API handler
-		this.api = buildApiHandler(effectiveApiConfiguration, mode)
+		this.api = ApiService.createHandler(effectiveApiConfiguration, mode)
 
 		// Set ulid on browserSession for telemetry tracking
 		this.browserSession.setUlid(this.ulid)
@@ -1278,7 +1278,7 @@ export class Task {
 		}
 	}
 
-	private getCurrentProviderInfo(): ApiProviderInfo {
+	private getCurrentProviderInfo(): { model: ApiHandlerModel; providerId: string; customPrompt?: string } {
 		const model = this.api.getModel()
 		const apiConfig = this.stateManager.getApiConfiguration()
 		const mode = this.stateManager.getGlobalSettingsKey("mode")

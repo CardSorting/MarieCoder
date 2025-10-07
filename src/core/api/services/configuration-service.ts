@@ -14,12 +14,12 @@ export interface ConfigurationValidationResult {
  * Mode-specific configuration extractor
  */
 export interface ModeConfiguration {
-	apiProvider: string
-	apiModelId: string
+	apiProvider: string | undefined
+	apiModelId: string | undefined
 	modelInfo?: ModelInfo
 	thinkingBudgetTokens?: number
 	reasoningEffort?: string
-	[key: string]: any
+	[key: string]: unknown
 }
 
 /**
@@ -195,7 +195,7 @@ export class ConfigurationService {
 				break
 
 			case "ollama":
-				if (!modeConfig.ollamaModelId && !configuration.ollamaModelId) {
+				if (!modeConfig.ollamaModelId) {
 					errors.push("Ollama model ID is required")
 				}
 				break

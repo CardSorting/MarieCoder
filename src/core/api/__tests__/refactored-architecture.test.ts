@@ -1,5 +1,5 @@
 import { ApiConfiguration } from "@shared/api"
-import { buildApiHandler, getSupportedProviders, isProviderSupported } from "../index"
+import { ApiService } from "../index"
 import { providerRegistry } from "../registry/provider-registry"
 import { ConfigurationService } from "../services/configuration-service"
 import { ApiErrorType, ErrorService } from "../services/error-service"
@@ -9,7 +9,7 @@ describe("Refactored API Architecture", () => {
 	describe("ProviderRegistry", () => {
 		it("should register and retrieve providers", () => {
 			expect(providerRegistry.hasProvider("anthropic")).toBe(true)
-			expect(providerRegistry.getSupportedProviders()).toContain("anthropic")
+			expect(providerRegistry.ApiService.getSupportedProviders()).toContain("anthropic")
 		})
 
 		it("should validate provider configurations", () => {
@@ -145,19 +145,19 @@ describe("Refactored API Architecture", () => {
 				actModeApiProvider: "anthropic",
 			} as ApiConfiguration
 
-			const handler = buildApiHandler(config, "plan")
+			const handler = ApiService.createHandler(config, "plan")
 			expect(handler).toBeDefined()
 		})
 
 		it("should get supported providers", () => {
-			const providers = getSupportedProviders()
+			const providers = ApiService.getSupportedProviders()
 			expect(Array.isArray(providers)).toBe(true)
 			expect(providers).toContain("anthropic")
 		})
 
 		it("should check provider support", () => {
-			expect(isProviderSupported("anthropic")).toBe(true)
-			expect(isProviderSupported("invalid-provider")).toBe(false)
+			expect(ApiService.isProviderSupported("anthropic")).toBe(true)
+			expect(ApiService.isProviderSupported("invalid-provider")).toBe(false)
 		})
 	})
 
@@ -169,7 +169,7 @@ describe("Refactored API Architecture", () => {
 			} as ApiConfiguration
 
 			expect(() => {
-				buildApiHandler(invalidConfig, "plan")
+				ApiService.createHandler(invalidConfig, "plan")
 			}).toThrow()
 		})
 
@@ -181,7 +181,7 @@ describe("Refactored API Architecture", () => {
 			} as ApiConfiguration
 
 			try {
-				buildApiHandler(config, "plan")
+				ApiService.createHandler(config, "plan")
 				fail("Expected error to be thrown")
 			} catch (error) {
 				expect(error.message).toContain("required")

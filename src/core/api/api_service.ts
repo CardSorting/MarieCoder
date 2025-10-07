@@ -1,11 +1,12 @@
+import { Anthropic } from "@anthropic-ai/sdk"
 import { ApiConfiguration, ModelInfo } from "@shared/api"
 import { Mode } from "@shared/storage/types"
-// Import enhanced provider system
 import { enhancedProviderRegistry, ProviderDiscoveryService } from "./registry/enhanced-registrations"
 import {
 	ProviderCapabilities,
 	ProviderCategory,
 	ProviderComparison,
+	ProviderMetadata,
 	ProviderSearchOptions,
 	ProviderStatus,
 } from "./registry/provider-metadata"
@@ -13,9 +14,9 @@ import { ErrorService } from "./services/error-service"
 import { ApiStream, ApiStreamUsageChunk } from "./transform/stream"
 
 /**
- * Enhanced API handler options interface
+ * Options for API handler creation
  */
-export type EnhancedApiHandlerOptions = {
+export type ApiHandlerOptions = {
 	onRetryAttempt?: ApiConfiguration["onRetryAttempt"]
 	providerPreferences?: string[]
 	fallbackProviders?: string[]
@@ -23,23 +24,23 @@ export type EnhancedApiHandlerOptions = {
 }
 
 /**
- * Enhanced API handler interface with advanced capabilities
+ * API handler interface for message streaming
  */
-export interface EnhancedApiHandler {
-	createMessage(systemPrompt: string, messages: any[]): ApiStream
-	getModel(): EnhancedApiHandlerModel
+export interface ApiHandler {
+	createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream
+	getModel(): ApiHandlerModel
 	getApiStreamUsage?(): Promise<ApiStreamUsageChunk | undefined>
-	getProviderMetadata(): any
+	getProviderMetadata(): ProviderMetadata
 	getCapabilities(): ProviderCapabilities
 }
 
 /**
- * Enhanced API handler model interface
+ * Model information with provider metadata
  */
-export interface EnhancedApiHandlerModel {
+export interface ApiHandlerModel {
 	id: string
 	info: ModelInfo
-	providerMetadata: any
+	providerMetadata: ProviderMetadata
 	capabilities: ProviderCapabilities
 	performance?: {
 		averageLatency?: number
@@ -49,11 +50,11 @@ export interface EnhancedApiHandlerModel {
 }
 
 /**
- * Enhanced API provider information interface
+ * Complete provider information including model and configuration
  */
-export interface EnhancedApiProviderInfo {
+export interface ProviderInfo {
 	providerId: string
-	model: EnhancedApiHandlerModel
+	model: ApiHandlerModel
 	customPrompt?: string
 	autoCondenseThreshold?: number
 	capabilities: ProviderCapabilities
@@ -62,52 +63,44 @@ export interface EnhancedApiProviderInfo {
 }
 
 /**
- * Enhanced API service class
- * Provides advanced provider management and discovery capabilities
+ * API service for provider management and handler creation
+ * Handles provider discovery, validation, and intelligent fallbacks
  */
-export class EnhancedApiService {
+export class ApiService {
 	/**
-	 * Create API handler using enhanced provider system
+	 * Create API handler for the specified configuration and mode
 	 */
-	static createHandler(
-		configuration: ApiConfiguration,
-		mode: Mode,
-		options: EnhancedApiHandlerOptions = {},
-	): EnhancedApiHandler {
+	static createHandler(configuration: ApiConfiguration, mode: Mode, options: ApiHandlerOptions = {}): ApiHandler {
 		try {
 			// Use provider discovery if enabled
 			if (options.enableProviderDiscovery) {
-				const bestProvider = EnhancedApiService.findBestProviderForConfiguration(
-					configuration,
-					mode,
-					options.providerPreferences,
-				)
+				const bestProvider = ApiService.findBestProviderForConfiguration(configuration, mode, options.providerPreferences)
 				if (bestProvider) {
-					return EnhancedApiService.createHandlerForProvider(bestProvider.providerId, configuration, mode, options)
+					return ApiService.createHandlerForProvider(bestProvider.providerId, configuration, mode, options)
 				}
 			}
 
 			// Fall back to specified provider or default
-			const providerId = EnhancedApiService.determineProviderId(configuration, mode, options)
-			return EnhancedApiService.createHandlerForProvider(providerId, configuration, mode, options)
+			const providerId = ApiService.determineProviderId(configuration, mode, options)
+			return ApiService.createHandlerForProvider(providerId, configuration, mode, options)
 		} catch (error) {
 			const apiError = ErrorService.parseError(error)
-			ErrorService.logError(apiError, "EnhancedApiService.createHandler")
+			ErrorService.logError(apiError, "ApiService.createHandler")
 			throw apiError
 		}
 	}
 
 	/**
-	 * Create handler with automatic fallback support
+	 * Create handler with automatic fallback to alternative providers
 	 */
 	static createHandlerWithFallback(
 		configuration: ApiConfiguration,
 		mode: Mode,
-		options: EnhancedApiHandlerOptions = {},
+		options: ApiHandlerOptions = {},
 		fallbackProviders: string[] = ["anthropic", "openai"],
-	): EnhancedApiHandler {
+	): ApiHandler {
 		try {
-			return EnhancedApiService.createHandler(configuration, mode, {
+			return ApiService.createHandler(configuration, mode, {
 				...options,
 				fallbackProviders: fallbackProviders,
 			})
@@ -115,22 +108,22 @@ export class EnhancedApiService {
 			// Try fallback providers
 			for (const fallbackProvider of fallbackProviders) {
 				try {
-					return EnhancedApiService.createHandlerForProvider(fallbackProvider, configuration, mode, options)
+					return ApiService.createHandlerForProvider(fallbackProvider, configuration, mode, options)
 				} catch (fallbackError) {
 					console.warn(`Fallback provider ${fallbackProvider} failed:`, fallbackError)
 				}
 			}
 
 			const apiError = ErrorService.parseError(error)
-			ErrorService.logError(apiError, "EnhancedApiService.createHandlerWithFallback")
+			ErrorService.logError(apiError, "ApiService.createHandlerWithFallback")
 			throw apiError
 		}
 	}
 
 	/**
-	 * Get provider recommendations for specific requirements
+	 * Find providers that match specific capability requirements
 	 */
-	static getProviderRecommendations(
+	static findProvidersByRequirements(
 		requirements: Partial<ProviderCapabilities> & { mode?: Mode },
 		options: {
 			excludeDeprecated?: boolean
@@ -142,28 +135,28 @@ export class EnhancedApiService {
 	}
 
 	/**
-	 * Get providers by category
+	 * Get all providers in a specific category
 	 */
 	static getProvidersByCategory(category: ProviderCategory): string[] {
 		return enhancedProviderRegistry.getProvidersByCategory(category)
 	}
 
 	/**
-	 * Get providers by status
+	 * Get all providers with a specific status
 	 */
 	static getProvidersByStatus(status: ProviderStatus): string[] {
 		return enhancedProviderRegistry.getProvidersByStatus(status)
 	}
 
 	/**
-	 * Search providers with advanced filtering
+	 * Search providers using advanced filtering options
 	 */
 	static searchProviders(options: ProviderSearchOptions) {
 		return enhancedProviderRegistry.searchProviders(options)
 	}
 
 	/**
-	 * Compare multiple providers
+	 * Compare multiple providers against criteria
 	 */
 	static compareProviders(
 		providerIds: string[],
@@ -178,7 +171,7 @@ export class EnhancedApiService {
 	}
 
 	/**
-	 * Get provider insights and statistics
+	 * Get statistical insights about all providers
 	 */
 	static getProviderInsights() {
 		return ProviderDiscoveryService.getProviderInsights()
@@ -192,35 +185,35 @@ export class EnhancedApiService {
 	}
 
 	/**
-	 * Get provider metadata
+	 * Get metadata for a specific provider
 	 */
 	static getProviderMetadata(providerId: string) {
 		return enhancedProviderRegistry.getProviderMetadata(providerId)
 	}
 
 	/**
-	 * Get provider configuration schema
+	 * Get configuration schema for a provider
 	 */
 	static getProviderConfigurationSchema(providerId: string) {
 		return enhancedProviderRegistry.getProviderConfigurationSchema(providerId)
 	}
 
 	/**
-	 * Get supported providers
+	 * Get list of all supported provider IDs
 	 */
 	static getSupportedProviders(): string[] {
 		return enhancedProviderRegistry.getSupportedProviders()
 	}
 
 	/**
-	 * Check if provider is supported
+	 * Check if a provider ID is supported
 	 */
 	static isProviderSupported(providerId: string): boolean {
 		return enhancedProviderRegistry.hasProvider(providerId)
 	}
 
 	/**
-	 * Validate configuration for provider
+	 * Validate configuration for a specific provider
 	 */
 	static validateProviderConfiguration(providerId: string, configuration: ApiConfiguration, mode: Mode): boolean {
 		const validation = enhancedProviderRegistry.validateProviderConfiguration(providerId, configuration, mode)
@@ -228,7 +221,7 @@ export class EnhancedApiService {
 	}
 
 	/**
-	 * Get provider capabilities
+	 * Get capabilities for a specific provider
 	 */
 	static getProviderCapabilities(providerId: string): ProviderCapabilities | undefined {
 		const metadata = enhancedProviderRegistry.getProviderMetadata(providerId)
@@ -236,7 +229,7 @@ export class EnhancedApiService {
 	}
 
 	/**
-	 * Get default configuration for provider
+	 * Get default configuration for a provider
 	 */
 	static getDefaultProviderConfiguration(providerId: string): Partial<ApiConfiguration> {
 		const schema = enhancedProviderRegistry.getProviderConfigurationSchema(providerId)
@@ -246,10 +239,10 @@ export class EnhancedApiService {
 
 		const defaultConfig: Partial<ApiConfiguration> = {}
 
-		// Set default values for optional options
+		// Set default values from schema
 		Object.entries(schema.optionalOptions).forEach(([option, config]) => {
 			if (config.default !== undefined) {
-				;(defaultConfig as any)[option] = config.default
+				defaultConfig[option as keyof ApiConfiguration] = config.default
 			}
 		})
 
@@ -257,7 +250,7 @@ export class EnhancedApiService {
 	}
 
 	/**
-	 * Get recommendations for specific use cases
+	 * Get provider recommendations for specific use cases
 	 */
 	static getRecommendationsForUseCase(
 		useCase: "development" | "production" | "experimentation" | "cost-optimized" | "performance-optimized",
@@ -267,16 +260,15 @@ export class EnhancedApiService {
 	}
 
 	/**
-	 * Private helper methods
+	 * Find the best provider for given configuration and preferences
 	 */
-
 	private static findBestProviderForConfiguration(
 		configuration: ApiConfiguration,
 		mode: Mode,
 		preferences?: string[],
 	): ProviderComparison | null {
-		// If preferences are specified, try them first
-		if (preferences && preferences.length > 0) {
+		// Try user preferences first
+		if (preferences?.length) {
 			for (const providerId of preferences) {
 				if (enhancedProviderRegistry.hasProvider(providerId)) {
 					const validation = enhancedProviderRegistry.validateProviderConfiguration(providerId, configuration, mode)
@@ -295,40 +287,45 @@ export class EnhancedApiService {
 			}
 		}
 
-		// Fall back to automatic discovery
+		// Use automatic provider discovery
 		return ProviderDiscoveryService.findBestProviderForConfiguration(configuration, mode)
 	}
 
-	private static determineProviderId(configuration: ApiConfiguration, _mode: Mode, options: EnhancedApiHandlerOptions): string {
-		// Try to extract provider from configuration
-		const configuredProvider = (configuration as any).apiProvider
+	/**
+	 * Determine provider ID from configuration, options, or defaults
+	 */
+	private static determineProviderId(configuration: ApiConfiguration, mode: Mode, options: ApiHandlerOptions): string {
+		// Check mode-specific configuration
+		const configuredProvider = mode === "plan" ? configuration.planModeApiProvider : configuration.actModeApiProvider
 		if (configuredProvider && enhancedProviderRegistry.hasProvider(configuredProvider)) {
 			return configuredProvider
 		}
 
 		// Use first preference if available
-		if (options.providerPreferences && options.providerPreferences.length > 0) {
+		if (options.providerPreferences?.length) {
 			return options.providerPreferences[0]
 		}
 
-		// Default to Anthropic for reliability
+		// Default to Anthropic
 		return "anthropic"
 	}
 
+	/**
+	 * Create handler instance for specific provider with metadata
+	 */
 	private static createHandlerForProvider(
 		providerId: string,
 		configuration: ApiConfiguration,
 		mode: Mode,
-		options: EnhancedApiHandlerOptions,
-	): EnhancedApiHandler {
+		options: ApiHandlerOptions,
+	): ApiHandler {
 		const handler = enhancedProviderRegistry.createHandler(providerId, configuration, mode, options)
 		const metadata = enhancedProviderRegistry.getProviderMetadata(providerId)
 
 		if (!metadata) {
-			throw new Error(`No metadata found for provider: ${providerId}`)
+			throw new Error(`Provider metadata not found: ${providerId}`)
 		}
 
-		// Wrap the handler with enhanced capabilities
 		return {
 			createMessage: handler.createMessage.bind(handler),
 			getModel: () => ({
@@ -345,113 +342,8 @@ export class EnhancedApiService {
 	}
 }
 
-// Export enhanced API functions for backward compatibility
-export function buildApiHandler(configuration: ApiConfiguration, mode: Mode): EnhancedApiHandler {
-	return EnhancedApiService.createHandler(configuration, mode)
-}
-
-export function buildApiHandlerWithFallback(
-	configuration: ApiConfiguration,
-	mode: Mode,
-	fallbackProvider: string = "anthropic",
-): EnhancedApiHandler {
-	return EnhancedApiService.createHandlerWithFallback(configuration, mode, {}, [fallbackProvider])
-}
-
-export async function buildApiHandlerWithRetry(
-	configuration: ApiConfiguration,
-	mode: Mode,
-	maxRetries: number = 3,
-): Promise<EnhancedApiHandler> {
-	// Implement retry logic with enhanced error handling
-	let lastError: Error | null = null
-
-	for (let attempt = 0; attempt < maxRetries; attempt++) {
-		try {
-			return EnhancedApiService.createHandler(configuration, mode)
-		} catch (error) {
-			lastError = error as Error
-			if (attempt < maxRetries - 1) {
-				// Wait before retry (exponential backoff)
-				await new Promise((resolve) => setTimeout(resolve, 2 ** attempt * 1000))
-			}
-		}
-	}
-
-	throw lastError || new Error("Max retries exceeded")
-}
-
-// Export enhanced functions
-export function getSupportedProviders(): string[] {
-	return EnhancedApiService.getSupportedProviders()
-}
-
-export function isProviderSupported(providerId: string): boolean {
-	return EnhancedApiService.isProviderSupported(providerId)
-}
-
-export function validateProviderConfiguration(providerId: string, configuration: ApiConfiguration, mode: Mode): boolean {
-	return EnhancedApiService.validateProviderConfiguration(providerId, configuration, mode)
-}
-
-export function getProviderCapabilities(providerId: string): ProviderCapabilities | undefined {
-	return EnhancedApiService.getProviderCapabilities(providerId)
-}
-
-export function getDefaultProviderConfiguration(providerId: string): Partial<ApiConfiguration> {
-	return EnhancedApiService.getDefaultProviderConfiguration(providerId)
-}
-
-// Export enhanced discovery functions
-export function getProviderRecommendations(
-	requirements: Partial<ProviderCapabilities> & { mode?: Mode },
-	options?: {
-		excludeDeprecated?: boolean
-		excludeExperimental?: boolean
-		maxResults?: number
-	},
-): ProviderComparison[] {
-	return EnhancedApiService.getProviderRecommendations(requirements, options)
-}
-
-export function getProvidersByCategory(category: ProviderCategory): string[] {
-	return EnhancedApiService.getProvidersByCategory(category)
-}
-
-export function getProvidersByStatus(status: ProviderStatus): string[] {
-	return EnhancedApiService.getProvidersByStatus(status)
-}
-
-export function searchProviders(options: ProviderSearchOptions) {
-	return EnhancedApiService.searchProviders(options)
-}
-
-export function compareProviders(
-	providerIds: string[],
-	criteria?: {
-		mode?: Mode
-		capabilities?: Partial<ProviderCapabilities>
-		prioritizeCost?: boolean
-		prioritizePerformance?: boolean
-	},
-): ProviderComparison[] {
-	return EnhancedApiService.compareProviders(providerIds, criteria)
-}
-
-export function getProviderInsights() {
-	return EnhancedApiService.getProviderInsights()
-}
-
-export function getRecommendationsForUseCase(
-	useCase: "development" | "production" | "experimentation" | "cost-optimized" | "performance-optimized",
-	mode?: Mode,
-): ProviderComparison[] {
-	return EnhancedApiService.getRecommendationsForUseCase(useCase, mode)
-}
-
-// Export clean, unified architecture
+// Re-export core components for clean API
 export { BaseProvider, HttpProvider } from "./base"
-// Export enhanced registry and discovery
 export { enhancedProviderRegistry, ProviderDiscoveryService } from "./registry/enhanced-registrations"
 export * from "./registry/provider-metadata"
 export { ConfigurationService } from "./services/configuration-service"
