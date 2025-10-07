@@ -38,4 +38,20 @@ export class ClineAccountService {
 	getSelectedOrganization(): unknown | null {
 		return null
 	}
+
+	async fetchMe(): Promise<{ organizations?: Array<{ active: boolean }> } | null> {
+		return null
+	}
+
+	async transcribeAudio(audioBase64: string, language?: string): Promise<{ text?: string; error?: string }> {
+		throw new Error("Audio transcription not implemented")
+	}
+
+	async createAuthRequest(): Promise<void> {
+		throw new Error("Account authentication not implemented")
+	}
+
+	getInfo(): { user?: { uid?: string } } | null {
+		return this.getUserInfo()
+	}
 }

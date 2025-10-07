@@ -35,7 +35,7 @@ export const config = QuickVariants.minimal(ModelFamily.XS, "Prompt for models w
 Object.assign(config.componentOverrides, xsComponentOverrides)
 
 // Validated variant configuration with centralized validation
-export const validatedConfig = await createValidatedVariantConfig("xs", config, {
+export const validatedConfig = createValidatedVariantConfig("xs", config, {
 	strict: true,
 	logSummary: false,
 })

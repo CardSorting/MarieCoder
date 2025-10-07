@@ -33,7 +33,7 @@ export const config = QuickVariants.standard(ModelFamily.GENERIC, "The fallback 
 	.build()
 
 // Validated variant configuration with centralized validation
-export const validatedConfig = await createValidatedVariantConfig("generic", config, {
+export const validatedConfig = createValidatedVariantConfig("generic", config, {
 	strict: true,
 	logSummary: false,
 })

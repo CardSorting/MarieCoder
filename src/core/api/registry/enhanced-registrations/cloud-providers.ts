@@ -1,6 +1,6 @@
 import { BedrockProvider } from "../../providers/cloud/bedrock"
 import { GroqProvider } from "../../providers/cloud/groq"
-import { OpenRouterProvider } from "../../providers/cloud/openrouter"
+import { OpenRouterProvider } from "../../providers/core/openrouter"
 import { enhancedProviderRegistry } from "../enhanced-provider-registry"
 import { ProviderCategory, ProviderStatus } from "../provider-metadata"
 

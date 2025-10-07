@@ -14,24 +14,8 @@
 			}
 		},
 		{
-			"label": "npm: protos",
-			"type": "npm",
-			"script": "protos",
-			"problemMatcher": [],
-			"isBackground": false,
-			"presentation": {
-				"reveal": "always"
-			},
-			"options": {
-				"env": {
-					"IS_DEV": "true"
-				}
-			}
-		},
-		{
 			"label": "watch",
 			"dependsOn": [
-				"npm: protos",
 				"npm: build:webview",
 				"npm: dev:webview",
 				"npm: watch:tsc",
@@ -48,7 +32,6 @@
 		{
 			"label": "watch:test",
 			"dependsOn": [
-				"npm: protos",
 				"npm: build:webview:test",
 				"npm: dev:webview",
 				"npm: watch:tsc",
@@ -66,9 +49,6 @@
 			"problemMatcher": [],
 			"isBackground": true,
 			"label": "npm: build:webview",
-			"dependsOn": [
-				"npm: protos"
-			],
 			"presentation": {
 				"group": "watch",
 				"reveal": "always"
@@ -86,9 +66,6 @@
 			"problemMatcher": [],
 			"isBackground": true,
 			"label": "npm: build:webview:test",
-			"dependsOn": [
-				"npm: protos"
-			],
 			"presentation": {
 				"group": "watch",
 				"reveal": "always"
@@ -123,9 +100,6 @@
 			],
 			"isBackground": true,
 			"label": "npm: dev:webview",
-			"dependsOn": [
-				"npm: protos"
-			],
 			"presentation": {
 				"group": "watch",
 				"reveal": "always"
@@ -161,9 +135,6 @@
 			},
 			"isBackground": true,
 			"label": "npm: watch:esbuild",
-			"dependsOn": [
-				"npm: protos"
-			],
 			"presentation": {
 				"group": "watch",
 				"reveal": "always"
@@ -199,9 +170,6 @@
 			},
 			"isBackground": true,
 			"label": "npm: watch:esbuild:test",
-			"dependsOn": [
-				"npm: protos"
-			],
 			"presentation": {
 				"group": "watch",
 				"reveal": "always"
@@ -220,9 +188,6 @@
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"label": "npm: watch:tsc",
-			"dependsOn": [
-				"npm: protos"
-			],
 			"presentation": {
 				"group": "watch",
 				"reveal": "always"
@@ -233,9 +198,6 @@
 			"script": "watch-tests",
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
-			"dependsOn": [
-				"npm: protos"
-			],
 			"presentation": {
 				"reveal": "always",
 				"group": "watchers"
@@ -245,7 +207,6 @@
 		{
 			"label": "tasks: watch-tests",
 			"dependsOn": [
-				"npm: protos",
 				"npm: watch",
 				"npm: watch-tests"
 			],

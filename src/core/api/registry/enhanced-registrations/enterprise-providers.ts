@@ -1,11 +1,11 @@
+import { CerebrasProvider } from "../../providers/core/cerebras"
+import { ZAIProvider } from "../../providers/core/zai"
 import { AskSageProvider } from "../../providers/enterprise/asksage"
 import { BasetenProvider } from "../../providers/enterprise/baseten"
-import { CerebrasProvider } from "../../providers/enterprise/cerebras"
 import { DoubaoProvider } from "../../providers/enterprise/doubao"
 import { NebiusProvider } from "../../providers/enterprise/nebius"
 import { OCAProvider } from "../../providers/enterprise/oca"
 import { SambanovaProvider } from "../../providers/enterprise/sambanova"
-import { ZAIProvider } from "../../providers/enterprise/zai"
 import { enhancedProviderRegistry } from "../enhanced-provider-registry"
 import { ProviderCategory, ProviderStatus } from "../provider-metadata"
 

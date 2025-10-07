@@ -264,7 +264,9 @@ const CLINE_STEALTH_MODELS: Record<string, OpenRouterModelInfo> = {
 		description: clineCodeSupernovaModelInfo.description ?? "",
 		thinkingConfig: clineCodeSupernovaModelInfo.thinkingConfig ?? undefined,
 		supportsGlobalEndpoint: clineCodeSupernovaModelInfo.supportsGlobalEndpoint ?? undefined,
-		tiers: clineCodeSupernovaModelInfo.tiers ?? [],
+		tiers: clineCodeSupernovaModelInfo.tiers
+			? (clineCodeSupernovaModelInfo.tiers as import("@shared/proto/cline/models").ModelTier[])
+			: [],
 	}),
 	// Add more stealth models here as needed
 }

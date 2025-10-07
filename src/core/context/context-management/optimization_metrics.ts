@@ -108,7 +108,7 @@ export class OptimizationMetrics {
 	 * @returns Character count result
 	 */
 	private processMessageContent(
-		content: Array<Anthropic.ContentBlock>,
+		content: Array<Anthropic.Messages.ContentBlockParam>,
 		contextHistory: ContextHistoryMap,
 		messageIndex: number,
 		hasExistingUpdates: boolean,
@@ -120,7 +120,7 @@ export class OptimizationMetrics {
 		for (let blockIndex = 0; blockIndex < content.length; blockIndex++) {
 			const block = content[blockIndex]
 
-			if (block.type === "text" && block.text) {
+			if (block.type === "text" && "text" in block) {
 				const result = this.processTextBlock(
 					block.text,
 					contextHistory,
@@ -132,7 +132,7 @@ export class OptimizationMetrics {
 
 				totalCharacters += result.totalCharacters
 				charactersSaved += result.charactersSaved
-			} else if (block.type === "image" && block.source?.type === "base64" && block.source.data) {
+			} else if (block.type === "image" && "source" in block && block.source?.type === "base64" && "data" in block.source) {
 				totalCharacters += block.source.data.length
 			}
 		}

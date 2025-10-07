@@ -116,12 +116,35 @@ export class VariantConfigService {
  * Helper function to create and validate variant configurations
  * This reduces boilerplate in variant config files
  */
-export async function createValidatedVariantConfig(
+export function createValidatedVariantConfig(
 	id: string,
 	config: Omit<PromptVariant, "id">,
 	options: { strict?: boolean; logSummary?: boolean } = {},
-): Promise<PromptVariant> {
-	return VariantConfigService.createVariantConfig(id, config, options)
+): PromptVariant {
+	const { strict = true, logSummary = false } = options
+
+	// Create the complete variant
+	const variant: PromptVariant = { ...config, id }
+
+	// Validate the variant
+	const validationResult = validateVariantComprehensive(variant, { strict })
+
+	if (!validationResult.isValid) {
+		const errorMessage = `Variant configuration validation failed for '${id}': ${validationResult.errors.join(", ")}`
+		console.error(errorMessage)
+		throw new Error(errorMessage)
+	}
+
+	if (validationResult.warnings.length > 0) {
+		console.warn(`Variant configuration warnings for '${id}':`, validationResult.warnings)
+	}
+
+	// Log summary if requested
+	if (logSummary) {
+		console.log(`✅ Variant '${id}' configured successfully:`, DebugUtils.createVariantSummary(variant))
+	}
+
+	return variant
 }
 
 /**

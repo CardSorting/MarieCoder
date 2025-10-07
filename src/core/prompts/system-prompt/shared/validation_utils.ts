@@ -5,7 +5,7 @@
  * across all variant configurations.
  */
 
-import type { PromptVariant, ValidationOptions, ValidationResult } from "../types"
+import type { PromptVariant, ValidationError, ValidationOptions, ValidationResult } from "../types"
 
 /**
  * Standard validation error messages
@@ -39,26 +39,26 @@ export const VALIDATION_WARNINGS = {
  * Validate required fields
  */
 export function validateRequiredFields(variant: PromptVariant): ValidationResult {
-	const errors: string[] = []
-	const warnings: string[] = []
+	const errors: ValidationError[] = []
+	const warnings: ValidationError[] = []
 
 	// Required fields
 	if (!variant.id) {
-		errors.push(VALIDATION_MESSAGES.REQUIRED_FIELD("id"))
+		errors.push({ message: VALIDATION_MESSAGES.REQUIRED_FIELD("id"), severity: "error" })
 	}
 
 	if (!variant.family) {
-		errors.push(VALIDATION_MESSAGES.REQUIRED_FIELD("family"))
+		errors.push({ message: VALIDATION_MESSAGES.REQUIRED_FIELD("family"), severity: "error" })
 	}
 
 	if (!variant.description) {
-		errors.push(VALIDATION_MESSAGES.REQUIRED_FIELD("description"))
+		errors.push({ message: VALIDATION_MESSAGES.REQUIRED_FIELD("description"), severity: "error" })
 	} else if (variant.description.trim().length === 0) {
-		warnings.push(VALIDATION_WARNINGS.MISSING_DESCRIPTION)
+		warnings.push({ message: VALIDATION_WARNINGS.MISSING_DESCRIPTION, severity: "warning" })
 	}
 
 	if (!variant.componentOrder || variant.componentOrder.length === 0) {
-		errors.push(VALIDATION_MESSAGES.INVALID_COMPONENT_ORDER)
+		errors.push({ message: VALIDATION_MESSAGES.INVALID_COMPONENT_ORDER, severity: "error" })
 	}
 
 	return { isValid: errors.length === 0, errors, warnings }
@@ -68,11 +68,11 @@ export function validateRequiredFields(variant: PromptVariant): ValidationResult
  * Validate version field
  */
 export function validateVersion(variant: PromptVariant): ValidationResult {
-	const errors: string[] = []
-	const warnings: string[] = []
+	const errors: ValidationError[] = []
+	const warnings: ValidationError[] = []
 
 	if (typeof variant.version !== "number" || variant.version <= 0 || !Number.isInteger(variant.version)) {
-		errors.push(VALIDATION_MESSAGES.INVALID_VERSION)
+		errors.push({ message: VALIDATION_MESSAGES.INVALID_VERSION, severity: "error" })
 	}
 
 	return { isValid: errors.length === 0, errors, warnings }
@@ -82,24 +82,24 @@ export function validateVersion(variant: PromptVariant): ValidationResult {
  * Validate tags field
  */
 export function validateTags(variant: PromptVariant): ValidationResult {
-	const errors: string[] = []
-	const warnings: string[] = []
+	const errors: ValidationError[] = []
+	const warnings: ValidationError[] = []
 
 	if (variant.tags) {
 		if (!Array.isArray(variant.tags)) {
-			errors.push(VALIDATION_MESSAGES.INVALID_TAGS)
+			errors.push({ message: VALIDATION_MESSAGES.INVALID_TAGS, severity: "error" })
 		} else {
 			const invalidTags = variant.tags.filter((tag) => typeof tag !== "string" || tag.trim().length === 0)
 			if (invalidTags.length > 0) {
-				errors.push(VALIDATION_MESSAGES.INVALID_TAGS)
+				errors.push({ message: VALIDATION_MESSAGES.INVALID_TAGS, severity: "error" })
 			}
 
 			if (variant.tags.length === 0) {
-				warnings.push(VALIDATION_WARNINGS.MISSING_TAGS)
+				warnings.push({ message: VALIDATION_WARNINGS.MISSING_TAGS, severity: "warning" })
 			}
 		}
 	} else {
-		warnings.push(VALIDATION_WARNINGS.MISSING_TAGS)
+		warnings.push({ message: VALIDATION_WARNINGS.MISSING_TAGS, severity: "warning" })
 	}
 
 	return { isValid: errors.length === 0, errors, warnings }
@@ -109,26 +109,26 @@ export function validateTags(variant: PromptVariant): ValidationResult {
  * Validate labels field
  */
 export function validateLabels(variant: PromptVariant): ValidationResult {
-	const errors: string[] = []
-	const warnings: string[] = []
+	const errors: ValidationError[] = []
+	const warnings: ValidationError[] = []
 
 	if (variant.labels) {
 		if (typeof variant.labels !== "object" || Array.isArray(variant.labels)) {
-			errors.push(VALIDATION_MESSAGES.INVALID_LABELS)
+			errors.push({ message: VALIDATION_MESSAGES.INVALID_LABELS, severity: "error" })
 		} else {
 			const invalidEntries = Object.entries(variant.labels).filter(
 				([key, value]) => typeof key !== "string" || typeof value !== "number" || value <= 0,
 			)
 			if (invalidEntries.length > 0) {
-				errors.push(VALIDATION_MESSAGES.INVALID_LABELS)
+				errors.push({ message: VALIDATION_MESSAGES.INVALID_LABELS, severity: "error" })
 			}
 
 			if (Object.keys(variant.labels).length === 0) {
-				warnings.push(VALIDATION_WARNINGS.MISSING_LABELS)
+				warnings.push({ message: VALIDATION_WARNINGS.MISSING_LABELS, severity: "warning" })
 			}
 		}
 	} else {
-		warnings.push(VALIDATION_WARNINGS.MISSING_LABELS)
+		warnings.push({ message: VALIDATION_WARNINGS.MISSING_LABELS, severity: "warning" })
 	}
 
 	return { isValid: errors.length === 0, errors, warnings }
@@ -138,17 +138,17 @@ export function validateLabels(variant: PromptVariant): ValidationResult {
  * Validate tools field
  */
 export function validateTools(variant: PromptVariant): ValidationResult {
-	const errors: string[] = []
-	const warnings: string[] = []
+	const errors: ValidationError[] = []
+	const warnings: ValidationError[] = []
 
 	if (variant.tools) {
 		if (!Array.isArray(variant.tools)) {
-			errors.push(VALIDATION_MESSAGES.INVALID_TOOLS)
+			errors.push({ message: VALIDATION_MESSAGES.INVALID_TOOLS, severity: "error" })
 		} else {
 			if (variant.tools.length === 0) {
-				warnings.push(VALIDATION_WARNINGS.EMPTY_TOOLS)
+				warnings.push({ message: VALIDATION_WARNINGS.EMPTY_TOOLS, severity: "warning" })
 			} else if (variant.tools.length > 15) {
-				warnings.push(VALIDATION_WARNINGS.MANY_TOOLS)
+				warnings.push({ message: VALIDATION_WARNINGS.MANY_TOOLS, severity: "warning" })
 			}
 		}
 	}
@@ -160,18 +160,18 @@ export function validateTools(variant: PromptVariant): ValidationResult {
  * Validate placeholders field
  */
 export function validatePlaceholders(variant: PromptVariant): ValidationResult {
-	const errors: string[] = []
-	const warnings: string[] = []
+	const errors: ValidationError[] = []
+	const warnings: ValidationError[] = []
 
 	if (variant.placeholders) {
 		if (typeof variant.placeholders !== "object" || Array.isArray(variant.placeholders)) {
-			errors.push(VALIDATION_MESSAGES.INVALID_PLACEHOLDERS)
+			errors.push({ message: VALIDATION_MESSAGES.INVALID_PLACEHOLDERS, severity: "error" })
 		} else {
 			const invalidEntries = Object.entries(variant.placeholders).filter(
 				([key, value]) => typeof key !== "string" || typeof value !== "string",
 			)
 			if (invalidEntries.length > 0) {
-				errors.push(VALIDATION_MESSAGES.INVALID_PLACEHOLDERS)
+				errors.push({ message: VALIDATION_MESSAGES.INVALID_PLACEHOLDERS, severity: "error" })
 			}
 		}
 	}
@@ -183,12 +183,12 @@ export function validatePlaceholders(variant: PromptVariant): ValidationResult {
  * Validate config field
  */
 export function validateConfig(variant: PromptVariant): ValidationResult {
-	const errors: string[] = []
-	const warnings: string[] = []
+	const errors: ValidationError[] = []
+	const warnings: ValidationError[] = []
 
 	if (variant.config) {
 		if (typeof variant.config !== "object" || Array.isArray(variant.config)) {
-			errors.push(VALIDATION_MESSAGES.INVALID_CONFIG)
+			errors.push({ message: VALIDATION_MESSAGES.INVALID_CONFIG, severity: "error" })
 		}
 	}
 
@@ -199,14 +199,14 @@ export function validateConfig(variant: PromptVariant): ValidationResult {
  * Validate component order
  */
 export function validateComponentOrder(variant: PromptVariant): ValidationResult {
-	const errors: string[] = []
-	const warnings: string[] = []
+	const errors: ValidationError[] = []
+	const warnings: ValidationError[] = []
 
 	if (variant.componentOrder) {
 		if (variant.componentOrder.length === 0) {
-			errors.push(VALIDATION_MESSAGES.INVALID_COMPONENT_ORDER)
+			errors.push({ message: VALIDATION_MESSAGES.INVALID_COMPONENT_ORDER, severity: "error" })
 		} else if (variant.componentOrder.length > 15) {
-			warnings.push(VALIDATION_WARNINGS.LARGE_COMPONENT_ORDER)
+			warnings.push({ message: VALIDATION_WARNINGS.LARGE_COMPONENT_ORDER, severity: "warning" })
 		}
 	}
 
@@ -220,8 +220,8 @@ export function validateVariantComprehensive(
 	variant: PromptVariant,
 	options: ValidationOptions = { strict: false },
 ): ValidationResult {
-	const allErrors: string[] = []
-	const allWarnings: string[] = []
+	const allErrors: ValidationError[] = []
+	const allWarnings: ValidationError[] = []
 
 	// Run all validation functions
 	const validators = [
@@ -258,21 +258,21 @@ export function validateVariantComprehensive(
  * Quick validation for common issues
  */
 export function validateVariantQuick(variant: PromptVariant): ValidationResult {
-	const errors: string[] = []
-	const warnings: string[] = []
+	const errors: ValidationError[] = []
+	const warnings: ValidationError[] = []
 
 	// Check most critical issues
 	if (!variant.id) {
-		errors.push(VALIDATION_MESSAGES.REQUIRED_FIELD("id"))
+		errors.push({ message: VALIDATION_MESSAGES.REQUIRED_FIELD("id"), severity: "error" })
 	}
 	if (!variant.family) {
-		errors.push(VALIDATION_MESSAGES.REQUIRED_FIELD("family"))
+		errors.push({ message: VALIDATION_MESSAGES.REQUIRED_FIELD("family"), severity: "error" })
 	}
 	if (!variant.description) {
-		errors.push(VALIDATION_MESSAGES.REQUIRED_FIELD("description"))
+		errors.push({ message: VALIDATION_MESSAGES.REQUIRED_FIELD("description"), severity: "error" })
 	}
 	if (!variant.componentOrder?.length) {
-		errors.push(VALIDATION_MESSAGES.INVALID_COMPONENT_ORDER)
+		errors.push({ message: VALIDATION_MESSAGES.INVALID_COMPONENT_ORDER, severity: "error" })
 	}
 
 	return { isValid: errors.length === 0, errors, warnings }

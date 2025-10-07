@@ -61,7 +61,7 @@ function convertModelInfoToProtoOpenRouter(info: ModelInfo | undefined): OpenRou
 		description: info.description,
 		thinkingConfig: convertThinkingConfigToProto(info.thinkingConfig),
 		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
-		tiers: info.tiers || [],
+		tiers: info.tiers ? (info.tiers as ModelTier[]) : [],
 	}
 }
 
@@ -152,7 +152,7 @@ function convertLiteLLMModelInfoToProto(info: AppLiteLLMModelInfo | undefined): 
 		cacheWritesPrice: info.cacheWritesPrice,
 		cacheReadsPrice: info.cacheReadsPrice,
 		description: info.description,
-		tiers: info.tiers || [],
+		tiers: info.tiers ? (info.tiers as ModelTier[]) : [],
 		temperature: info.temperature,
 	}
 }
@@ -200,7 +200,7 @@ function convertOpenAiCompatibleModelInfoToProto(
 		cacheWritesPrice: info.cacheWritesPrice,
 		cacheReadsPrice: info.cacheReadsPrice,
 		description: info.description,
-		tiers: info.tiers || [],
+		tiers: info.tiers ? (info.tiers as ModelTier[]) : [],
 		temperature: info.temperature,
 		isR1FormatRequired: info.isR1FormatRequired,
 	}

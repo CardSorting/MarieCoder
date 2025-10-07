@@ -8,16 +8,16 @@ import type { AxiosRequestConfig } from "axios"
 import { OcaAuthService } from "../OcaAuthService"
 import { OCI_HEADER_OPC_REQUEST_ID } from "./constants"
 
-export function createOcaHeaders(): Record<string, string> {
+export function createOcaHeaders(token?: string, requestId?: string): Record<string, string> {
 	const authService = OcaAuthService.getInstance()
-	const token = authService.getAccessToken()
+	const authToken = token || authService.getAccessToken()
 
 	const headers: Record<string, string> = {
-		[OCI_HEADER_OPC_REQUEST_ID]: generateRequestId(),
+		[OCI_HEADER_OPC_REQUEST_ID]: requestId || generateRequestId(),
 	}
 
-	if (token) {
-		headers["Authorization"] = `Bearer ${token}`
+	if (authToken) {
+		headers["Authorization"] = `Bearer ${authToken}`
 	}
 
 	return headers

@@ -48,7 +48,7 @@ export class SummarizeTaskHandler implements IToolHandler, IPartialBlockHandler 
 
 			// clear the context history at this point in time. note that this will not include the assistant message
 			// for summarizing, which we will need to delete later
-			config.taskState.conversationHistoryDeletedRange = config.services.contextManager.getNextTruncationRange(
+			config.taskState.conversationHistoryDeletedRange = config.services.contextManager.calculateTruncationRange(
 				apiConversationHistory,
 				config.taskState.conversationHistoryDeletedRange,
 				keepStrategy,

@@ -1,0 +1,65 @@
+import { ensureCacheDirectoryExists, GlobalFileNames } from "@core/storage/disk"
+import { fileExistsAtPath } from "@utils/fs"
+import fs from "fs/promises"
+import path from "path"
+
+/**
+ * Unified model caching service for all providers.
+ * Eliminates duplication across provider implementations.
+ */
+export class ModelCache {
+	/**
+	 * Reads cached models from disk for a specific provider
+	 */
+	async read<T>(fileName: string): Promise<T | undefined> {
+		try {
+			const filePath = path.join(await ensureCacheDirectoryExists(), fileName)
+			const fileExists = await fileExistsAtPath(filePath)
+
+			if (!fileExists) {
+				return undefined
+			}
+
+			const fileContents = await fs.readFile(filePath, "utf-8")
+			return JSON.parse(fileContents) as T
+		} catch (error) {
+			console.error(`Error reading cached models from ${fileName}:`, error)
+			return undefined
+		}
+	}
+
+	/**
+	 * Writes models to cache for a specific provider
+	 */
+	async write<T>(fileName: string, models: T): Promise<void> {
+		try {
+			const filePath = path.join(await ensureCacheDirectoryExists(), fileName)
+			await fs.writeFile(filePath, JSON.stringify(models, null, 2))
+			console.log(`Models cached successfully to ${fileName}`)
+		} catch (error) {
+			console.error(`Error writing models to cache ${fileName}:`, error)
+		}
+	}
+
+	/**
+	 * Gets the full file path for a cache file
+	 */
+	async getFilePath(fileName: string): Promise<string> {
+		return path.join(await ensureCacheDirectoryExists(), fileName)
+	}
+}
+
+/**
+ * Singleton instance for model caching
+ */
+export const modelCache = new ModelCache()
+
+/**
+ * Cache file names for each provider
+ */
+export const CacheFileNames = {
+	openRouter: GlobalFileNames.openRouterModels,
+	groq: GlobalFileNames.groqModels,
+	baseten: GlobalFileNames.basetenModels,
+	huggingFace: "huggingface_models.json",
+} as const
