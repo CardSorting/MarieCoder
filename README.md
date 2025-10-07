@@ -128,11 +128,13 @@ NormieDev saves snapshots as it works:
 
 Perfect for trying different approaches.
 
-## Inspired by Cline
+## Standing on the Shoulders of Giants
 
-NormieDev is built on [Cline](https://github.com/cline/cline), an amazing open-source AI coding assistant. The Cline team's commitment to transparency and open development inspired us to create our own community-driven fork.
+NormieDev is built on [Cline](https://github.com/cline/cline), a groundbreaking open-source project that's democratizing AI-assisted development. The Cline team proved that powerful AI coding tools don't have to be locked behind corporate walls - they can be open, accessible, and community-driven.
 
-We're exploring additional features and workflows while maintaining the core excellence that makes Cline great. Massive respect to the Cline team for building such powerful tools and sharing them with the world.
+Their mission inspired us to contribute to this movement. NormieDev is our way of participating in the democratic development ecosystem they pioneered. We're exploring different approaches and features while honoring the same core values: transparency, user control, and making AI coding accessible to everyone.
+
+Both projects share the same goal - empowering developers with AI tools that respect their autonomy and creativity. We're honored to be part of the community and movement that Cline started.
 
 ## Getting Started
 
