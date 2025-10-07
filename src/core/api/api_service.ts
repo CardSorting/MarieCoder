@@ -38,6 +38,10 @@ export interface ApiHandlerModel {
 export interface ProviderInfo {
 	providerId: string
 	model: ApiHandlerModel
+	customPrompt?: string
+	capabilities?: any
+	status?: string
+	category?: string
 }
 
 /**

@@ -8,34 +8,12 @@ option java_multiple_files = true;
 
 // Service for model-related operations
 service ModelsService {
-  // Fetches available models from Ollama
-  rpc getOllamaModels(StringRequest) returns (StringArray);
-  // Fetches available models from LM Studio
-  rpc getLmStudioModels(StringRequest) returns (StringArray);
-  // Fetches available models from VS Code LM API
-  rpc getVsCodeLmModels(EmptyRequest) returns (VsCodeLmModelsArray);
   // Refreshes and returns OpenRouter models
   rpc refreshOpenRouterModels(EmptyRequest) returns (OpenRouterCompatibleModelInfo);
-  // Refreshes and returns Hugging Face models
-  rpc refreshHuggingFaceModels(EmptyRequest) returns (OpenRouterCompatibleModelInfo);
-  // Refreshes and returns OpenAI models
-  rpc refreshOpenAiModels(OpenAiModelsRequest) returns (StringArray);
-  // Refreshes and returns Vercel AI Gateway models
-  rpc refreshVercelAiGatewayModels(EmptyRequest) returns (OpenRouterCompatibleModelInfo);
-  // Refreshes and returns Requesty models
-  rpc refreshRequestyModels(EmptyRequest) returns (OpenRouterCompatibleModelInfo);
   // Subscribe to OpenRouter models updates
   rpc subscribeToOpenRouterModels(EmptyRequest) returns (stream OpenRouterCompatibleModelInfo);
   // Updates API configuration
   rpc updateApiConfigurationProto(UpdateApiConfigurationRequest) returns (Empty);
-  // Refreshes and returns Groq models
-  rpc refreshGroqModels(EmptyRequest) returns (OpenRouterCompatibleModelInfo);
-  // Refreshes and returns Baseten models
-  rpc refreshBasetenModels(EmptyRequest) returns (OpenRouterCompatibleModelInfo);
-  // Fetches available models from SAP AI Core
-  rpc getSapAiCoreModels(SapAiCoreModelsRequest) returns (SapAiCoreModelsResponse);
-  // Fetches available models from OCA
-  rpc refreshOcaModels(StringRequest) returns (OcaCompatibleModelInfo);
 }
 
 // List of VS Code LM models

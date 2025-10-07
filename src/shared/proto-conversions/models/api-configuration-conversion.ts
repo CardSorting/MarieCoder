@@ -1,5 +1,6 @@
 import {
 	LiteLLMModelInfo,
+	ModelTier,
 	OpenAiCompatibleModelInfo,
 	OpenRouterModelInfo,
 	ModelsApiConfiguration as ProtoApiConfiguration,
