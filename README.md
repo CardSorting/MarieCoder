@@ -12,6 +12,12 @@ NormieDev is a community fork of [Cline](https://github.com/cline/cline), the op
 
 **Part of the democratic development movement** - AI coding tools should be open, transparent, and controlled by users, not corporations.
 
+### Why "NormieDev"?
+
+The name celebrates building for everyone, not just the elite. "Normie" isn't self-deprecating - it's inclusive. We believe powerful development tools shouldn't require years of experience or deep technical knowledge to be useful.
+
+Whether you're shipping your first app or your thousandth, whether you work at a startup or a Fortune 500, whether you code every day or occasionally - you're welcome here. No gatekeeping. No elitism. Just great tools that work.
+
 ## What It Does
 
 Chat with an AI that can:
