@@ -111,8 +111,8 @@ class SimpleProviderRegistry {
 			options.thinkingBudgetTokens = getModeValue("thinkingBudgetTokens")
 		} else if (providerId === "openrouter") {
 			options.openRouterApiKey = configuration.openRouterApiKey || getModeValue("openRouterApiKey")
-			options.openRouterModelId = configuration.openRouterModelId || getModeValue("openRouterModelId")
-			options.openRouterModelInfo = configuration.openRouterModelInfo
+			options.openRouterModelId = getModeValue("openRouterModelId")
+			options.openRouterModelInfo = getModeValue("openRouterModelInfo")
 			options.openRouterProviderSorting = configuration.openRouterProviderSorting
 			options.reasoningEffort = getModeValue("reasoningEffort")
 			options.thinkingBudgetTokens = getModeValue("thinkingBudgetTokens")

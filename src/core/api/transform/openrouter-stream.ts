@@ -6,8 +6,7 @@ import {
 	openRouterClaudeSonnet451mModelId,
 } from "@shared/api"
 import OpenAI from "openai"
-import { convertToOpenAiMessages } from "./openai-format"
-import { convertToR1Format } from "./r1-format"
+import { convertToOpenAiMessages, convertToR1Format } from "../utils/message-transformers"
 
 export async function createOpenRouterStream(
 	client: OpenAI,

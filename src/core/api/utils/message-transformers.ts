@@ -89,3 +89,31 @@ export function extractTextContent(message: Anthropic.Messages.MessageParam): st
 
 	return ""
 }
+
+/**
+ * Convert messages to R1 format (for DeepSeek R1 and similar reasoning models)
+ * R1 models don't support system role, so system prompts are converted to user messages
+ */
+export function convertToR1Format(messages: Array<{ role: string; content: string } | Anthropic.Messages.MessageParam>): any[] {
+	const result: any[] = []
+
+	for (const message of messages) {
+		// Convert system role to user role for R1 models
+		const role = message.role === "system" ? "user" : message.role
+
+		if (typeof message.content === "string") {
+			result.push({
+				role,
+				content: message.content,
+			})
+		} else {
+			// Handle complex content types
+			result.push({
+				role,
+				content: message.content,
+			})
+		}
+	}
+
+	return result
+}
