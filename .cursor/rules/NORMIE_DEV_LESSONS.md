@@ -67,6 +67,18 @@ Through deep analysis and iterative refinement, we distilled everything down to:
 
 **Impact**: Developers have a clear roadmap for applying the methodology in practice.
 
+### **Lesson 6: Self-Explanatory Names Eliminate Mental Load**
+**What we learned**: Cryptic file names and unclear naming create massive cognitive overhead and confusion.
+
+**The solution**:
+- **Self-explanatory names** - every file, function, and variable clearly describes what it does
+- **snake_case for multi-word files** - `user_authentication.ts`, `database_connection.ts`
+- **Descriptive verbs** - `manager`, `builder`, `optimizer`, `organizer`, `validator`
+- **Clear nouns** - `prompt`, `variant`, `template`, `tool`, `response`
+- **Concrete examples** - `prompt_manager.ts` instead of `PromptRegistry.ts`
+
+**Impact**: Zero mental load when navigating codebase - names tell you exactly what they do.
+
 ## 🚀 **The NORMIE DEV Methodology in Practice**
 
 ### **The 3-Step Decision Process**
@@ -85,6 +97,18 @@ Apply these questions to EVERY change:
 - **USE** existing excellent tools (Next.js, Kysely, SQLite) instead of recreating functionality
 - **COMPOSE** solutions from proven patterns instead of creating new frameworks
 
+### **Naming Conventions - Zero Mental Load**
+- **SELF-EXPLANATORY NAMES**: Every file, function, and variable must clearly describe what it does
+- **snake_case for multi-word files**: `user_authentication.ts`, `database_connection.ts`
+- **Descriptive verbs**: `manager`, `builder`, `optimizer`, `organizer`, `validator`
+- **Clear nouns**: `prompt`, `variant`, `template`, `tool`, `response`
+- **Examples**:
+  - ✅ `prompt_manager.ts` - Manages prompts
+  - ✅ `response_formatters.ts` - Formats responses
+  - ✅ `context_summarization.ts` - Summarizes context
+  - ❌ `PromptRegistry.ts` - Unclear purpose
+  - ❌ `loadMcpDocumentation.ts` - Too verbose and unclear
+
 ## 📊 **Measurable Outcomes**
 
 ### **Before NORMIE DEV Methodology**
@@ -100,6 +124,7 @@ Apply these questions to EVERY change:
 - **Actionability**: 100% actionable guidelines
 - **Coverage**: 95% of development scenarios (maintained)
 - **Developer satisfaction**: High - clear, easy to follow
+- **Naming clarity**: 100% self-explanatory file names - zero mental load
 
 ## 🎯 **Context-Aware Implementation**
 
@@ -129,6 +154,7 @@ Apply these questions to EVERY change:
 - **Measurable outcomes** - Specific benchmarks and quality gates
 - **Implementation flow** - Clear pre/during/post development phases
 - **Zero tolerance for legacy** - Clean breaks instead of gradual migration
+- **Self-explanatory naming** - Names that spark joy through instant understanding
 
 ### **What Didn't Work**
 - **Multiple overlapping rules** - Created confusion and cognitive overhead
@@ -136,6 +162,7 @@ Apply these questions to EVERY change:
 - **Generic guidance** - One-size-fits-all approaches
 - **Rule lists** - Hard to apply in practice without context
 - **Gradual migration** - Dual systems created more complexity
+- **Cryptic naming** - File names that required mental overhead to understand
 
 ## 🔮 **Future Applications**
 
@@ -168,6 +195,9 @@ Specific, measurable outcomes eliminate ambiguity and debates.
 
 ### **Insight 5: Flow > Lists**
 Implementation flows are more useful than static rule lists.
+
+### **Insight 6: Names > Comments**
+Self-explanatory names eliminate the need for extensive documentation and reduce mental load.
 
 ## 🎉 **The Result**
 

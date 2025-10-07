@@ -1,10 +1,10 @@
 import { expect } from "chai"
 import type { McpHub } from "@/services/mcp/McpHub"
 import { ModelFamily } from "@/shared/prompts"
-import { PromptBuilder } from "../registry/PromptBuilder"
-import { SystemPromptSection } from "../templates/placeholders"
+import { PromptBuilder } from "../registry/prompt_builder"
+import { SystemPromptSection } from "../templates/section_definitions"
 import type { ComponentRegistry, PromptVariant, SystemPromptContext } from "../types"
-import { createVariant } from "../variants/variant-builder"
+import { createVariant } from "../variants/variant_builder"
 import { mockProviderInfo } from "./integration.test"
 
 describe("PromptBuilder", () => {

@@ -146,7 +146,6 @@ export class ErrorService {
 				})
 
 			case 402:
-			case 429:
 				return new ApiError(`Quota exceeded: ${message}`, ApiErrorType.QUOTA_EXCEEDED, {
 					statusCode: status,
 					provider,
@@ -191,7 +190,7 @@ export class ErrorService {
 
 		if (retryAfter) {
 			const value = parseInt(retryAfter, 10)
-			if (!isNaN(value)) {
+			if (!Number.isNaN(value)) {
 				// Handle both delta-seconds and Unix timestamp formats
 				if (value > Date.now() / 1000) {
 					// Unix timestamp

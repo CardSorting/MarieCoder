@@ -2,9 +2,7 @@ import { DifyProvider } from "../../providers/platform/dify"
 import { RequestyProvider } from "../../providers/platform/requesty"
 import { VercelAIGatewayProvider } from "../../providers/platform/vercel-ai-gateway"
 import { enhancedProviderRegistry } from "../enhanced-provider-registry"
-import {
-    ProviderCategory, ProviderStatus
-} from "../provider-metadata"
+import { ProviderCategory, ProviderStatus } from "../provider-metadata"
 
 /**
  * Enhanced Platform Provider Registrations

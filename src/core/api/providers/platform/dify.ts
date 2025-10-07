@@ -71,7 +71,7 @@ export class DifyProvider extends BaseProvider {
 	/**
 	 * Create Dify client (not needed for this provider)
 	 */
-	protected createClient(): any {
+	protected override createClient(): any {
 		// Dify doesn't use a traditional client
 		return null
 	}
@@ -79,10 +79,9 @@ export class DifyProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		return {
 			maxTokens: 4000,
-			maxCompletionTokens: 2000,
 			inputCostPerToken: 0.0001,
 			outputCostPerToken: 0.0002,
 		}
@@ -91,7 +90,7 @@ export class DifyProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return "dify-chat"
 	}
 
@@ -110,7 +109,7 @@ export class DifyProvider extends BaseProvider {
 	/**
 	 * Create message stream
 	 */
-	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+	async *createMessage(_systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
 		const apiKey = this.difyOptions.difyApiKey!
 		const baseUrl = this.difyOptions.difyBaseUrl || "https://api.dify.ai/v1"
 		const query = this.convertToDifyMessages(messages)
@@ -119,7 +118,7 @@ export class DifyProvider extends BaseProvider {
 			const response = await fetch(`${baseUrl}/chat-messages`, {
 				method: "POST",
 				headers: {
-					"Authorization": `Bearer ${apiKey}`,
+					Authorization: `Bearer ${apiKey}`,
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
@@ -145,7 +144,9 @@ export class DifyProvider extends BaseProvider {
 
 			while (true) {
 				const { done, value } = await reader.read()
-				if (done) break
+				if (done) {
+					break
+				}
 
 				buffer += decoder.decode(value, { stream: true })
 				const lines = buffer.split("\n")
@@ -154,17 +155,19 @@ export class DifyProvider extends BaseProvider {
 				for (const line of lines) {
 					if (line.startsWith("data: ")) {
 						const data = line.slice(6)
-						if (data === "[DONE]") continue
+						if (data === "[DONE]") {
+							continue
+						}
 
 						try {
 							const parsed: DifyResponse = JSON.parse(data)
 							if (parsed.answer) {
 								yield {
-									type: "text-delta",
-									textDelta: parsed.answer,
+									type: "text",
+									text: parsed.answer,
 								}
 							}
-						} catch (e) {
+						} catch (_e) {
 							// Ignore parsing errors for incomplete data
 						}
 					}

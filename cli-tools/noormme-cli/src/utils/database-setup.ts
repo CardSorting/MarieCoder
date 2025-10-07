@@ -142,7 +142,7 @@ export class DatabaseSetup {
 					stdio: "inherit",
 					cwd: this.projectPath,
 				})
-			} catch (tsNodeError) {
+			} catch (_tsNodeError) {
 				// Fallback to node with compiled JS
 				const jsPath = scriptPath.replace(".ts", ".js")
 				if (

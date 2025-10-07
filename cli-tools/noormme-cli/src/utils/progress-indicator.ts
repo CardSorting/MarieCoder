@@ -90,7 +90,7 @@ export class ProgressIndicator {
 	}
 
 	// Method to show multiple steps
-	static async withSteps<T>(
+	static async withSteps<_T>(
 		steps: Array<{
 			name: string
 			operation: () => Promise<any>
@@ -121,12 +121,12 @@ export class ProgressIndicator {
 		operation: (updateProgress: (step: number) => void) => Promise<T>,
 	): Promise<T> {
 		const progress = new ProgressIndicator()
-		let currentStep = 0
+		let _currentStep = 0
 
 		progress.start(message)
 
 		const updateProgress = (step: number) => {
-			currentStep = step
+			_currentStep = step
 			const percentage = Math.round((step / totalSteps) * 100)
 			const barLength = 20
 			const filledLength = Math.round((step / totalSteps) * barLength)

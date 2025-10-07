@@ -25,6 +25,22 @@ priority: 1
 - **USE** existing excellent tools (Next.js, Kysely, SQLite) instead of recreating functionality
 - **COMPOSE** solutions from proven patterns instead of creating new frameworks
 
+### Naming Conventions - Zero Mental Load:
+- **SELF-EXPLANATORY NAMES**: Every file, function, and variable must clearly describe what it does
+- **FORBIDDEN**: Cryptic abbreviations, unclear names, or names that require mental overhead
+- **REQUIRED**: Descriptive names that spark joy through instant understanding
+
+#### File Naming Standards:
+- **snake_case** for multi-word files: `user_authentication.ts`, `database_connection.ts`
+- **Descriptive verbs**: `manager`, `builder`, `optimizer`, `organizer`, `validator`
+- **Clear nouns**: `prompt`, `variant`, `template`, `tool`, `response`
+- **Examples**:
+  - ✅ `prompt_manager.ts` - Manages prompts
+  - ✅ `response_formatters.ts` - Formats responses
+  - ✅ `context_summarization.ts` - Summarizes context
+  - ❌ `PromptRegistry.ts` - Unclear purpose
+  - ❌ `loadMcpDocumentation.ts` - Too verbose and unclear
+
 ---
 
 ## 🔧 **Type Safety & Code Quality Standards**
@@ -136,12 +152,14 @@ export async function createUser(formData: FormData) {
 
 ### Pre-Development Checklist:
 - [ ] **Philosophy**: Applied 3-step decision process (spark joy, delete legacy, simplest solution)
+- [ ] **Naming**: Planned self-explanatory names for all files, functions, and variables
 - [ ] **Type Safety**: Planned error handling and input validation
 - [ ] **Architecture**: Planned database and folder organization
 - [ ] **Performance**: Planned Next.js patterns and performance targets
 
 ### Development Standards:
 - [ ] All TypeScript errors resolved
+- [ ] Self-explanatory names for all files, functions, and variables
 - [ ] Custom error classes with actionable messages
 - [ ] Input validation before database operations
 - [ ] Unit tests for all public methods (minimum 80% coverage)
@@ -155,6 +173,7 @@ export async function createUser(formData: FormData) {
 
 ### Post-Development Validation:
 - [ ] No linting errors
+- [ ] All names are self-explanatory and spark joy
 - [ ] Legacy code eliminated
 - [ ] All patterns applied consistently
 - [ ] Production-ready quality achieved

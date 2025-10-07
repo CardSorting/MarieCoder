@@ -21,7 +21,6 @@ interface SambanovaProviderOptions extends BaseProviderOptions {
  */
 export class SambanovaProvider extends BaseProvider {
 	private sambanovaOptions: SambanovaProviderOptions
-	private client: OpenAI | undefined
 
 	constructor(options: SambanovaProviderOptions) {
 		super(options)
@@ -32,7 +31,7 @@ export class SambanovaProvider extends BaseProvider {
 	/**
 	 * Create Sambanova client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
 			return new OpenAI({
 				baseURL: "https://api.sambanova.ai/v1",
@@ -46,7 +45,7 @@ export class SambanovaProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		const modelId = this.getModelId()
 		return sambanovaModels[modelId] || sambanovaModels[sambanovaDefaultModelId]
 	}
@@ -61,14 +60,14 @@ export class SambanovaProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return sambanovaDefaultModelId
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -100,8 +99,8 @@ export class SambanovaProvider extends BaseProvider {
 				const content = chunk.choices[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 			}

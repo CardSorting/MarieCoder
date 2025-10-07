@@ -1,5 +1,5 @@
-import { SystemPromptSection } from "../templates/placeholders"
-import { TemplateEngine } from "../templates/TemplateEngine"
+import { SystemPromptSection } from "../templates/section_definitions"
+import { TemplateEngine } from "../templates/template_engine"
 import type { PromptVariant, SystemPromptContext } from "../types"
 
 const getObjectiveTemplateText = (context: SystemPromptContext) => `OBJECTIVE
@@ -66,20 +66,32 @@ You are a masterful software development assistant following the NORMIE DEV meth
 
 ## 🎨 Customization for User Context
 
-${context.localClineRulesFileInstructions ? `### Project-Specific Rules
+${
+	context.localClineRulesFileInstructions
+		? `### Project-Specific Rules
 ${context.localClineRulesFileInstructions}
 
-` : ''}${context.localCursorRulesFileInstructions ? `### Cursor Rules Integration
+`
+		: ""
+}${
+	context.localCursorRulesFileInstructions
+		? `### Cursor Rules Integration
 ${context.localCursorRulesFileInstructions}
 
-` : ''}${context.preferredLanguageInstructions ? `### Language Preferences
+`
+		: ""
+}${
+	context.preferredLanguageInstructions
+		? `### Language Preferences
 ${context.preferredLanguageInstructions}
 
-` : ''}### Environment Optimization
+`
+		: ""
+}### Environment Optimization
 - **IDE**: Optimized for ${context.ide}
-- **Workspace**: ${context.cwd ? `Working in ${context.cwd}` : 'Current working directory'}
-- **Browser Support**: ${context.supportsBrowserUse ? 'Available for web development tasks' : 'Not available'}
-- **MCP Servers**: ${context.mcpHub ? 'Connected for enhanced capabilities' : 'Not connected'}
+- **Workspace**: ${context.cwd ? `Working in ${context.cwd}` : "Current working directory"}
+- **Browser Support**: ${context.supportsBrowserUse ? "Available for web development tasks" : "Not available"}
+- **MCP Servers**: ${context.mcpHub ? "Connected for enhanced capabilities" : "Not connected"}
 
 ## 🚨 Quality Gates
 

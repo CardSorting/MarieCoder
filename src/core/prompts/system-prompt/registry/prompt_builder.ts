@@ -1,9 +1,9 @@
 import type { ClineDefaultTool } from "@/shared/tools"
 import { getModelFamily } from "../"
-import { ClineToolSet } from "../registry/ClineToolSet"
+import { ClineToolSet } from "../registry/tool_sets"
 import type { ClineToolSpec } from "../spec"
-import { STANDARD_PLACEHOLDERS } from "../templates/placeholders"
-import { TemplateEngine } from "../templates/TemplateEngine"
+import { STANDARD_PLACEHOLDERS } from "../templates/section_definitions"
+import { TemplateEngine } from "../templates/template_engine"
 import type { ComponentRegistry, PromptVariant, SystemPromptContext } from "../types"
 
 // Pre-defined mapping of standard placeholders to avoid runtime object creation

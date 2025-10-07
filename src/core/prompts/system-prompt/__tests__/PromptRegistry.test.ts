@@ -2,7 +2,7 @@ import { expect } from "chai"
 import type { McpHub } from "@/services/mcp/McpHub"
 import { ModelFamily } from "@/shared/prompts"
 import { getModelFamily } from ".."
-import { PromptRegistry } from "../registry/PromptRegistry"
+import { PromptRegistry } from "../registry/prompt_manager"
 import type { SystemPromptContext } from "../types"
 import { mockProviderInfo } from "./integration.test"
 

@@ -60,7 +60,7 @@ export class ProviderFactoryService {
 	/**
 	 * Validate configuration for provider
 	 */
-	static validateProviderConfiguration(providerId: string, configuration: ApiConfiguration, mode: Mode): boolean {
+	static validateProviderConfiguration(providerId: string, configuration: ApiConfiguration, _mode: Mode): boolean {
 		return providerRegistry.validateConfiguration(providerId, configuration)
 	}
 
@@ -82,7 +82,7 @@ export class ProviderFactoryService {
 	): ApiHandler {
 		try {
 			return ProviderFactoryService.createHandler(configuration, mode, options)
-		} catch (error) {
+		} catch (_error) {
 			console.warn(`Failed to create handler for configured provider, falling back to ${fallbackProvider}`)
 
 			// Create fallback configuration

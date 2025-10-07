@@ -22,7 +22,6 @@ interface MoonshotProviderOptions extends BaseProviderOptions {
  */
 export class MoonshotProvider extends BaseProvider {
 	private moonshotOptions: MoonshotProviderOptions
-	private client: OpenAI | undefined
 
 	constructor(options: MoonshotProviderOptions) {
 		super(options)
@@ -33,7 +32,7 @@ export class MoonshotProvider extends BaseProvider {
 	/**
 	 * Create Moonshot client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
 			const baseURL =
 				this.moonshotOptions.moonshotApiLine === "china" ? "https://api.moonshot.cn/v1" : "https://api.moonshot.ai/v1"
@@ -50,7 +49,7 @@ export class MoonshotProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		const modelId = this.getModelId()
 		return moonshotModels[modelId] || moonshotModels[moonshotDefaultModelId]
 	}
@@ -65,14 +64,14 @@ export class MoonshotProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return moonshotDefaultModelId
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -104,8 +103,8 @@ export class MoonshotProvider extends BaseProvider {
 				const content = chunk.choices[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 			}

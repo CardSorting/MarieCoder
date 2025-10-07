@@ -24,7 +24,6 @@ interface FireworksProviderOptions extends BaseProviderOptions {
  */
 export class FireworksProvider extends BaseProvider {
 	private fireworksOptions: FireworksProviderOptions
-	private client: OpenAI | undefined
 
 	constructor(options: FireworksProviderOptions) {
 		super(options)
@@ -35,7 +34,7 @@ export class FireworksProvider extends BaseProvider {
 	/**
 	 * Create Fireworks client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
 			return new OpenAI({
 				baseURL: "https://api.fireworks.ai/inference/v1",
@@ -49,15 +48,14 @@ export class FireworksProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		const modelId = this.getModelId()
 		const baseInfo = fireworksModels[modelId] || fireworksModels[fireworksDefaultModelId]
-		
+
 		// Override with custom token limits if provided
 		return {
 			...baseInfo,
 			maxTokens: this.fireworksOptions.fireworksModelMaxTokens || baseInfo.maxTokens,
-			maxCompletionTokens: this.fireworksOptions.fireworksModelMaxCompletionTokens || baseInfo.maxCompletionTokens,
 		}
 	}
 
@@ -71,14 +69,14 @@ export class FireworksProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return fireworksDefaultModelId
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -111,8 +109,8 @@ export class FireworksProvider extends BaseProvider {
 				const content = chunk.choices[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 			}

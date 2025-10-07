@@ -1,5 +1,5 @@
-import { SystemPromptSection } from "../templates/placeholders"
-import { TemplateEngine } from "../templates/TemplateEngine"
+import { SystemPromptSection } from "../templates/section_definitions"
+import { TemplateEngine } from "../templates/template_engine"
 import type { PromptVariant, SystemPromptContext } from "../types"
 
 const TODO_LIST_TEMPLATE_TEXT = `AUTOMATIC TODO LIST MANAGEMENT

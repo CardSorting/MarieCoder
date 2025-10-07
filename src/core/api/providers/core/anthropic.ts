@@ -22,7 +22,6 @@ interface AnthropicProviderOptions extends BaseProviderOptions {
  */
 export class AnthropicProvider extends BaseProvider {
 	private anthropicOptions: AnthropicProviderOptions
-	private client: Anthropic | undefined
 
 	constructor(options: AnthropicProviderOptions) {
 		super(options)
@@ -33,7 +32,7 @@ export class AnthropicProvider extends BaseProvider {
 	/**
 	 * Create Anthropic client
 	 */
-	protected createClient(): Anthropic {
+	protected override createClient(): Anthropic {
 		try {
 			return new Anthropic({
 				apiKey: this.anthropicOptions.apiKey!,
@@ -47,7 +46,7 @@ export class AnthropicProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		const modelId = this.anthropicOptions.apiModelId || anthropicDefaultModelId
 		return anthropicModels[modelId as AnthropicModelId] || anthropicModels[anthropicDefaultModelId]
 	}
@@ -55,7 +54,7 @@ export class AnthropicProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return anthropicDefaultModelId
 	}
 
@@ -110,7 +109,7 @@ export class AnthropicProvider extends BaseProvider {
 		systemPrompt: string,
 		messages: any[],
 		reasoningOn: boolean,
-		enable1mContextWindow: boolean,
+		_enable1mContextWindow: boolean,
 	): Promise<AnthropicStream<Anthropic.RawMessageStreamEvent>> {
 		const model = this.getModel()
 		const budget_tokens = this.anthropicOptions.thinkingBudgetTokens || 0
@@ -154,7 +153,12 @@ export class AnthropicProvider extends BaseProvider {
 		budget_tokens: number,
 		model: any,
 	): Promise<AnthropicStream<Anthropic.RawMessageStreamEvent>> {
-		const userMsgIndices = messages.reduce((acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc), [] as number[])
+		const userMsgIndices: number[] = []
+		messages.forEach((msg, index) => {
+			if (msg.role === "user") {
+				userMsgIndices.push(index)
+			}
+		})
 		const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
 		const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 
@@ -225,26 +229,17 @@ export class AnthropicProvider extends BaseProvider {
 					type: "text",
 					text: chunk.delta.text,
 				}
-			} else if (chunk.type === "thinking_delta") {
-				yield {
-					type: "ant_thinking",
-					thinking: chunk.delta,
-					signature: chunk.signature,
-				}
-			} else if (chunk.type === "redacted_thinking_delta") {
-				yield {
-					type: "ant_redacted_thinking",
-					data: chunk.delta,
-				}
 			} else if (chunk.type === "message_stop") {
-				if (chunk.usage) {
+				// Handle usage information if available
+				if ("usage" in chunk && chunk.usage) {
+					const usage = chunk.usage as any // Type assertion for usage object
 					yield {
 						type: "usage",
-						inputTokens: chunk.usage.input_tokens,
-						outputTokens: chunk.usage.output_tokens,
-						cacheWriteTokens: chunk.usage.cache_write_tokens,
-						cacheReadTokens: chunk.usage.cache_read_tokens,
-						thoughtsTokenCount: chunk.usage.thoughts_token_count,
+						inputTokens: usage.input_tokens,
+						outputTokens: usage.output_tokens,
+						cacheWriteTokens: usage.cache_write_tokens,
+						cacheReadTokens: usage.cache_read_tokens,
+						thoughtsTokenCount: usage.thoughts_token_count,
 					}
 				}
 			}

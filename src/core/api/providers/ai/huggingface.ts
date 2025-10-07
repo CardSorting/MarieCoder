@@ -24,7 +24,6 @@ interface HuggingFaceProviderOptions extends BaseProviderOptions {
  */
 export class HuggingFaceProvider extends BaseProvider {
 	private huggingFaceOptions: HuggingFaceProviderOptions
-	private client: OpenAI | undefined
 	private cachedModel: { id: HuggingFaceModelId; info: ModelInfo } | undefined
 
 	constructor(options: HuggingFaceProviderOptions) {
@@ -36,7 +35,7 @@ export class HuggingFaceProvider extends BaseProvider {
 	/**
 	 * Create HuggingFace client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
 			return new OpenAI({
 				baseURL: "https://api-inference.huggingface.co/models",
@@ -50,17 +49,18 @@ export class HuggingFaceProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		const modelId = this.getModelId()
-		
+
 		// Use cached model info if available
 		if (this.cachedModel && this.cachedModel.id === modelId) {
 			return this.cachedModel.info
 		}
 
 		// Use provided model info or fallback to defaults
-		const info = this.huggingFaceOptions.huggingFaceModelInfo || 
-			huggingFaceModels[modelId] || 
+		const info =
+			this.huggingFaceOptions.huggingFaceModelInfo ||
+			huggingFaceModels[modelId] ||
 			huggingFaceModels[huggingFaceDefaultModelId]
 
 		// Cache the model info
@@ -79,14 +79,14 @@ export class HuggingFaceProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return huggingFaceDefaultModelId
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -105,12 +105,9 @@ export class HuggingFaceProvider extends BaseProvider {
 
 		yield {
 			type: "usage",
-			usage: {
-				inputTokens: promptTokens,
-				outputTokens: completionTokens,
-				totalTokens,
-				totalCostUSD: cost,
-			},
+			inputTokens: promptTokens,
+			outputTokens: completionTokens,
+			totalCost: cost,
 		}
 	}
 
@@ -141,8 +138,8 @@ export class HuggingFaceProvider extends BaseProvider {
 				const content = chunk.choices[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 

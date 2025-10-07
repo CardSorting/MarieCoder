@@ -21,7 +21,6 @@ interface DoubaoProviderOptions extends BaseProviderOptions {
  */
 export class DoubaoProvider extends BaseProvider {
 	private doubaoOptions: DoubaoProviderOptions
-	private client: OpenAI | undefined
 
 	constructor(options: DoubaoProviderOptions) {
 		super(options)
@@ -32,7 +31,7 @@ export class DoubaoProvider extends BaseProvider {
 	/**
 	 * Create Doubao client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
 			return new OpenAI({
 				baseURL: "https://ark.cn-beijing.volces.com/api/v3/",
@@ -46,7 +45,7 @@ export class DoubaoProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		const modelId = this.getModelId()
 		return doubaoModels[modelId] || doubaoModels[doubaoDefaultModelId]
 	}
@@ -61,14 +60,14 @@ export class DoubaoProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return doubaoDefaultModelId
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -100,8 +99,8 @@ export class DoubaoProvider extends BaseProvider {
 				const content = chunk.choices[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 			}

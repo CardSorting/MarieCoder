@@ -1,6 +1,6 @@
 import { ModelFamily } from "@/shared/prompts"
 import { ClineDefaultTool } from "@/shared/tools"
-import { SystemPromptSection } from "../templates/placeholders"
+import { SystemPromptSection } from "../templates/section_definitions"
 import type { ConfigOverride, PromptVariant } from "../types"
 
 /**

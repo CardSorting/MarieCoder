@@ -37,7 +37,7 @@ export class OpenRouterProvider extends HttpProvider {
 	/**
 	 * Create OpenRouter client
 	 */
-	protected override createHttpClient(config: any): OpenAI {
+	protected override createHttpClient(_config: any): OpenAI {
 		try {
 			return new OpenAI({
 				baseURL: "https://openrouter.ai/api/v1",
@@ -55,7 +55,7 @@ export class OpenRouterProvider extends HttpProvider {
 	/**
 	 * Process streaming response for OpenRouter
 	 */
-	protected override processStreamResponse(response: any): ApiStream {
+	protected override processStreamResponse(_response: any): ApiStream {
 		// This is handled by the createOpenRouterStream function
 		// Return a simple generator that yields the response
 		return (async function* () {

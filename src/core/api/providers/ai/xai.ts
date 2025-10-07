@@ -24,7 +24,6 @@ interface XAIProviderOptions extends BaseProviderOptions {
  */
 export class XAIProvider extends BaseProvider {
 	private xaiOptions: XAIProviderOptions
-	private client: OpenAI | undefined
 
 	constructor(options: XAIProviderOptions) {
 		super(options)
@@ -35,7 +34,7 @@ export class XAIProvider extends BaseProvider {
 	/**
 	 * Create XAI client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
 			return new OpenAI({
 				baseURL: "https://api.x.ai/v1",
@@ -49,7 +48,7 @@ export class XAIProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		const modelId = this.getModelId()
 		return xaiModels[modelId] || xaiModels[xaiDefaultModelId]
 	}
@@ -64,14 +63,14 @@ export class XAIProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return xaiDefaultModelId
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -107,12 +106,12 @@ export class XAIProvider extends BaseProvider {
 		try {
 			const stream = await client.chat.completions.create(requestOptions)
 
-			for await (const chunk of stream) {
+			for await (const chunk of stream as any) {
 				const content = chunk.choices[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 			}

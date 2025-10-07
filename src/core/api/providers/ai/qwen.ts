@@ -1,13 +1,13 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import {
-    InternationalQwenModelId,
-    internationalQwenDefaultModelId,
-    internationalQwenModels,
-    MainlandQwenModelId,
-    ModelInfo,
-    mainlandQwenDefaultModelId,
-    mainlandQwenModels,
-    QwenApiRegions,
+	InternationalQwenModelId,
+	internationalQwenDefaultModelId,
+	internationalQwenModels,
+	MainlandQwenModelId,
+	ModelInfo,
+	mainlandQwenDefaultModelId,
+	mainlandQwenModels,
+	QwenApiRegions,
 } from "@shared/api"
 import OpenAI from "openai"
 import { BaseProvider, BaseProviderOptions } from "../../base/base-provider"
@@ -32,7 +32,6 @@ interface QwenProviderOptions extends BaseProviderOptions {
  */
 export class QwenProvider extends BaseProvider {
 	private qwenOptions: QwenProviderOptions
-	private client: OpenAI | undefined
 
 	constructor(options: QwenProviderOptions) {
 		super(options)
@@ -43,11 +42,12 @@ export class QwenProvider extends BaseProvider {
 	/**
 	 * Create Qwen client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
-			const baseURL = this.qwenOptions.qwenApiLine === QwenApiRegions.CHINA
-				? "https://dashscope.aliyuncs.com/compatible-mode/v1"
-				: "https://api.tongyi.aliyun.com/compatible-mode/v1"
+			const baseURL =
+				this.qwenOptions.qwenApiLine === QwenApiRegions.CHINA
+					? "https://dashscope.aliyuncs.com/compatible-mode/v1"
+					: "https://api.tongyi.aliyun.com/compatible-mode/v1"
 
 			return new OpenAI({
 				baseURL,
@@ -61,14 +61,17 @@ export class QwenProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		const modelId = this.getModelId()
 		const isChina = this.qwenOptions.qwenApiLine === QwenApiRegions.CHINA
 
 		if (isChina) {
 			return mainlandQwenModels[modelId as MainlandQwenModelId] || mainlandQwenModels[mainlandQwenDefaultModelId]
 		} else {
-			return internationalQwenModels[modelId as InternationalQwenModelId] || internationalQwenModels[internationalQwenDefaultModelId]
+			return (
+				internationalQwenModels[modelId as InternationalQwenModelId] ||
+				internationalQwenModels[internationalQwenDefaultModelId]
+			)
 		}
 	}
 
@@ -82,7 +85,7 @@ export class QwenProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		const isChina = this.qwenOptions.qwenApiLine === QwenApiRegions.CHINA
 		return isChina ? mainlandQwenDefaultModelId : internationalQwenDefaultModelId
 	}
@@ -90,7 +93,7 @@ export class QwenProvider extends BaseProvider {
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -126,12 +129,12 @@ export class QwenProvider extends BaseProvider {
 		try {
 			const stream = await client.chat.completions.create(requestOptions)
 
-			for await (const chunk of stream) {
+			for await (const chunk of stream as any) {
 				const content = chunk.choices[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 			}

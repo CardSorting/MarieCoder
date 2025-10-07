@@ -84,34 +84,34 @@ export const ContextUtils = {
 		return context.supportsBrowserUse === true
 	},
 
-  /**
-   * Check if context supports MCP operations
-   */
-  supportsMCP(context: SystemPromptContext): boolean {
-    return !!(context as any).mcpServers && (context as any).mcpServers.length > 0
-  },
+	/**
+	 * Check if context supports MCP operations
+	 */
+	supportsMCP(context: SystemPromptContext): boolean {
+		return !!(context as any).mcpServers && (context as any).mcpServers.length > 0
+	},
 
-  /**
-   * Get context complexity score
-   */
-  getComplexityScore(context: SystemPromptContext): number {
-    let score = 0
-    
-    if (context.supportsBrowserUse) {
-      score += 5
-    }
-    if ((context as any).mcpServers?.length) {
-      score += (context as any).mcpServers.length * 2
-    }
-    if ((context as any).userInstructions?.length) {
-      score += 1
-    }
-    if (context.yoloModeToggled) {
-      score += 1
-    }
-    
-    return score
-  },
+	/**
+	 * Get context complexity score
+	 */
+	getComplexityScore(context: SystemPromptContext): number {
+		let score = 0
+
+		if (context.supportsBrowserUse) {
+			score += 5
+		}
+		if ((context as any).mcpServers?.length) {
+			score += (context as any).mcpServers.length * 2
+		}
+		if ((context as any).userInstructions?.length) {
+			score += 1
+		}
+		if (context.yoloModeToggled) {
+			score += 1
+		}
+
+		return score
+	},
 
 	/**
 	 * Check if context is suitable for lightweight models

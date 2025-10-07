@@ -8,9 +8,7 @@ import { QwenProvider } from "../../providers/ai/qwen"
 import { TogetherProvider } from "../../providers/ai/together"
 import { XAIProvider } from "../../providers/ai/xai"
 import { enhancedProviderRegistry } from "../enhanced-provider-registry"
-import {
-    ProviderCategory, ProviderStatus
-} from "../provider-metadata"
+import { ProviderCategory, ProviderStatus } from "../provider-metadata"
 
 /**
  * Enhanced AI Provider Registrations

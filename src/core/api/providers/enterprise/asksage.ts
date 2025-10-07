@@ -53,7 +53,7 @@ export class AskSageProvider extends BaseProvider {
 	/**
 	 * Create AskSage client (not needed for this provider)
 	 */
-	protected createClient(): any {
+	protected override createClient(): any {
 		// AskSage doesn't use a traditional client
 		return null
 	}
@@ -61,7 +61,7 @@ export class AskSageProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		const modelId = this.getModelId()
 		return askSageModels[modelId] || askSageModels[askSageDefaultModelId]
 	}
@@ -76,7 +76,7 @@ export class AskSageProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return askSageDefaultModelId
 	}
 
@@ -112,7 +112,7 @@ export class AskSageProvider extends BaseProvider {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					"Authorization": `Bearer ${this.askSageOptions.asksageApiKey}`,
+					Authorization: `Bearer ${this.askSageOptions.asksageApiKey}`,
 				},
 				body: JSON.stringify(request),
 			})
@@ -129,8 +129,8 @@ export class AskSageProvider extends BaseProvider {
 
 			// Yield the response as a single text delta
 			yield {
-				type: "text-delta",
-				textDelta: data.response,
+				type: "text",
+				text: data.response,
 			}
 		} catch (error) {
 			throw ErrorService.parseError(error, "asksage")

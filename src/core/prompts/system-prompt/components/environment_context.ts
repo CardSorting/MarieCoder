@@ -2,8 +2,8 @@ import osModule from "node:os"
 import { getShell } from "@utils/shell"
 import osName from "os-name"
 import { getWorkspacePaths } from "@/hosts/vscode/hostbridge/workspace/getWorkspacePaths"
-import { SystemPromptSection } from "../templates/placeholders"
-import { TemplateEngine } from "../templates/TemplateEngine"
+import { SystemPromptSection } from "../templates/section_definitions"
+import { TemplateEngine } from "../templates/template_engine"
 import type { PromptVariant, SystemPromptContext } from "../types"
 
 const SYSTEM_INFO_TEMPLATE_TEXT = `SYSTEM INFORMATION

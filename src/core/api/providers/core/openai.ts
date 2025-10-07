@@ -28,7 +28,6 @@ interface OpenAiProviderOptions extends HttpProviderOptions {
  */
 export class OpenAiProvider extends HttpProvider {
 	private openAiOptions: OpenAiProviderOptions
-	private client: OpenAI | undefined
 
 	constructor(options: OpenAiProviderOptions) {
 		super(options)
@@ -39,7 +38,7 @@ export class OpenAiProvider extends HttpProvider {
 	/**
 	 * Create OpenAI client with Azure support
 	 */
-	protected createHttpClient(config: any): OpenAI {
+	protected createHttpClient(_config: any): OpenAI {
 		try {
 			// Check if this is an Azure endpoint
 			if (this.isAzureEndpoint()) {
@@ -76,15 +75,24 @@ export class OpenAiProvider extends HttpProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		return this.openAiOptions.openAiModelInfo || openAiModelInfoSaneDefaults
 	}
 
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return this.openAiOptions.openAiModelId || "gpt-4"
+	}
+
+	/**
+	 * Process streaming response for OpenAI
+	 */
+	protected override processStreamResponse(response: any): ApiStream {
+		// This is handled by the OpenAI streaming
+		// Return a simple generator that yields the response
+		return response
 	}
 
 	/**

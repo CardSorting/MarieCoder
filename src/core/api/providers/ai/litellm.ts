@@ -28,7 +28,6 @@ interface LiteLLMProviderOptions extends BaseProviderOptions {
  */
 export class LiteLLMProvider extends BaseProvider {
 	private liteLlmOptions: LiteLLMProviderOptions
-	private client: OpenAI | undefined
 
 	constructor(options: LiteLLMProviderOptions) {
 		super(options)
@@ -39,7 +38,7 @@ export class LiteLLMProvider extends BaseProvider {
 	/**
 	 * Create LiteLLM client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
 			return new OpenAI({
 				baseURL: this.liteLlmOptions.liteLlmBaseUrl || "https://api.litellm.ai/v1",
@@ -53,21 +52,21 @@ export class LiteLLMProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): LiteLLMModelInfo {
+	protected override getModelInfo(): LiteLLMModelInfo {
 		return this.liteLlmOptions.liteLlmModelInfo || liteLlmModelInfoSaneDefaults
 	}
 
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return this.liteLlmOptions.liteLlmModelId || liteLlmDefaultModelId
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -113,12 +112,12 @@ export class LiteLLMProvider extends BaseProvider {
 		try {
 			const stream = await client.chat.completions.create(requestOptions)
 
-			for await (const chunk of stream) {
+			for await (const chunk of stream as any) {
 				const content = chunk.choices[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 			}

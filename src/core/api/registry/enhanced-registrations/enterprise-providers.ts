@@ -7,9 +7,7 @@ import { OCAProvider } from "../../providers/enterprise/oca"
 import { SambanovaProvider } from "../../providers/enterprise/sambanova"
 import { ZAIProvider } from "../../providers/enterprise/zai"
 import { enhancedProviderRegistry } from "../enhanced-provider-registry"
-import {
-    ProviderCategory, ProviderStatus
-} from "../provider-metadata"
+import { ProviderCategory, ProviderStatus } from "../provider-metadata"
 
 /**
  * Enhanced Enterprise Provider Registrations

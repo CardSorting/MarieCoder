@@ -1,5 +1,5 @@
-import { STANDARD_PLACEHOLDERS, SystemPromptSection, validateRequiredPlaceholders } from "../templates/placeholders"
-import { TemplateEngine } from "../templates/TemplateEngine"
+import { STANDARD_PLACEHOLDERS, SystemPromptSection, validateRequiredPlaceholders } from "../templates/section_definitions"
+import { TemplateEngine } from "../templates/template_engine"
 import type { PromptVariant } from "../types"
 
 export interface ValidationResult {

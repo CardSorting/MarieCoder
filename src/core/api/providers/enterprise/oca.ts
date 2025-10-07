@@ -30,7 +30,6 @@ interface OCAProviderOptions extends BaseProviderOptions {
  */
 export class OCAProvider extends BaseProvider {
 	private ocaOptions: OCAProviderOptions
-	private client: OpenAI | undefined
 	private authService: OcaAuthService | undefined
 
 	constructor(options: OCAProviderOptions) {
@@ -42,7 +41,7 @@ export class OCAProvider extends BaseProvider {
 	/**
 	 * Create OCA client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
 			const baseURL = this.ocaOptions.ocaBaseUrl || DEFAULT_OCA_BASE_URL
 
@@ -73,21 +72,21 @@ export class OCAProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): LiteLLMModelInfo {
+	protected override getModelInfo(): LiteLLMModelInfo {
 		return this.ocaOptions.ocaModelInfo || liteLlmModelInfoSaneDefaults
 	}
 
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return this.ocaOptions.ocaModelId || liteLlmDefaultModelId
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -155,8 +154,8 @@ export class OCAProvider extends BaseProvider {
 				const content = chunk.choices[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 			}

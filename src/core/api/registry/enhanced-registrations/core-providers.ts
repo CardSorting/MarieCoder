@@ -2,9 +2,7 @@ import { AnthropicProvider } from "../../providers/core/anthropic"
 import { GeminiProvider } from "../../providers/core/gemini"
 import { OpenAiProvider } from "../../providers/core/openai"
 import { enhancedProviderRegistry } from "../enhanced-provider-registry"
-import {
-    ProviderCategory, ProviderStatus
-} from "../provider-metadata"
+import { ProviderCategory, ProviderStatus } from "../provider-metadata"
 
 /**
  * Enhanced Core Provider Registrations
@@ -402,4 +400,3 @@ enhancedProviderRegistry.registerProvider({
 		},
 	},
 })
-

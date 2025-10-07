@@ -103,7 +103,7 @@ export class GroqProvider extends HttpProvider {
 	/**
 	 * Create Groq client
 	 */
-	protected override createHttpClient(config: any): OpenAI {
+	protected override createHttpClient(_config: any): OpenAI {
 		try {
 			return new OpenAI({
 				baseURL: "https://api.groq.com/openai/v1",
@@ -117,7 +117,7 @@ export class GroqProvider extends HttpProvider {
 	/**
 	 * Process streaming response for Groq
 	 */
-	protected override processStreamResponse(response: any): ApiStream {
+	protected override processStreamResponse(_response: any): ApiStream {
 		// This is handled by the OpenAI streaming
 		// Return a simple generator that yields the response
 		return (async function* () {
@@ -129,7 +129,11 @@ export class GroqProvider extends HttpProvider {
 	 * Get model information
 	 */
 	protected override getModelInfo(): ModelInfo {
-		return this.groqOptions.groqModelInfo || groqModels[this.getDefaultModelId() as GroqModelId] || groqModels[groqDefaultModelId]
+		return (
+			this.groqOptions.groqModelInfo ||
+			groqModels[this.getDefaultModelId() as GroqModelId] ||
+			groqModels[groqDefaultModelId]
+		)
 	}
 
 	/**
@@ -151,10 +155,7 @@ export class GroqProvider extends HttpProvider {
 			const modelFamily = this.detectModelFamily(modelId)
 
 			// Convert messages to OpenAI format
-			const openAiMessages = [
-				{ role: "system", content: systemPrompt },
-				...convertToOpenAiMessages(messages),
-			]
+			const openAiMessages = [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)]
 
 			// Build request configuration
 			const requestConfig: any = {

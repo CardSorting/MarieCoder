@@ -1,8 +1,4 @@
-import {
-    BedrockRuntimeClient,
-    ConversationRole,
-    ConverseStreamCommand
-} from "@aws-sdk/client-bedrock-runtime"
+import { BedrockRuntimeClient, ConversationRole, ConverseStreamCommand } from "@aws-sdk/client-bedrock-runtime"
 import { fromNodeProviderChain } from "@aws-sdk/credential-providers"
 import { BedrockModelId, bedrockDefaultModelId, bedrockModels, ModelInfo } from "@shared/api"
 import { BaseProvider, BaseProviderOptions } from "../../base/base-provider"
@@ -81,22 +77,6 @@ interface ContentBlockDelta {
 // Define types for supported content types
 type SupportedContentType = "text" | "image" | "thinking"
 
-interface ContentItem {
-	type: SupportedContentType
-	text?: string
-	source?: {
-		data: string | Buffer | Uint8Array
-		media_type?: string
-	}
-}
-
-// Define cache point type for AWS Bedrock
-interface CachePointContentBlock {
-	cachePoint: {
-		type: "default"
-	}
-}
-
 /**
  * Refactored Bedrock provider using the new base class system
  * Demonstrates clean, maintainable provider implementation with AWS integration
@@ -174,7 +154,8 @@ export class BedrockProvider extends BaseProvider {
 
 			// Check if this is a Claude model that supports thinking
 			const isClaudeModel = modelId.includes("claude")
-			const supportsThinking = isClaudeModel && (modelId.includes("3-7") || modelId.includes("4-") || modelId.includes("4-5"))
+			const supportsThinking =
+				isClaudeModel && (modelId.includes("3-7") || modelId.includes("4-") || modelId.includes("4-5"))
 			const enableThinking = supportsThinking && (this.bedrockOptions.thinkingBudgetTokens || 0) > 0
 
 			// Convert messages to Bedrock format
@@ -211,7 +192,7 @@ export class BedrockProvider extends BaseProvider {
 	/**
 	 * Convert messages to Bedrock format
 	 */
-	private convertToBedrockMessages(systemPrompt: string, messages: any[], enableThinking: boolean): any[] {
+	private convertToBedrockMessages(_systemPrompt: string, messages: any[], _enableThinking: boolean): any[] {
 		const bedrockMessages: any[] = []
 
 		for (const message of messages) {

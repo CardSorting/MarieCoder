@@ -23,7 +23,6 @@ interface LmStudioProviderOptions extends BaseProviderOptions {
  */
 export class LmStudioProvider extends BaseProvider {
 	private lmStudioOptions: LmStudioProviderOptions
-	private client: OpenAI | undefined
 
 	constructor(options: LmStudioProviderOptions) {
 		super(options)
@@ -34,7 +33,7 @@ export class LmStudioProvider extends BaseProvider {
 	/**
 	 * Create LMStudio client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
 			return new OpenAI({
 				// Docs on the new v0 api endpoint: https://lmstudio.ai/docs/app/api/endpoints/rest
@@ -49,7 +48,7 @@ export class LmStudioProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		return {
 			...openAiModelInfoSaneDefaults,
 			maxTokens: this.lmStudioOptions.lmStudioMaxTokens ? parseInt(this.lmStudioOptions.lmStudioMaxTokens) : undefined,
@@ -59,14 +58,14 @@ export class LmStudioProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return this.lmStudioOptions.lmStudioModelId || "lmstudio-community/Llama-3.1-8B-Instruct-GGUF"
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -97,8 +96,8 @@ export class LmStudioProvider extends BaseProvider {
 				const content = chunk.choices[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 			}

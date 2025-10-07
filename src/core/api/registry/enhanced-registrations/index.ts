@@ -2,7 +2,7 @@
  * Enhanced Provider Registration Index
  * This file imports all enhanced provider registrations to ensure they are loaded
  * Follows NORMIE DEV methodology: clean, organized, maintainable
- * 
+ *
  * Features:
  * - Clear categorization by provider type
  * - Comprehensive metadata for each provider

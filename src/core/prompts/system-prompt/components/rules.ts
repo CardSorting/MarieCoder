@@ -1,5 +1,5 @@
-import { SystemPromptSection } from "../templates/placeholders"
-import { TemplateEngine } from "../templates/TemplateEngine"
+import { SystemPromptSection } from "../templates/section_definitions"
+import { TemplateEngine } from "../templates/template_engine"
 import type { PromptVariant, SystemPromptContext } from "../types"
 
 /**
@@ -22,6 +22,22 @@ const CORE_METHODOLOGY_RULES = `## 🎯 Core Philosophy: The NORMIE DEV Method
 ### Composition Over Creation:
 - **USE** existing excellent tools (Next.js, Kysely, SQLite) instead of recreating functionality
 - **COMPOSE** solutions from proven patterns instead of creating new frameworks
+
+### Naming Conventions - Zero Mental Load:
+- **SELF-EXPLANATORY NAMES**: Every file, function, and variable must clearly describe what it does
+- **FORBIDDEN**: Cryptic abbreviations, unclear names, or names that require mental overhead
+- **REQUIRED**: Descriptive names that spark joy through instant understanding
+
+#### File Naming Standards:
+- **snake_case** for multi-word files: \`user_authentication.ts\`, \`database_connection.ts\`
+- **Descriptive verbs**: \`manager\`, \`builder\`, \`optimizer\`, \`organizer\`, \`validator\`
+- **Clear nouns**: \`prompt\`, \`variant\`, \`template\`, \`tool\`, \`response\`
+- **Examples**:
+  - ✅ \`prompt_manager.ts\` - Manages prompts
+  - ✅ \`response_formatters.ts\` - Formats responses
+  - ✅ \`context_summarization.ts\` - Summarizes context
+  - ❌ \`PromptRegistry.ts\` - Unclear purpose
+  - ❌ \`loadMcpDocumentation.ts\` - Too verbose and unclear
 
 ## 🔧 Type Safety & Code Quality Standards
 
@@ -149,6 +165,7 @@ const SUCCESS_METRICS_RULES = `## 🎯 Success Metrics & Implementation Flow
 
 #### Pre-Development:
 - [ ] **Philosophy**: Applied 3-step decision process (spark joy, delete legacy, simplest solution)
+- [ ] **Naming**: Planned self-explanatory names for all files, functions, and variables
 - [ ] **Type Safety**: Planned error handling and input validation
 - [ ] **Architecture**: Planned database and folder organization
 - [ ] **Performance**: Planned Next.js patterns and performance targets
@@ -156,6 +173,7 @@ const SUCCESS_METRICS_RULES = `## 🎯 Success Metrics & Implementation Flow
 #### During Development:
 - [ ] **Stay Focused**: Build only what was requested, nothing more
 - [ ] **Follow Standards**: Apply all mandatory requirements consistently
+- [ ] **Use Self-Explanatory Names**: All files, functions, and variables clearly describe their purpose
 - [ ] **Maintain Quality**: Ensure production-ready quality for their use case
 - [ ] **Document Appropriately**: Provide documentation that matches their context
 
@@ -163,6 +181,7 @@ const SUCCESS_METRICS_RULES = `## 🎯 Success Metrics & Implementation Flow
 - [ ] **Verify Requirements**: Confirm all stated requirements are met
 - [ ] **Test Integration**: Ensure seamless integration with their existing systems
 - [ ] **Validate Standards**: Ensure all patterns have been followed
+- [ ] **Validate Naming**: All names are self-explanatory and spark joy
 - [ ] **Gather Feedback**: Ask for feedback to improve future customization
 
 **Remember**: Software development should spark joy, not frustration. **DELETE everything that doesn't spark joy.**
@@ -191,9 +210,10 @@ export async function getRulesSection(variant: PromptVariant, context: SystemPro
 	// Determine context-specific rules
 	const browserRules = context.supportsBrowserUse ? CONTEXT_SPECIFIC_RULES.browser : ""
 	const browserWaitRules = context.supportsBrowserUse ? CONTEXT_SPECIFIC_RULES.browserWait : ""
-	const yoloModeRules = context.yoloModeToggled !== true
-		? CONTEXT_SPECIFIC_RULES.yoloMode
-		: "Use your available tools and apply your best judgment to accomplish the task without asking the user any followup questions, making reasonable assumptions from the provided context"
+	const yoloModeRules =
+		context.yoloModeToggled !== true
+			? CONTEXT_SPECIFIC_RULES.yoloMode
+			: "Use your available tools and apply your best judgment to accomplish the task without asking the user any followup questions, making reasonable assumptions from the provided context"
 	const yoloModeTerminalRules = context.yoloModeToggled !== true ? CONTEXT_SPECIFIC_RULES.yoloModeTerminal : ""
 
 	return new TemplateEngine().resolve(template, context, {

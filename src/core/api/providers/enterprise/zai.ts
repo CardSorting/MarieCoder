@@ -1,12 +1,12 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import {
-    internationalZAiDefaultModelId,
-    internationalZAiModelId,
-    internationalZAiModels,
-    ModelInfo,
-    mainlandZAiDefaultModelId,
-    mainlandZAiModelId,
-    mainlandZAiModels,
+	internationalZAiDefaultModelId,
+	internationalZAiModelId,
+	internationalZAiModels,
+	ModelInfo,
+	mainlandZAiDefaultModelId,
+	mainlandZAiModelId,
+	mainlandZAiModels,
 } from "@shared/api"
 import OpenAI from "openai"
 import { version as extensionVersion } from "../../../../package.json"
@@ -31,7 +31,6 @@ interface ZAIProviderOptions extends BaseProviderOptions {
  */
 export class ZAIProvider extends BaseProvider {
 	private zaiOptions: ZAIProviderOptions
-	private client: OpenAI | undefined
 
 	constructor(options: ZAIProviderOptions) {
 		super(options)
@@ -42,11 +41,9 @@ export class ZAIProvider extends BaseProvider {
 	/**
 	 * Create ZAI client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
-			const baseURL = this.zaiOptions.zaiApiLine === "china"
-				? "https://api.zhipuai.cn/v1"
-				: "https://api.zhipuai.com/v1"
+			const baseURL = this.zaiOptions.zaiApiLine === "china" ? "https://api.zhipuai.cn/v1" : "https://api.zhipuai.com/v1"
 
 			return new OpenAI({
 				baseURL,
@@ -63,14 +60,17 @@ export class ZAIProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		const modelId = this.getModelId()
 		const isChina = this.zaiOptions.zaiApiLine === "china"
 
 		if (isChina) {
 			return mainlandZAiModels[modelId as mainlandZAiModelId] || mainlandZAiModels[mainlandZAiDefaultModelId]
 		} else {
-			return internationalZAiModels[modelId as internationalZAiModelId] || internationalZAiModels[internationalZAiDefaultModelId]
+			return (
+				internationalZAiModels[modelId as internationalZAiModelId] ||
+				internationalZAiModels[internationalZAiDefaultModelId]
+			)
 		}
 	}
 
@@ -84,7 +84,7 @@ export class ZAIProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		const isChina = this.zaiOptions.zaiApiLine === "china"
 		return isChina ? mainlandZAiDefaultModelId : internationalZAiDefaultModelId
 	}
@@ -92,7 +92,7 @@ export class ZAIProvider extends BaseProvider {
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -124,8 +124,8 @@ export class ZAIProvider extends BaseProvider {
 				const content = chunk.choices[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 			}

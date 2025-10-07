@@ -5,7 +5,7 @@
  * and improve consistency across template definitions.
  */
 
-import { SystemPromptSection } from "../templates/placeholders"
+import { SystemPromptSection } from "../templates/section_definitions"
 import { TemplateUtils } from "./utils"
 
 /**
@@ -59,21 +59,21 @@ export class TemplateOptimizationService {
 			throw new Error("Cannot generate template from empty component order")
 		}
 
-    return components
-      .map((component) => {
-        const placeholder = `{{${component}}}`
-        
-        if (includeHeaders) {
-          const header = compact 
-            ? TEMPLATE_PATTERNS.COMPACT_HEADER(component.replace(/_/g, " "))
-            : TEMPLATE_PATTERNS.SECTION_HEADER(component.replace(/_/g, " "))
-          return header + placeholder
-        }
-        
-        return placeholder
-      })
-      .map((item, componentIndex) => componentIndex < components.length - 1 ? item + separator : item)
-      .join("")
+		return components
+			.map((component) => {
+				const placeholder = `{{${component}}}`
+
+				if (includeHeaders) {
+					const header = compact
+						? TEMPLATE_PATTERNS.COMPACT_HEADER(component.replace(/_/g, " "))
+						: TEMPLATE_PATTERNS.SECTION_HEADER(component.replace(/_/g, " "))
+					return header + placeholder
+				}
+
+				return placeholder
+			})
+			.map((item, componentIndex) => (componentIndex < components.length - 1 ? item + separator : item))
+			.join("")
 	}
 
 	/**

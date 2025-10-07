@@ -1,5 +1,5 @@
 import { workspaceResolver } from "@core/workspace"
-import { DifyHandler } from "../../core/api/providers/dify"
+import { DifyHandler } from "../../core/api/providers/platform/dify"
 
 /**
  * Dify Integration Utilities

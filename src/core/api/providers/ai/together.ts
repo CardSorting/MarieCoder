@@ -22,7 +22,6 @@ interface TogetherProviderOptions extends BaseProviderOptions {
  */
 export class TogetherProvider extends BaseProvider {
 	private togetherOptions: TogetherProviderOptions
-	private client: OpenAI | undefined
 
 	constructor(options: TogetherProviderOptions) {
 		super(options)
@@ -33,7 +32,7 @@ export class TogetherProvider extends BaseProvider {
 	/**
 	 * Create Together client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
 			return new OpenAI({
 				baseURL: "https://api.together.xyz/v1",
@@ -47,21 +46,21 @@ export class TogetherProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		return openAiModelInfoSaneDefaults
 	}
 
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return this.togetherOptions.togetherModelId || "meta-llama/Llama-2-7b-chat-hf"
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -93,8 +92,8 @@ export class TogetherProvider extends BaseProvider {
 				const content = chunk.choices[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 			}

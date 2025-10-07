@@ -26,19 +26,17 @@ const DEFAULT_CONTEXT_WINDOW = 32768
  */
 export class OllamaProvider extends BaseProvider {
 	private ollamaOptions: OllamaProviderOptions
-	private client: Ollama | undefined
 
 	constructor(options: OllamaProviderOptions) {
-		const ollamaApiOptionsCtxNum = (options.ollamaApiOptionsCtxNum ?? DEFAULT_CONTEXT_WINDOW).toString()
-		super({ ...options, ollamaApiOptionsCtxNum })
-		this.ollamaOptions = { ...options, ollamaApiOptionsCtxNum }
+		super(options)
+		this.ollamaOptions = options
 		this.validateRequiredOptions(["ollamaModelId"])
 	}
 
 	/**
 	 * Create Ollama client
 	 */
-	protected createClient(): Ollama {
+	protected override createClient(): Ollama {
 		try {
 			const clientOptions: any = {
 				host: this.ollamaOptions.ollamaBaseUrl,
@@ -60,7 +58,7 @@ export class OllamaProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		return {
 			...openAiModelInfoSaneDefaults,
 			maxTokens: parseInt(this.ollamaOptions.ollamaApiOptionsCtxNum || DEFAULT_CONTEXT_WINDOW.toString()),
@@ -70,7 +68,7 @@ export class OllamaProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return this.ollamaOptions.ollamaModelId || "llama2"
 	}
 

@@ -1,6 +1,6 @@
 import { expect } from "chai"
 import type { McpHub } from "@/services/mcp/McpHub"
-import { TemplateEngine } from "../templates/TemplateEngine"
+import { TemplateEngine } from "../templates/template_engine"
 import type { SystemPromptContext } from "../types"
 import { mockProviderInfo } from "./integration.test"
 

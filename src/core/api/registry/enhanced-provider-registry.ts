@@ -2,14 +2,14 @@ import { ApiConfiguration } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { ApiHandler, CommonApiHandlerOptions } from "../index"
 import {
-    EnhancedProviderConfig,
-    ProviderCapabilities,
-    ProviderCategory,
-    ProviderComparison,
-    ProviderMetadata,
-    ProviderSearchOptions,
-    ProviderStatus,
-    ProviderValidationResult,
+	EnhancedProviderConfig,
+	ProviderCapabilities,
+	ProviderCategory,
+	ProviderComparison,
+	ProviderMetadata,
+	ProviderSearchOptions,
+	ProviderStatus,
+	ProviderValidationResult,
 } from "./provider-metadata"
 
 /**
@@ -403,7 +403,9 @@ export class EnhancedProviderRegistry {
 		requiredCapabilities: Partial<ProviderCapabilities>,
 	): boolean {
 		return Object.entries(requiredCapabilities).every(([capability, required]) => {
-			if (required === undefined) return true
+			if (required === undefined) {
+				return true
+			}
 			return providerCapabilities[capability as keyof ProviderCapabilities] === required
 		})
 	}
@@ -430,7 +432,9 @@ export class EnhancedProviderRegistry {
 
 		// Capability matching
 		Object.entries(requirements).forEach(([capability, required]) => {
-			if (capability === "mode") return
+			if (capability === "mode") {
+				return
+			}
 
 			const providerHasCapability = metadata.capabilities[capability as keyof ProviderCapabilities]
 			if (required && providerHasCapability) {
@@ -463,7 +467,9 @@ export class EnhancedProviderRegistry {
 		}
 
 		Object.entries(requirements).forEach(([capability, required]) => {
-			if (capability === "mode") return
+			if (capability === "mode") {
+				return
+			}
 
 			const providerHasCapability = metadata.capabilities[capability as keyof ProviderCapabilities]
 			if (required && providerHasCapability) {
@@ -479,9 +485,9 @@ export class EnhancedProviderRegistry {
 	}
 
 	private buildProviderOptions(
-		config: EnhancedProviderConfig,
+		_config: EnhancedProviderConfig,
 		configuration: Partial<ApiConfiguration>,
-		mode: Mode,
+		_mode: Mode,
 		commonOptions: CommonApiHandlerOptions,
 	): any {
 		const options: any = { ...commonOptions }

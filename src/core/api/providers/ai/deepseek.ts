@@ -22,7 +22,6 @@ interface DeepSeekProviderOptions extends BaseProviderOptions {
  */
 export class DeepSeekProvider extends BaseProvider {
 	private deepSeekOptions: DeepSeekProviderOptions
-	private client: OpenAI | undefined
 
 	constructor(options: DeepSeekProviderOptions) {
 		super(options)
@@ -33,7 +32,7 @@ export class DeepSeekProvider extends BaseProvider {
 	/**
 	 * Create DeepSeek client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
 			return new OpenAI({
 				baseURL: "https://api.deepseek.com/v1",
@@ -47,7 +46,7 @@ export class DeepSeekProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		const modelId = this.getModelId()
 		return deepSeekModels[modelId] || deepSeekModels[deepSeekDefaultModelId]
 	}
@@ -62,14 +61,14 @@ export class DeepSeekProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return deepSeekDefaultModelId
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -91,18 +90,14 @@ export class DeepSeekProvider extends BaseProvider {
 		// Safely cast the prompt token details section to the appropriate structure.
 		const promptTokens = usage?.prompt_tokens || 0
 		const completionTokens = usage?.completion_tokens || 0
-		const totalTokens = usage?.total_tokens || 0
 
 		const cost = calculateApiCostOpenAI(info, promptTokens, completionTokens)
 
 		yield {
 			type: "usage",
-			usage: {
-				inputTokens: promptTokens,
-				outputTokens: completionTokens,
-				totalTokens,
-				totalCostUSD: cost,
-			},
+			inputTokens: promptTokens,
+			outputTokens: completionTokens,
+			totalCost: cost,
 		}
 	}
 
@@ -131,8 +126,8 @@ export class DeepSeekProvider extends BaseProvider {
 				const content = chunk.choices[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 

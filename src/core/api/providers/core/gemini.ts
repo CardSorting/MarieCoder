@@ -22,7 +22,7 @@ interface GeminiProviderOptions extends BaseProviderOptions {
 // Define a default TTL for the cache (e.g., 15 minutes in seconds)
 const DEFAULT_CACHE_TTL_SECONDS = 900
 
-const rateLimitPatterns = [/got status: 429/i, /429 Too Many Requests/i, /rate limit exceeded/i, /too many requests/i]
+const _rateLimitPatterns = [/got status: 429/i, /429 Too Many Requests/i, /rate limit exceeded/i, /too many requests/i]
 
 /**
  * Refactored Gemini provider using the new base class system
@@ -98,11 +98,11 @@ export class GeminiProvider extends BaseProvider {
 	async *createMessage(systemPrompt: string, messages: any[]): ApiStream {
 		try {
 			const client = this.ensureClient()
-			const modelId = this.getDefaultModelId()
+			const _modelId = this.getDefaultModelId()
 			const model = this.getModel()
 
 			// Convert messages to Gemini format
-			const geminiMessages = convertAnthropicMessageToGemini(messages) as any
+			const geminiMessages = messages.map(convertAnthropicMessageToGemini)
 			const systemInstruction = systemPrompt
 
 			// Build request configuration

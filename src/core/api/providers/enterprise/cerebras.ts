@@ -20,7 +20,6 @@ interface CerebrasProviderOptions extends BaseProviderOptions {
  */
 export class CerebrasProvider extends BaseProvider {
 	private cerebrasOptions: CerebrasProviderOptions
-	private client: Cerebras | undefined
 
 	constructor(options: CerebrasProviderOptions) {
 		super(options)
@@ -31,7 +30,7 @@ export class CerebrasProvider extends BaseProvider {
 	/**
 	 * Create Cerebras client
 	 */
-	protected createClient(): Cerebras {
+	protected override createClient(): Cerebras {
 		try {
 			// Clean and validate the API key
 			const cleanApiKey = this.cerebrasOptions.cerebrasApiKey?.trim()
@@ -51,7 +50,7 @@ export class CerebrasProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		const modelId = this.getModelId()
 		return cerebrasModels[modelId] || cerebrasModels[cerebrasDefaultModelId]
 	}
@@ -66,14 +65,14 @@ export class CerebrasProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return cerebrasDefaultModelId
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): Cerebras {
+	protected override ensureClient(): Cerebras {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -103,20 +102,17 @@ export class CerebrasProvider extends BaseProvider {
 		try {
 			const stream = await client.chat.completions.create({
 				model: modelId,
-				messages: [
-					{ role: "system", content: systemPrompt },
-					...cerebrasMessages,
-				],
+				messages: [{ role: "system", content: systemPrompt }, ...cerebrasMessages],
 				stream: true,
 				temperature: 0.7,
 			})
 
 			for await (const chunk of stream) {
-				const content = chunk.choices[0]?.delta?.content
+				const content = (chunk as any).choices?.[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 			}

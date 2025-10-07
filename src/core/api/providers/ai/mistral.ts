@@ -21,7 +21,6 @@ interface MistralProviderOptions extends BaseProviderOptions {
  */
 export class MistralProvider extends BaseProvider {
 	private mistralOptions: MistralProviderOptions
-	private client: Mistral | undefined
 
 	constructor(options: MistralProviderOptions) {
 		super(options)
@@ -32,7 +31,7 @@ export class MistralProvider extends BaseProvider {
 	/**
 	 * Create Mistral client
 	 */
-	protected createClient(): Mistral {
+	protected override createClient(): Mistral {
 		try {
 			return new Mistral({
 				apiKey: this.mistralOptions.mistralApiKey!,
@@ -45,7 +44,7 @@ export class MistralProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		const modelId = this.getModelId()
 		return mistralModels[modelId] || mistralModels[mistralDefaultModelId]
 	}
@@ -60,14 +59,14 @@ export class MistralProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return mistralDefaultModelId
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): Mistral {
+	protected override ensureClient(): Mistral {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -82,7 +81,7 @@ export class MistralProvider extends BaseProvider {
 		const client = this.ensureClient()
 		const modelId = this.getModelId()
 
-		const mistralMessages = convertToMistralMessages(messages, systemPrompt)
+		const mistralMessages = convertToMistralMessages(messages)
 
 		try {
 			const stream = await client.chat.stream({
@@ -92,11 +91,11 @@ export class MistralProvider extends BaseProvider {
 			})
 
 			for await (const chunk of stream) {
-				const content = chunk.choices[0]?.delta?.content
+				const content = (chunk as any).choices?.[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 			}

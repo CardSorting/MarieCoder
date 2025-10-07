@@ -1,5 +1,5 @@
 import { ApiHandler } from "@core/api"
-import { OpenAiHandler } from "@core/api/providers/openai"
+import { OpenAiHandler } from "@core/api/providers/core/openai"
 
 /**
  * Gets context window information for the given API handler

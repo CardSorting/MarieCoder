@@ -32,7 +32,7 @@ export class ConfigurationService {
 	 * Extract mode-specific configuration from full configuration
 	 */
 	static extractModeConfiguration(configuration: ApiConfiguration, mode: Mode): ModeConfiguration {
-		const modePrefix = mode === "plan" ? "planMode" : "actMode"
+		const _modePrefix = mode === "plan" ? "planMode" : "actMode"
 
 		return {
 			apiProvider: mode === "plan" ? configuration.planModeApiProvider : configuration.actModeApiProvider,
@@ -95,7 +95,7 @@ export class ConfigurationService {
 	 */
 	private static extractProviderSpecificConfig(configuration: ApiConfiguration, mode: Mode): Record<string, any> {
 		const providerConfig: Record<string, any> = {}
-		const modePrefix = mode === "plan" ? "planMode" : "actMode"
+		const _modePrefix = mode === "plan" ? "planMode" : "actMode"
 
 		// Extract common provider configurations
 		const commonKeys = [

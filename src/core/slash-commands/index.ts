@@ -7,7 +7,7 @@ import {
 	newRuleToolResponse,
 	newTaskToolResponse,
 	reportBugToolResponse,
-} from "../prompts/commands"
+} from "../prompts/command_responses"
 
 /**
  * Processes text for slash commands and transforms them with appropriate instructions

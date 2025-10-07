@@ -1,9 +1,7 @@
 import { LmStudioProvider } from "../../providers/local/lmstudio"
 import { OllamaProvider } from "../../providers/local/ollama"
 import { enhancedProviderRegistry } from "../enhanced-provider-registry"
-import {
-    ProviderCategory, ProviderStatus
-} from "../provider-metadata"
+import { ProviderCategory, ProviderStatus } from "../provider-metadata"
 
 /**
  * Enhanced Local Provider Registrations

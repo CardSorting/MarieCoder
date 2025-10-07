@@ -2,10 +2,11 @@ import { ApiConfiguration } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { enhancedProviderRegistry } from "./enhanced-provider-registry"
 import {
-    ProviderCapabilities, ProviderComparison,
-    ProviderSearchOptions,
-    ProviderStatus,
-    ProviderValidationResult
+	ProviderCapabilities,
+	ProviderComparison,
+	ProviderSearchOptions,
+	ProviderStatus,
+	ProviderValidationResult,
 } from "./provider-metadata"
 
 /**
@@ -338,7 +339,9 @@ export class ProviderDiscoveryService {
 
 		// Capability matching
 		Object.entries(requirements).forEach(([capability, required]) => {
-			if (capability === "mode") return
+			if (capability === "mode") {
+				return
+			}
 
 			const providerHasCapability = metadata.capabilities[capability]
 			if (required && providerHasCapability) {
@@ -366,7 +369,9 @@ export class ProviderDiscoveryService {
 		}
 
 		Object.entries(requirements).forEach(([capability, required]) => {
-			if (capability === "mode") return
+			if (capability === "mode") {
+				return
+			}
 
 			const providerHasCapability = metadata.capabilities[capability]
 			if (required && providerHasCapability) {

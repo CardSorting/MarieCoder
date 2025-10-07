@@ -51,9 +51,9 @@ process.env.NEXTAUTH_URL = "http://localhost:3000"
 process.env.NEXTAUTH_SECRET = "test-secret-key-for-testing-only"
 process.env.APP_NAME = "NOORMME SAAS Test"
 // Set NODE_ENV for testing
-Object.defineProperty(process.env, 'NODE_ENV', {
-	value: 'test',
-	writable: true
+Object.defineProperty(process.env, "NODE_ENV", {
+	value: "test",
+	writable: true,
 })
 
 // Global test utilities

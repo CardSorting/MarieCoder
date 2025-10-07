@@ -3,11 +3,11 @@ import { Mode } from "@shared/storage/types"
 // Import enhanced provider system
 import { enhancedProviderRegistry, ProviderDiscoveryService } from "./registry/enhanced-registrations"
 import {
-    ProviderCapabilities,
-    ProviderCategory,
-    ProviderComparison,
-    ProviderSearchOptions,
-    ProviderStatus,
+	ProviderCapabilities,
+	ProviderCategory,
+	ProviderComparison,
+	ProviderSearchOptions,
+	ProviderStatus,
 } from "./registry/provider-metadata"
 import { ErrorService } from "./services/error-service"
 import { ApiStream, ApiStreamUsageChunk } from "./transform/stream"
@@ -240,7 +240,9 @@ export class EnhancedApiService {
 	 */
 	static getDefaultProviderConfiguration(providerId: string): Partial<ApiConfiguration> {
 		const schema = enhancedProviderRegistry.getProviderConfigurationSchema(providerId)
-		if (!schema) return {}
+		if (!schema) {
+			return {}
+		}
 
 		const defaultConfig: Partial<ApiConfiguration> = {}
 
@@ -297,7 +299,7 @@ export class EnhancedApiService {
 		return ProviderDiscoveryService.findBestProviderForConfiguration(configuration, mode)
 	}
 
-	private static determineProviderId(configuration: ApiConfiguration, mode: Mode, options: EnhancedApiHandlerOptions): string {
+	private static determineProviderId(configuration: ApiConfiguration, _mode: Mode, options: EnhancedApiHandlerOptions): string {
 		// Try to extract provider from configuration
 		const configuredProvider = (configuration as any).apiProvider
 		if (configuredProvider && enhancedProviderRegistry.hasProvider(configuredProvider)) {

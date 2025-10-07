@@ -23,7 +23,6 @@ interface VercelAIGatewayProviderOptions extends BaseProviderOptions {
  */
 export class VercelAIGatewayProvider extends BaseProvider {
 	private vercelAIGatewayOptions: VercelAIGatewayProviderOptions
-	private client: OpenAI | undefined
 
 	constructor(options: VercelAIGatewayProviderOptions) {
 		super(options)
@@ -34,7 +33,7 @@ export class VercelAIGatewayProvider extends BaseProvider {
 	/**
 	 * Create Vercel AI Gateway client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
 			return new OpenAI({
 				baseURL: "https://ai-gateway.vercel.sh/v1",
@@ -48,21 +47,21 @@ export class VercelAIGatewayProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		return this.vercelAIGatewayOptions.vercelAiGatewayModelInfo || vercelAiGatewayDefaultModelInfo
 	}
 
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return this.vercelAIGatewayOptions.vercelAiGatewayModelId || vercelAiGatewayDefaultModelId
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}

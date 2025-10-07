@@ -21,7 +21,6 @@ interface NebiusProviderOptions extends BaseProviderOptions {
  */
 export class NebiusProvider extends BaseProvider {
 	private nebiusOptions: NebiusProviderOptions
-	private client: OpenAI | undefined
 
 	constructor(options: NebiusProviderOptions) {
 		super(options)
@@ -32,7 +31,7 @@ export class NebiusProvider extends BaseProvider {
 	/**
 	 * Create Nebius client
 	 */
-	protected createClient(): OpenAI {
+	protected override createClient(): OpenAI {
 		try {
 			return new OpenAI({
 				baseURL: "https://api.studio.nebius.ai/v1",
@@ -46,7 +45,7 @@ export class NebiusProvider extends BaseProvider {
 	/**
 	 * Get model information
 	 */
-	protected getModelInfo(): ModelInfo {
+	protected override getModelInfo(): ModelInfo {
 		const modelId = this.getModelId()
 		return nebiusModels[modelId] || nebiusModels[nebiusDefaultModelId]
 	}
@@ -61,14 +60,14 @@ export class NebiusProvider extends BaseProvider {
 	/**
 	 * Get default model ID
 	 */
-	protected getDefaultModelId(): string {
+	protected override getDefaultModelId(): string {
 		return nebiusDefaultModelId
 	}
 
 	/**
 	 * Ensure client is created
 	 */
-	private ensureClient(): OpenAI {
+	protected override ensureClient(): OpenAI {
 		if (!this.client) {
 			this.client = this.createClient()
 		}
@@ -100,8 +99,8 @@ export class NebiusProvider extends BaseProvider {
 				const content = chunk.choices[0]?.delta?.content
 				if (content) {
 					yield {
-						type: "text-delta",
-						textDelta: content,
+						type: "text",
+						text: content,
 					}
 				}
 			}

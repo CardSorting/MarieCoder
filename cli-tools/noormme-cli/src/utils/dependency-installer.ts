@@ -74,7 +74,7 @@ export class DependencyInstaller {
 				})
 
 				console.log(chalk.gray(`✅ ${command} completed`))
-			} catch (error) {
+			} catch (_error) {
 				console.warn(chalk.yellow(`⚠️  ${command} failed, trying next method...`))
 
 				// Try alternative installation methods
@@ -119,7 +119,7 @@ export class DependencyInstaller {
 
 				console.log(chalk.green(`✅ Alternative command succeeded: ${alternative}`))
 				return
-			} catch (error) {
+			} catch (_error) {
 				console.warn(chalk.yellow(`⚠️  Alternative failed: ${alternative}`))
 			}
 		}

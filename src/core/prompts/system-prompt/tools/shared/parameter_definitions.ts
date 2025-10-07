@@ -1,6 +1,6 @@
 /**
  * Parameter Templates
- * 
+ *
  * Reusable parameter templates for consistent tool parameter definitions
  * across all tool variants.
  */
@@ -11,7 +11,8 @@
 export const createPathParameter = (type: "file" | "directory", customInstruction?: string) => ({
 	name: "path",
 	required: true,
-	instruction: customInstruction || `The path of the ${type} (relative to the current working directory {{CWD}}){{MULTI_ROOT_HINT}}`,
+	instruction:
+		customInstruction || `The path of the ${type} (relative to the current working directory {{CWD}}){{MULTI_ROOT_HINT}}`,
 	usage: `${type === "file" ? "File" : "Directory"} path here`,
 })
 
@@ -21,7 +22,9 @@ export const createPathParameter = (type: "file" | "directory", customInstructio
 export const createContentParameter = (customInstruction?: string) => ({
 	name: "content",
 	required: true,
-	instruction: customInstruction || "The content to write to the file. ALWAYS provide the COMPLETE intended content of the file, without any truncation or omissions. You MUST include ALL parts of the file, even if they haven't been modified.",
+	instruction:
+		customInstruction ||
+		"The content to write to the file. ALWAYS provide the COMPLETE intended content of the file, without any truncation or omissions. You MUST include ALL parts of the file, even if they haven't been modified.",
 	usage: "Your file content here",
 })
 
@@ -31,7 +34,9 @@ export const createContentParameter = (customInstruction?: string) => ({
 export const createCommandParameter = (customInstruction?: string) => ({
 	name: "command",
 	required: true,
-	instruction: customInstruction || "The CLI command to execute. This should be valid for the current operating system. Ensure the command is properly formatted and does not contain any harmful instructions.",
+	instruction:
+		customInstruction ||
+		"The CLI command to execute. This should be valid for the current operating system. Ensure the command is properly formatted and does not contain any harmful instructions.",
 	usage: "Your command here",
 })
 
@@ -41,7 +46,9 @@ export const createCommandParameter = (customInstruction?: string) => ({
 export const createRequiresApprovalParameter = (customInstruction?: string) => ({
 	name: "requires_approval",
 	required: true,
-	instruction: customInstruction || "A boolean indicating whether this command requires explicit user approval before execution in case the user has auto-approve mode enabled. Set to 'true' for potentially impactful operations like installing/uninstalling packages, deleting/overwriting files, system configuration changes, network operations, or any commands that could have unintended side effects. Set to 'false' for safe operations like reading files/directories, running development servers, building projects, and other non-destructive operations.",
+	instruction:
+		customInstruction ||
+		"A boolean indicating whether this command requires explicit user approval before execution in case the user has auto-approve mode enabled. Set to 'true' for potentially impactful operations like installing/uninstalling packages, deleting/overwriting files, system configuration changes, network operations, or any commands that could have unintended side effects. Set to 'false' for safe operations like reading files/directories, running development servers, building projects, and other non-destructive operations.",
 	usage: "true or false",
 })
 
@@ -52,7 +59,9 @@ export const createTimeoutParameter = (customInstruction?: string) => ({
 	name: "timeout",
 	required: false,
 	contextRequirements: (context: any) => context.yoloModeToggled === true,
-	instruction: customInstruction || "Integer representing the timeout in seconds for how long to run the terminal command, before timing out and continuing the task.",
+	instruction:
+		customInstruction ||
+		"Integer representing the timeout in seconds for how long to run the terminal command, before timing out and continuing the task.",
 	usage: "30",
 })
 
@@ -72,7 +81,9 @@ export const createRegexParameter = (customInstruction?: string) => ({
 export const createFilePatternParameter = (customInstruction?: string) => ({
 	name: "file_pattern",
 	required: false,
-	instruction: customInstruction || "Glob pattern to filter files (e.g., '*.ts' for TypeScript files). If not provided, it will search all files (*).",
+	instruction:
+		customInstruction ||
+		"Glob pattern to filter files (e.g., '*.ts' for TypeScript files). If not provided, it will search all files (*).",
 	usage: "file pattern here (optional)",
 })
 
@@ -82,7 +93,9 @@ export const createFilePatternParameter = (customInstruction?: string) => ({
 export const createRecursiveParameter = (customInstruction?: string) => ({
 	name: "recursive",
 	required: false,
-	instruction: customInstruction || "Whether to perform the operation recursively. Use true for recursive operation, false or omit for top-level only.",
+	instruction:
+		customInstruction ||
+		"Whether to perform the operation recursively. Use true for recursive operation, false or omit for top-level only.",
 	usage: "true or false (optional)",
 })
 
@@ -102,7 +115,8 @@ export const createUrlParameter = (customInstruction?: string) => ({
 export const createCoordinateParameter = (customInstruction?: string) => ({
 	name: "coordinate",
 	required: false,
-	instruction: customInstruction || "The X and Y coordinates for the action. Coordinates should be within the viewport resolution.",
+	instruction:
+		customInstruction || "The X and Y coordinates for the action. Coordinates should be within the viewport resolution.",
 	usage: "x,y coordinates (optional)",
 })
 
@@ -212,7 +226,9 @@ export const createAttemptCompletionParameter = (customInstruction?: string) => 
 export const createDiffParameter = (customInstruction?: string) => ({
 	name: "diff",
 	required: true,
-	instruction: customInstruction || `One or more SEARCH/REPLACE blocks following this exact format:
+	instruction:
+		customInstruction ||
+		`One or more SEARCH/REPLACE blocks following this exact format:
 \`\`\`
 ------- SEARCH
 [exact content to find]
