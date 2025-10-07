@@ -12,7 +12,7 @@ import { UrlContentFetcher } from "@services/browser/UrlContentFetcher"
 import { mentionRegexGlobal } from "@shared/context-mentions"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
-import { FileContextTracker } from "../context/context-tracking/FileContextTracker"
+import { FileContextTracker } from "../context/context-tracking"
 import {
 	handleCommitMention,
 	handleFileMention,

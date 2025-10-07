@@ -1,8 +1,8 @@
 import { expect } from "chai"
 import { afterEach, beforeEach, describe, it } from "mocha"
 import * as sinon from "sinon"
+import { ErrorService } from "@/core/api/services/error-service"
 import { WebviewProvider } from "@/core/webview"
-import { ErrorService } from "../error"
 import { Logger } from "../logging/Logger"
 import { SharedUriHandler } from "./SharedUriHandler"
 

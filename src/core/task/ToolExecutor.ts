@@ -1,5 +1,5 @@
 import { ApiHandler } from "@core/api"
-import { FileContextTracker } from "@core/context/context-tracking/FileContextTracker"
+import { FileContextTracker } from "@core/context/context-tracking"
 import { ClineIgnoreController } from "@core/ignore/ClineIgnoreController"
 import { DiffViewProvider } from "@integrations/editor/DiffViewProvider"
 import { BrowserSession } from "@services/browser/BrowserSession"

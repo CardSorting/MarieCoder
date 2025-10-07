@@ -2,14 +2,13 @@
  * Enhanced type definitions for better type safety and developer experience
  */
 
-import { ApiProviderInfo } from "@/core/api"
 import type { McpHub } from "@/services/mcp/McpHub"
 import type { BrowserSettings } from "@/shared/BrowserSettings"
 import type { FocusChainSettings } from "@/shared/FocusChainSettings"
 import { ModelFamily } from "@/shared/prompts"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ClineToolSpec } from "./spec"
-import { SystemPromptSection } from "./templates/placeholders"
+import { SystemPromptSection } from "./templates"
 
 /**
  * Strongly typed configuration override with validation

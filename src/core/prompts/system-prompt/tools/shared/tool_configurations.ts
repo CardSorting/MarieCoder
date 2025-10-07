@@ -35,8 +35,8 @@ import {
 	createUriParameter,
 	createUrlParameter,
 	createWebFetchParameter,
-} from "./parameter-templates"
-import { ToolFactory, type ToolVariantConfig } from "./tool-factory"
+} from "./parameter_definitions"
+import { ToolFactory, type ToolVariantConfig } from "./tool_factory"
 
 /**
  * Tool configuration registry

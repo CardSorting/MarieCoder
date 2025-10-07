@@ -1,7 +1,7 @@
 import { BrowserAction, BrowserActionResult, browserActions, ClineSayBrowserAction } from "@shared/ExtensionMessage"
 import { ClineDefaultTool } from "@/shared/tools"
 import { ToolUse } from "../../../assistant-message"
-import { formatResponse } from "../../../prompts/responses"
+import { formatResponse } from "../../../prompts/response_formatters"
 import { ToolResponse } from "../.."
 import { showNotificationForApprovalIfAutoApprovalEnabled } from "../../utils"
 import type { IFullyManagedTool } from "../ToolExecutorCoordinator"

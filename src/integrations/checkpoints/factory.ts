@@ -1,4 +1,4 @@
-import type { FileContextTracker } from "@core/context/context-tracking/FileContextTracker"
+import type { FileContextTracker } from "@core/context/context-tracking"
 import type { MessageStateHandler } from "@core/task/message-state"
 import type { TaskState } from "@core/task/TaskState"
 import { isMultiRootEnabled } from "@core/workspace/multi-root-utils"

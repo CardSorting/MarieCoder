@@ -1,6 +1,6 @@
 import { ApiProvider, ModelInfo, type OcaModelInfo } from "@shared/api"
 import { FocusChainSettings } from "@shared/FocusChainSettings"
-import { LanguageModelChatSelector } from "vscode"
+import { LanguageModelChatSelector } from "@/core/api/providers/shared"
 import { WorkspaceRoot } from "@/core/workspace/WorkspaceRoot"
 import { AutoApprovalSettings } from "@/shared/AutoApprovalSettings"
 import { BrowserSettings } from "@/shared/BrowserSettings"

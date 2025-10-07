@@ -15,6 +15,7 @@ export * from "./file_reading" // Read file contents
 export * from "./file_searching" // Search file contents
 export * from "./file_writing" // Write new files
 export * from "./focus_tracking" // Focus chain management
+export { registerClineToolSets } from "./init" // Tool registration function
 export * from "./mcp_documentation" // Load MCP documentation
 // Core tool implementations
 export * from "./mcp_resource_access" // Access MCP server resources

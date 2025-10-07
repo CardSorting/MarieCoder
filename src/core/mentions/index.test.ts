@@ -1,4 +1,4 @@
-import { FileContextTracker } from "@core/context/context-tracking/FileContextTracker"
+import { FileContextTracker } from "@core/context/context-tracking"
 import * as extractTextModule from "@integrations/misc/extract-text"
 import * as terminalModule from "@integrations/terminal/get-latest-output"
 import { UrlContentFetcher } from "@services/browser/UrlContentFetcher"

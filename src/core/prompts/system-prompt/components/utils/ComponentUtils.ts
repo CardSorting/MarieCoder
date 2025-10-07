@@ -5,8 +5,7 @@
  * Provides clean, reusable functions for component management.
  */
 
-import { SystemPromptSection } from "../../templates/placeholders"
-import { TemplateEngine } from "../../templates/TemplateEngine"
+import { SystemPromptSection, TemplateEngine } from "../../templates"
 import type { PromptVariant, SystemPromptContext } from "../../types"
 
 /**

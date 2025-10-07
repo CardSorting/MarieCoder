@@ -1,6 +1,6 @@
 import type { ToolUse } from "@core/assistant-message"
 import { continuationPrompt } from "@core/prompts/contextManagement"
-import { formatResponse } from "@core/prompts/responses"
+import { formatResponse } from "@core/prompts/response_formatters"
 import { ensureTaskDirectoryExists } from "@core/storage/disk"
 import { ClineSayTool } from "@shared/ExtensionMessage"
 import { telemetryService } from "@/services/telemetry"

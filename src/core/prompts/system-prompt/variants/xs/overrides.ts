@@ -1,4 +1,4 @@
-import { SystemPromptSection } from "../../templates/placeholders"
+import { SystemPromptSection } from "../../templates"
 import { PromptVariant } from "../../types"
 
 const XS_EDITING_FILES = `FILE EDITING RULES

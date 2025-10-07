@@ -5,7 +5,7 @@ import { registerClineToolSets } from "../tools"
 import type { ComponentFunction, ComponentRegistry, PromptVariant, SystemPromptContext } from "../types"
 import { loadAllVariantConfigs } from "../variants"
 import { config as genericConfig } from "../variants/generic/config"
-import { PromptBuilder } from "./PromptBuilder"
+import { PromptBuilder } from "./prompt_builder"
 
 export class PromptRegistry {
 	private static instance: PromptRegistry

@@ -12,6 +12,10 @@ class FeatureFlagsService {
 		return false
 	}
 
+	getMultiRootEnabled(): boolean {
+		return false
+	}
+
 	getFeatureFlag(_flag: string): boolean {
 		return false
 	}

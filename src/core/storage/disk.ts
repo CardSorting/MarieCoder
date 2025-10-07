@@ -1,5 +1,5 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { TaskMetadata } from "@core/context/context-tracking/ContextTrackerTypes"
+import { TaskMetadata } from "@core/context/context-tracking"
 import { execa } from "@packages/execa"
 import { ClineMessage } from "@shared/ExtensionMessage"
 import { HistoryItem } from "@shared/HistoryItem"

@@ -1,5 +1,5 @@
 import { ContextManager } from "@core/context/context-management/context_manager"
-import { FileContextTracker } from "@core/context/context-tracking/FileContextTracker"
+import { FileContextTracker } from "@core/context/context-tracking"
 import { sendRelinquishControlEvent } from "@core/controller/ui/subscribeToRelinquishControl"
 import { ensureTaskDirectoryExists } from "@core/storage/disk"
 import { WorkspaceRootManager } from "@core/workspace/WorkspaceRootManager"

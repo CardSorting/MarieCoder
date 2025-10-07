@@ -6,7 +6,7 @@
  */
 
 import { SystemPromptSection } from "../templates/section_definitions"
-import { TemplateUtils } from "./utils"
+import { TemplateUtils } from "./shared_utils"
 
 /**
  * Standard template patterns

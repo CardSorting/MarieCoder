@@ -1,4 +1,4 @@
-import { ApiHandlerModel, ApiProviderInfo } from "@core/api"
+import { ApiHandlerModel } from "@core/api"
 import { AnthropicModelId, anthropicModels } from "@/shared/api"
 
 export function modelDoesntSupportWebp(apiHandlerModel: ApiHandlerModel): boolean {

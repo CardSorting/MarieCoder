@@ -1,7 +1,7 @@
 import { ModelFamily } from "@/shared/prompts"
-import { QuickVariants } from "../../shared/enhanced-variant-builder"
-import { createValidatedVariantConfig } from "../../shared/variant-config-service"
-import { SystemPromptSection } from "../../templates/placeholders"
+import { QuickVariants } from "../../shared/variant_builder"
+import { createValidatedVariantConfig } from "../../shared/variant_configurator"
+import { SystemPromptSection } from "../../templates"
 import { xsComponentOverrides } from "./overrides"
 import { baseTemplate } from "./template"
 

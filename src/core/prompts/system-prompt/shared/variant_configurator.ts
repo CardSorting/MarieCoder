@@ -7,9 +7,9 @@
 
 import { ModelFamily } from "@/shared/prompts"
 import type { PromptVariant } from "../types"
-import { createPlaceholderConfig, getStandardConfig } from "./configs"
-import { DebugUtils, VariantUtils } from "./utils"
-import { validateVariantComprehensive } from "./validation"
+import { createPlaceholderConfig, getStandardConfig } from "./model_configurations"
+import { DebugUtils, VariantUtils } from "./shared_utils"
+import { validateVariantComprehensive } from "./validation_utils"
 
 /**
  * Variant configuration service

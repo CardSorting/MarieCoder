@@ -20,7 +20,7 @@ import {
 	createRequiresApprovalParameter,
 	createTaskProgressParameter,
 	createTimeoutParameter,
-} from "./parameter-templates"
+} from "./parameter_definitions"
 
 /**
  * Standard parameter definitions for common tool parameters

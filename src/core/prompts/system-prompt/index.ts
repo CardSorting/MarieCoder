@@ -1,22 +1,20 @@
 import { isGPT5ModelFamily, isLocalModel, isNextGenModelFamily } from "@utils/model-utils"
-import { ApiProviderInfo } from "@/core/api"
 import { ModelFamily } from "@/shared/prompts"
-import { PromptRegistry } from "./registry/PromptRegistry"
+import { PromptRegistry } from "./registry"
 import type { SystemPromptContext } from "./types"
 
-export { ClineToolSet } from "./registry/ClineToolSet"
-export { PromptBuilder } from "./registry/PromptBuilder"
-export { PromptRegistry } from "./registry/PromptRegistry"
-export * from "./templates/placeholders"
-export { TemplateEngine } from "./templates/TemplateEngine"
+export { ClineToolSet, PromptBuilder, PromptRegistry } from "./registry"
+export * from "./templates"
+export { TemplateEngine } from "./templates"
 export * from "./types"
-export { VariantBuilder } from "./variants/variant-builder"
-export { validateVariant } from "./variants/variant-validator"
+export { VariantBuilder, validateVariant } from "./variants"
+
+import { ProviderInfo } from "@/core/api"
 
 /**
  * Extract model family from model ID (e.g., "claude-4" -> "claude")
  */
-export function getModelFamily(providerInfo: ApiProviderInfo): ModelFamily {
+export function getModelFamily(providerInfo: ProviderInfo): ModelFamily {
 	if (isGPT5ModelFamily(providerInfo.model.id)) {
 		return ModelFamily.GPT_5
 	}

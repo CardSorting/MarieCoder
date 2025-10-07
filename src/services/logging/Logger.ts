@@ -1,5 +1,5 @@
+import { ErrorService } from "@/core/api/services/error-service"
 import { HostProvider } from "@/hosts/host-provider"
-import { ErrorService } from "../error"
 
 /**
  * Simple logging utility for the extension's backend code.

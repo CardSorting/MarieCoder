@@ -7,7 +7,7 @@
 import { ModelFamily } from "@/shared/prompts"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ClineToolSpec } from "../../spec"
-import { ToolValidator } from "./tool-validation"
+import { ToolValidator } from "./tool_validator"
 
 /**
  * Tool registry entry

@@ -23,3 +23,31 @@ export * from "./user_context" // User instructions and feedback (consolidated f
 
 // Utilities
 export * from "./utils/ComponentUtils"
+
+// Registry helper function
+import { SystemPromptSection } from "../templates"
+import { getAgentRoleSection } from "./agent_identity"
+import { getFileOperationsSection } from "./file_operations"
+import { getMcpServersSection } from "./mcp_servers"
+import { getMissionStatementSection } from "./mission_statement"
+import { getPlanningModesSection } from "./planning_modes"
+import { getRulesSection } from "./rules"
+import { getSystemEnvironmentSection } from "./system_environment"
+import { getTaskProgressSection } from "./task_progress"
+import { getToolsAndCapabilitiesSection } from "./tools_and_capabilities"
+import { getUserContextSection } from "./user_context"
+
+export function getSystemPromptComponents() {
+	return [
+		{ id: SystemPromptSection.AGENT_ROLE, fn: getAgentRoleSection },
+		{ id: SystemPromptSection.FILE_OPERATIONS, fn: getFileOperationsSection },
+		{ id: SystemPromptSection.MCP_SERVERS, fn: getMcpServersSection },
+		{ id: SystemPromptSection.MISSION, fn: getMissionStatementSection },
+		{ id: SystemPromptSection.PLANNING_MODES, fn: getPlanningModesSection },
+		{ id: SystemPromptSection.RULES, fn: getRulesSection },
+		{ id: SystemPromptSection.SYSTEM_INFO, fn: getSystemEnvironmentSection },
+		{ id: SystemPromptSection.TASK_PROGRESS, fn: getTaskProgressSection },
+		{ id: SystemPromptSection.TOOL_USE, fn: getToolsAndCapabilitiesSection },
+		{ id: SystemPromptSection.USER_CONTEXT, fn: getUserContextSection },
+	]
+}

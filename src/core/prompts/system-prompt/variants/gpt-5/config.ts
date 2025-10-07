@@ -1,8 +1,8 @@
 import { ModelFamily } from "@/shared/prompts"
 import { ClineDefaultTool } from "@/shared/tools"
-import { SystemPromptSection } from "../../templates/placeholders"
-import { createVariant } from "../variant-builder"
-import { validateVariant } from "../variant-validator"
+import { SystemPromptSection } from "../../templates"
+import { createVariant } from "../variant_builder"
+import { validateVariant } from "../variant_validator"
 import { baseTemplate, rules_template } from "./template"
 
 // Type-safe variant configuration using the builder pattern

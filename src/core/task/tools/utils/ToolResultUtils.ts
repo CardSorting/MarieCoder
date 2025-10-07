@@ -1,6 +1,6 @@
 import { ApiHandler } from "@core/api"
 import { ToolUse } from "@core/assistant-message"
-import { formatResponse } from "@core/prompts/responses"
+import { formatResponse } from "@core/prompts/response_formatters"
 import { ToolResponse } from "@core/task"
 import { processFilesIntoText } from "@/integrations/misc/extract-text"
 import { ClineAsk } from "@/shared/ExtensionMessage"

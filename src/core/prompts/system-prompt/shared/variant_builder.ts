@@ -9,8 +9,14 @@ import { ModelFamily } from "@/shared/prompts"
 import { ClineDefaultTool } from "@/shared/tools"
 import { SystemPromptSection } from "../templates/section_definitions"
 import type { ConfigOverride, PromptVariant } from "../types"
-import { COMMON_OVERRIDES, COMPONENT_ORDERS, createPlaceholderConfig, getStandardConfig, TOOL_CONFIGS } from "./configs"
-import { validateVariantQuick } from "./validation"
+import {
+	COMMON_OVERRIDES,
+	COMPONENT_ORDERS,
+	createPlaceholderConfig,
+	getStandardConfig,
+	TOOL_CONFIGS,
+} from "./model_configurations"
+import { validateVariantQuick } from "./validation_utils"
 
 /**
  * Enhanced variant builder with shared configuration support

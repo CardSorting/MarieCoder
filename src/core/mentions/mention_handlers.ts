@@ -21,7 +21,7 @@ import * as path from "path"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import { DiagnosticSeverity } from "@/shared/proto/index.cline"
-import { FileContextTracker } from "../context/context-tracking/FileContextTracker"
+import { FileContextTracker } from "../context/context-tracking"
 
 /**
  * Handle URL mention - fetch content via browser

@@ -1,4 +1,4 @@
-import { SystemPromptSection } from "../../templates/placeholders"
+import { SystemPromptSection } from "../../templates"
 import type { SystemPromptContext } from "../../types"
 
 export const baseTemplate = `{{${SystemPromptSection.AGENT_ROLE}}}

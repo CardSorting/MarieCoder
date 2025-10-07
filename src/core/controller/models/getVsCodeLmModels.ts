@@ -12,7 +12,9 @@ import { Controller } from ".."
  */
 export async function getVsCodeLmModels(_controller: Controller, _request: EmptyRequest): Promise<VsCodeLmModelsArray> {
 	try {
-		const models = await vscode.lm.selectChatModels({})
+		// VS Code LM API is only available in newer versions
+		// @ts-ignore - lm property may not exist in older VS Code versions
+		const models = await vscode.lm?.selectChatModels({})
 
 		const protoModels = convertVsCodeNativeModelsToProtoModels(models || [])
 
