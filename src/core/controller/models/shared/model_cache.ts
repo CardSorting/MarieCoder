@@ -4,8 +4,9 @@ import fs from "fs/promises"
 import path from "path"
 
 /**
- * Unified model caching service for all providers.
- * Eliminates duplication across provider implementations.
+ * Unified model caching service
+ * Only used for OpenRouter (Anthropic models are static)
+ * Follows NORMIE DEV methodology: ruthlessly simple
  */
 export class ModelCache {
 	/**
@@ -55,11 +56,9 @@ export class ModelCache {
 export const modelCache = new ModelCache()
 
 /**
- * Cache file names for each provider
+ * Cache file names for supported providers
+ * Only Anthropic (no caching needed) and OpenRouter
  */
 export const CacheFileNames = {
 	openRouter: GlobalFileNames.openRouterModels,
-	groq: GlobalFileNames.groqModels,
-	baseten: GlobalFileNames.basetenModels,
-	huggingFace: "huggingface_models.json",
 } as const

@@ -1,6 +1,7 @@
 /**
- * Unified model validation utilities.
- * Eliminates duplicate validation logic across providers.
+ * Model validation utilities
+ * Only supports Anthropic and OpenRouter
+ * Follows NORMIE DEV methodology: ruthlessly simple
  */
 
 /**
@@ -53,7 +54,8 @@ export function detectImageSupport(modelId: string, staticInfo?: { supportsImage
 }
 
 /**
- * Validates API key format for specific providers
+ * Validates API key format for supported providers
+ * Only Anthropic and OpenRouter
  */
 export function validateApiKeyFormat(apiKey: string, provider: string): { valid: boolean; error?: string } {
 	const cleanKey = apiKey.trim()
@@ -63,12 +65,19 @@ export function validateApiKeyFormat(apiKey: string, provider: string): { valid:
 	}
 
 	switch (provider) {
-		case "groq":
-			if (!cleanKey.startsWith("gsk_")) {
-				return { valid: false, error: "Groq API keys should start with 'gsk_'" }
+		case "anthropic":
+			if (!cleanKey.startsWith("sk-ant-")) {
+				return { valid: false, error: "Anthropic API keys should start with 'sk-ant-'" }
 			}
 			break
-		// Add more provider-specific validations as needed
+		case "openrouter":
+			if (!cleanKey.startsWith("sk-or-")) {
+				return { valid: false, error: "OpenRouter API keys should start with 'sk-or-'" }
+			}
+			break
+		default:
+			// Unknown provider
+			return { valid: false, error: `Unsupported provider: ${provider}. Only 'anthropic' and 'openrouter' are supported.` }
 	}
 
 	return { valid: true }
