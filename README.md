@@ -128,11 +128,11 @@ NormieDev saves snapshots as it works:
 
 Perfect for trying different approaches.
 
-## Built on Cline
+## Inspired by Cline
 
-NormieDev is built on the excellent [Cline](https://github.com/cline/cline) project. We've rebuilt ~80% to explore a different direction focused on streamlined workflows and community-driven features.
+NormieDev is built on [Cline](https://github.com/cline/cline), an amazing open-source AI coding assistant. The Cline team's commitment to transparency and open development inspired us to create our own community-driven fork.
 
-Huge thanks to the Cline team for creating such a solid foundation.
+We're exploring additional features and workflows while maintaining the core excellence that makes Cline great. Massive respect to the Cline team for building such powerful tools and sharing them with the world.
 
 ## Getting Started
 
