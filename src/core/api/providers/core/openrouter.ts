@@ -64,6 +64,13 @@ export class OpenRouterProvider extends HttpProvider {
 	}
 
 	/**
+	 * Get provider ID
+	 */
+	protected override getProviderId(): string {
+		return "openrouter"
+	}
+
+	/**
 	 * Get model information
 	 */
 	protected override getModelInfo(): ModelInfo {

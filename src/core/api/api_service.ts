@@ -2,6 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { ApiConfiguration, ModelInfo } from "@shared/api"
 import { Mode } from "@shared/storage/types"
 import { simpleRegistry } from "./registry/enhanced-registrations"
+import { ProviderCapabilities, ProviderMetadata } from "./registry/provider-metadata"
 import { ErrorService } from "./services/error-service"
 import { ApiStream, ApiStreamUsageChunk } from "./transform/stream"
 
@@ -18,6 +19,8 @@ export type ApiHandlerOptions = {
 export interface ApiHandler {
 	createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream
 	getModel(): ApiHandlerModel
+	getCapabilities(): ProviderCapabilities
+	getProviderMetadata(): ProviderMetadata
 	getApiStreamUsage?(): Promise<ApiStreamUsageChunk | undefined>
 }
 

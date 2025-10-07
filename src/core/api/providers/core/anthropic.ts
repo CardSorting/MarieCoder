@@ -44,6 +44,13 @@ export class AnthropicProvider extends BaseProvider {
 	}
 
 	/**
+	 * Get provider ID
+	 */
+	protected override getProviderId(): string {
+		return "anthropic"
+	}
+
+	/**
 	 * Get model information
 	 */
 	protected override getModelInfo(): ModelInfo {

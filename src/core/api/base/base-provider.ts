@@ -40,32 +40,18 @@ export abstract class BaseProvider implements ApiHandler {
 	abstract createMessage(systemPrompt: string, messages: any[]): ApiStream
 
 	/**
-	 * Get provider metadata - override to customize
+	 * Get the model handler
 	 */
-	getProviderMetadata(): ProviderMetadata {
+	getModel(): ApiHandlerModel {
 		return {
-			providerId: this.getProviderId(),
-			category: ProviderCategory.AI,
-			status: ProviderStatus.ACTIVE,
-			documentation: {
-				name: this.getProviderName(),
-				description: this.getProviderDescription(),
-			},
-			capabilities: this.getCapabilities(),
-			configurationSchema: {
-				requiredOptions: {},
-				optionalOptions: {},
-			},
-			modeSupport: {
-				plan: true,
-				act: true,
-			},
-			lastUpdated: new Date(),
+			id: this.options.apiModelId || this.getDefaultModelId(),
+			info: this.getModelInfo(),
 		}
 	}
 
 	/**
-	 * Get provider capabilities - override to customize
+	 * Get provider capabilities - minimal implementation
+	 * Override in subclasses to provide specific capabilities
 	 */
 	getCapabilities(): ProviderCapabilities {
 		return {
@@ -77,36 +63,22 @@ export abstract class BaseProvider implements ApiHandler {
 	}
 
 	/**
-	 * Get provider ID - override to customize
+	 * Get provider metadata - minimal implementation
+	 * Override in subclasses to provide specific metadata
+	 */
+	getProviderMetadata(): ProviderMetadata {
+		return {
+			providerId: this.getProviderId(),
+			category: ProviderCategory.AI,
+			status: ProviderStatus.ACTIVE,
+		}
+	}
+
+	/**
+	 * Get provider ID - override in subclasses
 	 */
 	protected getProviderId(): string {
 		return "unknown"
-	}
-
-	/**
-	 * Get provider name - override to customize
-	 */
-	protected getProviderName(): string {
-		return "Unknown Provider"
-	}
-
-	/**
-	 * Get provider description - override to customize
-	 */
-	protected getProviderDescription(): string {
-		return "AI Provider"
-	}
-
-	/**
-	 * Get the model handler
-	 */
-	getModel(): ApiHandlerModel {
-		return {
-			id: this.options.apiModelId || this.getDefaultModelId(),
-			info: this.getModelInfo(),
-			providerMetadata: this.getProviderMetadata(),
-			capabilities: this.getCapabilities(),
-		}
 	}
 
 	/**
