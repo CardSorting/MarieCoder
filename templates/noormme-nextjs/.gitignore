@@ -40,3 +40,16 @@ next-env.d.ts
 *.db
 *.sqlite
 *.sqlite3
+database.sqlite
+test.sqlite
+
+# backups
+backup-*.sqlite
+
+# logs
+*.log
+logs/
+
+# temporary files
+tmp/
+temp/

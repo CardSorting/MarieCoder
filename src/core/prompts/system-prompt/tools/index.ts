@@ -1,18 +1,29 @@
-export * from "./access_mcp_resource"
-export * from "./ask_followup_question"
-export * from "./attempt_completion"
-export * from "./browser_action"
-export * from "./execute_command"
-export * from "./focus_chain"
-export * from "./init"
-export * from "./list_code_definition_names"
-export * from "./list_files"
-export * from "./load_mcp_documentation"
-export * from "./new_task"
-export * from "./plan_mode_respond"
-export * from "./read_file"
-export * from "./replace_in_file"
-export * from "./search_files"
-export * from "./use_mcp_tool"
-export * from "./web_fetch"
-export * from "./write_to_file"
+/**
+ * Tools Index - Clear, Self-Explanatory Names
+ *
+ * All tool implementations with descriptive names:
+ * - Self-explanatory file names
+ * - Clear purpose for each tool
+ */
+
+export * from "./ask_user_questions" // Ask follow-up questions
+export * from "./code_definitions" // List code definitions
+export * from "./command_execution" // Execute CLI commands
+export * from "./file_editing" // Edit existing files
+export * from "./file_listing" // List files and directories
+export * from "./file_reading" // Read file contents
+export * from "./file_searching" // Search file contents
+export * from "./file_writing" // Write new files
+export * from "./focus_tracking" // Focus chain management
+export * from "./mcp_documentation" // Load MCP documentation
+// Core tool implementations
+export * from "./mcp_resource_access" // Access MCP server resources
+export * from "./mcp_tool_usage" // Use MCP tools
+export * from "./planning_responses" // Plan mode responses
+// Tool registry and shared utilities
+export { toolRegistry } from "./registry" // Tool registry service
+export * from "./shared" // Shared tool utilities
+export * from "./task_completion" // Complete and present tasks
+export * from "./task_creation" // Create new tasks
+export * from "./web_browser_actions" // Browser automation
+export * from "./web_requests" // Make web requests

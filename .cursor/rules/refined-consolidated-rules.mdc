@@ -1,0 +1,186 @@
+---
+description: NOORMME Refined Consolidated Rules - Ultra-clear, actionable principles for joyful development
+globs: '**/*.{ts,tsx,js,jsx}'
+alwaysApply: true
+priority: 1
+---
+
+# NOORMME Refined Consolidated Rules
+
+## 🎯 **Core Philosophy: The NORMIE DEV Method**
+
+**The Golden Rule**: If it doesn't spark joy and make development easier, simplify it or delete it.
+
+### The 3-Step Decision Process (Apply to EVERY change):
+1. **Does this spark joy?** → Better DX, less complexity, clear value
+2. **Can we DELETE legacy?** → Eliminate old implementations completely  
+3. **Is this the simplest solution?** → Minimal complexity, maximum value
+
+### Zero-Tolerance Actions:
+- **DELETE** legacy files immediately when creating new implementations
+- **DELETE** backward compatibility layers and wrappers
+- **DELETE** complex abstractions that don't add clear value
+
+### Composition Over Creation:
+- **USE** existing excellent tools (Next.js, Kysely, SQLite) instead of recreating functionality
+- **COMPOSE** solutions from proven patterns instead of creating new frameworks
+
+---
+
+## 🔧 **Type Safety & Code Quality Standards**
+
+### MANDATORY Requirements:
+- **FORBIDDEN**: `any` types - use proper typing or delete the code
+- **REQUIRED**: Custom error classes with actionable messages
+- **REQUIRED**: Input validation before all database operations
+- **REQUIRED**: Unit tests for all public methods (minimum 80% coverage)
+- **REQUIRED**: JSDoc comments for all public APIs
+
+### Error Handling Pattern:
+```typescript
+export class ValidationError extends NOORMError {
+  constructor(message: string, actionable?: string) {
+    super(message, 'VALIDATION_ERROR', actionable)
+  }
+}
+
+// Usage
+async function createUser(data: CreateUserData): Promise<User> {
+  try {
+    if (!data.email) {
+      throw new ValidationError('Email required', 'Please provide a valid email')
+    }
+    return await this.repository.create(data)
+  } catch (error) {
+    if (error instanceof NOORMError) throw error
+    throw new DatabaseError('create user', error as Error)
+  }
+}
+```
+
+---
+
+## 🏗️ **Database & Architecture Patterns**
+
+### MANDATORY Patterns:
+- **EXPOSE** Kysely's query builders directly (`selectFrom`, `insertInto`, `updateTable`, `deleteFrom`)
+- **USE** repository pattern for business logic, Kysely for queries
+- **FOLLOW** Django-style folder organization with clear separation of concerns
+- **IMPLEMENT** service layer for complex business logic
+- **CONFIGURE** SQLite with WAL mode for production performance
+
+### Database Pattern:
+```typescript
+export class UserRepository extends BaseRepository<'users'> {
+  async findByEmail(email: string): Promise<Database['users'] | null> {
+    return await this.db
+      .selectFrom('users')
+      .selectAll()
+      .where('email', '=', email.toLowerCase())
+      .executeTakeFirst()
+  }
+}
+
+export class UserService {
+  constructor(private repo: UserRepository) {}
+  
+  async createUser(data: CreateUserData): Promise<User> {
+    const user = await this.repo.create(data)
+    await this.sendWelcomeEmail(user.email)
+    return user
+  }
+}
+```
+
+---
+
+## ⚡ **Next.js & Performance Standards**
+
+### MANDATORY Standards:
+- **USE** App Router exclusively (delete Pages Router patterns)
+- **PREFER** Server Components over Client Components
+- **IMPLEMENT** proper error boundaries and loading states
+- **CONFIGURE** authentication with NextAuth v5
+- **OPTIMIZE** images with Next.js Image component
+- **ENSURE** < 100ms page loads and < 50ms query times
+
+### App Router Pattern:
+```typescript
+// app/dashboard/page.tsx
+import { db } from '@/lib/db'
+import { auth } from '@/lib/auth'
+
+export default async function DashboardPage() {
+  const session = await auth()
+  if (!session) redirect('/auth/signin')
+  
+  const users = await db.getRepository('users').findAll()
+  return <UserList users={users} />
+}
+
+// app/admin/users/actions.ts
+'use server'
+export async function createUser(formData: FormData) {
+  const user = await db.getRepository('users').create({
+    name: formData.get('name') as string,
+    email: formData.get('email') as string
+  })
+  revalidatePath('/admin/users')
+  return user
+}
+```
+
+---
+
+## 🚨 **Quality Gates & Implementation Flow**
+
+### Pre-Development Checklist:
+- [ ] **Philosophy**: Applied 3-step decision process (spark joy, delete legacy, simplest solution)
+- [ ] **Type Safety**: Planned error handling and input validation
+- [ ] **Architecture**: Planned database and folder organization
+- [ ] **Performance**: Planned Next.js patterns and performance targets
+
+### Development Standards:
+- [ ] All TypeScript errors resolved
+- [ ] Custom error classes with actionable messages
+- [ ] Input validation before database operations
+- [ ] Unit tests for all public methods (minimum 80% coverage)
+- [ ] JSDoc comments for all public APIs
+
+### Performance Benchmarks:
+- [ ] < 100ms page loads
+- [ ] < 50ms database query times
+- [ ] App Router patterns implemented
+- [ ] Server Components preferred over Client Components
+
+### Post-Development Validation:
+- [ ] No linting errors
+- [ ] Legacy code eliminated
+- [ ] All patterns applied consistently
+- [ ] Production-ready quality achieved
+
+---
+
+## 🎯 **Context-Aware Implementation Guide**
+
+### For New Features:
+1. **Start with Rule 1**: Apply the 3-step decision process
+2. **Plan with Rules 2-4**: Type safety, architecture, performance
+3. **Implement**: Follow all mandatory requirements
+4. **Validate**: Check all quality gates
+
+### For Refactoring:
+1. **Identify legacy**: What can we DELETE?
+2. **Plan replacement**: What sparks joy?
+3. **Implement cleanly**: Follow all patterns
+4. **Delete old code**: No compatibility layers
+
+### For Bug Fixes:
+1. **Root cause**: Apply type safety and error handling
+2. **Fix comprehensively**: Don't just patch symptoms
+3. **Test thoroughly**: Ensure 80% coverage
+4. **Document**: Update JSDoc comments
+
+---
+
+**Remember**: Software development should spark joy, not frustration. **DELETE everything that doesn't spark joy.**

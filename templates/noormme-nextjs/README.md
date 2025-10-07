@@ -1,6 +1,6 @@
 # NOORMME SAAS Template
 
-A comprehensive, production-ready Next.js SAAS template with NOORMME integration following the **NORMIE DEV methodology**. This template provides everything you need to build a modern SAAS application with user management, subscriptions, billing, and admin functionality.
+A production-ready Next.js SAAS template with NOORMME integration following the **NORMIE DEV methodology**. Built for the happy path - clean, unified, and delightful to work with.
 
 ## ✨ Features
 
@@ -50,41 +50,23 @@ A comprehensive, production-ready Next.js SAAS template with NOORMME integration
 
 ## 🚀 Quick Start
 
-### Automated Setup (Recommended)
+### The Happy Path (5 minutes to running)
 ```bash
-# Clone and setup in one command
+# 1. Clone and install
 git clone <repository-url> my-saas-app
 cd my-saas-app
+npm install
+
+# 2. Configure environment
+cp env.example .env.local
+# Edit .env.local with your settings
+
+# 3. Initialize and run
 npm run setup
 npm run dev
 ```
 
-### Manual Setup
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-2. **Set up environment:**
-   ```bash
-   cp env.example .env.local
-   # Edit .env.local with your configuration
-   ```
-
-3. **Initialize database:**
-   ```bash
-   npm run setup
-   ```
-
-4. **Start development server:**
-   ```bash
-   npm run dev
-   ```
-
-5. **Access the application:**
-   - Main app: http://localhost:3000
-   - Admin panel: http://localhost:3000/admin
-   - API docs: http://localhost:3000/api
+**That's it!** Your SAAS is running at http://localhost:3000
 
 ### Using NOORMME Artisan (MCP Server)
 ```bash
@@ -185,7 +167,6 @@ src/
 - `npm run build:production` - Production build with checks
 - `npm run deploy` - Deploy to production
 - `npm run health-check` - Check application health
-- `npm run backup` - Backup database
 
 ## 🔧 Configuration
 

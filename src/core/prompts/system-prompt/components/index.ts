@@ -1,56 +1,26 @@
-import { SystemPromptSection } from "../templates/placeholders"
-import { getActVsPlanModeSection } from "./act_vs_plan_mode"
-import { getAgentRoleSection } from "./agent_role"
-import { getTodoListSection } from "./auto_todo"
-import { getCapabilitiesSection } from "./capabilities"
-import { getDefaultRulesSection } from "./default_rules"
-import { getEditingFilesSection } from "./editing_files"
-import { getFeedbackSection } from "./feedback"
-import { getMcp } from "./mcp"
-import { getNormieRulesSection } from "./normie_rules"
-import { getObjectiveSection } from "./objective"
-import { getRulesSection } from "./rules"
-import { getSystemInfo } from "./system_info"
-import { getUpdatingTaskProgress } from "./task_progress"
-import { getToolUseSection } from "./tool_use"
-import { getUserInstructions } from "./user_instructions"
-
 /**
- * Registers all tool variants with the ClineToolSet provider.
- * This function should be called once during application initialization
- * to make all tools available for use.
+ * Components Index - Clear, Self-Explanatory Names
+ *
+ * Flat structure with descriptive names following NORMIE DEV methodology:
+ * - Self-explanatory file names
+ * - No complex abstractions
+ * - Clear, simple exports
  */
-export function getSystemPromptComponents() {
-	return [
-		{ id: SystemPromptSection.AGENT_ROLE, fn: getAgentRoleSection },
-		{ id: SystemPromptSection.SYSTEM_INFO, fn: getSystemInfo },
-		{ id: SystemPromptSection.MCP, fn: getMcp },
-		{ id: SystemPromptSection.TODO, fn: getTodoListSection },
-		{
-			id: SystemPromptSection.USER_INSTRUCTIONS,
-			fn: getUserInstructions,
-		},
-		{ id: SystemPromptSection.TOOL_USE, fn: getToolUseSection },
-		{
-			id: SystemPromptSection.EDITING_FILES,
-			fn: getEditingFilesSection,
-		},
-		{
-			id: SystemPromptSection.CAPABILITIES,
-			fn: getCapabilitiesSection,
-		},
-		{ id: SystemPromptSection.RULES, fn: getRulesSection },
-		{ id: SystemPromptSection.NORMIE_RULES, fn: getNormieRulesSection },
-		{ id: SystemPromptSection.DEFAULT_RULES, fn: getDefaultRulesSection },
-		{ id: SystemPromptSection.OBJECTIVE, fn: getObjectiveSection },
-		{
-			id: SystemPromptSection.ACT_VS_PLAN,
-			fn: getActVsPlanModeSection,
-		},
-		{
-			id: SystemPromptSection.FEEDBACK,
-			fn: getFeedbackSection,
-		},
-		{ id: SystemPromptSection.TASK_PROGRESS, fn: getUpdatingTaskProgress },
-	]
-}
+
+// Core prompt components - descriptive names
+export * from "./agent_planning_modes" // ACT vs PLAN mode instructions
+export * from "./agent_role" // Agent identity and role
+export * from "./available_tools" // Available tools and capabilities
+export * from "./environment_context" // System environment info
+export * from "./external_servers" // MCP server integration
+export * from "./file_operations" // File editing guidelines
+export * from "./mission_statement" // Core mission and objectives
+export * from "./progress_tracking" // Task progress management
+export * from "./rules" // NORMIE DEV methodology rules
+export * from "./task_tracking" // Automatic todo list management
+export * from "./tool_use" // Tool usage instructions
+export * from "./user_guidance" // User instruction handling
+export * from "./user_support" // User feedback and support
+
+// Utilities
+export * from "./utils/ComponentUtils"

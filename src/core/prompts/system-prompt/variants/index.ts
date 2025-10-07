@@ -6,9 +6,14 @@
  * and use cases.
  */
 
+// Variant utilities
+export * from "./configuration_template" // Configuration template
+// Variant configurations
 export { config as genericConfig, type GenericVariantConfig } from "./generic/config"
 export { config as gpt5Config, type GPT5VariantConfig } from "./gpt-5/config"
 export { config as nextGenConfig, type NextGenVariantConfig } from "./next-gen/config"
+export * from "./variant_builder" // Variant building utilities
+export * from "./variant_validator" // Variant validation utilities
 export { config as xsConfig, type XsVariantConfig } from "./xs/config"
 
 import { ModelFamily } from "@/shared/prompts"

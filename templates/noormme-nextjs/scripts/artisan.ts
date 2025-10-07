@@ -10,7 +10,6 @@ import { spawn } from "child_process"
 import { existsSync } from "fs"
 import path from "path"
 
-
 class ArtisanCLI {
 	private mcpServerPath: string
 
@@ -187,7 +186,7 @@ Examples:
 	}
 
 	const command = args[0]
-	
+
 	if (!command) {
 		console.error("❌ No command provided")
 		process.exit(1)

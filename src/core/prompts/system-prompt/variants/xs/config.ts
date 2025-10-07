@@ -1,14 +1,12 @@
 import { ModelFamily } from "@/shared/prompts"
-import { ClineDefaultTool } from "@/shared/tools"
+import { QuickVariants } from "../../shared/enhanced-variant-builder"
+import { createValidatedVariantConfig } from "../../shared/variant-config-service"
 import { SystemPromptSection } from "../../templates/placeholders"
-import { createVariant } from "../variant-builder"
-import { validateVariant } from "../variant-validator"
 import { xsComponentOverrides } from "./overrides"
 import { baseTemplate } from "./template"
 
-// Type-safe variant configuration using the builder pattern
-export const config = createVariant(ModelFamily.XS)
-	.description("Prompt for models with a small context window.")
+// Type-safe variant configuration using the enhanced builder pattern
+export const config = QuickVariants.minimal(ModelFamily.XS, "Prompt for models with a small context window.")
 	.version(1)
 	.tags("local", "xs", "compact")
 	.labels({
@@ -20,25 +18,12 @@ export const config = createVariant(ModelFamily.XS)
 	.components(
 		SystemPromptSection.AGENT_ROLE,
 		SystemPromptSection.RULES,
-		SystemPromptSection.NORMIE_RULES,
 		SystemPromptSection.ACT_VS_PLAN,
 		SystemPromptSection.CAPABILITIES,
 		SystemPromptSection.EDITING_FILES,
 		SystemPromptSection.OBJECTIVE,
 		SystemPromptSection.SYSTEM_INFO,
 		SystemPromptSection.USER_INSTRUCTIONS,
-	)
-	.tools(
-		ClineDefaultTool.BASH,
-		ClineDefaultTool.FILE_READ,
-		ClineDefaultTool.FILE_NEW,
-		ClineDefaultTool.FILE_EDIT,
-		ClineDefaultTool.SEARCH,
-		ClineDefaultTool.LIST_FILES,
-		ClineDefaultTool.ASK,
-		ClineDefaultTool.ATTEMPT,
-		ClineDefaultTool.NEW_TASK,
-		ClineDefaultTool.PLAN_MODE,
 	)
 	.placeholders({
 		MODEL_FAMILY: ModelFamily.XS,
@@ -47,19 +32,13 @@ export const config = createVariant(ModelFamily.XS)
 	.build()
 
 // Apply component overrides after building the base configuration
-// This is necessary because the builder pattern doesn't support bulk overrides
 Object.assign(config.componentOverrides, xsComponentOverrides)
 
-// Compile-time validation
-const validationResult = validateVariant({ ...config, id: "xs" }, { strict: true })
-if (!validationResult.isValid) {
-	console.error("XS variant configuration validation failed:", validationResult.errors)
-	throw new Error(`Invalid XS variant configuration: ${validationResult.errors.join(", ")}`)
-}
-
-if (validationResult.warnings.length > 0) {
-	console.warn("XS variant configuration warnings:", validationResult.warnings)
-}
+// Validated variant configuration with centralized validation
+export const validatedConfig = await createValidatedVariantConfig("xs", config, {
+	strict: true,
+	logSummary: false,
+})
 
 // Export type information for better IDE support
 export type XsVariantConfig = typeof config

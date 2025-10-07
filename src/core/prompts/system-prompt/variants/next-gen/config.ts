@@ -1,15 +1,16 @@
 import { ModelFamily } from "@/shared/prompts"
-import { ClineDefaultTool } from "@/shared/tools"
+import { QuickVariants } from "../../shared/enhanced-variant-builder"
+import { createValidatedVariantConfig } from "../../shared/variant-config-service"
 import { SystemPromptSection } from "../../templates/placeholders"
-import { createVariant } from "../variant-builder"
-import { validateVariant } from "../variant-validator"
 import { baseTemplate, rules_template } from "./template"
 
-// Type-safe variant configuration using the builder pattern
-export const config = createVariant(ModelFamily.NEXT_GEN)
-	.description("Prompt tailored to newer frontier models with smarter agentic capabilities.")
+// Type-safe variant configuration using the enhanced builder pattern
+export const config = QuickVariants.full(
+	ModelFamily.NEXT_GEN,
+	"Prompt tailored to newer frontier models with smarter agentic capabilities.",
+)
 	.version(1)
-	.tags("next-gen", "advanced", "production")
+	.tags("next-gen", "advanced")
 	.labels({
 		stable: 1,
 		production: 1,
@@ -27,29 +28,9 @@ export const config = createVariant(ModelFamily.NEXT_GEN)
 		SystemPromptSection.CAPABILITIES,
 		SystemPromptSection.FEEDBACK,
 		SystemPromptSection.RULES,
-		SystemPromptSection.NORMIE_RULES,
 		SystemPromptSection.SYSTEM_INFO,
 		SystemPromptSection.OBJECTIVE,
 		SystemPromptSection.USER_INSTRUCTIONS,
-	)
-	.tools(
-		ClineDefaultTool.BASH,
-		ClineDefaultTool.FILE_READ,
-		ClineDefaultTool.FILE_NEW,
-		ClineDefaultTool.FILE_EDIT,
-		ClineDefaultTool.SEARCH,
-		ClineDefaultTool.LIST_FILES,
-		ClineDefaultTool.LIST_CODE_DEF,
-		ClineDefaultTool.BROWSER,
-		ClineDefaultTool.WEB_FETCH,
-		ClineDefaultTool.MCP_USE,
-		ClineDefaultTool.MCP_ACCESS,
-		ClineDefaultTool.ASK,
-		ClineDefaultTool.ATTEMPT,
-		ClineDefaultTool.NEW_TASK,
-		ClineDefaultTool.PLAN_MODE,
-		ClineDefaultTool.MCP_DOCS,
-		ClineDefaultTool.TODO,
 	)
 	.placeholders({
 		MODEL_FAMILY: ModelFamily.NEXT_GEN,
@@ -61,16 +42,11 @@ export const config = createVariant(ModelFamily.NEXT_GEN)
 	})
 	.build()
 
-// Compile-time validation
-const validationResult = validateVariant({ ...config, id: "next-gen" }, { strict: true })
-if (!validationResult.isValid) {
-	console.error("Next-gen variant configuration validation failed:", validationResult.errors)
-	throw new Error(`Invalid next-gen variant configuration: ${validationResult.errors.join(", ")}`)
-}
-
-if (validationResult.warnings.length > 0) {
-	console.warn("Next-gen variant configuration warnings:", validationResult.warnings)
-}
+// Validated variant configuration with centralized validation
+export const validatedConfig = await createValidatedVariantConfig("next-gen", config, {
+	strict: true,
+	logSummary: false,
+})
 
 // Export type information for better IDE support
 export type NextGenVariantConfig = typeof config

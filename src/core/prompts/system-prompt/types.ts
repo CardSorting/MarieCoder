@@ -199,6 +199,10 @@ export interface ValidationError {
 	readonly severity: "error" | "warning"
 }
 
+export interface ValidationOptions {
+	readonly strict?: boolean
+}
+
 export interface ValidationResult {
 	readonly isValid: boolean
 	readonly errors: readonly ValidationError[]

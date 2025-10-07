@@ -14,14 +14,14 @@ import { PaymentRepository, SubscriptionRepository, UserRepository } from "./dat
 // Database configuration - Production-ready with MCP compatibility
 const databaseConfig = {
 	database: process.env.DATABASE_URL || "./database.sqlite",
-	wal: process.env.NODE_ENV !== 'test', // Disable WAL in test environment
-	cacheSize: process.env.NODE_ENV === 'production' ? -128000 : -64000, // 128MB in production, 64MB in dev
-	synchronous: (process.env.NODE_ENV === 'production' ? "FULL" : "NORMAL") as "FULL" | "NORMAL" | "OFF",
+	wal: process.env.NODE_ENV !== "test", // Disable WAL in test environment
+	cacheSize: process.env.NODE_ENV === "production" ? -128000 : -64000, // 128MB in production, 64MB in dev
+	synchronous: (process.env.NODE_ENV === "production" ? "FULL" : "NORMAL") as "FULL" | "NORMAL" | "OFF",
 	tempStore: "MEMORY" as const,
 	foreignKeys: true,
 	optimize: true,
-	timeout: process.env.NODE_ENV === 'production' ? 60000 : 30000,
-	busyTimeout: process.env.NODE_ENV === 'production' ? 10000 : 5000,
+	timeout: process.env.NODE_ENV === "production" ? 60000 : 30000,
+	busyTimeout: process.env.NODE_ENV === "production" ? 10000 : 5000,
 }
 
 // Initialize database manager and related services
@@ -90,27 +90,37 @@ async function warmupCaches() {
 	}
 }
 
-// Initialize on import
-initializeDatabase()
+// Initialize database asynchronously
+let initializationPromise: Promise<void> | null = null
+
+async function ensureInitialized() {
+	if (!initializationPromise) {
+		initializationPromise = initializeDatabase()
+	}
+	await initializationPromise
+}
 
 // Export database instance and utilities
 export { dbManager }
 
-// Legacy export for backward compatibility
+// Main database export with proper initialization
 export const db = {
-	getRepository: (tableName: string) => {
+	getRepository: async (tableName: string) => {
+		await ensureInitialized()
 		if (!dbManager) {
 			throw new Error("Database not initialized")
 		}
 		return dbManager.getDatabase().getRepository(tableName)
 	},
-	getKysely: () => {
+	getKysely: async () => {
+		await ensureInitialized()
 		if (!dbManager) {
 			throw new Error("Database not initialized")
 		}
 		return dbManager.getDatabase().getKysely()
 	},
-	execute: (query: string, params?: any[]) => {
+	execute: async (query: string, params?: any[]) => {
+		await ensureInitialized()
 		if (!dbManager) {
 			throw new Error("Database not initialized")
 		}
@@ -119,21 +129,24 @@ export const db = {
 }
 
 // Export enhanced utilities
-export const getQueryBuilder = (): QueryBuilderFactory => {
+export const getQueryBuilder = async (): Promise<QueryBuilderFactory> => {
+	await ensureInitialized()
 	if (!dbManager) {
 		throw new Error("Database not initialized")
 	}
 	return dbManager.getQueryBuilder()
 }
 
-export const getSAASPatterns = (): SAASQueryPatterns => {
+export const getSAASPatterns = async (): Promise<SAASQueryPatterns> => {
+	await ensureInitialized()
 	if (!dbManager) {
 		throw new Error("Database not initialized")
 	}
 	return dbManager.getSAASPatterns()
 }
 
-export const getMigrationManager = (): MigrationManager => {
+export const getMigrationManager = async (): Promise<MigrationManager> => {
+	await ensureInitialized()
 	if (!dbManager) {
 		throw new Error("Database not initialized")
 	}
@@ -141,6 +154,7 @@ export const getMigrationManager = (): MigrationManager => {
 }
 
 export const getDatabaseStats = async () => {
+	await ensureInitialized()
 	if (!dbManager) {
 		throw new Error("Database not initialized")
 	}
@@ -148,6 +162,7 @@ export const getDatabaseStats = async () => {
 }
 
 export const getDatabaseHealth = async () => {
+	await ensureInitialized()
 	if (!dbManager) {
 		throw new Error("Database not initialized")
 	}
@@ -155,21 +170,24 @@ export const getDatabaseHealth = async () => {
 }
 
 // Enhanced repository exports
-export const getUserRepository = (): UserRepository => {
+export const getUserRepository = async (): Promise<UserRepository> => {
+	await ensureInitialized()
 	if (!dbManager) {
 		throw new Error("Database not initialized")
 	}
 	return new UserRepository(dbManager.getDatabase().getKysely() as any)
 }
 
-export const getSubscriptionRepository = (): SubscriptionRepository => {
+export const getSubscriptionRepository = async (): Promise<SubscriptionRepository> => {
+	await ensureInitialized()
 	if (!dbManager) {
 		throw new Error("Database not initialized")
 	}
 	return new SubscriptionRepository(dbManager.getDatabase().getKysely() as any)
 }
 
-export const getPaymentRepository = (): PaymentRepository => {
+export const getPaymentRepository = async (): Promise<PaymentRepository> => {
+	await ensureInitialized()
 	if (!dbManager) {
 		throw new Error("Database not initialized")
 	}
@@ -181,14 +199,16 @@ export const getCacheManager = () => cacheManager
 export const getGlobalCache = () => globalCache
 
 // Health monitoring exports
-export const getHealthMonitor = (): DatabaseHealthMonitor => {
+export const getHealthMonitor = async (): Promise<DatabaseHealthMonitor> => {
+	await ensureInitialized()
 	if (!healthMonitor) {
 		throw new Error("Health monitor not initialized")
 	}
 	return healthMonitor
 }
 
-export const getPerformanceAnalyzer = (): DatabasePerformanceAnalyzer => {
+export const getPerformanceAnalyzer = async (): Promise<DatabasePerformanceAnalyzer> => {
+	await ensureInitialized()
 	if (!performanceAnalyzer) {
 		throw new Error("Performance analyzer not initialized")
 	}
@@ -197,6 +217,7 @@ export const getPerformanceAnalyzer = (): DatabasePerformanceAnalyzer => {
 
 // Enhanced health status with all metrics
 export const getEnhancedHealthStatus = async () => {
+	await ensureInitialized()
 	if (!healthMonitor) {
 		throw new Error("Health monitor not initialized")
 	}
@@ -205,6 +226,7 @@ export const getEnhancedHealthStatus = async () => {
 
 // Performance report
 export const getPerformanceReport = async () => {
+	await ensureInitialized()
 	if (!performanceAnalyzer) {
 		throw new Error("Performance analyzer not initialized")
 	}

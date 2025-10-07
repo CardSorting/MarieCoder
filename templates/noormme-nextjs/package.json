@@ -21,7 +21,6 @@
 		"build:production": "NODE_ENV=production npm run type-check && npm run lint && npm run build",
 		"deploy": "npm run build:production && npm run start",
 		"health-check": "tsx scripts/health-check.ts",
-		"backup": "tsx scripts/backup.ts",
 		"artisan": "tsx scripts/artisan.ts",
 		"make:component": "npm run artisan make:component",
 		"make:service": "npm run artisan make:service",
@@ -33,8 +32,7 @@
 		"install:admin": "npm run artisan install:admin",
 		"db:migrate": "npm run artisan db:migrate",
 		"db:seed": "npm run artisan db:seed",
-		"serve": "npm run artisan serve",
-		"postinstall": "npm run setup"
+		"serve": "npm run artisan serve"
 	},
 	"dependencies": {
 		"@radix-ui/react-dialog": "^1.0.0",
@@ -53,7 +51,7 @@
 		"nanoid": "^5.1.6",
 		"next": "^15.0.0",
 		"next-auth": "^4.24.0",
-		"noormme": "latest",
+		"noormme": "^1.0.0",
 		"postcss": "^8.4.0",
 		"react": "^18.0.0",
 		"react-dom": "^18.0.0",

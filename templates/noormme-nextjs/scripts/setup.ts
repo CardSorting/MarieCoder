@@ -93,8 +93,12 @@ class SetupManager {
 			const currentPart = currentVersion[i] || 0
 			const requiredPart = requiredVersion[i] || 0
 
-			if (currentPart > requiredPart) return true
-			if (currentPart < requiredPart) return false
+			if (currentPart > requiredPart) {
+				return true
+			}
+			if (currentPart < requiredPart) {
+				return false
+			}
 		}
 
 		return true
@@ -135,7 +139,7 @@ class SetupManager {
 		try {
 			execSync("npm install", { stdio: "inherit" })
 			console.log("✅ Dependencies installed successfully")
-		} catch (error) {
+		} catch (_error) {
 			throw new Error('Failed to install dependencies. Please run "npm install" manually.')
 		}
 	}
@@ -227,7 +231,7 @@ class SetupManager {
 		try {
 			execSync("npm run migrate", { stdio: "inherit" })
 			console.log("✅ Database migrations completed")
-		} catch (error) {
+		} catch (_error) {
 			console.warn("⚠️  Database migrations failed. This may be normal for first-time setup.")
 		}
 	}
@@ -238,7 +242,7 @@ class SetupManager {
 		try {
 			execSync("npm run seed", { stdio: "inherit" })
 			console.log("✅ Database seeding completed")
-		} catch (error) {
+		} catch (_error) {
 			console.warn("⚠️  Database seeding failed. This may be normal for first-time setup.")
 		}
 	}

@@ -14,7 +14,6 @@ export class DifyHandler implements ApiHandler {
 	private conversationId: string | null = null
 
 	constructor(options: DifyHandlerOptions) {
-		this.options = options
 		this.apiKey = options.difyApiKey || ""
 		this.baseUrl = options.difyBaseUrl || ""
 
