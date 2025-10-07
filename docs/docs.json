@@ -9,12 +9,12 @@
 		"dark": "#000000"
 	},
 	"logo": {
-		"light": "/assets/robot_panel_light.png",
-		"dark": "/assets/robot_panel_dark.png"
+		"light": "/assets/normie-icon.png",
+		"dark": "/assets/normie-icon.png"
 	},
 	"favicon": {
-		"light": "/assets/robot_panel_light.png",
-		"dark": "/assets/robot_panel_dark.png"
+		"light": "/assets/normie-icon.png",
+		"dark": "/assets/normie-icon.png"
 	},
 	"background": {
 		"color": {

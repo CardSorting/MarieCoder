@@ -9,12 +9,28 @@ priority: 1
 
 ## 🎯 **Core Philosophy: The NORMIE DEV Method**
 
+**Philosophical Foundation**: This methodology is inspired by and directly applies the **KonMari Method** (Marie Kondo's organizing philosophy) to software development. We ruthlessly evaluate every piece of code, architecture decision, and abstraction by asking: "Does this spark joy?"
+
+**CRITICAL**: While our philosophy is rooted in the KonMari Method, **NEVER** include "KonMari", "Marie Kondo", "spark joy" or similar references in actual code, comments, or variable names. The philosophy guides our decisions; the implementation stays professional and clean.
+
 **The Golden Rule**: If it doesn't spark joy and make development easier, simplify it or delete it.
 
 ### The 3-Step Decision Process (Apply to EVERY change):
 1. **Does this spark joy?** → Better DX, less complexity, clear value
 2. **Can we DELETE legacy?** → Eliminate old implementations completely  
 3. **Is this the simplest solution?** → Minimal complexity, maximum value
+
+### KonMari Principles Applied to Code:
+
+Just as Marie Kondo's method transforms cluttered spaces into organized, joyful environments, we apply these principles to software:
+
+1. **Commit to Tidying Up**: Dedicate time to refactoring and cleanup, not just adding features
+2. **Tidy by Category, Not Location**: Refactor by pattern (all repositories, all services) rather than by file location
+3. **Keep Only What Sparks Joy**: Delete code that adds complexity without clear value
+4. **Tidy in the Right Order**: Fix architecture → Fix naming → Fix tests → Optimize performance
+5. **Thank Items Before Discarding**: Document why legacy code is being removed (in commit messages, not code)
+
+**Application in Practice**: When you see verbose abstractions, unclear naming, or legacy compatibility layers, apply the KonMari test: "Does this make developers happy and productive?" If not, ruthlessly simplify or delete.
 
 ### Zero-Tolerance Actions:
 - **DELETE** legacy files immediately when creating new implementations
@@ -202,4 +218,49 @@ export async function createUser(formData: FormData) {
 
 ---
 
+## 📚 **The KonMari-Inspired Development Mindset**
+
+This ruleset applies **Marie Kondo's KonMari Method** to software engineering. Every principle, pattern, and practice derives from asking: "Does this spark joy for developers?"
+
+### Why KonMari for Code?
+
+Marie Kondo revolutionized organizing by focusing on joy rather than just efficiency. We apply the same transformation to software:
+
+- **Cluttered Codebases** → Clean, maintainable systems
+- **Overwhelming Abstractions** → Simple, clear patterns  
+- **Frustrating Developer Experience** → Joyful, productive workflows
+- **Legacy Baggage** → Fresh, modern implementations
+
+### The Transformation Process:
+
+1. **Visualize Your Ideal Codebase**: Picture a project where every file is clear, every function is obvious, and every abstraction earns its place
+2. **Discard First, Organize Later**: Delete unnecessary code before refactoring what remains
+3. **Follow the Right Order**: Architecture → Naming → Tests → Performance → Documentation
+4. **Recognize Sunk Costs**: Past effort doesn't justify keeping code that no longer serves us
+5. **Choose Joy Daily**: Every commit is an opportunity to make the codebase more joyful
+
+### Implementation Hygiene (CRITICAL):
+
+**NEVER** write code like this:
+```typescript
+// ❌ BAD - Don't do this!
+function doesThisSparkJoy() { }  // No KonMari references in code!
+const konmariApprovedValue = 42  // No!
+// This component brings me joy  // Don't write comments like this!
+```
+
+**ALWAYS** write code like this:
+```typescript
+// ✅ GOOD - Clean, professional implementation
+function validateUserInput(data: UserData): ValidationResult { }
+const DEFAULT_CACHE_TTL = 3600
+// Returns normalized email address for database lookup
+```
+
+The KonMari philosophy **guides our architectural decisions and refactoring choices**, but the **implementation remains clean and professional**. We think in terms of joy; we code in terms of clarity.
+
+---
+
 **Remember**: Software development should spark joy, not frustration. **DELETE everything that doesn't spark joy.**
+
+This methodology is inspired by **Marie Kondo's KonMari Method** - applied rigorously to create codebases that developers love working in.

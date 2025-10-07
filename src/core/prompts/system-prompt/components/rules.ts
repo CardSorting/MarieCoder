@@ -3,89 +3,64 @@ import { TemplateEngine } from "../templates/template_engine"
 import type { PromptVariant, SystemPromptContext } from "../types"
 
 /**
- * Core NORMIE DEV methodology - Ultra-refined for maximum clarity and context-awareness
+ * Core NORMIE DEV methodology - KonMari-inspired development principles
  */
-const CORE_METHODOLOGY_RULES = `## 🎯 Core Philosophy: The NORMIE DEV Method
+const CORE_METHODOLOGY_RULES = `## 🎯 The NORMIE DEV Method (KonMari-Inspired)
 
-**The Golden Rule**: If it doesn't spark joy and make development easier, simplify it or delete it.
+**Philosophical Foundation**: This methodology applies Marie Kondo's KonMari Method to software development.
+
+**The Golden Rule**: If it doesn't spark joy and make development easier, simplify it or DELETE it.
 
 ### The 3-Step Decision Process (Apply to EVERY change):
 1. **Does this spark joy?** → Better DX, less complexity, clear value
 2. **Can we DELETE legacy?** → Eliminate old implementations completely  
 3. **Is this the simplest solution?** → Minimal complexity, maximum value
 
-### Zero-Tolerance Actions:
+### KonMari Principles for Code:
+1. **Commit to Tidying**: Dedicate time to refactoring, not just features
+2. **Tidy by Category**: Refactor by pattern (all repositories, all services)
+3. **Keep Only What Sparks Joy**: DELETE code without clear value
+4. **Tidy in Order**: Architecture → Naming → Tests → Performance
+5. **Thank Before Discarding**: Document why (in commits, not code)
+
+### Zero-Tolerance DELETE Actions:
 - **DELETE** legacy files immediately when creating new implementations
 - **DELETE** backward compatibility layers and wrappers
 - **DELETE** complex abstractions that don't add clear value
 
 ### Composition Over Creation:
-- **USE** existing excellent tools (Next.js, Kysely, SQLite) instead of recreating functionality
-- **COMPOSE** solutions from proven patterns instead of creating new frameworks
+- **USE** existing excellent tools instead of recreating functionality
+- **COMPOSE** solutions from proven patterns
 
 ### Naming Conventions - Zero Mental Load:
-- **SELF-EXPLANATORY NAMES**: Every file, function, and variable must clearly describe what it does
-- **FORBIDDEN**: Cryptic abbreviations, unclear names, or names that require mental overhead
-- **REQUIRED**: Descriptive names that spark joy through instant understanding
+- **SELF-EXPLANATORY NAMES**: Every file, function, variable clearly describes what it does
+- **FORBIDDEN**: Cryptic abbreviations, unclear names
+- **REQUIRED**: Descriptive names (snake_case for files: \`user_authentication.ts\`)
+- **Verbs**: \`manager\`, \`builder\`, \`optimizer\`, \`validator\`
+- **Nouns**: \`prompt\`, \`variant\`, \`template\`, \`tool\`
 
-#### File Naming Standards:
-- **snake_case** for multi-word files: \`user_authentication.ts\`, \`database_connection.ts\`
-- **Descriptive verbs**: \`manager\`, \`builder\`, \`optimizer\`, \`organizer\`, \`validator\`
-- **Clear nouns**: \`prompt\`, \`variant\`, \`template\`, \`tool\`, \`response\`
-- **Examples**:
-  - ✅ \`prompt_manager.ts\` - Manages prompts
-  - ✅ \`response_formatters.ts\` - Formats responses
-  - ✅ \`context_summarization.ts\` - Summarizes context
-  - ❌ \`PromptRegistry.ts\` - Unclear purpose
-  - ❌ \`loadMcpDocumentation.ts\` - Too verbose and unclear
-
-## 🔧 Type Safety & Code Quality Standards
+## 🔧 Quality & Type Safety Standards
 
 ### MANDATORY Requirements:
-- **FORBIDDEN**: \`any\` types - use proper typing or delete the code
+- **FORBIDDEN**: \`any\` types - use proper typing or DELETE the code
 - **REQUIRED**: Custom error classes with actionable messages
 - **REQUIRED**: Input validation before all database operations
-- **REQUIRED**: Unit tests for all public methods (minimum 80% coverage)
+- **REQUIRED**: Unit tests for all public methods (80%+ coverage)
 - **REQUIRED**: JSDoc comments for all public APIs
 
-## 🏗️ Database & Architecture Patterns
+## 🏗️ Architecture & Performance Standards
 
-### MANDATORY Patterns:
-- **EXPOSE** Kysely's query builders directly (\`selectFrom\`, \`insertInto\`, \`updateTable\`, \`deleteFrom\`)
-- **USE** repository pattern for business logic, Kysely for queries
-- **FOLLOW** Django-style folder organization with clear separation of concerns
-- **IMPLEMENT** service layer for complex business logic
-- **CONFIGURE** SQLite with WAL mode for production performance
+### Database Patterns:
+- **EXPOSE** Kysely query builders directly (\`selectFrom\`, \`insertInto\`)
+- **USE** repository pattern for business logic
+- **FOLLOW** Django-style folder organization
+- **CONFIGURE** SQLite with WAL mode for production
 
-## ⚡ Next.js & Performance Standards
-
-### MANDATORY Standards:
-- **USE** App Router exclusively (delete Pages Router patterns)
+### Next.js Patterns:
+- **USE** App Router exclusively (DELETE Pages Router)
 - **PREFER** Server Components over Client Components
-- **IMPLEMENT** proper error boundaries and loading states
-- **CONFIGURE** authentication with NextAuth v5
-- **OPTIMIZE** images with Next.js Image component
-- **ENSURE** < 100ms page loads and < 50ms query times`
-
-/**
- * Context-aware user request strategy - Simplified and focused
- */
-const USER_REQUEST_STRATEGY_RULES = `## 🎯 User Request Strategy
-
-### Core Principle: "Explicitly, Precisely, Customized"
-**CRITICAL**: Every response must be explicitly tailored, precisely targeted, and customized to the user's specific requests and needs.
-
-### Implementation Flow:
-1. **Parse Intent**: Extract the exact user intent from their request
-2. **Map Context**: Understand their environment, tools, and constraints
-3. **Build Precisely**: Create exactly what was requested, nothing more, nothing less
-4. **Customize Delivery**: Tailor to their skill level and workflow
-
-### Quality Standards:
-- **Targeted Solutions**: Build exactly what was requested
-- **Context-Aware**: Adapt to their specific environment and preferences
-- **Production-Ready**: Ensure solution meets production standards
-- **Integration-Ready**: Ensure seamless integration with existing systems`
+- **IMPLEMENT** error boundaries and loading states
+- **ENSURE** < 100ms page loads, < 50ms query times`
 
 /**
  * Technical implementation rules - Consolidated and streamlined
@@ -122,71 +97,35 @@ const TECHNICAL_IMPLEMENTATION_RULES = `## 🛠️ Technical Implementation
 - MCP operations should be used one at a time, similar to other tool usage. Wait for confirmation of success before proceeding with additional operations.`
 
 /**
- * Success metrics and implementation flow - Context-aware and measurable
+ * Context-aware implementation patterns - Streamlined decision framework
  */
-const SUCCESS_METRICS_RULES = `## 🎯 Success Metrics & Implementation Flow
+const IMPLEMENTATION_PATTERNS_RULES = `## 🎯 Context-Aware Implementation Patterns
 
-### Developer Joy Indicators:
-- 🎉 Setup completed in under 5 minutes
-- 🎉 Zero complex configuration required
-- 🎉 Everything works out of the box
-- 🎉 Code is clean and maintainable
-- 🎉 Production deployment is straightforward
+### For New Features:
+1. Apply 3-step decision process (joy, DELETE legacy, simplest)
+2. Plan with standards (type safety, architecture, performance)
+3. Implement with mandatory requirements
+4. Validate quality gates
 
-### Context-Aware Implementation:
+### For Refactoring:
+1. Identify what to DELETE
+2. Plan what sparks joy
+3. Implement cleanly with all patterns
+4. DELETE old code (no compatibility layers)
 
-#### For New Features:
-1. **Start with Philosophy**: Apply the 3-step decision process
-2. **Plan with Standards**: Type safety, architecture, performance
-3. **Implement**: Follow all mandatory requirements
-4. **Validate**: Check all quality gates
+### For Bug Fixes:
+1. Find root cause with type safety
+2. Fix comprehensively (not just symptoms)
+3. Test thoroughly (80%+ coverage)
+4. Update JSDoc comments
 
-#### For Refactoring:
-1. **Identify legacy**: What can we DELETE?
-2. **Plan replacement**: What sparks joy?
-3. **Implement cleanly**: Follow all patterns
-4. **Delete old code**: No compatibility layers
-
-#### For Bug Fixes:
-1. **Root cause**: Apply type safety and error handling
-2. **Fix comprehensively**: Don't just patch symptoms
-3. **Test thoroughly**: Ensure 80% coverage
-4. **Document**: Update JSDoc comments
-
-### Quality Gates (Measurable):
+### Quality Gates (MANDATORY):
 - All TypeScript errors resolved
-- Minimum 80% test coverage
+- 80%+ test coverage
 - No linting errors
-- Performance benchmarks met (< 100ms page loads, < 50ms queries)
-- Legacy code eliminated
-- All patterns applied consistently
-
-### Implementation Checklist:
-
-#### Pre-Development:
-- [ ] **Philosophy**: Applied 3-step decision process (spark joy, delete legacy, simplest solution)
-- [ ] **Naming**: Planned self-explanatory names for all files, functions, and variables
-- [ ] **Type Safety**: Planned error handling and input validation
-- [ ] **Architecture**: Planned database and folder organization
-- [ ] **Performance**: Planned Next.js patterns and performance targets
-
-#### During Development:
-- [ ] **Stay Focused**: Build only what was requested, nothing more
-- [ ] **Follow Standards**: Apply all mandatory requirements consistently
-- [ ] **Use Self-Explanatory Names**: All files, functions, and variables clearly describe their purpose
-- [ ] **Maintain Quality**: Ensure production-ready quality for their use case
-- [ ] **Document Appropriately**: Provide documentation that matches their context
-
-#### Post-Development:
-- [ ] **Verify Requirements**: Confirm all stated requirements are met
-- [ ] **Test Integration**: Ensure seamless integration with their existing systems
-- [ ] **Validate Standards**: Ensure all patterns have been followed
-- [ ] **Validate Naming**: All names are self-explanatory and spark joy
-- [ ] **Gather Feedback**: Ask for feedback to improve future customization
-
-**Remember**: Software development should spark joy, not frustration. **DELETE everything that doesn't spark joy.**
-
-**The Golden Rule**: **If it doesn't spark joy and make life easier, simplify it or delete it.**`
+- Performance benchmarks met (< 100ms pages, < 50ms queries)
+- Legacy code DELETED
+- Self-explanatory names for all files/functions/variables`
 
 /**
  * Context-specific rules - Simplified and focused
@@ -223,21 +162,18 @@ export async function getRulesSection(variant: PromptVariant, context: SystemPro
 		YOLO_MODE_RULES: yoloModeRules,
 		YOLO_MODE_TERMINAL_RULES: yoloModeTerminalRules,
 		CORE_METHODOLOGY_RULES: CORE_METHODOLOGY_RULES,
-		USER_REQUEST_STRATEGY_RULES: USER_REQUEST_STRATEGY_RULES,
 		TECHNICAL_IMPLEMENTATION_RULES: TECHNICAL_IMPLEMENTATION_RULES,
-		SUCCESS_METRICS_RULES: SUCCESS_METRICS_RULES,
+		IMPLEMENTATION_PATTERNS_RULES: IMPLEMENTATION_PATTERNS_RULES,
 	})
 }
 
 /**
- * Rules template - Single template instead of complex orchestration
+ * Rules template - Unified and streamlined
  */
 const RULES_TEMPLATE = `RULES
 
 {{CORE_METHODOLOGY_RULES}}
 
-{{USER_REQUEST_STRATEGY_RULES}}
-
 {{TECHNICAL_IMPLEMENTATION_RULES}}
 
-{{SUCCESS_METRICS_RULES}}`
+{{IMPLEMENTATION_PATTERNS_RULES}}`

@@ -3,7 +3,7 @@
 	"displayName": "NormieDev",
 	"description": "AI coding agent for the rest of us. Built on Cline, rebuilt for Normies. Create files, run commands, browse the web - all with your permission every step of the way.",
 	"version": "3.32.6",
-	"icon": "assets/icons/icon.png",
+	"icon": "assets/icons/normie-icon.png",
 	"engines": {
 		"vscode": "^1.84.0"
 	},
@@ -106,7 +106,7 @@
 				{
 					"id": "claude-dev-ActivityBar",
 					"title": "NormieDev",
-					"icon": "assets/icons/icon.svg"
+					"icon": "assets/icons/normie-icon.svg"
 				}
 			]
 		},
@@ -116,7 +116,7 @@
 					"type": "webview",
 					"id": "claude-dev.SidebarProvider",
 					"name": "",
-					"icon": "assets/icons/icon.svg"
+					"icon": "assets/icons/normie-icon.svg"
 				}
 			]
 		},
@@ -172,8 +172,8 @@
 				"title": "Generate Commit Message with NormieDev",
 				"category": "NormieDev",
 				"icon": {
-					"light": "assets/icons/robot_panel_light.png",
-					"dark": "assets/icons/robot_panel_dark.png"
+					"light": "assets/icons/normie-icon.svg",
+					"dark": "assets/icons/normie-icon.svg"
 				}
 			},
 			{
