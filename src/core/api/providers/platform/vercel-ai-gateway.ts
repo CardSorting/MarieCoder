@@ -74,11 +74,21 @@ export class VercelAIGatewayProvider extends BaseProvider {
 	@withRetry()
 	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
 		const client = this.ensureClient()
-		const modelId = this.getModel().id
+		const model = this.getModel()
 
 		try {
 			// Use the Vercel AI Gateway stream transformer
-			yield* createVercelAIGatewayStream(client, modelId, systemPrompt, messages)
+			const stream = await createVercelAIGatewayStream(client, systemPrompt, messages, model)
+
+			for await (const chunk of stream) {
+				const content = chunk.choices[0]?.delta?.content
+				if (content) {
+					yield {
+						type: "text",
+						text: content,
+					}
+				}
+			}
 		} catch (error) {
 			throw ErrorService.parseError(error, "vercel-ai-gateway")
 		}

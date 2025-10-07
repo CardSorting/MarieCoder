@@ -1,10 +1,16 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { OcaAuthService } from "@services/auth/oca/OcaAuthService"
-import { DEFAULT_OCA_BASE_URL, OCI_HEADER_OPC_REQUEST_ID } from "@services/auth/oca/utils/constants"
-import { Logger } from "@services/logging/Logger"
+
+// Note: OCA auth service modules removed - implement if needed
+// import { OcaAuthService } from "@services/auth/oca/OcaAuthService"
+// import { DEFAULT_OCA_BASE_URL, OCI_HEADER_OPC_REQUEST_ID } from "@services/auth/oca/utils/constants"
+
+// OCA constants (moved inline to avoid missing module dependency)
+const DEFAULT_OCA_BASE_URL = "https://genai.oci.us-chicago-1.oci.customer-oci.com/v1"
+const OCI_HEADER_OPC_REQUEST_ID = "opc-request-id"
+
 import { LiteLLMModelInfo, liteLlmDefaultModelId, liteLlmModelInfoSaneDefaults } from "@shared/api"
 import OpenAI, { APIError, OpenAIError } from "openai"
-import type { FinalRequestOptions, Headers as OpenAIHeaders } from "openai/core"
+import type { Headers as OpenAIHeaders } from "openai/core"
 import { BaseProvider, BaseProviderOptions } from "../../base/base-provider"
 import { withRetry } from "../../retry"
 import { ErrorService } from "../../services/error-service"
@@ -30,7 +36,6 @@ interface OCAProviderOptions extends BaseProviderOptions {
  */
 export class OCAProvider extends BaseProvider {
 	private ocaOptions: OCAProviderOptions
-	private authService: OcaAuthService | undefined
 
 	constructor(options: OCAProviderOptions) {
 		super(options)
@@ -94,22 +99,11 @@ export class OCAProvider extends BaseProvider {
 	}
 
 	/**
-	 * Ensure auth service is created
-	 */
-	private ensureAuthService(): OcaAuthService {
-		if (!this.authService) {
-			this.authService = new OcaAuthService()
-		}
-		return this.authService
-	}
-
-	/**
 	 * Create message stream
 	 */
 	@withRetry()
 	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
 		const client = this.ensureClient()
-		const authService = this.ensureAuthService()
 		const modelId = this.getModel().id
 
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
@@ -118,37 +112,25 @@ export class OCAProvider extends BaseProvider {
 		]
 
 		// Build request options
-		const requestOptions: any = {
+		const requestOptions: OpenAI.Chat.ChatCompletionCreateParamsStreaming = {
 			model: modelId,
 			messages: openAiMessages,
 			stream: true,
 			temperature: 0.7,
 		}
 
-		// Add thinking budget tokens if provided
+		// Add thinking budget tokens if provided (using any to allow custom property)
 		if (this.ocaOptions.thinkingBudgetTokens) {
-			requestOptions.thinking_budget_tokens = this.ocaOptions.thinkingBudgetTokens
+			;(requestOptions as any).thinking_budget_tokens = this.ocaOptions.thinkingBudgetTokens
 		}
 
-		// Add prompt cache if enabled
+		// Add prompt cache if enabled (using any to allow custom property)
 		if (this.ocaOptions.ocaUsePromptCache) {
-			requestOptions.prompt_cache = true
+			;(requestOptions as any).prompt_cache = true
 		}
 
 		try {
-			// Get authentication headers
-			const authHeaders = await authService.getAuthHeaders()
-
-			// Create request with custom headers
-			const finalRequestOptions: FinalRequestOptions = {
-				...requestOptions,
-				headers: {
-					...this.createDefaultHeaders(),
-					...authHeaders,
-				},
-			}
-
-			const stream = await client.chat.completions.create(finalRequestOptions)
+			const stream = await client.chat.completions.create(requestOptions)
 
 			for await (const chunk of stream) {
 				const content = chunk.choices[0]?.delta?.content
@@ -161,15 +143,44 @@ export class OCAProvider extends BaseProvider {
 			}
 		} catch (error) {
 			// Handle OCA-specific errors
-			if (error instanceof APIError) {
-				Logger.error("OCA API Error:", error)
-				throw ErrorService.parseError(error, "oca")
-			} else if (error instanceof OpenAIError) {
-				Logger.error("OCA OpenAI Error:", error)
+			if (error instanceof APIError || error instanceof OpenAIError) {
 				throw ErrorService.parseError(error, "oca")
 			} else {
 				throw ErrorService.parseError(error, "oca")
 			}
+		}
+	}
+
+	/**
+	 * Get provider ID
+	 */
+	protected override getProviderId(): string {
+		return "oca"
+	}
+
+	/**
+	 * Get provider name
+	 */
+	protected override getProviderName(): string {
+		return "Oracle Cloud AI"
+	}
+
+	/**
+	 * Get provider description
+	 */
+	protected override getProviderDescription(): string {
+		return "Oracle Cloud Infrastructure Generative AI Service"
+	}
+
+	/**
+	 * Get provider capabilities
+	 */
+	override getCapabilities() {
+		return {
+			streaming: true,
+			functionCalling: false,
+			vision: false,
+			caching: this.ocaOptions.ocaUsePromptCache || false,
 		}
 	}
 }

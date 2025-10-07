@@ -1,6 +1,6 @@
 import { ApiConfiguration } from "@shared/api"
 import { Mode } from "@shared/storage/types"
-import { ApiHandler, CommonApiHandlerOptions } from "../index"
+import { ApiHandler, ApiHandlerOptions } from "../index"
 
 /**
  * Provider configuration interface for standardized provider setup
@@ -20,7 +20,7 @@ export interface ProviderConfig {
  * Provider factory interface for creating handlers with proper configuration
  */
 export interface ProviderFactory {
-	createHandler(providerId: string, configuration: ApiConfiguration, mode: Mode, options: CommonApiHandlerOptions): ApiHandler
+	createHandler(providerId: string, configuration: ApiConfiguration, mode: Mode, options: ApiHandlerOptions): ApiHandler
 	getSupportedProviders(): string[]
 	validateConfiguration(providerId: string, configuration: ApiConfiguration): boolean
 }
@@ -70,7 +70,7 @@ export class ProviderRegistry implements ProviderFactory {
 	/**
 	 * Create a handler for the specified provider
 	 */
-	createHandler(providerId: string, configuration: ApiConfiguration, mode: Mode, options: CommonApiHandlerOptions): ApiHandler {
+	createHandler(providerId: string, configuration: ApiConfiguration, mode: Mode, options: ApiHandlerOptions): ApiHandler {
 		const provider = this.providers.get(providerId)
 		if (!provider) {
 			throw new Error(`Unknown provider: ${providerId}`)
@@ -120,7 +120,7 @@ export class ProviderRegistry implements ProviderFactory {
 		providerId: string,
 		configuration: ApiConfiguration,
 		mode: Mode,
-		commonOptions: CommonApiHandlerOptions,
+		commonOptions: ApiHandlerOptions,
 	): any {
 		const provider = this.providers.get(providerId)!
 		const options: any = { ...commonOptions }

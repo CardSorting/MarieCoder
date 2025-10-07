@@ -1,6 +1,6 @@
 import { ApiConfiguration } from "@shared/api"
 import { Mode } from "@shared/storage/types"
-import { ApiHandler, CommonApiHandlerOptions } from "../index"
+import type { ApiHandler, ApiHandlerOptions } from "../index"
 import {
 	EnhancedProviderConfig,
 	ProviderCapabilities,
@@ -235,7 +235,7 @@ export class EnhancedProviderRegistry {
 	/**
 	 * Create a handler for the specified provider
 	 */
-	createHandler(providerId: string, configuration: ApiConfiguration, mode: Mode, options: CommonApiHandlerOptions): ApiHandler {
+	createHandler(providerId: string, configuration: ApiConfiguration, mode: Mode, options: ApiHandlerOptions): ApiHandler {
 		const config = this.providers.get(providerId)
 		if (!config) {
 			throw new Error(`Unknown provider: ${providerId}`)
@@ -488,7 +488,7 @@ export class EnhancedProviderRegistry {
 		_config: EnhancedProviderConfig,
 		configuration: Partial<ApiConfiguration>,
 		_mode: Mode,
-		commonOptions: CommonApiHandlerOptions,
+		commonOptions: ApiHandlerOptions,
 	): any {
 		const options: any = { ...commonOptions }
 

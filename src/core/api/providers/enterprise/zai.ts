@@ -9,7 +9,10 @@ import {
 	mainlandZAiModels,
 } from "@shared/api"
 import OpenAI from "openai"
-import { version as extensionVersion } from "../../../../package.json"
+
+// Extension version - update manually or use alternative method
+const extensionVersion = "1.0.0"
+
 import { BaseProvider, BaseProviderOptions } from "../../base/base-provider"
 import { withRetry } from "../../retry"
 import { ErrorService } from "../../services/error-service"
@@ -132,5 +135,26 @@ export class ZAIProvider extends BaseProvider {
 		} catch (error) {
 			throw ErrorService.parseError(error, "zai")
 		}
+	}
+
+	/**
+	 * Get provider ID
+	 */
+	protected override getProviderId(): string {
+		return "zai"
+	}
+
+	/**
+	 * Get provider name
+	 */
+	protected override getProviderName(): string {
+		return "ZAI"
+	}
+
+	/**
+	 * Get provider description
+	 */
+	protected override getProviderDescription(): string {
+		return "ZAI AI Service"
 	}
 }

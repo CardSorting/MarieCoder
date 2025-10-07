@@ -1,6 +1,6 @@
 import { ApiConfiguration } from "@shared/api"
 import { Mode } from "@shared/storage/types"
-import { ApiHandler, CommonApiHandlerOptions } from "../index"
+import { ApiHandler, ApiHandlerOptions } from "../index"
 import { providerRegistry } from "../registry/provider-registry"
 import { ConfigurationService } from "./configuration-service"
 import { ErrorService } from "./error-service"
@@ -14,7 +14,7 @@ export class ProviderFactoryService {
 	/**
 	 * Create API handler for specified provider and mode
 	 */
-	static createHandler(configuration: ApiConfiguration, mode: Mode, options: CommonApiHandlerOptions = {}): ApiHandler {
+	static createHandler(configuration: ApiConfiguration, mode: Mode, options: ApiHandlerOptions = {}): ApiHandler {
 		// Extract mode-specific configuration first (needed in catch block)
 		const normalizedConfig = ConfigurationService.normalizeConfiguration(configuration)
 		const modeConfig = ConfigurationService.extractModeConfiguration(normalizedConfig, mode)
@@ -80,7 +80,7 @@ export class ProviderFactoryService {
 	static createHandlerWithFallback(
 		configuration: ApiConfiguration,
 		mode: Mode,
-		options: CommonApiHandlerOptions = {},
+		options: ApiHandlerOptions = {},
 		fallbackProvider: string = "anthropic",
 	): ApiHandler {
 		try {
@@ -104,7 +104,7 @@ export class ProviderFactoryService {
 	static async createHandlerWithRetry(
 		configuration: ApiConfiguration,
 		mode: Mode,
-		options: CommonApiHandlerOptions = {},
+		options: ApiHandlerOptions = {},
 		maxRetries: number = 3,
 	): Promise<ApiHandler> {
 		let lastError: Error | undefined
@@ -149,11 +149,7 @@ export class ProviderFactoryService {
 	/**
 	 * Create handler for multiple providers (for load balancing or failover)
 	 */
-	static createMultipleHandlers(
-		configurations: ApiConfiguration[],
-		mode: Mode,
-		options: CommonApiHandlerOptions = {},
-	): ApiHandler[] {
+	static createMultipleHandlers(configurations: ApiConfiguration[], mode: Mode, options: ApiHandlerOptions = {}): ApiHandler[] {
 		return configurations
 			.map((config) => {
 				try {

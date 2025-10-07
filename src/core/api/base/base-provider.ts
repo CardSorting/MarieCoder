@@ -1,11 +1,12 @@
 import { ModelInfo } from "@shared/api"
+import { ApiHandler, ApiHandlerModel, ApiHandlerOptions } from "../index"
+import { ProviderCapabilities, ProviderCategory, ProviderMetadata, ProviderStatus } from "../registry/provider-metadata"
 import { ApiStream } from "../transform/stream"
-import { ApiHandler, ApiHandlerModel, CommonApiHandlerOptions } from "../types"
 
 /**
  * Base configuration interface for all providers
  */
-export interface BaseProviderOptions extends CommonApiHandlerOptions {
+export interface BaseProviderOptions extends ApiHandlerOptions {
 	apiModelId?: string
 	requestTimeoutMs?: number
 }
@@ -39,12 +40,72 @@ export abstract class BaseProvider implements ApiHandler {
 	abstract createMessage(systemPrompt: string, messages: any[]): ApiStream
 
 	/**
+	 * Get provider metadata - override to customize
+	 */
+	getProviderMetadata(): ProviderMetadata {
+		return {
+			providerId: this.getProviderId(),
+			category: ProviderCategory.AI,
+			status: ProviderStatus.ACTIVE,
+			documentation: {
+				name: this.getProviderName(),
+				description: this.getProviderDescription(),
+			},
+			capabilities: this.getCapabilities(),
+			configurationSchema: {
+				requiredOptions: {},
+				optionalOptions: {},
+			},
+			modeSupport: {
+				plan: true,
+				act: true,
+			},
+			lastUpdated: new Date(),
+		}
+	}
+
+	/**
+	 * Get provider capabilities - override to customize
+	 */
+	getCapabilities(): ProviderCapabilities {
+		return {
+			streaming: true,
+			functionCalling: false,
+			vision: false,
+			caching: false,
+		}
+	}
+
+	/**
+	 * Get provider ID - override to customize
+	 */
+	protected getProviderId(): string {
+		return "unknown"
+	}
+
+	/**
+	 * Get provider name - override to customize
+	 */
+	protected getProviderName(): string {
+		return "Unknown Provider"
+	}
+
+	/**
+	 * Get provider description - override to customize
+	 */
+	protected getProviderDescription(): string {
+		return "AI Provider"
+	}
+
+	/**
 	 * Get the model handler
 	 */
 	getModel(): ApiHandlerModel {
 		return {
 			id: this.options.apiModelId || this.getDefaultModelId(),
 			info: this.getModelInfo(),
+			providerMetadata: this.getProviderMetadata(),
+			capabilities: this.getCapabilities(),
 		}
 	}
 

@@ -82,8 +82,9 @@ export class DifyProvider extends BaseProvider {
 	protected override getModelInfo(): ModelInfo {
 		return {
 			maxTokens: 4000,
-			inputCostPerToken: 0.0001,
-			outputCostPerToken: 0.0002,
+			supportsPromptCache: false,
+			inputPrice: 0.1, // $0.1 per million tokens (example)
+			outputPrice: 0.2, // $0.2 per million tokens (example)
 		}
 	}
 
