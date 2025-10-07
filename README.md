@@ -14,9 +14,7 @@ NormieDev is a community fork of [Cline](https://github.com/cline/cline), the op
 
 ### Why "NormieDev"?
 
-The name celebrates building for everyone, not just the elite. "Normie" isn't self-deprecating - it's inclusive. We believe powerful development tools shouldn't require years of experience or deep technical knowledge to be useful.
-
-Whether you're shipping your first app or your thousandth, whether you work at a startup or a Fortune 500, whether you code every day or occasionally - you're welcome here. No gatekeeping. No elitism. Just great tools that work.
+Short for "Normal Dev" - because this is AI coding for normal developers. Everyone. No special club. Just a fun name that says what it is.
 
 ## What It Does
 
