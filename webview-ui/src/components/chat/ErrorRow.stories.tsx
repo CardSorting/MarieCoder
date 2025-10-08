@@ -18,7 +18,6 @@ const createMockExtensionState = (overrides: any = {}) => ({
 	version: "1.0.0",
 	clineMessages: [],
 	taskHistory: [],
-	shouldShowAnnouncement: false,
 	...overrides,
 })
 

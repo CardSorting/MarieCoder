@@ -49,15 +49,12 @@ export interface ExtensionStateContextType extends ExtensionState {
 	mcpTab?: McpViewTab
 	showSettings: boolean
 	showHistory: boolean
-	showAnnouncement: boolean
 	showChatModelSelector: boolean
 	expandTaskHeader: boolean
 
 	// Setters
 	setDictationSettings: (value: DictationSettings) => void
-	setShowAnnouncement: (value: boolean) => void
 	setShowChatModelSelector: (value: boolean) => void
-	setShouldShowAnnouncement: (value: boolean) => void
 	setMcpServers: (value: McpServer[]) => void
 	setRequestyModels: (value: Record<string, ModelInfo>) => void
 	setGroqModels: (value: Record<string, ModelInfo>) => void
@@ -91,7 +88,6 @@ export interface ExtensionStateContextType extends ExtensionState {
 	// Hide functions
 	hideSettings: () => void
 	hideHistory: () => void
-	hideAnnouncement: () => void
 	hideChatModelSelector: () => void
 	closeMcpView: () => void
 
@@ -109,7 +105,6 @@ export const ExtensionStateContextProvider: React.FC<{
 	const [mcpTab, setMcpTab] = useState<McpViewTab | undefined>(undefined)
 	const [showSettings, setShowSettings] = useState(false)
 	const [showHistory, setShowHistory] = useState(false)
-	const [showAnnouncement, setShowAnnouncement] = useState(false)
 	const [showChatModelSelector, setShowChatModelSelector] = useState(false)
 
 	// Helper for MCP view
@@ -121,7 +116,6 @@ export const ExtensionStateContextProvider: React.FC<{
 	// Hide functions
 	const hideSettings = useCallback(() => setShowSettings(false), [setShowSettings])
 	const hideHistory = useCallback(() => setShowHistory(false), [setShowHistory])
-	const hideAnnouncement = useCallback(() => setShowAnnouncement(false), [setShowAnnouncement])
 	const hideChatModelSelector = useCallback(() => setShowChatModelSelector(false), [setShowChatModelSelector])
 
 	// Navigation functions
@@ -159,7 +153,6 @@ export const ExtensionStateContextProvider: React.FC<{
 		version: "",
 		clineMessages: [],
 		taskHistory: [],
-		shouldShowAnnouncement: false,
 		autoApprovalSettings: DEFAULT_AUTO_APPROVAL_SETTINGS,
 		browserSettings: DEFAULT_BROWSER_SETTINGS,
 		dictationSettings: DEFAULT_DICTATION_SETTINGS,
@@ -593,7 +586,6 @@ export const ExtensionStateContextProvider: React.FC<{
 		mcpTab,
 		showSettings,
 		showHistory,
-		showAnnouncement,
 		showChatModelSelector,
 		globalClineRulesToggles: state.globalClineRulesToggles || {},
 		localClineRulesToggles: state.localClineRulesToggles || {},
@@ -613,15 +605,8 @@ export const ExtensionStateContextProvider: React.FC<{
 		// Hide functions
 		hideSettings,
 		hideHistory,
-		hideAnnouncement,
-		setShowAnnouncement,
 		hideChatModelSelector,
 		setShowChatModelSelector,
-		setShouldShowAnnouncement: (value) =>
-			setState((prevState) => ({
-				...prevState,
-				shouldShowAnnouncement: value,
-			})),
 		setMcpServers: (mcpServers: McpServer[]) => setMcpServers(mcpServers),
 		setRequestyModels: (models: Record<string, ModelInfo>) => setRequestyModels(models),
 		setGroqModels: (models: Record<string, ModelInfo>) => setGroqModels(models),

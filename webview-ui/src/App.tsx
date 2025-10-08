@@ -1,45 +1,22 @@
-import type { Boolean, EmptyRequest } from "@shared/proto/cline/common"
-import { useEffect } from "react"
 import ChatView from "./components/chat/ChatView"
 import HistoryView from "./components/history/HistoryView"
 import McpView from "./components/mcp/configuration/McpConfigurationView"
 import SettingsView from "./components/settings/SettingsView"
 import { useExtensionState } from "./context/ExtensionStateContext"
 import { Providers } from "./Providers"
-import { UiServiceClient } from "./services/grpc-client"
 
 const AppContent = () => {
 	const {
 		didHydrateState,
-		shouldShowAnnouncement,
 		showMcp,
 		mcpTab,
 		showSettings,
 		showHistory,
-		showAnnouncement,
-		setShowAnnouncement,
-		setShouldShowAnnouncement,
 		closeMcpView,
 		navigateToHistory,
 		hideSettings,
 		hideHistory,
-		hideAnnouncement,
 	} = useExtensionState()
-
-	useEffect(() => {
-		if (shouldShowAnnouncement) {
-			setShowAnnouncement(true)
-
-			// Use the gRPC client instead of direct WebviewMessage
-			UiServiceClient.onDidShowAnnouncement({} as EmptyRequest)
-				.then((response: Boolean) => {
-					setShouldShowAnnouncement(response.value)
-				})
-				.catch((error) => {
-					console.error("Failed to acknowledge announcement:", error)
-				})
-		}
-	}, [shouldShowAnnouncement, setShouldShowAnnouncement, setShowAnnouncement])
 
 	if (!didHydrateState) {
 		return null
@@ -51,12 +28,7 @@ const AppContent = () => {
 			{showHistory && <HistoryView onDone={hideHistory} />}
 			{showMcp && <McpView initialTab={mcpTab} onDone={closeMcpView} />}
 			{/* Do not conditionally load ChatView, it's expensive and there's state we don't want to lose (user input, disableInput, askResponse promise, etc.) */}
-			<ChatView
-				hideAnnouncement={hideAnnouncement}
-				isHidden={showSettings || showHistory || showMcp}
-				showAnnouncement={showAnnouncement}
-				showHistoryView={navigateToHistory}
-			/>
+			<ChatView isHidden={showSettings || showHistory || showMcp} showHistoryView={navigateToHistory} />
 		</div>
 	)
 }

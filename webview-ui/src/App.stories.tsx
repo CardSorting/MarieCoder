@@ -12,7 +12,7 @@ import ChatView from "./components/chat/ChatView"
 const MockApp = () => {
 	return (
 		<HeroUIProvider>
-			<ChatView hideAnnouncement={() => {}} isHidden={false} showAnnouncement={false} showHistoryView={() => {}} />
+			<ChatView isHidden={false} showHistoryView={() => {}} />
 		</HeroUIProvider>
 	)
 }
