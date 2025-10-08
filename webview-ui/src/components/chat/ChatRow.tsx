@@ -16,11 +16,11 @@ import { useSize } from "react-use"
 import styled from "styled-components"
 import { OptionsButtons } from "@/components/chat/OptionsButtons"
 import TaskFeedbackButtons from "@/components/chat/TaskFeedbackButtons"
+import { Button } from "@/components/common/button"
 import { CheckmarkControl } from "@/components/common/CheckmarkControl"
 import CodeBlock, { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import { WithCopyButton } from "@/components/common/CopyButton"
 import MarkdownBlock from "@/components/common/MarkdownBlock"
-import SuccessButton from "@/components/common/SuccessButton"
 import McpResponseDisplay from "@/components/mcp/chat-display/McpResponseDisplay"
 import McpResourceRow from "@/components/mcp/configuration/tabs/installed/server-row/McpResourceRow"
 import McpToolRow from "@/components/mcp/configuration/tabs/installed/server-row/McpToolRow"
@@ -1158,8 +1158,9 @@ export const ChatRowContent = memo(
 								</WithCopyButton>
 								{message.partial !== true && hasChanges && (
 									<div style={{ paddingTop: 17 }}>
-										<SuccessButton
+										<Button
 											disabled={seeNewChangesDisabled}
+											icon={<i className="codicon codicon-new-file" />}
 											onClick={() => {
 												setSeeNewChangesDisabled(true)
 												TaskServiceClient.taskCompletionViewChanges(
@@ -1173,10 +1174,10 @@ export const ChatRowContent = memo(
 											style={{
 												cursor: seeNewChangesDisabled ? "wait" : "pointer",
 												width: "100%",
-											}}>
-											<i className="codicon codicon-new-file" style={{ marginRight: 6 }} />
+											}}
+											variant="success">
 											See new changes
-										</SuccessButton>
+										</Button>
 									</div>
 								)}
 							</>
@@ -1297,9 +1298,9 @@ export const ChatRowContent = memo(
 									</WithCopyButton>
 									{message.partial !== true && hasChanges && (
 										<div style={{ marginTop: 15 }}>
-											<SuccessButton
-												appearance="secondary"
+											<Button
 												disabled={seeNewChangesDisabled}
+												icon={<i className="codicon codicon-new-file" />}
 												onClick={() => {
 													setSeeNewChangesDisabled(true)
 													TaskServiceClient.taskCompletionViewChanges(
@@ -1309,16 +1310,13 @@ export const ChatRowContent = memo(
 													).catch((err) =>
 														console.error("Failed to show task completion view changes:", err),
 													)
-												}}>
-												<i
-													className="codicon codicon-new-file"
-													style={{
-														marginRight: 6,
-														cursor: seeNewChangesDisabled ? "wait" : "pointer",
-													}}
-												/>
+												}}
+												style={{
+													cursor: seeNewChangesDisabled ? "wait" : "pointer",
+												}}
+												variant="success">
 												See new changes
-											</SuccessButton>
+											</Button>
 										</div>
 									)}
 								</div>

@@ -4,7 +4,7 @@ import { VSCodeButton, VSCodeCheckbox, VSCodeRadio, VSCodeRadioGroup, VSCodeText
 import Fuse, { FuseResult } from "fuse.js"
 import { memo, useCallback, useEffect, useMemo, useState } from "react"
 import { Virtuoso } from "react-virtuoso"
-import DangerButton from "@/components/common/DangerButton"
+import { Button } from "@/components/common/button"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { TaskServiceClient } from "@/services/grpc-client"
 import { formatLargeNumber, formatSize } from "@/utils/format"
@@ -690,17 +690,18 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						borderTop: "1px solid var(--vscode-panel-border)",
 					}}>
 					{selectedItems.length > 0 ? (
-						<DangerButton
+						<Button
 							aria-label="Delete selected items"
 							onClick={() => {
 								handleDeleteSelectedHistoryItems(selectedItems)
 							}}
-							style={{ width: "100%" }}>
+							style={{ width: "100%" }}
+							variant="danger">
 							Delete {selectedItems.length > 1 ? selectedItems.length : ""} Selected
 							{selectedItemsSize > 0 ? ` (${formatSize(selectedItemsSize)})` : ""}
-						</DangerButton>
+						</Button>
 					) : (
-						<DangerButton
+						<Button
 							aria-label="Delete all history"
 							disabled={deleteAllDisabled || taskHistory.length === 0}
 							onClick={() => {
@@ -710,9 +711,10 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 									.catch((error) => console.error("Error deleting task history:", error))
 									.finally(() => setDeleteAllDisabled(false))
 							}}
-							style={{ width: "100%" }}>
+							style={{ width: "100%" }}
+							variant="danger">
 							Delete All History{totalTasksSize !== null ? ` (${formatSize(totalTasksSize)})` : ""}
-						</DangerButton>
+						</Button>
 					)}
 				</div>
 			</div>

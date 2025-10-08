@@ -1,7 +1,7 @@
 import { mentionRegexGlobal } from "@shared/context-mentions"
 import { StringRequest } from "@shared/proto/cline/common"
 import { FileServiceClient } from "@/services/grpc-client"
-import { validateSlashCommand } from "@/utils/slash-commands"
+import { validateSlashCommand } from "@/utils/chat"
 
 // Optimized highlighting functions
 const highlightSlashCommands = (text: string, withShadow = true) => {

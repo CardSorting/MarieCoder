@@ -3,8 +3,8 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import mermaid from "mermaid"
 import { useEffect, useRef, useState } from "react"
 import styled from "styled-components"
+import { useDebounceEffect } from "@/hooks"
 import { FileServiceClient } from "@/services/grpc-client"
-import { useDebounceEffect } from "@/utils/useDebounceEffect"
 
 const MERMAID_THEME = {
 	background: "#1e1e1e", // VS Code dark theme background

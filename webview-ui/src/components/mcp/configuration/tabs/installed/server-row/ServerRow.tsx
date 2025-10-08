@@ -17,7 +17,7 @@ import {
 	VSCodePanelView,
 } from "@vscode/webview-ui-toolkit/react"
 import { useCallback, useState } from "react"
-import DangerButton from "@/components/common/DangerButton"
+import { Button } from "@/components/common/button"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import { getMcpServerDisplayName } from "@/utils/mcp"
@@ -310,12 +310,13 @@ const ServerRow = ({
 						{server.status === "connecting" || isRestarting ? "Retrying..." : "Retry Connection"}
 					</VSCodeButton>
 
-					<DangerButton
+					<Button
 						disabled={isDeleting}
 						onClick={handleDelete}
-						style={{ width: "calc(100% - 20px)", margin: "0 10px 10px 10px" }}>
+						style={{ width: "calc(100% - 20px)", margin: "0 10px 10px 10px" }}
+						variant="danger">
 						{isDeleting ? "Deleting..." : "Delete Server"}
-					</DangerButton>
+					</Button>
 				</div>
 			) : (
 				isExpanded && (
@@ -411,12 +412,13 @@ const ServerRow = ({
 							{server.status === "connecting" || isRestarting ? "Restarting..." : "Restart Server"}
 						</VSCodeButton>
 
-						<DangerButton
+						<Button
 							disabled={isDeleting}
 							onClick={handleDelete}
-							style={{ width: "calc(100% - 14px)", margin: "5px 7px 3px 7px" }}>
+							style={{ width: "calc(100% - 14px)", margin: "5px 7px 3px 7px" }}
+							variant="danger">
 							{isDeleting ? "Deleting..." : "Delete Server"}
-						</DangerButton>
+						</Button>
 					</div>
 				)
 			)}

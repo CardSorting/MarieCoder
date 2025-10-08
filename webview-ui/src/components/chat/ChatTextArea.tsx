@@ -24,28 +24,26 @@ import ApiOptions from "@/components/settings/ApiOptions"
 import { getModeSpecificFields, normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { usePlatform } from "@/context/PlatformContext"
+import { useMetaKeyDetection, useShortcut } from "@/hooks"
 import { FileServiceClient, ModelsServiceClient, StateServiceClient } from "@/services/grpc-client"
 import {
 	ContextMenuOptionType,
 	getContextMenuOptionIndex,
 	getContextMenuOptions,
+	getMatchingSlashCommands,
 	insertMention,
 	insertMentionDirectly,
-	removeMention,
-	type SearchResult,
-	shouldShowContextMenu,
-} from "@/utils/context-mentions"
-import { useMetaKeyDetection, useShortcut } from "@/utils/hooks"
-import { isSafari } from "@/utils/platformUtils"
-import {
-	getMatchingSlashCommands,
 	insertSlashCommand,
+	removeMention,
 	removeSlashCommand,
+	type SearchResult,
 	type SlashCommand,
+	shouldShowContextMenu,
 	shouldShowSlashCommandsMenu,
 	slashCommandDeleteRegex,
 	validateSlashCommand,
-} from "@/utils/slash-commands"
+} from "@/utils/chat"
+import { isSafari } from "@/utils/platformUtils"
 import { validateApiConfiguration, validateModelId } from "@/utils/validate"
 import ClineRulesToggleModal from "../cline-rules/ClineRulesToggleModal"
 import ServersToggleModal from "./ServersToggleModal"
