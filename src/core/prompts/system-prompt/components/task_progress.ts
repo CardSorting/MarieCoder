@@ -1,4 +1,5 @@
 import { SystemPromptSection } from "../templates/section_definitions"
+import { CommonConditions, createComponent } from "./base_component"
 
 /**
  * Task Progress Tracking - Todo lists and progress updates

@@ -1,5 +1,6 @@
 import { SystemPromptSection } from "../templates/section_definitions"
 import type { PromptVariant, SystemPromptContext } from "../types"
+import { resolveComponent } from "./base_component"
 
 /**
  * Core NORMIE DEV methodology - KonMari-inspired development principles
@@ -179,7 +180,7 @@ export async function getRulesSection(variant: PromptVariant, context: SystemPro
 			: "Use your available tools and apply your best judgment to accomplish the task without asking the user any followup questions, making reasonable assumptions from the provided context"
 	const yoloModeTerminalRules = context.yoloModeToggled !== true ? CONTEXT_SPECIFIC_RULES.yoloModeTerminal : ""
 
-	return resolveComponent(
+	const result = await resolveComponent(
 		{
 			section: SystemPromptSection.RULES,
 			defaultTemplate: RULES_TEMPLATE,
@@ -197,6 +198,7 @@ export async function getRulesSection(variant: PromptVariant, context: SystemPro
 		variant,
 		context,
 	)
+	return result ?? ""
 }
 
 /**

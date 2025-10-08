@@ -1,4 +1,5 @@
 import { SystemPromptSection } from "../templates/section_definitions"
+import { createComponent } from "./base_component"
 
 /**
  * File Operations - Guidelines for editing files

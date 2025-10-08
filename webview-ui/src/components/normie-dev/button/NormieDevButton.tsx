@@ -20,16 +20,24 @@ const NormieDevButton: React.FC<NormieDevButtonProps> = ({
 	className = "",
 	icon,
 }) => {
-	const getVariantStyles = () => {
+	const getAppearance = (): "primary" | "secondary" => {
 		switch (variant) {
 			case "secondary":
-				return 'appearance="secondary"'
-			case "accent":
-				return 'appearance="primary" className="normie-dev-accent"'
 			case "ghost":
-				return 'appearance="secondary" className="bg-transparent border-transparent hover:normie-dev-subtle"'
+				return "secondary"
 			default:
-				return 'appearance="primary"'
+				return "primary"
+		}
+	}
+
+	const getVariantClasses = () => {
+		switch (variant) {
+			case "accent":
+				return "normie-dev-accent"
+			case "ghost":
+				return "bg-transparent border-transparent hover:normie-dev-subtle"
+			default:
+				return ""
 		}
 	}
 
@@ -46,8 +54,8 @@ const NormieDevButton: React.FC<NormieDevButtonProps> = ({
 
 	return (
 		<VSCodeButton
-			{...getVariantStyles()}
-			className={`${getSizeStyles()} marie-kondo-clean ${className}`}
+			appearance={getAppearance()}
+			className={`${getSizeStyles()} ${getVariantClasses()} marie-kondo-clean ${className}`}
 			disabled={disabled}
 			onClick={onClick}>
 			{icon && <span className="mr-2">{icon}</span>}

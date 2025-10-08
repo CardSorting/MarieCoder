@@ -6,10 +6,10 @@ import { useClineAuth } from "@/context/ClineAuthContext"
 import { AccountServiceClient, TaskServiceClient } from "@/services/grpc-client"
 
 interface CreditLimitErrorProps {
-	currentBalance: number
+	currentBalance?: number
 	totalSpent?: number
 	totalPromotions?: number
-	message: string
+	message?: string
 	buyCreditsUrl?: string
 }
 

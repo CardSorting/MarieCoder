@@ -180,7 +180,7 @@ describe("ErrorRow", () => {
 
 		it("falls back to regular error message when ClineError.parse returns null", async () => {
 			const { ClineError } = await import("../../../../src/services/error/ClineError")
-			vi.mocked(ClineError.parse).mockReturnValue(undefined)
+			vi.mocked(ClineError.parse).mockReturnValue(null)
 
 			render(<ErrorRow apiRequestFailedMessage="Some API error" errorType="error" message={mockMessage} />)
 

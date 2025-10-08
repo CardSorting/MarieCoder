@@ -7,6 +7,7 @@ export enum ClineErrorType {
 	Balance = "balance",
 	RateLimit = "rate_limit",
 	Authentication = "authentication",
+	Auth = "authentication", // Alias for Authentication
 	Network = "network",
 	Unknown = "unknown",
 }
@@ -15,17 +16,26 @@ interface ParsedError {
 	type?: string
 	message?: string
 	request_id?: string
+	details?: {
+		buy_credits_url?: string
+		current_balance?: number
+		message?: string
+		total_promotions?: number
+		total_spent?: number
+	}
 }
 
 export class ClineError extends Error {
 	public readonly type: ClineErrorType
 	public readonly _error?: ParsedError
+	public readonly providerId?: string
 
-	constructor(message: string, type: ClineErrorType = ClineErrorType.Unknown, error?: ParsedError) {
+	constructor(message: string, type: ClineErrorType = ClineErrorType.Unknown, error?: ParsedError, providerId?: string) {
 		super(message)
 		this.name = "ClineError"
 		this.type = type
 		this._error = error
+		this.providerId = providerId
 	}
 
 	/**

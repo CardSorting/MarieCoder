@@ -76,12 +76,12 @@ describe("setupWorkspaceManager", () => {
 			getWorkspacePaths: sandbox.stub().resolves({ paths: ["/ws/root1", "/ws/root2"] }),
 		} as any)
 
-		// Telemetry stubs via getTelemetryService proxy
+		// Telemetry stubs
 		fakeTelemetry = {
 			captureWorkspaceInitialized: sandbox.stub(),
 			captureWorkspaceInitError: sandbox.stub(),
 		}
-		sandbox.stub(telemetry, "getTelemetryService").resolves(fakeTelemetry)
+		sandbox.stub(telemetry, "telemetryService").value(fakeTelemetry)
 
 		// Stub WorkspaceRootManager.fromLegacyCwd to be deterministic
 		sandbox.stub(WorkspaceRootManager, "fromLegacyCwd").callsFake(async (legacyCwd: string) => {

@@ -1,5 +1,6 @@
 import { SystemPromptSection } from "../templates/section_definitions"
 import type { SystemPromptContext } from "../types"
+import { CommonVariables, createComponent } from "./base_component"
 
 /**
  * Tools and Capabilities - Tool usage instructions and capability descriptions

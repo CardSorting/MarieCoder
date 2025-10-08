@@ -4,6 +4,7 @@ import osName from "os-name"
 import { getWorkspacePaths } from "@/hosts/vscode/hostbridge/workspace/getWorkspacePaths"
 import { SystemPromptSection } from "../templates/section_definitions"
 import type { SystemPromptContext } from "../types"
+import { createComponent } from "./base_component"
 
 /**
  * System Environment - System information and workspace context
