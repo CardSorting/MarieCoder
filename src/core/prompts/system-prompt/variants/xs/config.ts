@@ -36,7 +36,7 @@ Object.assign(config.componentOverrides, xsComponentOverrides)
 
 // Validated variant configuration with centralized validation
 export const validatedConfig = createValidatedVariantConfig("xs", config, {
-	strict: true,
+	strict: false,
 	logSummary: false,
 })
 

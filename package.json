@@ -1,7 +1,7 @@
 {
 	"name": "normie-dev",
 	"displayName": "NormieDev",
-	"description": "AI coding agent for the rest of us. Built on Cline, rebuilt for Normies. Create files, run commands, browse the web - all with your permission every step of the way.",
+	"description": "AI coding agent for the rest of us. Built on Cline, for Normies. Create files, run commands, browse the web - all with your permission every step of the way.",
 	"version": "3.32.6",
 	"icon": "assets/icons/normie-icon.png",
 	"engines": {
@@ -11,7 +11,7 @@
 		"name": "NormieDev Team"
 	},
 	"license": "Apache-2.0",
-	"publisher": "saoudrizwan",
+	"publisher": "cardsorting",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/CardSorting/NormieDev"

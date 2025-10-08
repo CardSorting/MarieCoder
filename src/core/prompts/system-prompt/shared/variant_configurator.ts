@@ -32,8 +32,15 @@ export class VariantConfigService {
 		const validationResult = validateVariantComprehensive(variant, { strict })
 
 		if (!validationResult.isValid) {
-			const errorMessage = `Variant configuration validation failed for '${id}': ${validationResult.errors.join(", ")}`
-			console.error(errorMessage)
+			const errorStrings = validationResult.errors.map((err) => {
+				if (typeof err === "string") return err
+				if (err && typeof err === "object") {
+					return JSON.stringify(err, null, 2)
+				}
+				return String(err)
+			})
+			const errorMessage = `Variant configuration validation failed for '${id}': ${errorStrings.join(", ")}`
+			console.error(errorMessage, validationResult.errors)
 			throw new Error(errorMessage)
 		}
 
@@ -130,8 +137,15 @@ export function createValidatedVariantConfig(
 	const validationResult = validateVariantComprehensive(variant, { strict })
 
 	if (!validationResult.isValid) {
-		const errorMessage = `Variant configuration validation failed for '${id}': ${validationResult.errors.join(", ")}`
-		console.error(errorMessage)
+		const errorStrings = validationResult.errors.map((err) => {
+			if (typeof err === "string") return err
+			if (err && typeof err === "object") {
+				return JSON.stringify(err, null, 2)
+			}
+			return String(err)
+		})
+		const errorMessage = `Variant configuration validation failed for '${id}': ${errorStrings.join(", ")}`
+		console.error(errorMessage, validationResult.errors)
 		throw new Error(errorMessage)
 	}
 

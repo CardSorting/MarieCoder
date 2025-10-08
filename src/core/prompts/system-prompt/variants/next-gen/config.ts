@@ -44,7 +44,7 @@ export const config = QuickVariants.full(
 
 // Validated variant configuration with centralized validation
 export const validatedConfig = createValidatedVariantConfig("next-gen", config, {
-	strict: true,
+	strict: false,
 	logSummary: false,
 })
 

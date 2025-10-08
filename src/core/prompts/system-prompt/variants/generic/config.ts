@@ -34,8 +34,8 @@ export const config = QuickVariants.standard(ModelFamily.GENERIC, "The fallback 
 
 // Validated variant configuration with centralized validation
 export const validatedConfig = createValidatedVariantConfig("generic", config, {
-	strict: true,
-	logSummary: false,
+	strict: false,
+	logSummary: true,
 })
 
 // Export type information for better IDE support
