@@ -557,7 +557,6 @@ export class Controller {
 		const terminalReuseEnabled = this.stateManager.getGlobalStateKey("terminalReuseEnabled")
 		const defaultTerminalProfile = this.stateManager.getGlobalSettingsKey("defaultTerminalProfile")
 		const isNewUser = this.stateManager.getGlobalStateKey("isNewUser")
-		const welcomeViewCompleted = Boolean(this.stateManager.getGlobalStateKey("welcomeViewCompleted"))
 		const customPrompt = this.stateManager.getGlobalSettingsKey("customPrompt")
 		const mcpResponsesCollapsed = this.stateManager.getGlobalStateKey("mcpResponsesCollapsed")
 		const terminalOutputLineLimit = this.stateManager.getGlobalSettingsKey("terminalOutputLineLimit")
@@ -626,7 +625,6 @@ export class Controller {
 			terminalReuseEnabled,
 			defaultTerminalProfile,
 			isNewUser,
-			welcomeViewCompleted: welcomeViewCompleted as boolean, // Can be undefined but is set to either true or false by the migration that runs on extension launch in extension.ts
 			mcpResponsesCollapsed,
 			terminalOutputLineLimit,
 			customPrompt,

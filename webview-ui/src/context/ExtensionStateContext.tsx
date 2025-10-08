@@ -31,7 +31,6 @@ import { McpServiceClient, ModelsServiceClient, StateServiceClient, UiServiceCli
 
 export interface ExtensionStateContextType extends ExtensionState {
 	didHydrateState: boolean
-	showWelcome: boolean
 	openRouterModels: Record<string, ModelInfo>
 	openAiModels: string[]
 	requestyModels: Record<string, ModelInfo>
@@ -185,7 +184,6 @@ export const ExtensionStateContextProvider: React.FC<{
 		terminalOutputLineLimit: 500,
 		defaultTerminalProfile: "default",
 		isNewUser: false,
-		welcomeViewCompleted: false,
 		mcpResponsesCollapsed: false, // Default value (expanded), will be overwritten by extension state
 		strictPlanModeEnabled: false,
 		yoloModeToggled: false,
@@ -204,7 +202,6 @@ export const ExtensionStateContextProvider: React.FC<{
 	})
 	const [expandTaskHeader, setExpandTaskHeader] = useState(true)
 	const [didHydrateState, setDidHydrateState] = useState(false)
-	const [showWelcome, setShowWelcome] = useState(false)
 	const [openRouterModels, setOpenRouterModels] = useState<Record<string, ModelInfo>>({
 		[openRouterDefaultModelId]: openRouterDefaultModelInfo,
 	})
@@ -283,8 +280,6 @@ export const ExtensionStateContextProvider: React.FC<{
 									: prevState.autoApprovalSettings,
 							}
 
-							// Update welcome screen state based on API configuration
-							setShowWelcome(!newState.welcomeViewCompleted)
 							setDidHydrateState(true)
 
 							console.log("[DEBUG] returning new state in ESC")
@@ -583,7 +578,6 @@ export const ExtensionStateContextProvider: React.FC<{
 	const contextValue: ExtensionStateContextType = {
 		...state,
 		didHydrateState,
-		showWelcome,
 		openRouterModels,
 		openAiModels,
 		requestyModels,

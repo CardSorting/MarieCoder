@@ -152,8 +152,6 @@ export async function readGlobalStateFromDisk(context: ExtensionContext): Promis
 		const yoloModeToggled = context.globalState.get<GlobalStateAndSettings["yoloModeToggled"]>("yoloModeToggled")
 		const useAutoCondense = context.globalState.get<GlobalStateAndSettings["useAutoCondense"]>("useAutoCondense")
 		const isNewUser = context.globalState.get<GlobalStateAndSettings["isNewUser"]>("isNewUser")
-		const welcomeViewCompleted =
-			context.globalState.get<GlobalStateAndSettings["welcomeViewCompleted"]>("welcomeViewCompleted")
 		const awsRegion = context.globalState.get<GlobalStateAndSettings["awsRegion"]>("awsRegion")
 		const awsUseCrossRegionInference =
 			context.globalState.get<GlobalStateAndSettings["awsUseCrossRegionInference"]>("awsUseCrossRegionInference")
@@ -534,7 +532,6 @@ export async function readGlobalStateFromDisk(context: ExtensionContext): Promis
 			yoloModeToggled: yoloModeToggled ?? false,
 			useAutoCondense: useAutoCondense ?? false,
 			isNewUser: isNewUser ?? true,
-			welcomeViewCompleted,
 			lastShownAnnouncementId,
 			taskHistory: taskHistory || [],
 			autoApprovalSettings: autoApprovalSettings || DEFAULT_AUTO_APPROVAL_SETTINGS, // default value can be 0 or empty string

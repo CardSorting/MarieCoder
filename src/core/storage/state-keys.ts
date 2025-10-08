@@ -34,7 +34,6 @@ export interface GlobalState {
 	mcpResponsesCollapsed: boolean
 	terminalReuseEnabled: boolean
 	isNewUser: boolean
-	welcomeViewCompleted: boolean | undefined
 	mcpDisplayMode: McpDisplayMode
 	// Multi-root workspace support
 	workspaceRoots: WorkspaceRoot[] | undefined

@@ -5,22 +5,14 @@ import type { ClineMessage } from "@shared/ExtensionMessage"
 import type { HistoryItem } from "@shared/HistoryItem"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useMemo } from "react"
-import { expect, userEvent, within } from "storybook/test"
-import { ExtensionStateContext, useExtensionState } from "@/context/ExtensionStateContext"
+import { ExtensionStateContext } from "@/context/ExtensionStateContext"
 import ChatView from "./components/chat/ChatView"
-import WelcomeView from "./components/welcome/WelcomeView"
 
 // Mock component that mimics App behavior but works in Storybook
 const MockApp = () => {
-	const { showWelcome } = useExtensionState()
-
 	return (
 		<HeroUIProvider>
-			{showWelcome ? (
-				<WelcomeView />
-			) : (
-				<ChatView hideAnnouncement={() => {}} isHidden={false} showAnnouncement={false} showHistoryView={() => {}} />
-			)}
+			<ChatView hideAnnouncement={() => {}} isHidden={false} showAnnouncement={false} showHistoryView={() => {}} />
 		</HeroUIProvider>
 	)
 }
@@ -212,11 +204,8 @@ const mockStreamingMessages: ClineMessage[] = [
 
 // Reusable state and decorator factories
 const createMockState = (overrides: any = {}) => ({
-	...useExtensionState(),
 	useAutoCondense: true,
 	autoCondenseThreshold: 0.5,
-	welcomeViewCompleted: true,
-	showWelcome: false,
 	clineMessages: mockActiveMessages,
 	taskHistory: mockTaskHistory,
 	apiConfiguration: mockApiConfiguration,
@@ -237,30 +226,6 @@ const createStoryDecorator =
 			</ExtensionStateProviderMock>
 		)
 	}
-
-export const WelcomeScreen: Story = {
-	decorators: [createStoryDecorator({ welcomeViewCompleted: false, showWelcome: true, clineMessages: [] })],
-	parameters: {
-		docs: {
-			description: {
-				story: "The welcome screen shown to new users or when no task is active. Displays quick start options and recent task history.",
-			},
-		},
-	},
-	args: {},
-	// More on component testing: https://storybook.js.org/docs/writing-tests/interaction-testing
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement)
-		// Button has vscode-button element name
-		const getStartedButton = canvas.getByText("Get Started for Free")
-		const byokButton = canvas.getByText("Use your own API key")
-		await expect(getStartedButton).toBeInTheDocument()
-		await expect(byokButton).toBeInTheDocument()
-		await userEvent.click(byokButton)
-		await expect(getStartedButton).toBeInTheDocument()
-		await expect(byokButton).not.toBeInTheDocument()
-	},
-}
 
 export const ActiveConversation: Story = {
 	decorators: [createStoryDecorator({ task: mockTaskHistory[0], currentTaskItem: mockTaskHistory[0] })],
