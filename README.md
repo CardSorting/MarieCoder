@@ -10,7 +10,7 @@
 
 NormieDev is a community fork of [Cline](https://github.com/cline/cline), the open-source AI coding assistant that's democratizing AI-assisted development. We're building on their incredible foundation to explore additional features and workflows that serve our community's needs.
 
-**Part of the democratic development movement** - AI coding tools should be open, transparent, and controlled by users, not corporations.
+**Part of the democratic development movement** - AI coding tools should be open, transparent, and controlled by users.
 
 ### Why "NormieDev"?
 
