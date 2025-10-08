@@ -406,14 +406,155 @@ Throughout this consolidation, we followed the KonMari method:
 
 ## 🚀 **Next Steps (Optional)**
 
-Future consolidation opportunities:
-1. **Tooltip Unification** - Consider unifying `Tooltip` and `HeroTooltip`
-2. **Form Components** - Look for patterns in form handling
-3. **Modal Components** - Standardize dialog/modal patterns
-4. **Icon System** - Consolidate icon usage patterns
-5. **Test Coverage** - Increase coverage for common components
+## Phase 3: Component Consolidation (Completed - October 2025)
 
-**Note:** These are opportunities, not urgent needs. The codebase is in a good state.
+### 1. Tooltip Unification ✅
+
+**What we learned:**
+The old `Tooltip` component served us well for basic VSCode-styled tooltips with hover states, custom positioning via style props, and optional hint text. It taught us the importance of controlled visibility and precise positioning.
+
+**What we evolved:**
+Migrated all `Tooltip` usage to `HeroTooltip`, which provides:
+- Better positioning system with semantic `placement` props
+- Consistent styling with theme integration
+- `disabled` prop for cleaner controlled visibility
+- Richer content support (React nodes, not just strings)
+
+**Files migrated:**
+- `ChatTextArea.tsx` - Migrated context menu tooltips and Plan/Act toggle (with hint text preserved as secondary content)
+- `ServersToggleModal.tsx` - Simple tooltip migration with disabled state
+- `ClineRulesToggleModal.tsx` - Simple tooltip migration with disabled state
+
+**Lessons applied:**
+- `tipText` → `content` for clearer semantics
+- `visible={false}` → `disabled={true}` for better API clarity
+- `hintText` → structured content with styling for secondary information
+- Custom positioning (`style.left`, `style.zIndex`) → semantic `placement` prop
+
+**Legacy component status:**
+`Tooltip.tsx` remains for backward compatibility but should be considered deprecated for new code.
+
+---
+
+### 2. Form Component Patterns ✅
+
+**What we observed:**
+Forms in NOORMME already follow solid patterns:
+- `useDebouncedInput` hook prevents jumpy text inputs during live saving
+- `ApiKeyField` component provides standardized API key input with help text
+- Consistent manual validation with `useState<string | null>(null)` for errors
+- Standard `e.preventDefault()` and try-catch patterns in submission handlers
+
+**What we learned:**
+The existing patterns taught us that:
+- Debouncing is critical for user experience with auto-save
+- Consistent error state management improves predictability
+- Inline validation in submit handlers keeps logic co-located
+- Clear error messages guide users effectively
+
+**What we evolved:**
+Rather than overengineer, we honored the existing patterns:
+- Forms are simple enough that heavy abstraction would add complexity
+- `useDebouncedInput` is already a well-designed reusable utility
+- Validation logic varies enough by form that a generic solution would be forced
+
+**Lessons applied:**
+- Maintain current patterns for new forms
+- Continue using `useDebouncedInput` for live-saving inputs
+- Keep validation inline and specific to each form's needs
+- Ensure error messages are actionable (following KonMari standards)
+
+---
+
+### 3. Modal Component Patterns ✅
+
+**What we observed:**
+Modal architecture is already well-designed:
+- `AlertDialog` provides composable dialog primitives (Header, Footer, Title, Description, Action, Cancel)
+- Three "toggle modals" (ServersToggleModal, ClineRulesToggleModal, AutoApproveModal) share common patterns
+- Consistent use of `useClickAway`, positioning logic, and arrow pointers
+
+**What we learned:**
+The patterns taught us:
+- Composition over configuration works well for dialogs
+- Fixed positioning with arrow pointers creates good UX for dropdown-style modals
+- `useClickAway` is the right pattern for dismissible overlays
+- Semantic component naming (`AlertDialogAction` vs generic `Button`) improves clarity
+
+**What we evolved:**
+The existing architecture honors our needs:
+- `AlertDialog` already follows modern composable patterns
+- Toggle modals are similar enough to be recognizable, different enough to justify separate implementations
+- Shared positioning logic could be extracted, but the benefit is minimal vs added abstraction
+
+**Lessons applied:**
+- Use `AlertDialog` for all confirmation/warning dialogs
+- Follow the toggle modal pattern for new dropdown-style overlays
+- Maintain semantic naming conventions
+- Continue using `useClickAway` for dismissible UI
+
+---
+
+### 4. Icon System Consolidation ✅
+
+**What we observed:**
+NOORMME uses two complementary icon systems intentionally:
+- **Lucide React**: Modern SVG icons for custom UI (AtSignIcon, PlusIcon, SettingsIcon)
+- **VSCode Codicons**: VSCode's icon font for theme integration (codicon-trash, codicon-gear)
+- Sizing varies: `size={12}`, `size={13}`, `size={12.5}`, `size={16}`, `size={18}`
+
+**What we learned:**
+The dual system taught us:
+- Codicons provide automatic theme color inheritance for VSCode consistency
+- Lucide icons offer flexibility for custom, feature-rich UI elements
+- Inconsistent sizing creates visual inconsistency
+- Both systems serve different, valid purposes
+
+**What we evolved:**
+Created standardized guidelines:
+- **Icon Usage Guide** (`components/common/icons/README.md`) documenting when to use each system
+- **Standard sizes**: 12px, 14px, 16px, 18px, 20px, 24px with use case guidance
+- **Best practices**: Semantic usage, color inheritance, accessibility patterns
+- **Common patterns**: Navigation, actions, status indicators
+
+**Lessons applied:**
+- Use Lucide for custom UI, Codicons for VSCode integration
+- Stick to standard sizes for visual consistency
+- Always provide `aria-label` for icon-only buttons
+- Prefer color inheritance over hardcoded colors
+- Document icon patterns for future developers
+
+---
+
+## Consolidation Philosophy: The KonMari Method Applied
+
+Throughout this consolidation, we followed the KonMari Method:
+
+1. **OBSERVE** - We studied each pattern to understand its purpose
+2. **APPRECIATE** - We honored what the old code taught us
+3. **LEARN** - We extracted wisdom from existing patterns
+4. **EVOLVE** - We built clearer implementations with those lessons
+5. **RELEASE** - We deprecated old patterns gracefully (Tooltip → HeroTooltip)
+6. **SHARE** - We documented lessons for future developers
+
+### Key Insights:
+
+- **Not all duplication needs removal** - Sometimes patterns are similar but serve different contexts
+- **Composition over configuration** - AlertDialog's composable primitives work better than a monolithic modal component
+- **Standardize what matters** - Icon sizes and tooltip patterns benefit from unification; form validation doesn't need heavy abstraction
+- **Document intent** - Guidelines (Icon Usage Guide) can be more valuable than code consolidation
+- **Gratitude for "legacy"** - Old Tooltip taught us about positioning and controlled visibility before we moved to HeroTooltip
+
+---
+
+## Future Opportunities
+
+Potential areas for evolution (when complexity justifies them):
+
+1. **Semantic Icon Components** - Wrapper components for frequently used icon+styling combinations
+2. **Form Validation Hook** - If forms become more complex, consider a `useFormValidation` hook
+3. **Toggle Modal Base Component** - If we add more dropdown modals, extract common positioning logic
+4. **Tooltip Migration Completion** - Eventually remove old `Tooltip.tsx` after ensuring all imports are updated
 
 ---
 
@@ -430,4 +571,5 @@ If you have questions, suggestions, or discover patterns that could be improved 
 
 ---
 
+*Last updated: October 2025*
 *Completed with intention, gratitude, and care for future developers. ✨*

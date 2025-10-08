@@ -18,8 +18,8 @@ import ContextMenu from "@/components/chat/ContextMenu"
 import { CHAT_CONSTANTS } from "@/components/chat/chat-view/constants"
 import SlashCommandMenu from "@/components/chat/SlashCommandMenu"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
+import HeroTooltip from "@/components/common/HeroTooltip"
 import Thumbnails from "@/components/common/Thumbnails"
-import Tooltip from "@/components/common/Tooltip"
 import ApiOptions from "@/components/settings/ApiOptions"
 import { getModeSpecificFields, normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -1692,7 +1692,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					<div className="relative flex-1 min-w-0 h-5">
 						{/* ButtonGroup - always in DOM but visibility controlled */}
 						<ButtonGroup className="absolute top-0 left-0 right-0 ease-in-out w-full h-5 z-10 flex items-center">
-							<Tooltip style={{ left: 0 }} tipText="Add Context">
+							<HeroTooltip content="Add Context" placement="top">
 								<VSCodeButton
 									appearance="icon"
 									aria-label="Add Context"
@@ -1703,9 +1703,9 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										<AtSignIcon size={12} />
 									</ButtonContainer>
 								</VSCodeButton>
-							</Tooltip>
+							</HeroTooltip>
 
-							<Tooltip tipText="Add Files & Images">
+							<HeroTooltip content="Add Files & Images" placement="top">
 								<VSCodeButton
 									appearance="icon"
 									aria-label="Add Files & Images"
@@ -1721,7 +1721,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										<PlusIcon size={13} />
 									</ButtonContainer>
 								</VSCodeButton>
-							</Tooltip>
+							</HeroTooltip>
 							<ServersToggleModal />
 							<ClineRulesToggleModal />
 							<ModelContainer ref={modelSelectorRef}>
@@ -1756,11 +1756,17 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						</ButtonGroup>
 					</div>
 					{/* Tooltip for Plan/Act toggle remains outside the conditional rendering */}
-					<Tooltip
-						hintText={`Toggle w/ ${togglePlanActKeys}`}
-						style={{ zIndex: 1000 }}
-						tipText={`In ${shownTooltipMode === "act" ? "Act" : "Plan"}  mode, Cline will ${shownTooltipMode === "act" ? "complete the task immediately" : "gather information to architect a plan"}`}
-						visible={shownTooltipMode !== null}>
+					<HeroTooltip
+						content={
+							<div>
+								<div>
+									{`In ${shownTooltipMode === "act" ? "Act" : "Plan"} mode, Cline will ${shownTooltipMode === "act" ? "complete the task immediately" : "gather information to architect a plan"}`}
+								</div>
+								<div className="text-xs opacity-70 mt-1">{`Toggle w/ ${togglePlanActKeys}`}</div>
+							</div>
+						}
+						disabled={shownTooltipMode === null}
+						placement="top">
 						<SwitchContainer data-testid="mode-switch" disabled={false} onClick={onModeToggle}>
 							<Slider isAct={mode === "act"} isPlan={mode === "plan"} />
 							<SwitchOption
@@ -1780,7 +1786,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								Act
 							</SwitchOption>
 						</SwitchContainer>
-					</Tooltip>
+					</HeroTooltip>
 				</div>
 			</div>
 		)

@@ -5,7 +5,7 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useRef, useState } from "react"
 import { useClickAway, useWindowSize } from "react-use"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-import Tooltip from "@/components/common/Tooltip"
+import HeroTooltip from "@/components/common/HeroTooltip"
 import ServersToggleList from "@/components/mcp/configuration/tabs/installed/ServersToggleList"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
@@ -54,7 +54,7 @@ const ServersToggleModal: React.FC = () => {
 	return (
 		<div ref={modalRef}>
 			<div className="inline-flex min-w-0 max-w-full" ref={buttonRef}>
-				<Tooltip tipText="Manage MCP Servers" visible={isVisible ? false : undefined}>
+				<HeroTooltip content="Manage MCP Servers" disabled={isVisible}>
 					<VSCodeButton
 						appearance="icon"
 						aria-label={isVisible ? "Hide MCP Servers" : "Show MCP Servers"}
@@ -67,7 +67,7 @@ const ServersToggleModal: React.FC = () => {
 							/>
 						</div>
 					</VSCodeButton>
-				</Tooltip>
+				</HeroTooltip>
 			</div>
 
 			{isVisible && (

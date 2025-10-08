@@ -12,7 +12,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { useClickAway, useWindowSize } from "react-use"
 import styled from "styled-components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-import Tooltip from "@/components/common/Tooltip"
+import HeroTooltip from "@/components/common/HeroTooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { FileServiceClient } from "@/services/grpc-client"
 import RulesToggleList from "./RulesToggleList"
@@ -196,7 +196,7 @@ const ClineRulesToggleModal: React.FC = () => {
 	return (
 		<div ref={modalRef}>
 			<div className="inline-flex min-w-0 max-w-full" ref={buttonRef}>
-				<Tooltip tipText="Manage Cline Rules & Workflows" visible={isVisible ? false : undefined}>
+				<HeroTooltip content="Manage Cline Rules & Workflows" disabled={isVisible}>
 					<VSCodeButton
 						appearance="icon"
 						aria-label={isVisible ? "Hide Cline Rules & Workflows" : "Show Cline Rules & Workflows"}
@@ -209,7 +209,7 @@ const ClineRulesToggleModal: React.FC = () => {
 							/>
 						</div>
 					</VSCodeButton>
-				</Tooltip>
+				</HeroTooltip>
 			</div>
 
 			{isVisible && (
