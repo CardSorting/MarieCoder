@@ -68,8 +68,9 @@ button/
 - **MermaidBlock** - Render Mermaid diagrams
 
 ### Tooltips
-- **Tooltip** - Custom tooltip (VSCode-styled)
-- **HeroTooltip** - Rich tooltip using HeroUI
+- **HeroTooltip** - Unified tooltip component using HeroUI with VSCode theme integration
+  - Replaced the old `Tooltip` component (removed October 2025)
+  - Supports semantic placement, rich content, and better accessibility
 
 ### Controls
 - **CheckmarkControl** - Checkbox with label

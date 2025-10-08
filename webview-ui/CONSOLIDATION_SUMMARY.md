@@ -432,7 +432,7 @@ Migrated all `Tooltip` usage to `HeroTooltip`, which provides:
 - Custom positioning (`style.left`, `style.zIndex`) → semantic `placement` prop
 
 **Legacy component status:**
-`Tooltip.tsx` remains for backward compatibility but should be considered deprecated for new code.
+`Tooltip.tsx` has been removed (October 2025) after completing migration of all usages to `HeroTooltip`.
 
 ---
 
@@ -554,7 +554,6 @@ Potential areas for evolution (when complexity justifies them):
 1. **Semantic Icon Components** - Wrapper components for frequently used icon+styling combinations
 2. **Form Validation Hook** - If forms become more complex, consider a `useFormValidation` hook
 3. **Toggle Modal Base Component** - If we add more dropdown modals, extract common positioning logic
-4. **Tooltip Migration Completion** - Eventually remove old `Tooltip.tsx` after ensuring all imports are updated
 
 ---
 
