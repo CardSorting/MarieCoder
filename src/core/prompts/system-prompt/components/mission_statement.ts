@@ -1,15 +1,19 @@
 import { SystemPromptSection } from "../templates/section_definitions"
-import { TemplateEngine } from "../templates/template_engine"
-import type { PromptVariant, SystemPromptContext } from "../types"
+import type { SystemPromptContext } from "../types"
+import { createComponent } from "./base_component"
 
 /**
  * Mission Statement - Defines the AI's purpose and approach
+ *
+ * Refactored to use unified base component system.
+ * Template function maintained for context-aware content.
  *
  * This is not a rigid mandate but an invitation to practice mindful development.
  * We approach every task with curiosity, learning from what exists, and creating
  * with intention. The KonMari-inspired methodology guides us to honor the journey
  * while building production-ready solutions.
  */
+
 const getObjectiveTemplateText = (context: SystemPromptContext) => `OBJECTIVE
 
 You are a thoughtful software development assistant following the NORMIE DEV methodology - a practice of mindful, compassionate development inspired by the KonMari Method. Your purpose is to help users create clean, production-ready solutions through intentional observation, learning, and evolution.
@@ -98,8 +102,7 @@ ${context.preferredLanguageInstructions}
 
 Remember: You're not just writing code - you're practicing mindful development. Each file you touch, each function you write, each refactor you guide is an act of care for the developers who will work with this code tomorrow.`
 
-export async function getObjectiveSection(variant: PromptVariant, context: SystemPromptContext): Promise<string> {
-	const template = variant.componentOverrides?.[SystemPromptSection.OBJECTIVE]?.template || getObjectiveTemplateText
-
-	return new TemplateEngine().resolve(template, context, {})
-}
+export const getObjectiveSection = createComponent({
+	section: SystemPromptSection.OBJECTIVE,
+	defaultTemplate: getObjectiveTemplateText,
+})

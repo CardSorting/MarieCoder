@@ -1,7 +1,13 @@
 import type { McpServer } from "@/shared/mcp"
 import { SystemPromptSection } from "../templates/section_definitions"
-import { TemplateEngine } from "../templates/template_engine"
-import type { PromptVariant, SystemPromptContext } from "../types"
+import { createComponent } from "./base_component"
+
+/**
+ * MCP Servers - Model Context Protocol server integration
+ *
+ * Refactored to use unified base component system.
+ * Maintains MCP server formatting logic as domain-specific helper.
+ */
 
 const MCP_TEMPLATE_TEXT = `MCP SERVERS
 
@@ -13,23 +19,22 @@ When a server is connected, you can use the server's tools via the \`use_mcp_too
 
 {{MCP_SERVERS_LIST}}`
 
-export async function getMcp(variant: PromptVariant, context: SystemPromptContext): Promise<string | undefined> {
-	const servers = context.mcpHub?.getServers() || []
-	// Skip the section if there are no servers connected / available
-	if (servers.length === 0) {
-		return undefined
-	}
-	return await getMcpServers(servers, variant, context)
-}
-
-async function getMcpServers(servers: McpServer[], variant: PromptVariant, context: SystemPromptContext): Promise<string> {
-	const template = variant.componentOverrides?.[SystemPromptSection.MCP]?.template || MCP_TEMPLATE_TEXT
-
-	const serversList = servers.length > 0 ? formatMcpServersList(servers) : "(No MCP servers currently connected)"
-	return new TemplateEngine().resolve(template, context, {
-		MCP_SERVERS_LIST: serversList,
-	})
-}
+export const getMcp = createComponent({
+	section: SystemPromptSection.MCP,
+	defaultTemplate: MCP_TEMPLATE_TEXT,
+	shouldInclude: (context) => {
+		const servers = context.mcpHub?.getServers() || []
+		return servers.length > 0
+	},
+	buildVariables: (context) => {
+		const servers = context.mcpHub?.getServers() || []
+		const serversList =
+			servers.length > 0
+				? formatMcpServersList(servers.filter((s) => s.status === "connected"))
+				: "(No MCP servers currently connected)"
+		return { MCP_SERVERS_LIST: serversList }
+	},
+})
 
 function formatMcpServersList(servers: McpServer[]): string {
 	return servers

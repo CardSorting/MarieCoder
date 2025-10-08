@@ -1,6 +1,11 @@
 import { SystemPromptSection } from "../templates/section_definitions"
-import { TemplateEngine } from "../templates/template_engine"
-import type { PromptVariant, SystemPromptContext } from "../types"
+
+/**
+ * File Operations - Guidelines for editing files
+ *
+ * Refactored to use unified base component system.
+ * Eliminates boilerplate template resolution logic.
+ */
 
 const EDITING_FILES_TEMPLATE_TEXT = `EDITING FILES
 
@@ -75,8 +80,7 @@ You have access to two tools for working with files: **write_to_file** and **rep
 5. Once the file has been edited with either write_to_file or replace_in_file, the system will provide you with the final state of the modified file. Use this updated content as the reference point for any subsequent SEARCH/REPLACE operations, since it reflects any auto-formatting or user-applied changes.
 By thoughtfully selecting between write_to_file and replace_in_file, you can make your file editing process smoother, safer, and more efficient.`
 
-export async function getEditingFilesSection(variant: PromptVariant, context: SystemPromptContext): Promise<string> {
-	const template = variant.componentOverrides?.[SystemPromptSection.EDITING_FILES]?.template || EDITING_FILES_TEMPLATE_TEXT
-
-	return new TemplateEngine().resolve(template, context, {})
-}
+export const getEditingFilesSection = createComponent({
+	section: SystemPromptSection.EDITING_FILES,
+	defaultTemplate: EDITING_FILES_TEMPLATE_TEXT,
+})

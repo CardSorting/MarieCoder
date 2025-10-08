@@ -1,9 +1,11 @@
 import { SystemPromptSection } from "../templates/section_definitions"
-import { TemplateEngine } from "../templates/template_engine"
 import type { PromptVariant, SystemPromptContext } from "../types"
 
 /**
  * Core NORMIE DEV methodology - KonMari-inspired development principles
+ *
+ * Refactored to use unified base component system.
+ * Maintains complex context-aware logic for rule selection.
  *
  * These are practices to be cultivated, not rules to be enforced. Each principle
  * invites mindful observation, learning from what exists, and intentional evolution.
@@ -165,11 +167,9 @@ const CONTEXT_SPECIFIC_RULES = {
 }
 
 /**
- * Get the unified rules section - Single component instead of complex orchestration
+ * Rules Section - Uses resolveComponent for flexibility with complex logic
  */
 export async function getRulesSection(variant: PromptVariant, context: SystemPromptContext): Promise<string> {
-	const template = variant.componentOverrides?.[SystemPromptSection.RULES]?.template || RULES_TEMPLATE
-
 	// Determine context-specific rules
 	const browserRules = context.supportsBrowserUse ? CONTEXT_SPECIFIC_RULES.browser : ""
 	const browserWaitRules = context.supportsBrowserUse ? CONTEXT_SPECIFIC_RULES.browserWait : ""
@@ -179,16 +179,24 @@ export async function getRulesSection(variant: PromptVariant, context: SystemPro
 			: "Use your available tools and apply your best judgment to accomplish the task without asking the user any followup questions, making reasonable assumptions from the provided context"
 	const yoloModeTerminalRules = context.yoloModeToggled !== true ? CONTEXT_SPECIFIC_RULES.yoloModeTerminal : ""
 
-	return new TemplateEngine().resolve(template, context, {
-		CWD: context.cwd || process.cwd(),
-		BROWSER_RULES: browserRules,
-		BROWSER_WAIT_RULES: browserWaitRules,
-		YOLO_MODE_RULES: yoloModeRules,
-		YOLO_MODE_TERMINAL_RULES: yoloModeTerminalRules,
-		CORE_METHODOLOGY_RULES: CORE_METHODOLOGY_RULES,
-		TECHNICAL_IMPLEMENTATION_RULES: TECHNICAL_IMPLEMENTATION_RULES,
-		IMPLEMENTATION_PATTERNS_RULES: IMPLEMENTATION_PATTERNS_RULES,
-	})
+	return resolveComponent(
+		{
+			section: SystemPromptSection.RULES,
+			defaultTemplate: RULES_TEMPLATE,
+			buildVariables: () => ({
+				CWD: context.cwd || process.cwd(),
+				BROWSER_RULES: browserRules,
+				BROWSER_WAIT_RULES: browserWaitRules,
+				YOLO_MODE_RULES: yoloModeRules,
+				YOLO_MODE_TERMINAL_RULES: yoloModeTerminalRules,
+				CORE_METHODOLOGY_RULES: CORE_METHODOLOGY_RULES,
+				TECHNICAL_IMPLEMENTATION_RULES: TECHNICAL_IMPLEMENTATION_RULES,
+				IMPLEMENTATION_PATTERNS_RULES: IMPLEMENTATION_PATTERNS_RULES,
+			}),
+		},
+		variant,
+		context,
+	)
 }
 
 /**

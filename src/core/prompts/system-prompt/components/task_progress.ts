@@ -1,8 +1,12 @@
-import { PromptVariant, SystemPromptContext, SystemPromptSection, TemplateEngine } from ".."
+import { SystemPromptSection } from "../templates/section_definitions"
 
 /**
- * Unified task progress tracking - combines automatic todo lists and manual progress updates
+ * Task Progress Tracking - Todo lists and progress updates
+ *
+ * Refactored to use unified base component system.
+ * Conditional inclusion based on focus chain settings.
  */
+
 const TASK_PROGRESS_TEMPLATE_TEXT = `TASK PROGRESS TRACKING
 
 ## Progress Updates
@@ -49,12 +53,8 @@ The system automatically manages todo lists to help track task progress:
 - The system will automatically include todo list context in your prompts when appropriate
 - Focus on creating actionable, meaningful steps rather than granular technical details`
 
-export async function getTaskProgressSection(variant: PromptVariant, context: SystemPromptContext): Promise<string | undefined> {
-	if (!context.focusChainSettings?.enabled) {
-		return undefined
-	}
-
-	const template = variant.componentOverrides?.[SystemPromptSection.TASK_PROGRESS]?.template || TASK_PROGRESS_TEMPLATE_TEXT
-
-	return new TemplateEngine().resolve(template, context, {})
-}
+export const getTaskProgressSection = createComponent({
+	section: SystemPromptSection.TASK_PROGRESS,
+	defaultTemplate: TASK_PROGRESS_TEMPLATE_TEXT,
+	shouldInclude: CommonConditions.requiresFocusChain,
+})

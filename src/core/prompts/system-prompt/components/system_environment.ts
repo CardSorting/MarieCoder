@@ -3,8 +3,14 @@ import { getShell } from "@utils/shell"
 import osName from "os-name"
 import { getWorkspacePaths } from "@/hosts/vscode/hostbridge/workspace/getWorkspacePaths"
 import { SystemPromptSection } from "../templates/section_definitions"
-import { TemplateEngine } from "../templates/template_engine"
-import type { PromptVariant, SystemPromptContext } from "../types"
+import type { SystemPromptContext } from "../types"
+
+/**
+ * System Environment - System information and workspace context
+ *
+ * Refactored to use unified base component system.
+ * Maintains system environment gathering logic as domain-specific helper.
+ */
 
 const SYSTEM_INFO_TEMPLATE_TEXT = `SYSTEM INFORMATION
 
@@ -37,40 +43,42 @@ export async function getSystemEnv(context: SystemPromptContext, isTesting = fal
 			}
 }
 
-export async function getSystemInfo(variant: PromptVariant, context: SystemPromptContext): Promise<string> {
-	const testMode = !!process?.env?.CI || !!process?.env?.IS_TEST || context.isTesting || false
-	const info = await getSystemEnv(context, testMode)
+export const getSystemInfo = createComponent({
+	section: SystemPromptSection.SYSTEM_INFO,
+	defaultTemplate: SYSTEM_INFO_TEMPLATE_TEXT,
+	buildVariables: async (context) => {
+		const testMode = !!process?.env?.CI || !!process?.env?.IS_TEST || context.isTesting || false
+		const info = await getSystemEnv(context, testMode)
 
-	// Check if multi-root is enabled and we have workspace roots
-	const isMultiRoot = context.isMultiRootEnabled && context.workspaceRoots && context.workspaceRoots.length > 1
+		// Check if multi-root is enabled and we have workspace roots
+		const isMultiRoot = context.isMultiRootEnabled && context.workspaceRoots && context.workspaceRoots.length > 1
 
-	let WORKSPACE_TITLE: string
-	let workingDirInfo: string
+		let WORKSPACE_TITLE: string
+		let workingDirInfo: string
 
-	if (isMultiRoot && context.workspaceRoots) {
-		// Multi-root workspace with feature flag enabled
-		WORKSPACE_TITLE = "Workspace Roots"
-		const rootsInfo = context.workspaceRoots
-			.map((root) => {
-				const vcsInfo = root.vcs ? ` (${root.vcs})` : ""
-				return `\n  - ${root.name}: ${root.path}${vcsInfo}`
-			})
-			.join("")
-		workingDirInfo = rootsInfo + `\n\nPrimary Working Directory: ${context.cwd}`
-	} else {
-		// Single workspace
-		WORKSPACE_TITLE = "Current Working Directory"
-		workingDirInfo = info.workingDir
-	}
+		if (isMultiRoot && context.workspaceRoots) {
+			// Multi-root workspace with feature flag enabled
+			WORKSPACE_TITLE = "Workspace Roots"
+			const rootsInfo = context.workspaceRoots
+				.map((root) => {
+					const vcsInfo = root.vcs ? ` (${root.vcs})` : ""
+					return `\n  - ${root.name}: ${root.path}${vcsInfo}`
+				})
+				.join("")
+			workingDirInfo = rootsInfo + `\n\nPrimary Working Directory: ${context.cwd}`
+		} else {
+			// Single workspace
+			WORKSPACE_TITLE = "Current Working Directory"
+			workingDirInfo = info.workingDir
+		}
 
-	const template = variant.componentOverrides?.[SystemPromptSection.SYSTEM_INFO]?.template || SYSTEM_INFO_TEMPLATE_TEXT
-
-	return new TemplateEngine().resolve(template, context, {
-		os: info.os,
-		ide: info.ide,
-		shell: info.shell,
-		homeDir: info.homeDir,
-		WORKSPACE_TITLE,
-		workingDir: workingDirInfo,
-	})
-}
+		return {
+			os: info.os,
+			ide: info.ide,
+			shell: info.shell,
+			homeDir: info.homeDir,
+			WORKSPACE_TITLE,
+			workingDir: workingDirInfo,
+		}
+	},
+})
