@@ -5,7 +5,7 @@ import { VSCodeButton, VSCodeDivider, VSCodeDropdown, VSCodeOption, VSCodeTag } 
 import deepEqual from "fast-deep-equal"
 import { memo, useCallback, useEffect, useRef, useState } from "react"
 import { useInterval } from "react-use"
-import { type ClineUser, handleSignOut } from "@/context/ClineAuthContext"
+import { handleSignOut } from "@/context/ClineAuthContext"
 import { AccountServiceClient } from "@/services/grpc-client"
 import VSCodeButtonLink from "../common/VSCodeButtonLink"
 import { AccountWelcomeView } from "./AccountWelcomeView"
@@ -14,16 +14,7 @@ import CreditsHistoryTable from "./CreditsHistoryTable"
 import { convertProtoUsageTransactions, getClineUris, getMainRole } from "./helpers"
 
 type AccountViewProps = {
-	clineUser: ClineUser | null
-	organizations: UserOrganization[] | null
-	activeOrganization: UserOrganization | null
 	onDone: () => void
-}
-
-type ClineAccountViewProps = {
-	clineUser: ClineUser
-	userOrganizations: UserOrganization[] | null
-	activeOrganization: UserOrganization | null
 }
 
 type CachedData = {
@@ -33,7 +24,7 @@ type CachedData = {
 	lastFetchTime: number
 }
 
-const AccountView = ({ onDone, clineUser, organizations, activeOrganization }: AccountViewProps) => {
+const AccountView = ({ onDone }: AccountViewProps) => {
 	return (
 		<div className="fixed inset-0 flex flex-col overflow-hidden pt-[10px] pl-[20px]">
 			<div className="flex justify-between items-center mb-[17px] pr-[17px]">

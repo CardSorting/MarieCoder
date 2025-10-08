@@ -1,11 +1,8 @@
 import { Accordion, AccordionItem } from "@heroui/react"
-import { EmptyRequest } from "@shared/proto/cline/common"
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { CSSProperties, memo, useState } from "react"
 import { useMount } from "react-use"
-import { useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { AccountServiceClient } from "@/services/grpc-client"
 import { getAsVar, VSC_DESCRIPTION_FOREGROUND, VSC_INACTIVE_SELECTION_BACKGROUND } from "@/utils/vscStyles"
 import VSCodeButtonLink from "../common/VSCodeButtonLink"
 import { useApiConfigurationHandlers } from "../settings/utils/useApiConfigurationHandlers"
@@ -43,9 +40,7 @@ Patch releases (3.19.1 → 3.19.2) will not trigger new announcements.
 */
 const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 	const minorVersion = version.split(".").slice(0, 2).join(".") // 2.0.0 -> 2.0
-	const { clineUser } = useClineAuth()
-	const { apiConfiguration, openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
-	const user = apiConfiguration?.clineAccountId ? clineUser : undefined
+	const { openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
 	const { handleFieldsChange } = useApiConfigurationHandlers()
 
 	const [didClickGrokCodeButton, setDidClickGrokCodeButton] = useState(false)
@@ -62,8 +57,8 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 			actModeOpenRouterModelId: modelId,
 			planModeOpenRouterModelInfo: openRouterModels[modelId],
 			actModeOpenRouterModelInfo: openRouterModels[modelId],
-			planModeApiProvider: "cline",
-			actModeApiProvider: "cline",
+			planModeApiProvider: "openrouter",
+			actModeApiProvider: "openrouter",
 		})
 
 		setTimeout(() => {
@@ -80,20 +75,14 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 			actModeOpenRouterModelId: modelId,
 			planModeOpenRouterModelInfo: openRouterModels[modelId],
 			actModeOpenRouterModelInfo: openRouterModels[modelId],
-			planModeApiProvider: "cline",
-			actModeApiProvider: "cline",
+			planModeApiProvider: "openrouter",
+			actModeApiProvider: "openrouter",
 		})
 
 		setTimeout(() => {
 			setDidClickCodeSupernovaButton(true)
 			setShowChatModelSelector(true)
 		}, 10)
-	}
-
-	const handleShowAccount = () => {
-		AccountServiceClient.accountLoginClicked(EmptyRequest.create()).catch((err) =>
-			console.error("Failed to get login URL:", err),
-		)
 	}
 
 	return (
@@ -124,35 +113,21 @@ const Announcement = ({ version, hideAnnouncement }: AnnouncementProps) => {
 					</VSCodeButtonLink>
 				</li>
 				<li>
-					<b>Free Models:</b> Try the new code-supernova-1-million stealth model, or grok-code-fast-1 for free!
+					<b>Models:</b> Try the new code-supernova-1-million stealth model, or grok-code-fast-1!
 					<br />
-					{user ? (
-						<div style={{ display: "flex", gap: "8px", flexWrap: "wrap", margin: "5px 0" }}>
-							{!didClickCodeSupernovaButton && (
-								<VSCodeButton appearance="primary" onClick={setCodeSupernova}>
-									Try code-supernova
-								</VSCodeButton>
-							)}
-							{!didClickGrokCodeButton && (
-								<VSCodeButton appearance="primary" onClick={setGrokCodeFast1}>
-									Try grok-code-fast-1
-								</VSCodeButton>
-							)}
-						</div>
-					) : (
-						<VSCodeButton appearance="primary" onClick={handleShowAccount} style={{ margin: "5px 0" }}>
-							Sign Up with Cline
-						</VSCodeButton>
-					)}
+					<div style={{ display: "flex", gap: "8px", flexWrap: "wrap", margin: "5px 0" }}>
+						{!didClickCodeSupernovaButton && (
+							<VSCodeButton appearance="primary" onClick={setCodeSupernova}>
+								Try code-supernova
+							</VSCodeButton>
+						)}
+						{!didClickGrokCodeButton && (
+							<VSCodeButton appearance="primary" onClick={setGrokCodeFast1}>
+								Try grok-code-fast-1
+							</VSCodeButton>
+						)}
+					</div>
 				</li>
-				{user && (
-					<li>
-						Updated the Terms of Service for Cline account users:{" "}
-						<VSCodeLink href="https://cline.bot/tos" style={linkStyle}>
-							https://cline.bot/tos
-						</VSCodeLink>
-					</li>
-				)}
 			</ul>
 			<div style={{ margin: "12px 0" }} />
 			<div style={{ margin: "-8px 0 -3px 0" }}>

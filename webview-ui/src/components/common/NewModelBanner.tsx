@@ -1,20 +1,17 @@
-import { EmptyRequest, Int64Request } from "@shared/proto/index.cline"
+import { Int64Request } from "@shared/proto/index.cline"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { Megaphone } from "lucide-react"
 import { useCallback } from "react"
 import { useMount } from "react-use"
-import { useClineAuth } from "@/context/ClineAuthContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { AccountServiceClient, StateServiceClient } from "@/services/grpc-client"
+import { StateServiceClient } from "@/services/grpc-client"
 import { getAsVar, VSC_INACTIVE_SELECTION_BACKGROUND } from "@/utils/vscStyles"
 import { useApiConfigurationHandlers } from "../settings/utils/useApiConfigurationHandlers"
 
 export const CURRENT_MODEL_BANNER_VERSION = 1
 
 export const NewModelBanner: React.FC = () => {
-	const { clineUser } = useClineAuth()
-	const { apiConfiguration, openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
-	const user = apiConfiguration?.clineAccountId ? clineUser : undefined
+	const { openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
 	const { handleFieldsChange } = useApiConfigurationHandlers()
 
 	// Need to get latest model list in case user hits shortcut button to set model
@@ -38,8 +35,8 @@ export const NewModelBanner: React.FC = () => {
 			actModeOpenRouterModelId: modelId,
 			planModeOpenRouterModelInfo: openRouterModels[modelId],
 			actModeOpenRouterModelInfo: openRouterModels[modelId],
-			planModeApiProvider: "cline",
-			actModeApiProvider: "cline",
+			planModeApiProvider: "openrouter",
+			actModeApiProvider: "openrouter",
 		})
 
 		setTimeout(() => {
@@ -51,18 +48,8 @@ export const NewModelBanner: React.FC = () => {
 		}, 50)
 	}
 
-	const handleShowAccount = () => {
-		AccountServiceClient.accountLoginClicked(EmptyRequest.create()).catch((err) =>
-			console.error("Failed to get login URL:", err),
-		)
-	}
-
 	const handleBannerClick = () => {
-		if (user) {
-			setNewModel()
-		} else {
-			handleShowAccount()
-		}
+		setNewModel()
 	}
 
 	return (
@@ -80,7 +67,7 @@ export const NewModelBanner: React.FC = () => {
 			</h4>
 			<p className="m-0">
 				Anthropic's latest model excels at complex planning and long-horizon coding tasks.{" "}
-				<span className="text-link cursor-pointer">{user ? "Try new model" : "Try with Cline account"} →</span>
+				<span className="text-link cursor-pointer">Try new model →</span>
 			</p>
 
 			{/* Close button */}
