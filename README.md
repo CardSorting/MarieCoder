@@ -31,7 +31,7 @@ Every action requires your approval. You're always in control.
 
 ```bash
 1. Install NormieDev in VS Code
-2. Add your AI API key (or use free local models)
+2. Add your AI API key
 3. Start chatting about what you want to build
 4. Review and approve changes
 5. Ship it
@@ -81,14 +81,7 @@ NormieDev works with any AI provider:
 
 **Cloud Providers:**
 - Anthropic Claude (high quality)
-- OpenAI GPT (well-rounded)
-- Google Gemini (fast & affordable)
 - OpenRouter (200+ models)
-- AWS Bedrock, Azure, GCP Vertex
-
-**Local & Private:**
-- Ollama (free, runs on your machine)
-- LM Studio (user-friendly local interface)
 
 Switch between them anytime. Use what fits your budget and privacy needs.
 
