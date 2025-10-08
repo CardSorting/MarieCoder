@@ -1,7 +1,14 @@
 import { mentionRegex } from "@shared/context-mentions"
 import { Fzf } from "fzf"
-import * as path from "path"
 import { PLATFORM_CONFIG } from "@/config/platform.config"
+
+/**
+ * Browser-compatible basename function (replaces Node.js path.basename)
+ */
+function basename(filePath: string): string {
+	const parts = filePath.split("/")
+	return parts[parts.length - 1] || filePath
+}
 
 export interface SearchResult {
 	path: string
@@ -133,7 +140,7 @@ export function getContextMenuOptions(
 		const item = {
 			type: result.type === "folder" ? ContextMenuOptionType.Folder : ContextMenuOptionType.File,
 			value: formattedPath,
-			label: result.label || path.basename(result.path),
+			label: result.label || basename(result.path),
 			description: formattedPath,
 		}
 		return item

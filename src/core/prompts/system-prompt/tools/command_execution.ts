@@ -25,7 +25,7 @@ const baseVariants = ToolFactory.createVariants(
 const gpt = {
 	variant: ModelFamily.GPT,
 	id: ClineDefaultTool.BASH,
-	name: "bash",
+	name: "execute_command",
 	description:
 		"Run an arbitrary terminal command at the root of the users project. E.g. `ls -la` for listing files, or `find` for searching latest version of the codebase files locally.",
 	parameters: [
@@ -39,6 +39,7 @@ const gpt = {
 			name: "requires_approval",
 			required: false,
 			instruction: "Whether the command is dangerous. If true, user will be asked to confirm.",
+			usage: "true or false",
 		},
 		createTimeoutParameter(),
 		createTaskProgressParameter(),
