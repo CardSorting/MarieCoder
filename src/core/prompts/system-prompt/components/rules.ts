@@ -12,8 +12,6 @@ const CORE_METHODOLOGY_RULES = `## 🎯 Core Philosophy (KonMari-Inspired)
 
 **Inspired by KonMari Method**: Honor what served us, learn from it, evolve with gratitude. Philosophy guides thinking; clarity guides code.
 
-**CRITICAL**: Never use "KonMari", "spark joy", or philosophical terms in code (variables, functions, comments). Keep philosophy in your heart and commit messages only.
-
 ### Before Any Change - Three Questions:
 1. **What purpose did this serve?** (Observe with curiosity)
 2. **What has this taught us?** (Learn with gratitude)
@@ -56,21 +54,24 @@ When code has completed its purpose:
 
 ## 🏗️ Architecture Standards
 
-### Required Patterns:
-- **Repository Pattern**: Separate data access from business logic
-- **Service Layer**: Only when business logic gets complex
-- **Django-style structure**: Organize by feature/domain, not type
-- **Composition over creation**: Use proven libraries
+### Core Principles:
+- **Separation of Concerns**: Separate data access from business logic
+- **Service Layer**: Only when business logic complexity justifies it
+- **Organize by Feature**: Group related functionality together (not by technical type)
+- **Composition Over Creation**: Prefer proven libraries over custom implementations
 
-### Database Requirements:
-- **MUST** expose Kysely query builders directly
-- **MUST** enable SQLite WAL mode for performance
+## ⚡ Performance Standards
 
-### Next.js Requirements:
-- **MUST use App Router** (not Pages Router)
-- **MUST default to Server Components**
-- **MUST implement error.tsx** and **loading.tsx**
-- **Performance targets**: <100ms page loads, <50ms queries
+### Target Benchmarks:
+- **Response Times**: Aim for <100ms for user-facing operations
+- **Database Queries**: Target <50ms per query
+- **API Endpoints**: Strive for <200ms response time
+
+### Performance Principles:
+- **Measure First**: Profile before optimizing
+- **Cache Strategically**: Cache expensive operations, not everything
+- **Optimize Queries**: Ensure proper indexing and query efficiency
+- **Handle Errors Gracefully**: Implement proper error boundaries
 
 ## 🙏 Mindset
 Honor existing work → Compose over create → Simplify with compassion → System-wide changes → Natural order: Architecture → Naming → Tests → Performance → Documentation
@@ -162,7 +163,7 @@ const IMPLEMENTATION_PATTERNS_RULES = `## 🎯 Implementation Workflows
 - [ ] Changes documented in commit
 - [ ] Patterns applied system-wide
 - [ ] Tests passing
-- [ ] Performance targets met (<100ms pages, <50ms queries)`
+- [ ] Performance targets met (<100ms operations, <50ms queries)`
 
 /**
  * Context-specific rules - Simplified and focused

@@ -6,24 +6,53 @@ Simple, focused UI components following the Marie Kondo methodology - keep only 
 
 ```
 normie-dev/
-├── header/           # Header components
-├── card/            # Card components  
-├── button/          # Button components
 ├── badge/           # Badge components
-├── welcome/         # Welcome screen components
+├── button/          # Button components
+├── card/            # Card components
 ├── chat/            # Chat interface components
-├── examples/        # Usage examples
+├── header/          # Header components
 └── index.ts         # Main exports
 ```
 
-## Usage
+## Available Components
 
+### Badge
 ```tsx
-import { NormieDevWelcome, NormieDevButton } from '@/components/normie-dev'
+import { NormieDevBadge } from '@/components/normie-dev'
 
-// Simple usage
-<NormieDevWelcome onGetStarted={handleStart} />
-<NormieDevButton variant="primary">Click me</NormieDevButton>
+<NormieDevBadge variant="primary">New</NormieDevBadge>
+```
+
+### Button
+```tsx
+import { NormieDevButton } from '@/components/normie-dev'
+
+<NormieDevButton variant="primary" onClick={handleClick}>
+  Click me
+</NormieDevButton>
+```
+
+### Card
+```tsx
+import { NormieDevCard } from '@/components/normie-dev'
+
+<NormieDevCard title="Card Title">
+  Card content goes here
+</NormieDevCard>
+```
+
+### Chat Header
+```tsx
+import { NormieDevChatHeader } from '@/components/normie-dev'
+
+<NormieDevChatHeader title="Chat" />
+```
+
+### Header
+```tsx
+import { NormieDevHeader } from '@/components/normie-dev'
+
+<NormieDevHeader>Page Title</NormieDevHeader>
 ```
 
 ## Services

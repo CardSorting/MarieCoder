@@ -15,8 +15,6 @@ priority: 1
 
 **Inspired by KonMari Method**: We approach code with Marie Kondo's mindfulness—honoring what served us, learning from it, and evolving with gratitude. Philosophy guides our thinking; clarity guides our code.
 
-**CRITICAL**: Never use "KonMari", "spark joy", or philosophical terms in code (variables, functions, comments). Keep philosophy in your heart and commit messages only.
-
 ### Before Any Change - Three Questions:
 
 1. **What purpose did this serve?** (Observe with curiosity)
@@ -36,7 +34,7 @@ When code has completed its purpose:
 
 **Example Commit Message**:
 ```
-feat: Migrate to NextAuth v5
+feat: Migrate to established authentication library
 
 Previous custom auth taught us session invalidation 
 and OAuth edge cases. Evolving to battle-tested solution.
@@ -90,25 +88,28 @@ Lessons applied:
 ### Error Handling Pattern (Required):
 
 ```typescript
-export class ValidationError extends NOORMError {
-  constructor(message: string, actionable?: string) {
-    super(message, 'VALIDATION_ERROR', actionable)
-  }
-}
-
-// Usage - ALWAYS include actionable guidance
+// ALWAYS include actionable guidance in error messages
 async function createUser(data: CreateUserData): Promise<User> {
   try {
     if (!data.email) {
-      throw new ValidationError(
-        'Email required', 
-        'Please provide a valid email address'
+      throw new Error(
+        'Email required. Please provide a valid email address'
       )
     }
+    
+    if (!isValidEmail(data.email)) {
+      throw new Error(
+        'Invalid email format. Please provide a valid email address (e.g., user@example.com)'
+      )
+    }
+    
     return await this.repository.create(data)
   } catch (error) {
-    if (error instanceof NOORMError) throw error
-    throw new DatabaseError('create user', error as Error)
+    // Re-throw validation errors with context
+    if (error instanceof Error) {
+      throw new Error(`Failed to create user: ${error.message}`)
+    }
+    throw error
   }
 }
 ```
@@ -117,23 +118,25 @@ async function createUser(data: CreateUserData): Promise<User> {
 
 ## 🏗️ Architecture Standards
 
-### Required Patterns:
+### Core Principles:
 
-**Repository Pattern** - Separate data access from business logic:
+- **Separation of Concerns** - Separate data access from business logic
+- **Service Layer** - Only when business logic complexity justifies it
+- **Organize by Feature** - Group related functionality together (not by technical type)
+- **Composition Over Creation** - Prefer proven libraries over custom implementations
+
+### Example Pattern:
+
 ```typescript
-export class UserRepository extends BaseRepository<'users'> {
-  async findByEmail(email: string): Promise<Database['users'] | null> {
-    return await this.db
-      .selectFrom('users')
-      .selectAll()
-      .where('email', '=', email.toLowerCase())
-      .executeTakeFirst()
+// Data Access Layer
+export class UserRepository {
+  async findByEmail(email: string): Promise<User | null> {
+    // Database-specific implementation
+    return await this.queryUserByEmail(email.toLowerCase())
   }
 }
-```
 
-**Service Layer** - Only when business logic gets complex:
-```typescript
+// Service Layer (when business logic complexity justifies it)
 export class UserService {
   constructor(private repo: UserRepository) {}
   
@@ -145,57 +148,23 @@ export class UserService {
 }
 ```
 
-### Database Requirements:
-
-- **MUST** expose Kysely query builders directly (`selectFrom`, `insertInto`, `updateTable`, `deleteFrom`)
-- **MUST** follow Django-style structure (organize by feature/domain, not type)
-- **MUST** enable SQLite WAL mode for performance
-- **PREFER** composition over creation (use proven libraries)
-
 ---
 
-## ⚡ Next.js Standards (Required)
+## ⚡ Performance Standards
 
-### Non-Negotiable:
+### Target Benchmarks:
 
-- **MUST use App Router** (not Pages Router)
-- **MUST default to Server Components** (Client Components only when needed)
-- **MUST implement error.tsx** for error boundaries
-- **MUST implement loading.tsx** for async operations
-- **MUST use NextAuth v5** for authentication
-- **MUST use Next.js Image** component for all images
+- **Response Times**: Aim for <100ms for user-facing operations
+- **Database Queries**: Target <50ms per query
+- **API Endpoints**: Strive for <200ms response time
 
-### Performance Targets:
+### Performance Principles:
 
-- Page loads: **<100ms**
-- Database queries: **<50ms**
-
-### App Router Pattern (Required):
-
-```typescript
-// app/dashboard/page.tsx - Server Component by default
-import { db } from '@/lib/db'
-import { auth } from '@/lib/auth'
-
-export default async function DashboardPage() {
-  const session = await auth()
-  if (!session) redirect('/auth/signin')
-  
-  const users = await db.getRepository('users').findAll()
-  return <UserList users={users} />
-}
-
-// app/admin/users/actions.ts - Server Actions
-'use server'
-export async function createUser(formData: FormData) {
-  const user = await db.getRepository('users').create({
-    name: formData.get('name') as string,
-    email: formData.get('email') as string
-  })
-  revalidatePath('/admin/users')
-  return user
-}
-```
+- **Measure First** - Profile before optimizing
+- **Cache Strategically** - Cache expensive operations, not everything
+- **Optimize Queries** - Ensure proper indexing and query efficiency
+- **Load Progressively** - Show content incrementally when appropriate
+- **Handle Errors Gracefully** - Implement proper error boundaries
 
 ---
 
@@ -217,10 +186,10 @@ export async function createUser(formData: FormData) {
 - [ ] JSDoc on public APIs
 
 ### Performance:
-- [ ] Page loads <100ms
-- [ ] DB queries <50ms
-- [ ] App Router patterns
-- [ ] Server Components default
+- [ ] Response times <100ms for user-facing operations
+- [ ] Database queries <50ms
+- [ ] Proper caching strategies implemented
+- [ ] Error boundaries in place
 
 ### Before Completing:
 - [ ] All linter errors resolved
@@ -266,7 +235,7 @@ export async function createUser(formData: FormData) {
 ### The Path:
 
 - **Honor existing work** → Learn from it before changing it
-- **Compose over create** → Use proven tools (Next.js, Kysely, SQLite)
+- **Compose over create** → Use proven tools and libraries over custom implementations
 - **Simplify with compassion** → Evolution, not demolition
 - **System-wide changes** → Address patterns everywhere, not piecemeal
 - **Natural order** → Architecture → Naming → Tests → Performance → Documentation
