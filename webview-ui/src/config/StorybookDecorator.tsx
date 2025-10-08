@@ -1,7 +1,6 @@
 import { cn } from "@heroui/react"
 import type { Decorator } from "@storybook/react-vite"
 import React from "react"
-import { ClineAuthContext, ClineAuthContextType, ClineAuthProvider, useClineAuth } from "@/context/ClineAuthContext"
 import {
 	ExtensionStateContext,
 	ExtensionStateContextProvider,
@@ -41,9 +40,7 @@ function StorybookDecoratorProvider(className = "relative"): Decorator {
 		return (
 			<div className={className}>
 				<ExtensionStateContextProvider>
-					<ClineAuthProvider>
-						<ThemeHandler theme={parameters?.globals?.theme}>{React.createElement(story)}</ThemeHandler>
-					</ClineAuthProvider>
+					<ThemeHandler theme={parameters?.globals?.theme}>{React.createElement(story)}</ThemeHandler>
 				</ExtensionStateContextProvider>
 			</div>
 		)
@@ -59,23 +56,12 @@ const ExtensionStateProviderWithOverrides: React.FC<{
 	return <ExtensionStateContext.Provider value={{ ...extensionState, ...overrides }}>{children}</ExtensionStateContext.Provider>
 }
 
-const ClineAuthProviderWithOverrides: React.FC<{
-	overrides?: Partial<ClineAuthContextType>
-	children: React.ReactNode
-}> = ({ overrides, children }) => {
-	const authContext = useClineAuth()
-	return <ClineAuthContext.Provider value={{ ...authContext, ...overrides }}>{children}</ClineAuthContext.Provider>
-}
-
 export const createStorybookDecorator =
-	(overrideStates?: Partial<ExtensionStateContextType>, classNames?: string, authOverrides?: Partial<ClineAuthContextType>) =>
-	(Story: any) => (
+	(overrideStates?: Partial<ExtensionStateContextType>, classNames?: string) => (Story: any) => (
 		<ExtensionStateProviderWithOverrides overrides={overrideStates}>
-			<ClineAuthProviderWithOverrides overrides={authOverrides}>
-				<div className={cn("max-w-lg mx-auto", classNames)}>
-					<Story />
-				</div>
-			</ClineAuthProviderWithOverrides>
+			<div className={cn("max-w-lg mx-auto", classNames)}>
+				<Story />
+			</div>
 		</ExtensionStateProviderWithOverrides>
 	)
 

@@ -14,13 +14,6 @@ const createMockMessage = (overrides: Partial<ClineMessage> = {}): ClineMessage 
 	...overrides,
 })
 
-const createMockAuthState = (overrides: any = {}) => ({
-	clineUser: null,
-	activeOrganization: null,
-	isAuthenticated: false,
-	...overrides,
-})
-
 const createMockExtensionState = (overrides: any = {}) => ({
 	version: "1.0.0",
 	clineMessages: [],
@@ -31,17 +24,16 @@ const createMockExtensionState = (overrides: any = {}) => ({
 
 // Reusable decorators
 const createStoryDecorator =
-	(authOverrides: any = {}, extensionOverrides: any = {}) =>
+	(extensionOverrides: any = {}) =>
 	(Story: any) => {
 		const mockExtensionState = useMemo(
 			() => ({
 				state: { ...createMockExtensionState(extensionOverrides) },
-				auth: { ...createMockAuthState(authOverrides) },
 			}),
 			[],
 		)
 
-		return createStorybookDecorator(mockExtensionState.state, "p-4", mockExtensionState.auth)(Story)
+		return createStorybookDecorator(mockExtensionState.state, "p-4")(Story)
 	}
 
 const meta: Meta<typeof ErrorRow> = {
@@ -183,12 +175,7 @@ export const AuthenticationErrors: Story = {
 // Auth error when signed in (shows different UI)
 export const AuthErrorSignedIn: Story = {
 	...AuthenticationErrors,
-	decorators: [
-		createStoryDecorator({
-			clineUser: { id: "user123", email: "user@example.com" },
-			isAuthenticated: true,
-		}),
-	],
+	decorators: [createStoryDecorator()],
 	args: {
 		message: createMockMessage(),
 		errorType: "error",

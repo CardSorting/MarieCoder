@@ -2,7 +2,6 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import type { ComponentProps } from "react"
 import React from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { ClineAuthProvider } from "@/context/ClineAuthContext"
 import Announcement from "../Announcement"
 
 // Mock the VSCode webview toolkit
@@ -16,8 +15,6 @@ vi.mock("@vscode/webview-ui-toolkit/react", () => ({
 vi.mock("@/services/grpc-client", () => ({
 	AccountServiceClient: {
 		accountLoginClicked: vi.fn().mockResolvedValue({}),
-		subscribeToAuthStatusUpdate: vi.fn().mockReturnValue(() => {}),
-		getUserOrganizations: vi.fn().mockResolvedValue({ organizations: [] }),
 	},
 }))
 
@@ -60,7 +57,7 @@ vi.mock("@/context/ExtensionStateContext", () => ({
 
 // Test wrapper component that provides all necessary contexts
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-	return <ClineAuthProvider>{children}</ClineAuthProvider>
+	return <>{children}</>
 }
 
 describe("Announcement", () => {
