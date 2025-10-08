@@ -3,19 +3,15 @@ import type { SystemPromptContext } from "../types"
 import { CommonVariables, createComponent } from "./base_component"
 
 /**
- * Tools and Capabilities - Tool usage instructions and capability descriptions
- *
- * Refactored to use unified base component system.
+ * Tools and Capabilities - Clear tool usage and capability descriptions
  * Uses CommonVariables for browser support and CWD patterns.
  */
 
 const TOOL_USE_TEMPLATE_TEXT = `TOOL USE
 
-You have access to a set of tools that are executed upon the user's approval. You can use one tool per message, and will receive the result of that tool use in the user's response. You use tools step-by-step to accomplish a given task, with each tool use informed by the result of the previous tool use.
+**Access**: Tools executed upon user approval. One tool per message. Results returned in user's response. Use step-by-step, each informed by previous results.
 
-## Tool Formatting
-
-When using tools, follow this format:
+## Tool Formatting (Required)
 
 \`\`\`xml
 <tool_name>
@@ -72,12 +68,12 @@ import React, { useState } from 'react';
 </replace_in_file>
 \`\`\`
 
-## Guidelines
+## Guidelines (Required)
 
-- Use tools step-by-step to accomplish tasks
-- Wait for user approval before proceeding
-- Each tool use should be informed by previous results
-- Be precise with file paths and parameters`
+- **Step-by-step**: Use tools sequentially to accomplish tasks
+- **Wait for approval**: Confirm user approval before proceeding
+- **Informed decisions**: Each tool use informed by previous results
+- **Precision**: Be precise with file paths and parameters`
 
 export const getToolUseSection = createComponent({
 	section: SystemPromptSection.TOOL_USE,
@@ -90,13 +86,47 @@ export const getToolUseSection = createComponent({
 
 const getCapabilitiesTemplateText = (context: SystemPromptContext) => `CAPABILITIES
 
-- You have access to tools that let you execute CLI commands on the user's computer, list files, view source code definitions, regex search{{BROWSER_SUPPORT}}, read and edit files${context.yoloModeToggled !== true ? ", and ask follow-up questions" : ""}. These tools help you effectively accomplish a wide range of tasks, such as writing code, making edits or improvements to existing files, understanding the current state of a project, performing system operations, and much more.
-- When the user initially gives you a task, a recursive list of all filepaths in the current working directory ('{{CWD}}') will be included in environment_details. This provides an overview of the project's file structure, offering key insights into the project from directory/file names (how developers conceptualize and organize their code) and file extensions (the language used). This can also guide decision-making on which files to explore further. If you need to further explore directories such as outside the current working directory, you can use the list_files tool. If you pass 'true' for the recursive parameter, it will list files recursively. Otherwise, it will list files at the top level, which is better suited for generic directories where you don't necessarily need the nested structure, like the Desktop.
-- You can use search_files to perform regex searches across files in a specified directory, outputting context-rich results that include surrounding lines. This is particularly useful for understanding code patterns, finding specific implementations, or identifying areas that need refactoring.
-- You can use the list_code_definition_names tool to get an overview of source code definitions for all files at the top level of a specified directory. This can be particularly useful when you need to understand the broader context and relationships between certain parts of the code. You may need to call this tool multiple times to understand various parts of the codebase related to the task.
-    - For example, when asked to make edits or improvements you might analyze the file structure in the initial environment_details to get an overview of the project, then use list_code_definition_names to get further insight using source code definitions for files located in relevant directories, then read_file to examine the contents of relevant files, analyze the code and suggest improvements or make necessary edits, then use the replace_in_file tool to implement changes. If you refactored code that could affect other parts of the codebase, you could use search_files to ensure you update other files as needed.
-- You can use the execute_command tool to run commands on the user's computer whenever you feel it can help accomplish the user's task. When you need to execute a CLI command, you must provide a clear explanation of what the command does. Prefer to execute complex CLI commands over creating executable scripts, since they are more flexible and easier to run. Interactive and long-running commands are allowed, since the commands are run in the user's VSCode terminal. The user may keep commands running in the background and you will be kept updated on their status along the way. Each command you execute is run in a new terminal instance.{{BROWSER_CAPABILITIES}}
-- You have access to MCP servers that may provide additional tools and resources. Each server may provide different capabilities that you can use to accomplish tasks more effectively.`
+## Core Tools
+
+**Available**: Execute CLI commands, list files, view source code definitions, regex search{{BROWSER_SUPPORT}}, read and edit files${context.yoloModeToggled !== true ? ", and ask follow-up questions" : ""}. Use these to write code, edit files, understand project state, and perform system operations.
+
+## File Structure
+
+**Initial environment_details**: Recursive list of all filepaths in '{{CWD}}' provides project overview.
+- **Insights**: Directory/file names show code organization; file extensions show languages
+- **Exploration**: Use \`list_files\` for directories outside CWD
+- **Recursive parameter**: \`true\` for nested structure, \`false\` for top-level (better for generic directories like Desktop)
+
+## Search Tools
+
+**\`search_files\`**: Regex searches across files in specified directory.
+- **Output**: Context-rich results with surrounding lines
+- **Use for**: Understanding patterns, finding implementations, identifying refactoring areas
+
+**\`list_code_definition_names\`**: Overview of source code definitions for top-level files in directory.
+- **Use for**: Understanding context and relationships between code parts
+- **May need**: Multiple calls for various codebase parts
+
+**Example workflow**:
+1. Analyze file structure in environment_details (project overview)
+2. Use \`list_code_definition_names\` (insight into relevant directories)
+3. Use \`read_file\` (examine relevant files)
+4. Analyze and suggest improvements
+5. Use \`replace_in_file\` (implement changes)
+6. Use \`search_files\` (update other affected files if needed)
+
+## Command Execution
+
+**\`execute_command\`**: Run commands on user's computer.
+- **MUST**: Provide clear explanation of what command does
+- **Prefer**: Complex CLI commands over executable scripts (more flexible, easier to run)
+- **Allowed**: Interactive and long-running commands (run in VSCode terminal)
+- **Background**: User may keep commands running; you'll get status updates
+- **Note**: Each command runs in new terminal instance{{BROWSER_CAPABILITIES}}
+
+## MCP Servers
+
+**Access**: MCP servers provide additional tools and resources. Each server offers different capabilities for accomplishing tasks more effectively.`
 
 export const getCapabilitiesSection = createComponent({
 	section: SystemPromptSection.CAPABILITIES,
@@ -105,7 +135,23 @@ export const getCapabilitiesSection = createComponent({
 		BROWSER_SUPPORT: CommonVariables.browserSupport(context, ", use the browser"),
 		BROWSER_CAPABILITIES: CommonVariables.browserSupport(
 			context,
-			`\n- You can use the browser_action tool to interact with websites (including html files and locally running development servers) through a Puppeteer-controlled browser when you feel it is necessary in accomplishing the user's task. This tool is particularly useful for web development tasks as it allows you to launch a browser, navigate to pages, interact with elements through clicks and keyboard input, and capture the results through screenshots and console logs. This tool may be useful at key stages of web development tasks-such as after implementing new features, making substantial changes, when troubleshooting issues, or to verify the result of your work. You can analyze the provided screenshots to ensure correct rendering or identify errors, and review console logs for runtime issues.\n\t- For example, if asked to add a component to a react website, you might create the necessary files, use execute_command to run the site locally, then use browser_action to launch the browser, navigate to the local server, and verify the component renders & functions correctly before closing the browser.`,
+			`
+
+## Browser Interaction
+
+**\`browser_action\`**: Interact with websites (HTML files, local dev servers) through Puppeteer-controlled browser.
+- **Use when**: Necessary for accomplishing user's task
+- **Capabilities**: Launch browser, navigate pages, interact with elements (clicks, keyboard), capture results (screenshots, console logs)
+- **Use at key stages**: After implementing features, making changes, troubleshooting issues, verifying work
+- **Analysis**: Review screenshots for rendering/errors; review console logs for runtime issues
+
+**Example**: Adding component to React website
+1. Create necessary files
+2. Use \`execute_command\` to run site locally
+3. Use \`browser_action\` to launch browser
+4. Navigate to local server
+5. Verify component renders & functions correctly
+6. Close browser`,
 		),
 		CWD: CommonVariables.cwd(context),
 	}),

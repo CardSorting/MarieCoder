@@ -1,133 +1,94 @@
 ---
-description: NOORMME Refined Consolidated Rules - A mindful practice for compassionate, intentional software development
+description: NOORMME Development Standards - Compassionate, intentional software development inspired by KonMari
 globs: '**/*.{ts,tsx,js,jsx}'
 alwaysApply: true
 priority: 1
 ---
 
-# NOORMME Refined Consolidated Rules
+# NOORMME Development Standards
 
-> *These aren't rules to be enforced - they're practices to be cultivated. Read them as guidance, not gospel. Each principle invites you to pause, reflect, and choose with intention. There is no perfection here, only continuous, compassionate evolution.*
+> *Guidance, not gospel. Pause, reflect, and choose with intention. Continuous evolution over perfection.*
 
 ---
 
-## 🎯 **Core Philosophy: The NORMIE DEV Method**
+## 🎯 Core Philosophy
 
-**Philosophical Foundation**: This methodology is inspired by and directly applies the **KonMari Method** (Marie Kondo's organizing philosophy) to software development. Like a daily meditation practice, we mindfully observe each piece of code, architecture decision, and abstraction, asking with compassion: "Does this serve us well?"
+**Inspired by KonMari Method**: We approach code with Marie Kondo's mindfulness—honoring what served us, learning from it, and evolving with gratitude. Philosophy guides our thinking; clarity guides our code.
 
-**An Important Distinction**: While our philosophy is rooted in the KonMari Method, we keep this inspiration in our hearts, not our code. Avoid including "KonMari", "Marie Kondo", or "spark joy" references in variable names, functions, or comments. Let the philosophy guide your thinking; let clarity guide your implementation.
+**CRITICAL**: Never use "KonMari", "spark joy", or philosophical terms in code (variables, functions, comments). Keep philosophy in your heart and commit messages only.
 
-**The Golden Rule**: Honor what has served us, learn from it, and let go with gratitude when it's time to evolve.
+### Before Any Change - Three Questions:
 
-### The Mindful Reflection Process (A meditation for every change):
+1. **What purpose did this serve?** (Observe with curiosity)
+2. **What has this taught us?** (Learn with gratitude)  
+3. **What brings clarity now?** (Choose with intention)
 
-Before touching any code, pause and reflect:
+### Six-Step Evolution Process:
 
-1. **Observe with Curiosity** 
-   - *"What purpose did this code serve when it was created?"*
-   - Honor the intention and lessons embedded here
-   - Recognize the context and constraints of that moment
+When code has completed its purpose:
 
-2. **Learn with Gratitude**
-   - *"What has this code taught us about our needs?"*
-   - Extract the wisdom: What patterns work? What causes friction?
-   - Thank this code for revealing our path forward
+1. **OBSERVE** - Understand why it exists and what it taught us
+2. **APPRECIATE** - Honor the problems it solved
+3. **LEARN** - Extract wisdom from patterns and friction
+4. **EVOLVE** - Build clearer implementations with those lessons
+5. **RELEASE** - Let go of old code once new path is stable
+6. **SHARE** - Document lessons in commit messages
 
-3. **Choose with Intention**
-   - *"What would bring clarity and ease to future developers?"*
-   - Simplify with compassion, not aggression
-   - Let go of what no longer serves, making space for what does
-
-### KonMari Principles Applied to Code:
-
-Just as Marie Kondo's method transforms cluttered spaces through gratitude and intention, we approach software with the same reverence:
-
-1. **Commit to Mindful Evolution**: Each refactor is an act of care, not demolition. We improve with intention, not haste.
-
-2. **Tidy by Category, Not Location**: Address patterns system-wide (all repositories, all services) to honor the interconnected nature of our work.
-
-3. **Keep What Serves Us**: Not "delete what doesn't spark joy," but rather "honor and release what has completed its purpose."
-
-4. **Follow the Natural Order**: Architecture → Naming → Tests → Performance → Documentation. Each step prepares the foundation for the next.
-
-5. **Express Gratitude Before Releasing**: 
-   - In commit messages, acknowledge: "This approach taught us X, now we evolve to Y"
-   - Recognize that "legacy" code was once "modern" code doing its best
-   - Every change is a lesson learned, not a mistake corrected
-
-### Compassionate Transformation Practices:
-
-When encountering code that needs evolution:
-
-- **Pause**: Take a moment to understand *why* it exists
-- **Appreciate**: Recognize the problem it was solving
-- **Learn**: Extract the wisdom from what worked and what didn't
-- **Evolve**: Create something clearer, informed by these lessons
-- **Release**: Let go of the old implementation with gratitude
-- **Document**: Share the learning in your commit message
-
-**Example Commit Messages That Honor the Journey**:
+**Example Commit Message**:
 ```
-feat: Evolve authentication to NextAuth v5
+feat: Migrate to NextAuth v5
 
-The previous custom auth served us well and taught us our exact 
-needs. Now we honor those lessons by adopting a maintained solution
-that handles edge cases we've discovered along the way.
+Previous custom auth taught us session invalidation 
+and OAuth edge cases. Evolving to battle-tested solution.
 
-What we learned:
-- Session management requires careful invalidation
-- OAuth flows need robust error handling
+Lessons applied:
+- Robust session management required
+- OAuth needs comprehensive error handling
 - Security updates must be timely
-
-Thank you to the original implementation for showing us the way.
 ```
-
-### Intentional Release (Not Deletion):
-
-When code has completed its purpose, we release it with intention:
-
-- **OBSERVE** what the old implementation taught us
-- **APPRECIATE** the problems it solved in its time
-- **LEARN** from patterns that caused friction
-- **EVOLVE** to simpler, clearer implementations
-- **RELEASE** the old code once the new path is clear
-- **SHARE** the lessons learned in documentation
-
-### Composition Over Creation - Standing on Shoulders:
-- **Honor Existing Excellence**: Use proven tools (Next.js, Kysely, SQLite) that others have refined through years of learning
-- **Compose, Don't Recreate**: Build by connecting excellent pieces rather than reinventing from scratch - this respects the collective wisdom of the community
-- **Recognize Maintenance as a Gift**: Every tool we don't build is one we don't have to maintain, freeing energy for what truly makes our project unique
-
-### Naming Conventions - Clarity as a Gift:
-- **Self-Explanatory Names**: Choose names that immediately convey purpose and bring understanding
-- **Avoid Cognitive Load**: Skip cryptic abbreviations - honor future readers with clarity
-- **Embrace Descriptiveness**: Let names tell their own story without explanation
-
-#### File Naming Standards:
-- **snake_case** for multi-word files: `user_authentication.ts`, `database_connection.ts`
-- **Descriptive verbs**: `manager`, `builder`, `optimizer`, `organizer`, `validator`
-- **Clear nouns**: `prompt`, `variant`, `template`, `tool`, `response`
-- **Examples**:
-  - ✅ `prompt_manager.ts` - Manages prompts
-  - ✅ `response_formatters.ts` - Formats responses
-  - ✅ `context_summarization.ts` - Summarizes context
-  - ❌ `PromptRegistry.ts` - Unclear purpose
-  - ❌ `loadMcpDocumentation.ts` - Too verbose and unclear
 
 ---
 
-## 🔧 **Type Safety & Code Quality - A Foundation of Trust**
+## 📝 Naming Standards (Non-Negotiable)
 
-**Why These Practices Matter**: Type safety, validation, and tests aren't bureaucratic overhead - they're acts of compassion. They catch mistakes before they cause pain. They document intent when memory fades. They create confidence for future changes. Each practice is a small gift to your future self and teammates.
+### Files - MUST use snake_case:
+```
+✅ prompt_manager.ts
+✅ response_formatters.ts
+✅ context_summarization.ts
+❌ PromptRegistry.ts (wrong case)
+❌ loadMcpDocumentation.ts (camelCase)
+```
 
-### Practices That Serve Us Well:
-- **Embrace Strong Typing**: Choose specific types over `any` - they guide future understanding and catch errors before they reach production
-- **Create Helpful Error Messages**: Design error classes that compassionately guide users toward solutions, turning frustrating moments into clear paths forward
-- **Validate with Care**: Check inputs before database operations - protect data integrity with intention, preventing corruption before it happens
-- **Test Thoughtfully**: Cover public methods with tests (aim for 80%+) - they're living documentation that never lies and safety nets that never sleep
-- **Document Generously**: Add JSDoc comments to public APIs - share your understanding with those who follow, reducing confusion and accelerating their journey
+**Use descriptive verbs**: `manager`, `builder`, `optimizer`, `organizer`, `validator`  
+**Use clear nouns**: `prompt`, `variant`, `template`, `tool`, `response`
 
-### Error Handling Pattern:
+### Variables & Functions:
+- **MUST be self-explanatory** without comments
+- **NO abbreviations** (except: `id`, `url`, `api`)
+- **Indicate type/purpose**: `getUserById()`, `isValidEmail()`, `userCount`
+
+---
+
+## 🔧 Type Safety & Quality (Required)
+
+### Non-Negotiable Rules:
+
+✅ **DO**:
+- Use specific types (never `any` without explicit justification)
+- Validate ALL inputs before database operations
+- Write tests for public methods (target 80%+ coverage)
+- Add JSDoc to all public APIs
+- Create actionable error messages with fix guidance
+
+❌ **DON'T**:
+- Use `any` type casually
+- Skip input validation
+- Leave public APIs undocumented
+- Write vague error messages
+
+### Error Handling Pattern (Required):
+
 ```typescript
 export class ValidationError extends NOORMError {
   constructor(message: string, actionable?: string) {
@@ -135,11 +96,14 @@ export class ValidationError extends NOORMError {
   }
 }
 
-// Usage
+// Usage - ALWAYS include actionable guidance
 async function createUser(data: CreateUserData): Promise<User> {
   try {
     if (!data.email) {
-      throw new ValidationError('Email required', 'Please provide a valid email')
+      throw new ValidationError(
+        'Email required', 
+        'Please provide a valid email address'
+      )
     }
     return await this.repository.create(data)
   } catch (error) {
@@ -151,16 +115,11 @@ async function createUser(data: CreateUserData): Promise<User> {
 
 ---
 
-## 🏗️ **Database & Architecture - Building with Care**
+## 🏗️ Architecture Standards
 
-### Patterns That Bring Clarity:
-- **Honor Kysely's Design**: Expose its query builders directly (`selectFrom`, `insertInto`, `updateTable`, `deleteFrom`) - they're already clear and well-crafted
-- **Separate Concerns Mindfully**: Use repositories for data access, services for business logic - let each layer breathe
-- **Organize with Intention**: Follow Django-style folder structure - familiar patterns reduce cognitive load
-- **Layer Thoughtfully**: Introduce service layers when business logic grows complex - simplicity first, abstraction when it serves
-- **Configure for Performance**: Enable SQLite's WAL mode - honor your users' time with fast, reliable data access
+### Required Patterns:
 
-### Database Pattern:
+**Repository Pattern** - Separate data access from business logic:
 ```typescript
 export class UserRepository extends BaseRepository<'users'> {
   async findByEmail(email: string): Promise<Database['users'] | null> {
@@ -171,7 +130,10 @@ export class UserRepository extends BaseRepository<'users'> {
       .executeTakeFirst()
   }
 }
+```
 
+**Service Layer** - Only when business logic gets complex:
+```typescript
 export class UserService {
   constructor(private repo: UserRepository) {}
   
@@ -183,21 +145,35 @@ export class UserService {
 }
 ```
 
+### Database Requirements:
+
+- **MUST** expose Kysely query builders directly (`selectFrom`, `insertInto`, `updateTable`, `deleteFrom`)
+- **MUST** follow Django-style structure (organize by feature/domain, not type)
+- **MUST** enable SQLite WAL mode for performance
+- **PREFER** composition over creation (use proven libraries)
+
 ---
 
-## ⚡ **Next.js & Performance - Honoring User Experience**
+## ⚡ Next.js Standards (Required)
 
-### Practices That Create Joy:
-- **Embrace App Router**: Choose App Router over Pages Router - it represents Next.js's evolved understanding of server/client patterns
-- **Prefer Server Components**: Default to Server Components, add Client Components when interactivity calls for them
-- **Handle Errors with Grace**: Implement error boundaries and loading states - uncertainty is stressful for users
-- **Secure with Care**: Configure NextAuth v5 - protect your users' trust with battle-tested authentication
-- **Optimize Images Thoughtfully**: Use Next.js Image component - fast loading shows respect for users' time and bandwidth
-- **Target Performance Benchmarks**: Aim for <100ms page loads, <50ms query times - speed is a feature that serves everyone
+### Non-Negotiable:
 
-### App Router Pattern:
+- **MUST use App Router** (not Pages Router)
+- **MUST default to Server Components** (Client Components only when needed)
+- **MUST implement error.tsx** for error boundaries
+- **MUST implement loading.tsx** for async operations
+- **MUST use NextAuth v5** for authentication
+- **MUST use Next.js Image** component for all images
+
+### Performance Targets:
+
+- Page loads: **<100ms**
+- Database queries: **<50ms**
+
+### App Router Pattern (Required):
+
 ```typescript
-// app/dashboard/page.tsx
+// app/dashboard/page.tsx - Server Component by default
 import { db } from '@/lib/db'
 import { auth } from '@/lib/auth'
 
@@ -209,7 +185,7 @@ export default async function DashboardPage() {
   return <UserList users={users} />
 }
 
-// app/admin/users/actions.ts
+// app/admin/users/actions.ts - Server Actions
 'use server'
 export async function createUser(formData: FormData) {
   const user = await db.getRepository('users').create({
@@ -223,168 +199,90 @@ export async function createUser(formData: FormData) {
 
 ---
 
-## ✨ **Mindful Checkpoints - A Practice of Quality**
+## ✅ Quality Checklist
 
-### Before You Begin (A Moment of Intention):
-- [ ] **Pause in Mindfulness**: Take a breath and understand what exists today
-- [ ] **Set Your Intention**: Envision what would bring clarity and ease
-- [ ] **Plan for Clarity**: Imagine names that immediately reveal their purpose
-- [ ] **Design for Safety**: Think through how to guide users when things go wrong
-- [ ] **Consider Structure**: Picture how pieces will fit together harmoniously
-- [ ] **Honor Performance**: Plan patterns that respect everyone's time
+### Before Starting:
+- [ ] Understand existing code and patterns
+- [ ] Plan clear, descriptive names
+- [ ] Design error handling with actionable messages
+- [ ] Consider architecture (repositories, services)
+- [ ] Identify performance requirements
 
-### As You Build (Gentle Reminders):
-- [ ] TypeScript flows smoothly, types guide the way
-- [ ] Names speak clearly without needing explanation
-- [ ] Errors offer compassionate guidance toward solutions
-- [ ] Inputs are validated with care before touching data
-- [ ] Tests document behavior (aim for 80%+ coverage as a practice)
-- [ ] Public APIs include thoughtful JSDoc comments
+### During Development:
+- [ ] Strict TypeScript (no casual `any`)
+- [ ] Self-documenting names
+- [ ] Actionable error messages
+- [ ] Validate all inputs
+- [ ] Write tests (80%+ target)
+- [ ] JSDoc on public APIs
 
-### Performance Aspirations:
-- [ ] Page loads feel instant (<100ms)
-- [ ] Database queries respond swiftly (<50ms)
-- [ ] App Router patterns guide the architecture
-- [ ] Server Components carry the default load
+### Performance:
+- [ ] Page loads <100ms
+- [ ] DB queries <50ms
+- [ ] App Router patterns
+- [ ] Server Components default
 
-### After You Complete (Reflection & Gratitude):
-- [ ] Code reads cleanly, errors have been resolved
-- [ ] Names create immediate understanding
-- [ ] Evolution is documented with lessons learned
-- [ ] Patterns flow with intention throughout
-- [ ] Quality brings confidence to those who follow
-
----
-
-## 🎯 **Context-Aware Implementation Guide**
-
-### For New Features:
-1. **Reflect**: Apply the mindful reflection process
-2. **Learn**: Study existing patterns and their lessons
-3. **Plan**: Design with type safety, architecture, and performance in mind
-4. **Implement**: Build with care and intention
-5. **Validate**: Ensure quality and clarity
-
-### For Refactoring:
-1. **Observe with curiosity**: What patterns have completed their purpose?
-2. **Learn with gratitude**: What lessons does this code offer?
-3. **Envision with intention**: What would serve future developers better?
-4. **Evolve mindfully**: Implement the new pattern with care
-5. **Release with grace**: Once stable, let go of the old implementation
-6. **Document the journey**: Share what you learned
-
-### For Bug Fixes:
-1. **Seek Understanding**: Explore the root cause with curiosity - what pattern led here?
-2. **Fix with Compassion**: Address the underlying issue, not just the visible symptom
-3. **Protect with Tests**: Add coverage that prevents this path from breaking again
-4. **Share the Learning**: Update documentation so others benefit from this discovery
-5. **Strengthen Patterns**: Apply type safety and validation to make the issue impossible
+### Before Completing:
+- [ ] All linter errors resolved
+- [ ] Names immediately clear
+- [ ] Changes documented in commit
+- [ ] Patterns applied system-wide
+- [ ] Tests passing
 
 ---
 
-## 📚 **The KonMari-Inspired Development Mindset**
+## 🎯 Implementation Workflows
 
-This ruleset applies **Marie Kondo's KonMari Method** to software engineering. Every principle, pattern, and practice derives from asking: "Does this spark joy for developers?"
+### New Features:
+1. **Reflect** → Study existing patterns
+2. **Plan** → Design with type safety and performance
+3. **Implement** → Build with clear names and validation
+4. **Test** → Cover public APIs (80%+ target)
+5. **Document** → JSDoc and commit messages with context
 
-### Why KonMari for Code?
+### Refactoring:
+1. **Observe** → What patterns completed their purpose?
+2. **Learn** → What lessons does this offer?
+3. **Envision** → What would serve better?
+4. **Evolve** → Implement new pattern
+5. **Release** → Remove old code once stable
+6. **Document** → Share lessons learned
 
-Marie Kondo revolutionized organizing by focusing on joy and gratitude rather than just efficiency. We apply the same compassionate transformation to software:
-
-- **Cluttered Codebases** → Clean, maintainable systems that breathe
-- **Overwhelming Abstractions** → Simple, clear patterns that guide naturally
-- **Frustrating Developer Experience** → Joyful, productive workflows that inspire
-- **Code That Has Completed Its Purpose** → Space for fresh, modern solutions that serve current needs
-
-### The Transformation Journey:
-
-1. **Envision Your Ideal**: Picture a codebase where every file speaks clearly, every function reveals its purpose, and every abstraction serves with intention
-
-2. **Simplify Before Reorganizing**: When code has completed its purpose, release it with gratitude before building the new path - this creates space for clarity
-
-3. **Honor the Natural Order**: Like seasons flowing one into another - Architecture → Naming → Tests → Performance → Documentation - each step nurtures the next
-
-4. **Release Without Regret**: The effort that went into past code taught us valuable lessons; we honor those lessons by evolving to something better
-
-5. **Choose Clarity Daily**: Every commit is an opportunity to bring more ease and understanding to the codebase
-
-### Implementation Clarity (Important Note):
-
-**Keep Philosophy and Code Separate** - Our mindful approach guides *how we think*, but our code stays professional:
-
-```typescript
-// ❌ Philosophy language doesn't belong in code
-function doesThisSparkJoy() { }
-const konmariApprovedValue = 42
-// This component brings me joy
-```
-
-```typescript
-// ✅ Clean, descriptive, professional
-function validateUserInput(data: UserData): ValidationResult { }
-const DEFAULT_CACHE_TTL = 3600
-// Returns normalized email address for database lookup
-```
-
-Think with compassion and intention. Code with clarity and purpose. The KonMari philosophy lives in our hearts and commit messages, not in our variable names.
+### Bug Fixes:
+1. **Understand** → Find root cause, not just symptom
+2. **Fix** → Address underlying issue
+3. **Test** → Prevent regression
+4. **Document** → Share discovery
+5. **Strengthen** → Add type safety/validation to prevent recurrence
 
 ---
 
-## 🙏 **Daily Practice: A Developer's Meditation**
+## 🙏 Mindset
 
-Before each coding session, take a moment to center yourself:
+**Before each session**, remember:
 
-> *"I honor the code that came before me.*
-> 
-> *I learn from every pattern, every choice, every pivot.*
-> 
-> *I recognize that 'legacy' was once innovative, solving real problems with the knowledge available at the time.*
-> 
-> *I approach refactoring not as criticism, but as evolution - each change a step forward on a shared journey.*
-> 
-> *I will write code that brings clarity and ease to those who follow.*
-> 
-> *I will release what no longer serves us with gratitude, making space for better solutions.*
-> 
-> *I will document not just what changed, but what we learned.*
-> 
-> *Every commit is an act of care for my future self and my teammates."*
+*"I honor the code before me. I learn from every pattern. 'Legacy' was once innovative. I refactor not as criticism, but evolution. I write for clarity. I release with gratitude. I document what we learned. Every commit cares for future developers."*
 
-### The Path Forward
+### The Path:
 
-This isn't about being ruthless - it's about being intentional. It's not about perfection - it's about continuous, compassionate improvement.
+- **Honor existing work** → Learn from it before changing it
+- **Compose over create** → Use proven tools (Next.js, Kysely, SQLite)
+- **Simplify with compassion** → Evolution, not demolition
+- **System-wide changes** → Address patterns everywhere, not piecemeal
+- **Natural order** → Architecture → Naming → Tests → Performance → Documentation
 
-**We don't delete code because we hate it** - we release it because we've learned from it and found a better way.
+### Remember:
 
-**We don't refactor to criticize past decisions** - we evolve to honor the lessons those decisions taught us.
+This isn't about perfection or ruthlessness—it's about **intentional, compassionate improvement**.
 
-**We don't enforce rigid standards** - we practice habits that create clarity and reduce suffering for future developers (including our future selves).
-
-Every line of code tells a story. Every refactor is a new chapter. Every bug fix is a lesson learned. 
-
-Write yours with compassion, implement with intention, and trust that each small act of care compounds into a codebase that brings peace.
-
----
-
-**Remember**: Software development is a continuous practice of learning, evolving, and making space for better solutions. Treat each change as a meditation - observe, learn, and act with intention.
-
-This methodology is inspired by **Marie Kondo's KonMari Method** - applied with compassion to create codebases that developers love working in, where every change honors the journey and every line serves with purpose.
-
----
-
-## 🌱 **A Final Reflection**
-
-Software development is hard. We make mistakes. We write code we later regret. We inherit systems we don't fully understand. We face deadlines that don't allow for perfection.
-
-**This is all okay.**
-
-These practices aren't about judgment or criticism. They're about making each day a little better than the last. They're about reducing suffering - both for ourselves and for those who will touch this code after us.
-
-When you see code that needs evolution, respond with curiosity rather than criticism. When you refactor, do so with gratitude for what came before. When you write tests, do so out of care for future stability. When you choose clear names, do so out of love for future understanding.
+- We **release** code because we learned better ways (not because we hate it)
+- We **evolve** to honor lessons (not to criticize past decisions)
+- We **practice** clarity habits (not enforce rigid rules)
 
 **Be gentle with yourself. Be gentle with the code. Be gentle with those who came before.**
 
-The codebase will improve not through force, but through consistent, compassionate attention - one mindful change at a time.
+Each small act of care compounds into a codebase that brings clarity and ease.
 
-*May your code bring clarity. May your refactors bring peace. May your commits honor the journey.*
+---
 
-🙏
+*Philosophy guides thinking. Clarity guides implementation. Compassion guides evolution.*

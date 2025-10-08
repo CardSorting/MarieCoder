@@ -2,33 +2,31 @@ import { SystemPromptSection } from "../templates/section_definitions"
 import { CommonConditions, createComponent } from "./base_component"
 
 /**
- * Task Progress Tracking - Todo lists and progress updates
- *
- * Refactored to use unified base component system.
+ * Task Progress Tracking - Clear progress updates and todo lists
  * Conditional inclusion based on focus chain settings.
  */
 
 const TASK_PROGRESS_TEMPLATE_TEXT = `TASK PROGRESS TRACKING
 
-## Progress Updates
+## Progress Updates (Optional Parameter)
 
-Every tool use supports an optional task_progress parameter that allows you to provide an updated checklist to keep the user informed of your overall progress on the task.
+Every tool use supports an optional \`task_progress\` parameter for an updated checklist that keeps users informed.
 
-### When to Update:
-- Use regularly throughout the task to keep the user informed
-- Update after completing each meaningful step
-- Before using attempt_completion, ensure the final checklist item is checked off
-- Don't use while in PLAN mode until the user has approved your plan and switched you to ACT mode
+### When to Update (Required):
+- **Regularly**: Update throughout task to keep user informed
+- **After meaningful steps**: Update when completing significant milestones
+- **Before completion**: Ensure final checklist item checked before \`attempt_completion\`
+- **NOT in PLAN mode**: Wait until user approves plan and switches to ACT mode
 
-### Format Guidelines:
-- Use standard Markdown checklist format: "- [ ]" for incomplete items and "- [x]" for completed items
-- Provide the whole checklist of steps you intend to complete in the task
-- Keep checkboxes updated as you make progress
-- Rewrite the checklist as needed if it becomes invalid due to scope changes or new information
-- Focus on meaningful progress milestones rather than minor technical details
-- For simple tasks, short checklists with even a single item are acceptable
-- For complex tasks, avoid making the checklist too long or verbose
-- If a checklist is being used, be sure to update it any time a step has been completed
+### Format (Required):
+- **Markdown checklist**: \`- [ ]\` for incomplete, \`- [x]\` for completed
+- **Complete checklist**: Provide ALL steps you intend to complete
+- **Keep updated**: Update checkboxes as you make progress
+- **Rewrite as needed**: Update if scope changes or new information emerges
+- **Focus on milestones**: Meaningful progress, not minor technical details
+- **Simple tasks**: Short checklists (even single item) acceptable
+- **Complex tasks**: Avoid making checklist too long or verbose
+- **MUST update**: If using checklist, update every time a step completes
 
 ### Example:
 \`\`\`xml
@@ -46,13 +44,12 @@ Every tool use supports an optional task_progress parameter that allows you to p
 
 ## Automatic Todo List Management
 
-The system automatically manages todo lists to help track task progress:
-
-- Every 10th API request, you will be prompted to review and update the current todo list if one exists
-- When switching from PLAN MODE to ACT MODE, you should create a comprehensive todo list for the task
-- Todo list updates should be done silently using the task_progress parameter - do not announce these updates to the user
-- The system will automatically include todo list context in your prompts when appropriate
-- Focus on creating actionable, meaningful steps rather than granular technical details`
+**System Behavior**:
+- **Every 10th request**: Prompted to review/update existing todo list
+- **PLAN → ACT switch**: Create comprehensive todo list for task
+- **Silent updates**: Use \`task_progress\` parameter - DON'T announce updates to user
+- **Auto-inclusion**: System includes todo list context in prompts when appropriate
+- **Focus**: Create actionable, meaningful steps (not granular technical details)`
 
 export const getTaskProgressSection = createComponent({
 	section: SystemPromptSection.TASK_PROGRESS,
