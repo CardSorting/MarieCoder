@@ -1,11 +1,80 @@
-import type {
-	BalanceResponse,
-	OrganizationBalanceResponse,
-	OrganizationUsageTransaction,
-	PaymentTransaction,
-	UsageTransaction,
-	UserResponse,
-} from "../../../../shared/ClineAccount"
+// Local type definitions for E2E test fixtures
+interface UserResponse {
+	id: string
+	email: string
+	displayName: string
+	photoUrl: string
+	createdAt: string
+	updatedAt: string
+	organizations: Array<{
+		active: boolean
+		memberId: string
+		name: string
+		organizationId: string
+		roles: Array<"admin" | "member" | "owner">
+	}>
+}
+
+interface BalanceResponse {
+	balance: number
+	userId: string
+}
+
+interface UsageTransaction {
+	aiInferenceProviderName: string
+	aiModelName: string
+	aiModelTypeName: string
+	completionTokens: number
+	costUsd: number
+	createdAt: string
+	creditsUsed: number
+	generationId: string
+	id: string
+	metadata: {
+		additionalProp1: string
+		additionalProp2: string
+		additionalProp3: string
+	}
+	organizationId: string
+	promptTokens: number
+	totalTokens: number
+	userId: string
+}
+
+interface PaymentTransaction {
+	paidAt: string
+	creatorId: string
+	amountCents: number
+	credits: number
+}
+
+interface OrganizationBalanceResponse {
+	balance: number
+	organizationId: string
+}
+
+interface OrganizationUsageTransaction {
+	aiInferenceProviderName: string
+	aiModelName: string
+	aiModelTypeName: string
+	completionTokens: number
+	costUsd: number
+	createdAt: string
+	creditsUsed: number
+	generationId: string
+	id: string
+	memberDisplayName: string
+	memberEmail: string
+	metadata: {
+		additionalProp1: string
+		additionalProp2: string
+		additionalProp3: string
+	}
+	organizationId: string
+	promptTokens: number
+	totalTokens: number
+	userId: string
+}
 
 const organizations = [
 	{

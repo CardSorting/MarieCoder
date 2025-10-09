@@ -67,17 +67,12 @@ async function handleMissingDependency(
 /**
  * Handles sign-in errors for dictation
  */
-async function handleSignInError(controller: Controller, errorMessage: string): Promise<void> {
-	const signInAction = "Sign in to Cline"
-	const action = await HostProvider.window.showMessage({
+async function handleSignInError(_controller: Controller, errorMessage: string): Promise<void> {
+	await HostProvider.window.showMessage({
 		type: ShowMessageType.ERROR,
 		message: `Voice recording error: ${errorMessage}`,
-		options: { items: [signInAction] },
+		options: { items: [] },
 	})
-
-	if (action.selectedOption === signInAction) {
-		await controller.authService.createAuthRequest()
-	}
 }
 
 /**
@@ -110,12 +105,6 @@ export const startRecording = async (controller: Controller): Promise<RecordingR
 	const _taskId = controller.task?.taskId
 
 	try {
-		// Verify user authentication
-		const userInfo = controller.authService.getInfo()
-		if (!userInfo?.user?.uid) {
-			throw new Error("Please sign in to your Cline Account to use Dictation.")
-		}
-
 		// Attempt to start recording
 		const result = await audioRecordingService.startRecording()
 

@@ -109,7 +109,6 @@ export class ConfigurationService {
 			"openRouterModelId",
 			"openRouterModelInfo",
 			"openRouterProviderSorting",
-			"clineAccountId",
 		]
 
 		for (const key of commonKeys) {

@@ -54,7 +54,6 @@ export class Controller {
 
 	mcpHub: McpHub
 	readonly stateManager: StateManager
-	readonly authService: import("@/services/account/ClineAccountService").ClineAccountService
 
 	// NEW: Add workspace manager (optional initially)
 	private workspaceManager?: WorkspaceRootManager
@@ -63,7 +62,6 @@ export class Controller {
 		PromptRegistry.getInstance() // Ensure prompts and tools are registered
 		HostProvider.get().logToChannel("NormieProvider instantiated")
 		this.stateManager = StateManager.get()
-		this.authService = require("@/services/account/ClineAccountService").ClineAccountService.getInstance()
 
 		StateManager.get().registerCallbacks({
 			onPersistenceError: async ({ error }: PersistenceErrorEvent) => {

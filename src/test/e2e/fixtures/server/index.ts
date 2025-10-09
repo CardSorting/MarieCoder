@@ -2,9 +2,35 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import type { Socket } from "node:net"
 import { parse } from "node:url"
 import { v4 as uuidv4 } from "uuid"
-import type { BalanceResponse, OrganizationBalanceResponse, UserResponse } from "../../../../shared/ClineAccount"
 import { E2E_MOCK_API_RESPONSES, E2E_REGISTERED_MOCK_ENDPOINTS } from "./api"
 import { ClineDataMock } from "./data"
+
+// Local type definitions for E2E test fixtures
+interface UserResponse {
+	id: string
+	email: string
+	displayName: string
+	photoUrl: string
+	createdAt: string
+	updatedAt: string
+	organizations: Array<{
+		active: boolean
+		memberId: string
+		name: string
+		organizationId: string
+		roles: Array<"admin" | "member" | "owner">
+	}>
+}
+
+interface BalanceResponse {
+	balance: number
+	userId: string
+}
+
+interface OrganizationBalanceResponse {
+	balance: number
+	organizationId: string
+}
 
 const E2E_API_SERVER_PORT = 7777
 
