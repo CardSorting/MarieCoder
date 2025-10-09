@@ -77,11 +77,13 @@ export const MessagesArea: React.FC<MessagesAreaProps> = ({
 						Footer: () => <div style={{ height: 5 }} />, // Add empty padding at the bottom
 					}}
 					data={groupedMessages}
-					// increasing top by 3_000 to prevent jumping around when user collapses a row
+					// Optimized viewport buffering for better performance
+					// Top: 3000px to prevent jumping when user collapses rows
+					// Bottom: 10000px provides smooth scroll-to-bottom while using less memory than MAX_SAFE_INTEGER
 					increaseViewportBy={{
 						top: 3_000,
-						bottom: Number.MAX_SAFE_INTEGER,
-					}} // hack to make sure the last message is always rendered to get truly perfect scroll to bottom animation when new messages are added (Number.MAX_SAFE_INTEGER is safe for arithmetic operations, which is all virtuoso uses this value for in src/sizeRangeSystem.ts)
+						bottom: 10_000,
+					}}
 					initialTopMostItemIndex={groupedMessages.length - 1} // messages is the raw format returned by extension, modifiedMessages is the manipulated structure that combines certain messages of related type, and visibleMessages is the filtered structure that removes messages that should not be rendered
 					itemContent={itemContent}
 					key={task.ts}

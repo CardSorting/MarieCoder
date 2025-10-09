@@ -20,15 +20,29 @@ import { ClineMessage } from "./ExtensionMessage"
  */
 export function combineApiRequests(messages: ClineMessage[]): ClineMessage[] {
 	const combinedApiRequests: ClineMessage[] = []
+	// Cache to avoid repeated JSON parsing
+	const parsedCache = new Map<number, any>()
+
+	// Parse JSON only once per message
+	const getParsedText = (msg: ClineMessage): any => {
+		if (!parsedCache.has(msg.ts)) {
+			try {
+				parsedCache.set(msg.ts, JSON.parse(msg.text || "{}"))
+			} catch {
+				parsedCache.set(msg.ts, {})
+			}
+		}
+		return parsedCache.get(msg.ts)
+	}
 
 	for (let i = 0; i < messages.length; i++) {
 		if (messages[i].type === "say" && messages[i].say === "api_req_started") {
-			const startedRequest = JSON.parse(messages[i].text || "{}")
+			const startedRequest = getParsedText(messages[i])
 			let j = i + 1
 
 			while (j < messages.length) {
 				if (messages[j].type === "say" && messages[j].say === "api_req_finished") {
-					const finishedRequest = JSON.parse(messages[j].text || "{}")
+					const finishedRequest = getParsedText(messages[j])
 					const combinedRequest = {
 						...startedRequest,
 						...finishedRequest,

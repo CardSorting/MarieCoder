@@ -147,23 +147,28 @@ export class GitOperations {
 			suppressErrors: true,
 		})
 
-		// For each nested .git directory, rename it based on operation
-		for (const gitPath of gitPaths) {
-			const fullPath = path.join(this.cwd, gitPath)
-			let newPath: string
-			if (disable) {
-				newPath = fullPath + GIT_DISABLED_SUFFIX
-			} else {
-				newPath = fullPath.endsWith(GIT_DISABLED_SUFFIX) ? fullPath.slice(0, -GIT_DISABLED_SUFFIX.length) : fullPath
-			}
+		// Parallelize rename operations for better performance
+		await Promise.all(
+			gitPaths.map(async (gitPath) => {
+				const fullPath = path.join(this.cwd, gitPath)
+				let newPath: string
+				if (disable) {
+					newPath = fullPath + GIT_DISABLED_SUFFIX
+				} else {
+					newPath = fullPath.endsWith(GIT_DISABLED_SUFFIX) ? fullPath.slice(0, -GIT_DISABLED_SUFFIX.length) : fullPath
+				}
 
-			try {
-				await fs.rename(fullPath, newPath)
-				console.log(`CheckpointTracker ${disable ? "disabled" : "enabled"} nested git repo ${gitPath}`)
-			} catch (error) {
-				console.error(`CheckpointTracker failed to ${disable ? "disable" : "enable"} nested git repo ${gitPath}:`, error)
-			}
-		}
+				try {
+					await fs.rename(fullPath, newPath)
+					console.log(`CheckpointTracker ${disable ? "disabled" : "enabled"} nested git repo ${gitPath}`)
+				} catch (error) {
+					console.error(
+						`CheckpointTracker failed to ${disable ? "disable" : "enable"} nested git repo ${gitPath}:`,
+						error,
+					)
+				}
+			}),
+		)
 	}
 
 	/**

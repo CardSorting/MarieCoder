@@ -4,6 +4,7 @@ import { writeFileSync } from "node:fs"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react-swc"
 import { resolve } from "path"
+import { visualizer } from "rollup-plugin-visualizer"
 import { defineConfig, type Plugin, ViteDevServer } from "vite"
 
 // Custom plugin to write the server port to a file
@@ -38,7 +39,22 @@ if (!VALID_PLATFORMS.includes(platform)) {
 console.log("Building webview for", platform)
 
 export default defineConfig({
-	plugins: [react(), tailwindcss(), writePortToFile()],
+	plugins: [
+		react(),
+		tailwindcss(),
+		writePortToFile(),
+		// Bundle size analyzer - generates stats.html when ANALYZE=true
+		...(process.env.ANALYZE
+			? [
+					visualizer({
+						open: true,
+						filename: "bundle-stats.html",
+						gzipSize: true,
+						brotliSize: true,
+					}),
+				]
+			: []),
+	],
 	test: {
 		environment: "jsdom",
 		globals: true,

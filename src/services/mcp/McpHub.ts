@@ -70,9 +70,13 @@ export class McpHub {
 	}
 
 	getServers(): McpServer[] {
-		// Only return enabled servers
-
-		return this.connections.filter((conn) => !conn.server.disabled).map((conn) => conn.server)
+		// Only return enabled servers - optimized single pass
+		return this.connections.reduce<McpServer[]>((acc, conn) => {
+			if (!conn.server.disabled) {
+				acc.push(conn.server)
+			}
+			return acc
+		}, [])
 	}
 
 	async getMcpSettingsFilePath(): Promise<string> {

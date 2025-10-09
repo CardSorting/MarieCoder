@@ -12,7 +12,8 @@ import { type TerminalProfile } from "@shared/proto/cline/state"
 import { convertProtoToClineMessage } from "@shared/proto-conversions/cline-message"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
 import type React from "react"
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import { debug, logError } from "@/utils/debug_logger"
 import {
 	basetenDefaultModelId,
 	basetenModels,
@@ -111,12 +112,12 @@ export const ExtensionStateContextProvider: React.FC<{
 	const closeMcpView = useCallback(() => {
 		setShowMcp(false)
 		setMcpTab(undefined)
-	}, [setShowMcp, setMcpTab])
+	}, []) // setState functions are stable
 
 	// Hide functions
-	const hideSettings = useCallback(() => setShowSettings(false), [setShowSettings])
-	const hideHistory = useCallback(() => setShowHistory(false), [setShowHistory])
-	const hideChatModelSelector = useCallback(() => setShowChatModelSelector(false), [setShowChatModelSelector])
+	const hideSettings = useCallback(() => setShowSettings(false), [])
+	const hideHistory = useCallback(() => setShowHistory(false), [])
+	const hideChatModelSelector = useCallback(() => setShowChatModelSelector(false), [])
 
 	// Navigation functions
 	const navigateToMcp = useCallback(
@@ -128,26 +129,26 @@ export const ExtensionStateContextProvider: React.FC<{
 			}
 			setShowMcp(true)
 		},
-		[setShowMcp, setMcpTab, setShowSettings, setShowHistory],
+		[], // setState functions are stable
 	)
 
 	const navigateToSettings = useCallback(() => {
 		setShowHistory(false)
 		closeMcpView()
 		setShowSettings(true)
-	}, [setShowSettings, setShowHistory, closeMcpView])
+	}, [closeMcpView])
 
 	const navigateToHistory = useCallback(() => {
 		setShowSettings(false)
 		closeMcpView()
 		setShowHistory(true)
-	}, [setShowSettings, closeMcpView, setShowHistory])
+	}, [closeMcpView])
 
 	const navigateToChat = useCallback(() => {
 		setShowSettings(false)
 		closeMcpView()
 		setShowHistory(false)
-	}, [setShowSettings, closeMcpView, setShowHistory])
+	}, [closeMcpView])
 
 	const [state, setState] = useState<ExtensionState>({
 		version: "",
@@ -161,7 +162,6 @@ export const ExtensionStateContextProvider: React.FC<{
 		openaiReasoningEffort: "medium",
 		mode: "act",
 		platform: DEFAULT_PLATFORM,
-		telemetrySetting: "unset",
 		distinctId: "",
 		planActSeparateModelsSetting: true,
 		enableCheckpointsSetting: true,
@@ -186,6 +186,7 @@ export const ExtensionStateContextProvider: React.FC<{
 		favoritedModelIds: [],
 		lastDismissedInfoBannerVersion: 0,
 		lastDismissedModelBannerVersion: 0,
+		shouldShowAnnouncement: false,
 
 		// NEW: Add workspace information with defaults
 		workspaceRoots: [],
@@ -275,22 +276,22 @@ export const ExtensionStateContextProvider: React.FC<{
 
 							setDidHydrateState(true)
 
-							console.log("[DEBUG] returning new state in ESC")
+							debug.log("[DEBUG] returning new state in ESC")
 
 							return newState
 						})
 					} catch (error) {
-						console.error("Error parsing state JSON:", error)
-						console.log("[DEBUG] ERR getting state", error)
+						logError("Error parsing state JSON:", error)
+						debug.log("[DEBUG] ERR getting state", error)
 					}
 				}
-				console.log('[DEBUG] ended "got subscribed state"')
+				debug.log('[DEBUG] ended "got subscribed state"')
 			},
 			onError: (error) => {
-				console.error("Error in state subscription:", error)
+				logError("Error in state subscription:", error)
 			},
 			onComplete: () => {
-				console.log("State subscription completed")
+				debug.log("State subscription completed")
 			},
 		})
 
@@ -299,14 +300,14 @@ export const ExtensionStateContextProvider: React.FC<{
 			{},
 			{
 				onResponse: () => {
-					console.log("[DEBUG] Received mcpButtonClicked event from gRPC stream")
+					debug.log("[DEBUG] Received mcpButtonClicked event from gRPC stream")
 					navigateToMcp()
 				},
 				onError: (error) => {
-					console.error("Error in mcpButtonClicked subscription:", error)
+					logError("Error in mcpButtonClicked subscription:", error)
 				},
 				onComplete: () => {
-					console.log("mcpButtonClicked subscription completed")
+					debug.log("mcpButtonClicked subscription completed")
 				},
 			},
 		)
@@ -317,14 +318,14 @@ export const ExtensionStateContextProvider: React.FC<{
 			{
 				onResponse: () => {
 					// When history button is clicked, navigate to history view
-					console.log("[DEBUG] Received history button clicked event from gRPC stream")
+					debug.log("[DEBUG] Received history button clicked event from gRPC stream")
 					navigateToHistory()
 				},
 				onError: (error) => {
-					console.error("Error in history button clicked subscription:", error)
+					logError("Error in history button clicked subscription:", error)
 				},
 				onComplete: () => {
-					console.log("History button clicked subscription completed")
+					debug.log("History button clicked subscription completed")
 				},
 			},
 		)
@@ -335,11 +336,11 @@ export const ExtensionStateContextProvider: React.FC<{
 			{
 				onResponse: () => {
 					// When chat button is clicked, navigate to chat
-					console.log("[DEBUG] Received chat button clicked event from gRPC stream")
+					debug.log("[DEBUG] Received chat button clicked event from gRPC stream")
 					navigateToChat()
 				},
 				onError: (error) => {
-					console.error("Error in chat button subscription:", error)
+					logError("Error in chat button subscription:", error)
 				},
 				onComplete: () => {},
 			},
@@ -348,11 +349,11 @@ export const ExtensionStateContextProvider: React.FC<{
 		// Subscribe to didBecomeVisible events
 		didBecomeVisibleUnsubscribeRef.current = UiServiceClient.subscribeToDidBecomeVisible(EmptyRequest.create({}), {
 			onResponse: () => {
-				console.log("[DEBUG] Received didBecomeVisible event from gRPC stream")
+				debug.log("[DEBUG] Received didBecomeVisible event from gRPC stream")
 				window.dispatchEvent(new CustomEvent("focusChatInput"))
 			},
 			onError: (error) => {
-				console.error("Error in didBecomeVisible subscription:", error)
+				logError("Error in didBecomeVisible subscription:", error)
 			},
 			onComplete: () => {},
 		})
@@ -360,16 +361,16 @@ export const ExtensionStateContextProvider: React.FC<{
 		// Subscribe to MCP servers updates
 		mcpServersSubscriptionRef.current = McpServiceClient.subscribeToMcpServers(EmptyRequest.create(), {
 			onResponse: (response) => {
-				console.log("[DEBUG] Received MCP servers update from gRPC stream")
+				debug.log("[DEBUG] Received MCP servers update from gRPC stream")
 				if (response.mcpServers) {
 					setMcpServers(convertProtoMcpServersToMcpServers(response.mcpServers))
 				}
 			},
 			onError: (error) => {
-				console.error("Error in MCP servers subscription:", error)
+				logError("Error in MCP servers subscription:", error)
 			},
 			onComplete: () => {
-				console.log("MCP servers subscription completed")
+				debug.log("MCP servers subscription completed")
 			},
 		})
 
@@ -380,10 +381,10 @@ export const ExtensionStateContextProvider: React.FC<{
 				navigateToSettings()
 			},
 			onError: (error) => {
-				console.error("Error in settings button clicked subscription:", error)
+				logError("Error in settings button clicked subscription:", error)
 			},
 			onComplete: () => {
-				console.log("Settings button clicked subscription completed")
+				debug.log("Settings button clicked subscription completed")
 			},
 		})
 
@@ -393,7 +394,7 @@ export const ExtensionStateContextProvider: React.FC<{
 				try {
 					// Validate critical fields
 					if (!protoMessage.ts || protoMessage.ts <= 0) {
-						console.error("Invalid timestamp in partial message:", protoMessage)
+						logError("Invalid timestamp in partial message:", protoMessage)
 						return
 					}
 
@@ -409,35 +410,35 @@ export const ExtensionStateContextProvider: React.FC<{
 						return prevState
 					})
 				} catch (error) {
-					console.error("Failed to process partial message:", error, protoMessage)
+					logError("Failed to process partial message:", error, protoMessage)
 				}
 			},
 			onError: (error) => {
-				console.error("Error in partialMessage subscription:", error)
+				logError("Error in partialMessage subscription:", error)
 			},
 			onComplete: () => {
-				console.log("[DEBUG] partialMessage subscription completed")
+				debug.log("[DEBUG] partialMessage subscription completed")
 			},
 		})
 
 		// Subscribe to MCP marketplace catalog updates
 		mcpMarketplaceUnsubscribeRef.current = McpServiceClient.subscribeToMcpMarketplaceCatalog(EmptyRequest.create({}), {
 			onResponse: (catalog) => {
-				console.log("[DEBUG] Received MCP marketplace catalog update from gRPC stream")
+				debug.log("[DEBUG] Received MCP marketplace catalog update from gRPC stream")
 				setMcpMarketplaceCatalog(catalog)
 			},
 			onError: (error) => {
-				console.error("Error in MCP marketplace catalog subscription:", error)
+				logError("Error in MCP marketplace catalog subscription:", error)
 			},
 			onComplete: () => {
-				console.log("MCP marketplace catalog subscription completed")
+				debug.log("MCP marketplace catalog subscription completed")
 			},
 		})
 
 		// Subscribe to OpenRouter models updates
 		openRouterModelsUnsubscribeRef.current = ModelsServiceClient.subscribeToOpenRouterModels(EmptyRequest.create({}), {
 			onResponse: (response: OpenRouterCompatibleModelInfo) => {
-				console.log("[DEBUG] Received OpenRouter models update from gRPC stream")
+				debug.log("[DEBUG] Received OpenRouter models update from gRPC stream")
 				const models = response.models
 				setOpenRouterModels({
 					[openRouterDefaultModelId]: openRouterDefaultModelInfo, // in case the extension sent a model list without the default model
@@ -445,20 +446,20 @@ export const ExtensionStateContextProvider: React.FC<{
 				})
 			},
 			onError: (error) => {
-				console.error("Error in OpenRouter models subscription:", error)
+				logError("Error in OpenRouter models subscription:", error)
 			},
 			onComplete: () => {
-				console.log("OpenRouter models subscription completed")
+				debug.log("OpenRouter models subscription completed")
 			},
 		})
 
 		// Initialize webview using gRPC
 		UiServiceClient.initializeWebview(EmptyRequest.create({}))
 			.then(() => {
-				console.log("[DEBUG] Webview initialization completed via gRPC")
+				debug.log("[DEBUG] Webview initialization completed via gRPC")
 			})
 			.catch((error) => {
-				console.error("Failed to initialize webview via gRPC:", error)
+				logError("Failed to initialize webview via gRPC:", error)
 			})
 
 		// Fetch available terminal profiles on launch
@@ -467,7 +468,7 @@ export const ExtensionStateContextProvider: React.FC<{
 				setAvailableTerminalProfiles(response.profiles)
 			})
 			.catch((error) => {
-				console.error("Failed to fetch available terminal profiles:", error)
+				logError("Failed to fetch available terminal profiles:", error)
 			})
 
 		// Subscribe to relinquish control events
@@ -479,7 +480,7 @@ export const ExtensionStateContextProvider: React.FC<{
 				})
 			},
 			onError: (error) => {
-				console.error("Error in relinquishControl subscription:", error)
+				logError("Error in relinquishControl subscription:", error)
 			},
 			onComplete: () => {},
 		})
@@ -493,7 +494,7 @@ export const ExtensionStateContextProvider: React.FC<{
 					window.dispatchEvent(new CustomEvent("focusChatInput"))
 				},
 				onError: (error: Error) => {
-					console.error("Error in focusChatInput subscription:", error)
+					logError("Error in focusChatInput subscription:", error)
 				},
 				onComplete: () => {},
 			},
@@ -565,100 +566,134 @@ export const ExtensionStateContextProvider: React.FC<{
 					...models,
 				})
 			})
-			.catch((error: Error) => console.error("Failed to refresh OpenRouter models:", error))
+			.catch((error: Error) => logError("Failed to refresh OpenRouter models:", error))
 	}, [])
 
-	const contextValue: ExtensionStateContextType = {
-		...state,
-		didHydrateState,
-		openRouterModels,
-		openAiModels,
-		requestyModels,
-		groqModels: groqModelsState,
-		basetenModels: basetenModelsState,
-		huggingFaceModels,
-		vercelAiGatewayModels,
-		mcpServers,
-		mcpMarketplaceCatalog,
-		totalTasksSize,
-		availableTerminalProfiles,
-		showMcp,
-		mcpTab,
-		showSettings,
-		showHistory,
-		showChatModelSelector,
-		globalClineRulesToggles: state.globalClineRulesToggles || {},
-		localClineRulesToggles: state.localClineRulesToggles || {},
-		localCursorRulesToggles: state.localCursorRulesToggles || {},
-		localWindsurfRulesToggles: state.localWindsurfRulesToggles || {},
-		localWorkflowToggles: state.localWorkflowToggles || {},
-		globalWorkflowToggles: state.globalWorkflowToggles || {},
-		enableCheckpointsSetting: state.enableCheckpointsSetting,
-		currentFocusChainChecklist: state.currentFocusChainChecklist,
+	// Memoize context value to prevent unnecessary re-renders
+	const contextValue = useMemo<ExtensionStateContextType>(
+		() => ({
+			...state,
+			didHydrateState,
+			openRouterModels,
+			openAiModels,
+			requestyModels,
+			groqModels: groqModelsState,
+			basetenModels: basetenModelsState,
+			huggingFaceModels,
+			vercelAiGatewayModels,
+			mcpServers,
+			mcpMarketplaceCatalog,
+			totalTasksSize,
+			availableTerminalProfiles,
+			showMcp,
+			mcpTab,
+			showSettings,
+			showHistory,
+			showChatModelSelector,
+			globalClineRulesToggles: state.globalClineRulesToggles || {},
+			localClineRulesToggles: state.localClineRulesToggles || {},
+			localCursorRulesToggles: state.localCursorRulesToggles || {},
+			localWindsurfRulesToggles: state.localWindsurfRulesToggles || {},
+			localWorkflowToggles: state.localWorkflowToggles || {},
+			globalWorkflowToggles: state.globalWorkflowToggles || {},
+			enableCheckpointsSetting: state.enableCheckpointsSetting,
+			currentFocusChainChecklist: state.currentFocusChainChecklist,
 
-		// Navigation functions
-		navigateToMcp,
-		navigateToSettings,
-		navigateToHistory,
-		navigateToChat,
+			// Navigation functions
+			navigateToMcp,
+			navigateToSettings,
+			navigateToHistory,
+			navigateToChat,
 
-		// Hide functions
-		hideSettings,
-		hideHistory,
-		hideChatModelSelector,
-		setShowChatModelSelector,
-		setMcpServers: (mcpServers: McpServer[]) => setMcpServers(mcpServers),
-		setRequestyModels: (models: Record<string, ModelInfo>) => setRequestyModels(models),
-		setGroqModels: (models: Record<string, ModelInfo>) => setGroqModels(models),
-		setBasetenModels: (models: Record<string, ModelInfo>) => setBasetenModels(models),
-		setHuggingFaceModels: (models: Record<string, ModelInfo>) => setHuggingFaceModels(models),
-		setVercelAiGatewayModels: (models: Record<string, ModelInfo>) => setVercelAiGatewayModels(models),
-		setMcpMarketplaceCatalog: (catalog: McpMarketplaceCatalog) => setMcpMarketplaceCatalog(catalog),
-		setShowMcp,
-		closeMcpView,
-		setGlobalClineRulesToggles: (toggles) =>
-			setState((prevState) => ({
-				...prevState,
-				globalClineRulesToggles: toggles,
-			})),
-		setLocalClineRulesToggles: (toggles) =>
-			setState((prevState) => ({
-				...prevState,
-				localClineRulesToggles: toggles,
-			})),
-		setLocalCursorRulesToggles: (toggles) =>
-			setState((prevState) => ({
-				...prevState,
-				localCursorRulesToggles: toggles,
-			})),
-		setLocalWindsurfRulesToggles: (toggles) =>
-			setState((prevState) => ({
-				...prevState,
-				localWindsurfRulesToggles: toggles,
-			})),
-		setLocalWorkflowToggles: (toggles) =>
-			setState((prevState) => ({
-				...prevState,
-				localWorkflowToggles: toggles,
-			})),
-		setGlobalWorkflowToggles: (toggles) =>
-			setState((prevState) => ({
-				...prevState,
-				globalWorkflowToggles: toggles,
-			})),
-		setMcpTab,
-		setTotalTasksSize,
-		refreshOpenRouterModels,
-		onRelinquishControl,
-		setUserInfo: (userInfo?: UserInfo) => setState((prevState) => ({ ...prevState, userInfo })),
-		expandTaskHeader,
-		setExpandTaskHeader,
-		setDictationSettings: (value: DictationSettings) =>
-			setState((prevState) => ({
-				...prevState,
-				dictationSettings: value,
-			})),
-	}
+			// Hide functions
+			hideSettings,
+			hideHistory,
+			hideChatModelSelector,
+			setShowChatModelSelector,
+			setMcpServers: (mcpServers: McpServer[]) => setMcpServers(mcpServers),
+			setRequestyModels: (models: Record<string, ModelInfo>) => setRequestyModels(models),
+			setGroqModels: (models: Record<string, ModelInfo>) => setGroqModels(models),
+			setBasetenModels: (models: Record<string, ModelInfo>) => setBasetenModels(models),
+			setHuggingFaceModels: (models: Record<string, ModelInfo>) => setHuggingFaceModels(models),
+			setVercelAiGatewayModels: (models: Record<string, ModelInfo>) => setVercelAiGatewayModels(models),
+			setMcpMarketplaceCatalog: (catalog: McpMarketplaceCatalog) => setMcpMarketplaceCatalog(catalog),
+			setShowMcp,
+			closeMcpView,
+			setGlobalClineRulesToggles: (toggles: Record<string, boolean>) =>
+				setState((prevState) => ({
+					...prevState,
+					globalClineRulesToggles: toggles,
+				})),
+			setLocalClineRulesToggles: (toggles: Record<string, boolean>) =>
+				setState((prevState) => ({
+					...prevState,
+					localClineRulesToggles: toggles,
+				})),
+			setLocalCursorRulesToggles: (toggles: Record<string, boolean>) =>
+				setState((prevState) => ({
+					...prevState,
+					localCursorRulesToggles: toggles,
+				})),
+			setLocalWindsurfRulesToggles: (toggles: Record<string, boolean>) =>
+				setState((prevState) => ({
+					...prevState,
+					localWindsurfRulesToggles: toggles,
+				})),
+			setLocalWorkflowToggles: (toggles: Record<string, boolean>) =>
+				setState((prevState) => ({
+					...prevState,
+					localWorkflowToggles: toggles,
+				})),
+			setGlobalWorkflowToggles: (toggles: Record<string, boolean>) =>
+				setState((prevState) => ({
+					...prevState,
+					globalWorkflowToggles: toggles,
+				})),
+			setMcpTab,
+			setTotalTasksSize,
+			refreshOpenRouterModels,
+			onRelinquishControl,
+			setUserInfo: (userInfo?: UserInfo) => setState((prevState) => ({ ...prevState, userInfo })),
+			expandTaskHeader,
+			setExpandTaskHeader,
+			setDictationSettings: (value: DictationSettings) =>
+				setState((prevState) => ({
+					...prevState,
+					dictationSettings: value,
+				})),
+		}),
+		[
+			state,
+			didHydrateState,
+			openRouterModels,
+			openAiModels,
+			requestyModels,
+			groqModelsState,
+			basetenModelsState,
+			huggingFaceModels,
+			vercelAiGatewayModels,
+			mcpServers,
+			mcpMarketplaceCatalog,
+			totalTasksSize,
+			availableTerminalProfiles,
+			showMcp,
+			mcpTab,
+			showSettings,
+			showHistory,
+			showChatModelSelector,
+			expandTaskHeader,
+			navigateToMcp,
+			navigateToSettings,
+			navigateToHistory,
+			navigateToChat,
+			hideSettings,
+			hideHistory,
+			hideChatModelSelector,
+			closeMcpView,
+			refreshOpenRouterModels,
+			onRelinquishControl,
+		],
+	)
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>
 }

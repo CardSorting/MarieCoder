@@ -163,11 +163,13 @@ const MAX_BYTE_SIZE = MAX_RIPGREP_MB * 1024 * 1024 // 0./25MB in bytes
 function formatResults(results: SearchResult[], cwd: string): string {
 	const groupedResults: { [key: string]: SearchResult[] } = {}
 
-	let output = ""
+	// Use array for efficient string building
+	const outputParts: string[] = []
+
 	if (results.length >= MAX_RESULTS) {
-		output += `Showing first ${MAX_RESULTS} of ${MAX_RESULTS}+ results. Use a more specific search if necessary.\n\n`
+		outputParts.push(`Showing first ${MAX_RESULTS} of ${MAX_RESULTS}+ results. Use a more specific search if necessary.\n\n`)
 	} else {
-		output += `Found ${results.length === 1 ? "1 result" : `${results.length.toLocaleString()} results`}.\n\n`
+		outputParts.push(`Found ${results.length === 1 ? "1 result" : `${results.length.toLocaleString()} results`}.\n\n`)
 	}
 
 	// Group results by file name
@@ -180,7 +182,7 @@ function formatResults(results: SearchResult[], cwd: string): string {
 	})
 
 	// Track byte size
-	let byteSize = Buffer.byteLength(output, "utf8")
+	let byteSize = Buffer.byteLength(outputParts[0], "utf8")
 	let wasLimitReached = false
 
 	for (const [filePath, fileResults] of Object.entries(groupedResults)) {
@@ -193,7 +195,7 @@ function formatResults(results: SearchResult[], cwd: string): string {
 			break
 		}
 
-		output += filePathString
+		outputParts.push(filePathString)
 		byteSize += filePathBytes
 
 		for (let resultIndex = 0; resultIndex < fileResults.length; resultIndex++) {
@@ -225,9 +227,7 @@ function formatResults(results: SearchResult[], cwd: string): string {
 			}
 
 			// Add all lines for this result to the output
-			resultLines.forEach((line) => {
-				output += line
-			})
+			outputParts.push(...resultLines)
 			byteSize += resultBytes
 
 			// Add separator between results if needed
@@ -240,7 +240,7 @@ function formatResults(results: SearchResult[], cwd: string): string {
 					break
 				}
 
-				output += separatorString
+				outputParts.push(separatorString)
 				byteSize += separatorBytes
 			}
 
@@ -264,7 +264,7 @@ function formatResults(results: SearchResult[], cwd: string): string {
 			break
 		}
 
-		output += closingString
+		outputParts.push(closingString)
 		byteSize += closingBytes
 	}
 
@@ -273,9 +273,10 @@ function formatResults(results: SearchResult[], cwd: string): string {
 		const truncationMessage = `\n[Results truncated due to exceeding the ${MAX_RIPGREP_MB}MB size limit. Please use a more specific search pattern.]`
 		// Only add the message if it fits within the limit
 		if (byteSize + Buffer.byteLength(truncationMessage, "utf8") < MAX_BYTE_SIZE) {
-			output += truncationMessage
+			outputParts.push(truncationMessage)
 		}
 	}
 
-	return output.trim()
+	// Join all parts once at the end for optimal performance
+	return outputParts.join("").trim()
 }

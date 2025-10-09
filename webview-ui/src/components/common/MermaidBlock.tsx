@@ -1,6 +1,5 @@
 import { StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import mermaid from "mermaid"
 import { useEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import { useDebounceEffect } from "@/hooks"
@@ -36,45 +35,75 @@ const MERMAID_THEME = {
 	fillType2: "#454545",
 }
 
-mermaid.initialize({
-	startOnLoad: false,
-	securityLevel: "loose",
-	theme: "dark",
-	themeVariables: {
-		...MERMAID_THEME,
-		fontSize: "16px",
-		fontFamily: "var(--vscode-font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif)",
+/**
+ * Lazy loader for Mermaid library
+ * Only loads the library when actually needed (when a diagram is rendered)
+ * This reduces initial bundle size by ~500KB
+ */
+let mermaidInstance: typeof import("mermaid").default | null = null
+let mermaidLoadPromise: Promise<typeof import("mermaid").default> | null = null
 
-		// Additional styling
-		noteTextColor: "#ffffff",
-		noteBkgColor: "#454545",
-		noteBorderColor: "#888888",
+const loadMermaid = async (): Promise<typeof import("mermaid").default> => {
+	// Return cached instance if already loaded
+	if (mermaidInstance) {
+		return mermaidInstance
+	}
 
-		// Improve contrast for special elements
-		critBorderColor: "#ff9580",
-		critBkgColor: "#803d36",
+	// Return existing load promise if currently loading
+	if (mermaidLoadPromise) {
+		return mermaidLoadPromise
+	}
 
-		// Task diagram specific
-		taskTextColor: "#ffffff",
-		taskTextOutsideColor: "#ffffff",
-		taskTextLightColor: "#ffffff",
+	// Start loading mermaid
+	mermaidLoadPromise = import("mermaid").then((module) => {
+		mermaidInstance = module.default
 
-		// Numbers/sections
-		sectionBkgColor: "#2d2d2d",
-		sectionBkgColor2: "#3c3c3c",
+		// Initialize mermaid with theme configuration
+		mermaidInstance.initialize({
+			startOnLoad: false,
+			securityLevel: "loose",
+			theme: "dark",
+			themeVariables: {
+				...MERMAID_THEME,
+				fontSize: "16px",
+				fontFamily: "var(--vscode-font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif)",
 
-		// Alt sections in sequence diagrams
-		altBackground: "#2d2d2d",
+				// Additional styling
+				noteTextColor: "#ffffff",
+				noteBkgColor: "#454545",
+				noteBorderColor: "#888888",
 
-		// Links
-		linkColor: "#6cb6ff",
+				// Improve contrast for special elements
+				critBorderColor: "#ff9580",
+				critBkgColor: "#803d36",
 
-		// Borders and lines
-		compositeBackground: "#2d2d2d",
-		compositeBorder: "#888888",
-		titleColor: "#ffffff",
-	},
-})
+				// Task diagram specific
+				taskTextColor: "#ffffff",
+				taskTextOutsideColor: "#ffffff",
+				taskTextLightColor: "#ffffff",
+
+				// Numbers/sections
+				sectionBkgColor: "#2d2d2d",
+				sectionBkgColor2: "#3c3c3c",
+
+				// Alt sections in sequence diagrams
+				altBackground: "#2d2d2d",
+
+				// Links
+				linkColor: "#6cb6ff",
+
+				// Borders and lines
+				compositeBackground: "#2d2d2d",
+				compositeBorder: "#888888",
+				titleColor: "#ffffff",
+			},
+		})
+
+		return mermaidInstance
+	})
+
+	return mermaidLoadPromise
+}
 
 interface MermaidBlockProps {
 	code: string
@@ -91,31 +120,37 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 
 	// 2) Debounce the actual parse/render
 	useDebounceEffect(
-		() => {
+		async () => {
 			if (containerRef.current) {
 				containerRef.current.innerHTML = ""
 			}
-			mermaid
-				.parse(code, { suppressErrors: true })
-				.then((isValid) => {
-					if (!isValid) {
-						throw new Error("Invalid or incomplete Mermaid code")
-					}
-					const id = `mermaid-${Math.random().toString(36).substring(2)}`
-					return mermaid.render(id, code)
-				})
-				.then(({ svg }) => {
-					if (containerRef.current) {
-						containerRef.current.innerHTML = svg
-					}
-				})
-				.catch((err) => {
-					console.warn("Mermaid parse/render failed:", err)
-					containerRef.current!.innerHTML = code.replace(/</g, "&lt;").replace(/>/g, "&gt;")
-				})
-				.finally(() => {
-					setIsLoading(false)
-				})
+
+			try {
+				// Lazy load mermaid library
+				const mermaid = await loadMermaid()
+
+				// Parse and validate the code
+				const isValid = await mermaid.parse(code, { suppressErrors: true })
+
+				if (!isValid) {
+					throw new Error("Invalid or incomplete Mermaid code")
+				}
+
+				// Render the diagram
+				const id = `mermaid-${Math.random().toString(36).substring(2)}`
+				const { svg } = await mermaid.render(id, code)
+
+				if (containerRef.current) {
+					containerRef.current.innerHTML = svg
+				}
+			} catch (err) {
+				console.warn("Mermaid parse/render failed:", err)
+				if (containerRef.current) {
+					containerRef.current.innerHTML = code.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+				}
+			} finally {
+				setIsLoading(false)
+			}
 		},
 		500, // Delay 500ms
 		[code], // Dependencies for scheduling
