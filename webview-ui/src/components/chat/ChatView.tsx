@@ -10,6 +10,7 @@ import { normalizeApiConfiguration } from "@/components/settings/utils/providerU
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useShowNavbar } from "@/context/PlatformContext"
 import { FileServiceClient, UiServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { Navbar } from "../menu/Navbar"
 import AutoApproveBar from "./auto-approve-menu/AutoApproveBar"
 // Import utilities and hooks from the new structure
@@ -46,7 +47,6 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 		taskHistory,
 		apiConfiguration,
 		mode,
-		userInfo,
 		currentFocusChainChecklist,
 	} = useExtensionState()
 	const shouldShowQuickWins = !taskHistory || taskHistory.length < QUICK_WINS_HISTORY_THRESHOLD
@@ -162,11 +162,11 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 					if (textToCopy !== null) {
 						try {
 							FileServiceClient.copyToClipboard(StringRequest.create({ value: textToCopy })).catch((err) => {
-								console.error("Error copying to clipboard:", err)
+								debug.error("Error copying to clipboard:", err)
 							})
 							e.preventDefault()
 						} catch (error) {
-							console.error("Error copying to clipboard:", error)
+							debug.error("Error copying to clipboard:", error)
 						}
 					}
 				}
@@ -224,7 +224,7 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 				}
 			}
 		} catch (error) {
-			console.error("Error selecting images & files:", error)
+			debug.error("Error selecting images & files:", error)
 		}
 	}, [selectedModelInfo.supportsImages])
 
@@ -269,10 +269,10 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 					}
 				},
 				onError: (error) => {
-					console.error("Error in addToInput subscription:", error)
+					debug.error("Error in addToInput subscription:", error)
 				},
 				onComplete: () => {
-					console.log("addToInput subscription completed")
+					debug.log("addToInput subscription completed")
 				},
 			},
 		)

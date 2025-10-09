@@ -2,6 +2,7 @@ import { EmptyRequest, StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton, VSCodeCheckbox, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import React, { useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
+import { debug } from "@/utils/debug_logger"
 import { BROWSER_VIEWPORT_PRESETS } from "../../../../../src/shared/BrowserSettings"
 import { useExtensionState } from "../../../context/ExtensionStateContext"
 import { BrowserServiceClient } from "../../../services/grpc-client"
@@ -73,7 +74,7 @@ export const BrowserSettingsSection: React.FC<BrowserSettingsSectionProps> = ({ 
 				setIsBundled(result.isBundled)
 			})
 			.catch((error) => {
-				console.error("Error getting detected Chrome path:", error)
+				debug.error("Error getting detected Chrome path:", error)
 			})
 	}, [])
 
@@ -85,7 +86,7 @@ export const BrowserSettingsSection: React.FC<BrowserSettingsSectionProps> = ({ 
 					setConnectionStatus(result.success)
 				})
 				.catch((error) => {
-					console.error("Error testing browser connection:", error)
+					debug.error("Error testing browser connection:", error)
 					setConnectionStatus(false)
 				})
 		} else {
@@ -94,7 +95,7 @@ export const BrowserSettingsSection: React.FC<BrowserSettingsSectionProps> = ({ 
 					setConnectionStatus(result.success)
 				})
 				.catch((error) => {
-					console.error("Error discovering browser:", error)
+					debug.error("Error discovering browser:", error)
 					setConnectionStatus(false)
 				})
 		}
@@ -141,7 +142,7 @@ export const BrowserSettingsSection: React.FC<BrowserSettingsSectionProps> = ({ 
 				setDebugMode(false)
 			})
 			.catch((error) => {
-				console.error("Error relaunching Chrome:", error)
+				debug.error("Error relaunching Chrome:", error)
 				setRelaunchResult({
 					success: false,
 					message: `Error relaunching Chrome: ${error.message}`,

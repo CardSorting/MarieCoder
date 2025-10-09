@@ -6,6 +6,7 @@ import { useState } from "react"
 import { LINKS } from "@/constants"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
 const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) => {
 	const [serverName, setServerName] = useState("")
@@ -119,7 +120,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 					appearance="secondary"
 					onClick={() => {
 						McpServiceClient.openMcpSettings(EmptyRequest.create({})).catch((error) => {
-							console.error("Error opening MCP settings:", error)
+							debug.error("Error opening MCP settings:", error)
 						})
 					}}
 					style={{ width: "100%", marginBottom: "5px", marginTop: 15 }}>

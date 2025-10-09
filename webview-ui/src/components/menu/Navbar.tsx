@@ -2,6 +2,7 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { HistoryIcon, PlusIcon, SettingsIcon } from "lucide-react"
 import { useMemo } from "react"
 import { TaskServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { useExtensionState } from "../../context/ExtensionStateContext"
 import HeroTooltip from "../common/HeroTooltip"
 
@@ -27,7 +28,7 @@ export const Navbar = () => {
 					// Close the current task, then navigate to the chat view
 					TaskServiceClient.clearTask({})
 						.catch((error) => {
-							console.error("Failed to clear task:", error)
+							debug.error("Failed to clear task:", error)
 						})
 						.finally(() => navigateToChat())
 				},

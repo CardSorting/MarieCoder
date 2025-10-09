@@ -13,7 +13,7 @@ interface ChecklistItem {
 	text: string
 }
 
-const ChecklistRenderer: React.FC<ChecklistRendererProps> = ({ text }) => {
+const ChecklistRendererComponent: React.FC<ChecklistRendererProps> = ({ text }) => {
 	const containerRef = useRef<HTMLDivElement>(null)
 	const [lastCompletedIndex, setLastCompletedIndex] = useState(-1)
 	const [isUserScrolling, setIsUserScrolling] = useState(false)
@@ -123,5 +123,10 @@ const ChecklistRenderer: React.FC<ChecklistRendererProps> = ({ text }) => {
 		</div>
 	)
 }
+
+// Memoize to prevent unnecessary re-renders when text hasn't changed
+const ChecklistRenderer = React.memo(ChecklistRendererComponent, (prevProps, nextProps) => {
+	return prevProps.text === nextProps.text
+})
 
 export default ChecklistRenderer

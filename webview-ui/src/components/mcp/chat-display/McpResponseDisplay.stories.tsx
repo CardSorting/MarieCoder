@@ -62,7 +62,7 @@ export const PlainTextMode: Story = {
 export const CodeResponse: Story = {
 	args: {
 		responseText:
-			'Code with URLs:\n\n```javascript\nconst apiUrl = "https://api.example.com/v1/data";\nconst imageUrl = "https://via.placeholder.com/200x200?text=API";\n\nfetch(apiUrl)\n  .then(response => response.json())\n  .then(data => console.log(data));\n```\n\nDocs: https://docs.example.com/api',
+			'Code with URLs:\n\n```javascript\nconst apiUrl = "https://api.example.com/v1/data";\nconst imageUrl = "https://via.placeholder.com/200x200?text=API";\n\nfetch(apiUrl)\n  .then(response => response.json())\n  .then(data => debug.log(data));\n```\n\nDocs: https://docs.example.com/api',
 	},
 }
 

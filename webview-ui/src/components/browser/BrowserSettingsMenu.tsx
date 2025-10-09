@@ -2,6 +2,7 @@ import { EmptyRequest, StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useRef, useState } from "react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { debug } from "@/utils/debug_logger"
 import { BrowserServiceClient, UiServiceClient } from "../../services/grpc-client"
 
 interface ConnectionInfo {
@@ -26,16 +27,16 @@ export const BrowserSettingsMenu = () => {
 		// Function to fetch connection info
 		;(async () => {
 			try {
-				console.log("[DEBUG] SENDING BROWSER CONNECTION INFO REQUEST")
+				debug.log("[DEBUG] SENDING BROWSER CONNECTION INFO REQUEST")
 				const info = await BrowserServiceClient.getBrowserConnectionInfo(EmptyRequest.create({}))
-				console.log("[DEBUG] GOT BROWSER REPLY:", info, typeof info)
+				debug.log("[DEBUG] GOT BROWSER REPLY:", info, typeof info)
 				setConnectionInfo({
 					isConnected: info.isConnected,
 					isRemote: info.isRemote,
 					host: info.host,
 				})
 			} catch (error) {
-				console.error("Error fetching browser connection info:", error)
+				debug.error("Error fetching browser connection info:", error)
 			}
 		})()
 
@@ -71,7 +72,7 @@ export const BrowserSettingsMenu = () => {
 			try {
 				await UiServiceClient.scrollToSettings(StringRequest.create({ value: "browser" }))
 			} catch (error) {
-				console.error("Error scrolling to browser settings:", error)
+				debug.error("Error scrolling to browser settings:", error)
 			}
 		}, 300) // Give the settings panel time to open
 	}
@@ -90,7 +91,7 @@ export const BrowserSettingsMenu = () => {
 						host: info.host,
 					})
 				} catch (error) {
-					console.error("Error fetching browser connection info:", error)
+					debug.error("Error fetching browser connection info:", error)
 				}
 			}
 
@@ -130,7 +131,7 @@ export const BrowserSettingsMenu = () => {
 					host: info.host,
 				})
 			} catch (error) {
-				console.error("Error fetching browser connection info:", error)
+				debug.error("Error fetching browser connection info:", error)
 			}
 		}
 

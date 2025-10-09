@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useCallback } from "react"
 import ChatTextArea from "@/components/chat/ChatTextArea"
 import QuotedMessagePreview from "@/components/chat/QuotedMessagePreview"
 import { ChatState, MessageHandlers, ScrollBehavior } from "../../types/chatTypes"
@@ -40,15 +40,26 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
 	const { isAtBottom, scrollToBottomAuto } = scrollBehavior
 
+	// Memoize callbacks to prevent unnecessary re-renders of ChatTextArea
+	const handleHeightChange = useCallback(() => {
+		if (isAtBottom) {
+			scrollToBottomAuto()
+		}
+	}, [isAtBottom, scrollToBottomAuto])
+
+	const handleSend = useCallback(() => {
+		messageHandlers.handleSendMessage(inputValue, selectedImages, selectedFiles)
+	}, [messageHandlers, inputValue, selectedImages, selectedFiles])
+
+	const handleDismissQuote = useCallback(() => {
+		setActiveQuote(null)
+	}, [setActiveQuote])
+
 	return (
 		<>
 			{activeQuote && (
 				<div style={{ marginBottom: "-12px", marginTop: "10px" }}>
-					<QuotedMessagePreview
-						isFocused={isTextAreaFocused}
-						onDismiss={() => setActiveQuote(null)}
-						text={activeQuote}
-					/>
+					<QuotedMessagePreview isFocused={isTextAreaFocused} onDismiss={handleDismissQuote} text={activeQuote} />
 				</div>
 			)}
 
@@ -56,13 +67,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
 				activeQuote={activeQuote}
 				inputValue={inputValue}
 				onFocusChange={handleFocusChange}
-				onHeightChange={() => {
-					if (isAtBottom) {
-						scrollToBottomAuto()
-					}
-				}}
+				onHeightChange={handleHeightChange}
 				onSelectFilesAndImages={selectFilesAndImages}
-				onSend={() => messageHandlers.handleSendMessage(inputValue, selectedImages, selectedFiles)}
+				onSend={handleSend}
 				placeholderText={placeholderText}
 				ref={textAreaRef}
 				selectedFiles={selectedFiles}

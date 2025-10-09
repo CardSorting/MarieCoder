@@ -1,5 +1,6 @@
 import { McpDisplayMode, OpenaiReasoningEffort, UpdateSettingsRequest } from "@shared/proto/cline/state"
 import { StateServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
 /**
  * Converts values to their corresponding proto format
@@ -50,6 +51,6 @@ export const updateSetting = (field: keyof UpdateSettingsRequest, value: any) =>
 	updateRequest[field] = convertedValue
 
 	StateServiceClient.updateSettings(UpdateSettingsRequest.create(updateRequest)).catch((error) => {
-		console.error(`Failed to update setting ${field}:`, error)
+		debug.error(`Failed to update setting ${field}:`, error)
 	})
 }

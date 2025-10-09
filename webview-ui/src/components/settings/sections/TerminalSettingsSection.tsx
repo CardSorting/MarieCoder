@@ -2,6 +2,7 @@ import { UpdateTerminalConnectionTimeoutResponse } from "@shared/proto/index.cli
 import { VSCodeCheckbox, VSCodeDropdown, VSCodeOption, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import React, { useState } from "react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { debug } from "@/utils/debug_logger"
 import { StateServiceClient } from "../../../services/grpc-client"
 import Section from "../Section"
 import TerminalOutputLineLimitSlider from "../TerminalOutputLineLimitSlider"
@@ -43,7 +44,7 @@ export const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = (
 				}
 			})
 			.catch((error) => {
-				console.error("Failed to update terminal connection timeout:", error)
+				debug.error("Failed to update terminal connection timeout:", error)
 			})
 	}
 

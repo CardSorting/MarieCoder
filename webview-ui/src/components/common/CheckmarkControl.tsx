@@ -9,6 +9,7 @@ import styled from "styled-components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { CheckpointsServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
 interface CheckmarkControlProps {
 	messageTs?: number
@@ -106,7 +107,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 				}),
 			)
 		} catch (err) {
-			console.error("Checkpoint restore task error:", err)
+			debug.error("Checkpoint restore task error:", err)
 			setRestoreTaskDisabled(false)
 		}
 	}
@@ -122,7 +123,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 				}),
 			)
 		} catch (err) {
-			console.error("Checkpoint restore workspace error:", err)
+			debug.error("Checkpoint restore workspace error:", err)
 			setRestoreWorkspaceDisabled(false)
 		}
 	}
@@ -138,7 +139,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 				}),
 			)
 		} catch (err) {
-			console.error("Checkpoint restore both error:", err)
+			debug.error("Checkpoint restore both error:", err)
 			setRestoreBothDisabled(false)
 		}
 	}
@@ -192,7 +193,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 									}),
 								)
 							} catch (err) {
-								console.error("CheckpointDiff error:", err)
+								debug.error("CheckpointDiff error:", err)
 							} finally {
 								setCompareDisabled(false)
 							}

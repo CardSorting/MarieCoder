@@ -1,9 +1,10 @@
 import { McpMarketplaceItem, McpServer } from "@shared/mcp"
 import { StringRequest } from "@shared/proto/cline/common"
-import { useEffect, useMemo, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
 interface McpMarketplaceCardProps {
 	item: McpMarketplaceItem
@@ -11,7 +12,7 @@ interface McpMarketplaceCardProps {
 	setError: (error: string | null) => void
 }
 
-const McpMarketplaceCard = ({ item, installedServers, setError }: McpMarketplaceCardProps) => {
+const McpMarketplaceCardComponent = ({ item, installedServers, setError }: McpMarketplaceCardProps) => {
 	const isInstalled = installedServers.some((server) => server.name === item.mcpId)
 	const [isDownloading, setIsDownloading] = useState(false)
 	const [isLoading, setIsLoading] = useState(false)
@@ -112,15 +113,15 @@ const McpMarketplaceCard = ({ item, installedServers, setError }: McpMarketplace
 												StringRequest.create({ value: item.mcpId }),
 											)
 											if (response.error) {
-												console.error("MCP download failed:", response.error)
+												debug.error("MCP download failed:", response.error)
 												setError(response.error)
 											} else {
-												console.log("MCP download successful:", response)
+												debug.log("MCP download successful:", response)
 												// Clear any previous errors on success
 												setError(null)
 											}
 										} catch (error) {
-											console.error("Failed to download MCP:", error)
+											debug.error("Failed to download MCP:", error)
 										} finally {
 											setIsDownloading(false)
 										}
@@ -315,5 +316,28 @@ const StyledInstallButton = styled.button<{ $isInstalled?: boolean }>`
 		cursor: default;
 	}
 `
+
+// Memoize to prevent re-renders in marketplace list
+const McpMarketplaceCard = React.memo(McpMarketplaceCardComponent, (prevProps, nextProps) => {
+	// Check if item changed
+	if (prevProps.item.mcpId !== nextProps.item.mcpId) {
+		return false
+	}
+	if (prevProps.item.name !== nextProps.item.name) {
+		return false
+	}
+	if (prevProps.item.downloadCount !== nextProps.item.downloadCount) {
+		return false
+	}
+
+	// Check if installation status changed for this item
+	const prevInstalled = prevProps.installedServers.some((s) => s.name === prevProps.item.mcpId)
+	const nextInstalled = nextProps.installedServers.some((s) => s.name === nextProps.item.mcpId)
+	if (prevInstalled !== nextInstalled) {
+		return false
+	}
+
+	return true
+})
 
 export default McpMarketplaceCard

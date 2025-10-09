@@ -3,6 +3,7 @@ import { EmptyRequest, StringRequest } from "@shared/proto/cline/common"
 import { AskResponseRequest, NewTaskRequest } from "@shared/proto/cline/task"
 import { useCallback } from "react"
 import { SlashServiceClient, TaskServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import type { ButtonActionType } from "../shared/buttonConfig"
 import type { ChatState, MessageHandlers } from "../types/chatTypes"
 
@@ -38,7 +39,7 @@ export function useMessageHandlers(messages: ClineMessage[], chatState: ChatStat
 			}
 
 			if (hasContent) {
-				console.log("[ChatView] handleSendMessage - Sending message:", messageToSend)
+				debug.log("[ChatView] handleSendMessage - Sending message:", messageToSend)
 				if (messages.length === 0) {
 					await TaskServiceClient.newTask(
 						NewTaskRequest.create({
@@ -215,12 +216,12 @@ export function useMessageHandlers(messages: ClineMessage[], chatState: ChatStat
 					switch (clineAsk) {
 						case "condense":
 							await SlashServiceClient.condense(StringRequest.create({ value: lastMessage?.text })).catch((err) =>
-								console.error(err),
+								debug.error(err),
 							)
 							break
 						case "report_bug":
 							await SlashServiceClient.reportBug(StringRequest.create({ value: lastMessage?.text })).catch((err) =>
-								console.error(err),
+								debug.error(err),
 							)
 							break
 					}

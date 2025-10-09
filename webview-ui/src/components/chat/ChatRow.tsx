@@ -26,6 +26,7 @@ import McpResourceRow from "@/components/mcp/configuration/tabs/installed/server
 import McpToolRow from "@/components/mcp/configuration/tabs/installed/server-row/McpToolRow"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { FileServiceClient, TaskServiceClient, UiServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { findMatchingResourceOrTemplate, getMcpServerDisplayName } from "@/utils/mcp"
 import { CheckpointControls } from "../common/CheckpointControls"
 import CodeAccordian, { cleanPathPrefix } from "../common/CodeAccordian"
@@ -472,7 +473,7 @@ export const ChatRowContent = memo(
 											: () => {
 													FileServiceClient.openFile(
 														StringRequest.create({ value: tool.content }),
-													).catch((err) => console.error("Failed to open file:", err))
+													).catch((err) => debug.error("Failed to open file:", err))
 												}
 									}
 									style={{
@@ -694,7 +695,7 @@ export const ChatRowContent = memo(
 									// Open the URL in the default browser using gRPC
 									if (tool.path) {
 										UiServiceClient.openUrl(StringRequest.create({ value: tool.path })).catch((err) => {
-											console.error("Failed to open URL:", err)
+											debug.error("Failed to open URL:", err)
 										})
 									}
 								}}
@@ -1167,9 +1168,7 @@ export const ChatRowContent = memo(
 													Int64Request.create({
 														value: message.ts,
 													}),
-												).catch((err) =>
-													console.error("Failed to show task completion view changes:", err),
-												)
+												).catch((err) => debug.error("Failed to show task completion view changes:", err))
 											}}
 											style={{
 												cursor: seeNewChangesDisabled ? "wait" : "pointer",
@@ -1308,7 +1307,7 @@ export const ChatRowContent = memo(
 															value: message.ts,
 														}),
 													).catch((err) =>
-														console.error("Failed to show task completion view changes:", err),
+														debug.error("Failed to show task completion view changes:", err),
 													)
 												}}
 												style={{

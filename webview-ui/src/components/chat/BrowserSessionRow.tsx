@@ -12,6 +12,7 @@ import { CheckpointControls } from "@/components/common/CheckpointControls"
 import CodeBlock, { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { FileServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
 interface BrowserSessionRowProps {
 	messages: ClineMessage[]
@@ -111,7 +112,7 @@ const headerStyle: CSSProperties = {
 }
 
 const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
-	const { messages, isLast, onHeightChange, lastModifiedMessage, onSetQuote } = props
+	const { messages, isLast, onHeightChange, lastModifiedMessage } = props
 	const { browserSettings } = useExtensionState()
 	const prevHeightRef = useRef(0)
 	const [maxActionHeight, setMaxActionHeight] = useState(0)
@@ -409,7 +410,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 							alt="Browser screenshot"
 							onClick={() =>
 								FileServiceClient.openImage(StringRequest.create({ value: displayState.screenshot })).catch(
-									(err) => console.error("Failed to open image:", err),
+									(err) => debug.error("Failed to open image:", err),
 								)
 							}
 							src={displayState.screenshot}

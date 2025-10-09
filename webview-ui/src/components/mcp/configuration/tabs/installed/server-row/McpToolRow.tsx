@@ -2,8 +2,10 @@ import { McpTool } from "@shared/mcp"
 import { ToggleToolAutoApproveRequest } from "@shared/proto/cline/mcp"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
+import { useCallback } from "react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
 type McpToolRowProps = {
 	tool: McpTool
@@ -15,27 +17,31 @@ const McpToolRow = ({ tool, serverName }: McpToolRowProps) => {
 
 	const { setMcpServers } = useExtensionState()
 
-	// Accept the event object
-	const handleAutoApproveChange = (_event: any) => {
-		if (!serverName) {
-			return
-		}
+	// Memoize handler to prevent re-renders
+	const handleAutoApproveChange = useCallback(
+		(_event: any) => {
+			if (!serverName) {
+				return
+			}
 
-		McpServiceClient.toggleToolAutoApprove(
-			ToggleToolAutoApproveRequest.create({
-				serverName,
-				toolNames: [tool.name],
-				autoApprove: !tool.autoApprove,
-			}),
-		)
-			.then((response) => {
-				const mcpServers = convertProtoMcpServersToMcpServers(response.mcpServers)
-				setMcpServers(mcpServers)
-			})
-			.catch((error) => {
-				console.error("Error toggling tool auto-approve", error)
-			})
-	}
+			McpServiceClient.toggleToolAutoApprove(
+				ToggleToolAutoApproveRequest.create({
+					serverName,
+					toolNames: [tool.name],
+					autoApprove: !tool.autoApprove,
+				}),
+			)
+				.then((response) => {
+					const mcpServers = convertProtoMcpServersToMcpServers(response.mcpServers)
+					setMcpServers(mcpServers)
+				})
+				.catch((error) => {
+					debug.error("Error toggling tool auto-approve", error)
+				})
+		},
+		[serverName, tool.name, tool.autoApprove, setMcpServers],
+	)
+
 	return (
 		<div
 			key={tool.name}

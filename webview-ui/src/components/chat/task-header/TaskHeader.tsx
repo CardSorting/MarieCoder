@@ -7,6 +7,7 @@ import Thumbnails from "@/components/common/Thumbnails"
 import { getModeSpecificFields, normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { UiServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import CopyTaskButton from "./buttons/CopyTaskButton"
 import DeleteTaskButton from "./buttons/DeleteTaskButton"
 import NewTaskButton from "./buttons/NewTaskButton"
@@ -54,7 +55,6 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 		checkpointManagerErrorMessage,
 		clineMessages,
 		navigateToSettings,
-		useAutoCondense,
 		mode,
 		expandTaskHeader: isTaskExpanded,
 		setExpandTaskHeader: setIsTaskExpanded,
@@ -80,7 +80,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 			try {
 				await UiServiceClient.scrollToSettings(StringRequest.create({ value: "features" }))
 			} catch (error) {
-				console.error("Error scrolling to checkpoint settings:", error)
+				debug.error("Error scrolling to checkpoint settings:", error)
 			}
 		}, 300)
 	}, [navigateToSettings])

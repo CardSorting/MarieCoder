@@ -6,6 +6,7 @@
  * import is safe and ensures the methods work consistently regardless of React context.
  */
 import { v4 as uuidv4 } from "uuid"
+import { debug } from "@/utils/debug_logger"
 import { PLATFORM_CONFIG } from "../config/platform.config"
 
 export interface Callbacks<TResponse> {
@@ -38,7 +39,7 @@ export abstract class ProtoBusClient {
 					} else if (message.grpc_response.error) {
 						reject(new Error(message.grpc_response.error))
 					} else {
-						console.error("Received ProtoBus message with no response or error ", JSON.stringify(message))
+						debug.error("Received ProtoBus message with no response or error ", JSON.stringify(message))
 					}
 				}
 			}
@@ -81,7 +82,7 @@ export abstract class ProtoBusClient {
 					// Only remove the event listener on error
 					window.removeEventListener("message", handleResponse)
 				} else {
-					console.error("Received ProtoBus message with no response or error ", JSON.stringify(message))
+					debug.error("Received ProtoBus message with no response or error ", JSON.stringify(message))
 				}
 				if (message.grpc_response.is_streaming === false) {
 					if (callbacks.onComplete) {
@@ -112,7 +113,7 @@ export abstract class ProtoBusClient {
 					request_id: requestId,
 				},
 			})
-			console.log(`[DEBUG] Sent cancellation for request: ${requestId}`)
+			debug.log(`[DEBUG] Sent cancellation for request: ${requestId}`)
 		}
 	}
 }

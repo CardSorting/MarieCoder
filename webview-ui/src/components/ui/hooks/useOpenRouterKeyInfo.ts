@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { z } from "zod"
+import { debug } from "@/utils/debug_logger"
 
 const CACHE_DURATION_MS = 30 * 1000 // 30 seconds
 const OpenRouterBaseURL = "https://openrouter.ai/api/v1"
@@ -36,9 +37,9 @@ async function getOpenRouterKeyInfo(apiKey: string, signal: AbortSignal): Promis
 
 		if (!response.ok) {
 			if (response.status === 401) {
-				console.warn("OpenRouter API key is invalid or unauthorized.")
+				debug.warn("OpenRouter API key is invalid or unauthorized.")
 			} else {
-				console.error(`Error fetching OpenRouter key info: HTTP ${response.status}`)
+				debug.error(`Error fetching OpenRouter key info: HTTP ${response.status}`)
 			}
 			return null
 		}
@@ -46,13 +47,13 @@ async function getOpenRouterKeyInfo(apiKey: string, signal: AbortSignal): Promis
 		const responseData = await response.json()
 		const result = openRouterKeyInfoSchema.safeParse(responseData)
 		if (!result.success) {
-			console.error("OpenRouter API key info validation failed:", result.error.flatten().fieldErrors)
+			debug.error("OpenRouter API key info validation failed:", result.error.flatten().fieldErrors)
 			return null
 		}
 		return result.data.data
 	} catch (error: any) {
 		if (error.name !== "AbortError") {
-			console.error("Error fetching OpenRouter key info:", error)
+			debug.error("Error fetching OpenRouter key info:", error)
 		}
 		return null
 	}
@@ -123,7 +124,7 @@ export const useOpenRouterKeyInfo = (apiKey?: string) => {
 				})
 				.catch((err) => {
 					if (!signal.aborted) {
-						console.error("[useOpenRouterKeyInfo] Fetch error:", err)
+						debug.error("[useOpenRouterKeyInfo] Fetch error:", err)
 						setError(err instanceof Error ? err : new Error("An unknown error occurred"))
 						if (!isBackgroundFetch) {
 							setData(null)

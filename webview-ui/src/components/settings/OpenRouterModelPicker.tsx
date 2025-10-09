@@ -2,7 +2,7 @@ import { CLAUDE_SONNET_1M_SUFFIX, openRouterDefaultModelId } from "@shared/api"
 import { StringRequest } from "@shared/proto/cline/common"
 import { Mode } from "@shared/storage/types"
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import Fuse from "fuse.js"
+import type Fuse from "fuse.js"
 import React, { KeyboardEvent, memo, useEffect, useMemo, useRef, useState } from "react"
 import { useRemark } from "react-remark"
 import { useMount } from "react-use"
@@ -10,6 +10,7 @@ import styled from "styled-components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { highlight } from "../history/HistoryView"
 import { ContextWindowSwitcher } from "./common/ContextWindowSwitcher"
 import { ModelInfoView } from "./common/ModelInfoView"
@@ -136,8 +137,23 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 		}))
 	}, [modelIds])
 
+	// Lazy load Fuse.js only when needed (when search is used)
+	const [FuseConstructor, setFuseConstructor] = useState<typeof Fuse | null>(null)
+
+	useEffect(() => {
+		// Only load Fuse.js if there's a search term
+		if (searchTerm && !FuseConstructor) {
+			import("fuse.js").then((module) => {
+				setFuseConstructor(() => module.default)
+			})
+		}
+	}, [searchTerm, FuseConstructor])
+
 	const fuse = useMemo(() => {
-		return new Fuse(searchableItems, {
+		if (!FuseConstructor) {
+			return null
+		}
+		return new FuseConstructor(searchableItems, {
 			keys: ["html"], // highlight function will update this
 			threshold: 0.6,
 			shouldSort: true,
@@ -146,7 +162,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 			includeMatches: true,
 			minMatchCharLength: 1,
 		})
-	}, [searchableItems])
+	}, [searchableItems, FuseConstructor])
 
 	const modelSearchResults = useMemo(() => {
 		// IMPORTANT: highlightjs has a bug where if you use sort/localCompare - "// results.sort((a, b) => a.id.localeCompare(b.id)) ...sorting like this causes ids in objects to be reordered and mismatched"
@@ -155,9 +171,12 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 		const favoritedModels = searchableItems.filter((item) => favoritedModelIds.includes(item.id))
 
 		// Then get search results for non-favorited models
-		const searchResults = searchTerm
-			? highlight(fuse.search(searchTerm), "model-item-highlight").filter((item) => !favoritedModelIds.includes(item.id))
-			: searchableItems.filter((item) => !favoritedModelIds.includes(item.id))
+		const searchResults =
+			searchTerm && fuse
+				? highlight(fuse.search(searchTerm), "model-item-highlight").filter(
+						(item) => !favoritedModelIds.includes(item.id),
+					)
+				: searchableItems.filter((item) => !favoritedModelIds.includes(item.id))
 
 		// Combine favorited models with search results
 		return [...favoritedModels, ...searchResults]
@@ -317,7 +336,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 													e.stopPropagation()
 													StateServiceClient.toggleFavoriteModel(
 														StringRequest.create({ value: item.id }),
-													).catch((error) => console.error("Failed to toggle favorite model:", error))
+													).catch((error) => debug.error("Failed to toggle favorite model:", error))
 												}}
 											/>
 										</div>

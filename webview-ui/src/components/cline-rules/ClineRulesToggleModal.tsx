@@ -15,6 +15,7 @@ import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import HeroTooltip from "@/components/common/HeroTooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { FileServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import RulesToggleList from "./RulesToggleList"
 
 const ClineRulesToggleModal: React.FC = () => {
@@ -65,7 +66,7 @@ const ClineRulesToggleModal: React.FC = () => {
 					}
 				})
 				.catch((error) => {
-					console.error("Failed to refresh rules:", error)
+					debug.error("Failed to refresh rules:", error)
 				})
 		}
 	}, [isVisible])
@@ -115,7 +116,7 @@ const ClineRulesToggleModal: React.FC = () => {
 				}
 			})
 			.catch((error) => {
-				console.error("Error toggling Cline rule:", error)
+				debug.error("Error toggling Cline rule:", error)
 			})
 	}
 
@@ -133,7 +134,7 @@ const ClineRulesToggleModal: React.FC = () => {
 				}
 			})
 			.catch((error) => {
-				console.error("Error toggling Cursor rule:", error)
+				debug.error("Error toggling Cursor rule:", error)
 			})
 	}
 
@@ -150,7 +151,7 @@ const ClineRulesToggleModal: React.FC = () => {
 				}
 			})
 			.catch((error) => {
-				console.error("Error toggling Windsurf rule:", error)
+				debug.error("Error toggling Windsurf rule:", error)
 			})
 	}
 
@@ -172,7 +173,7 @@ const ClineRulesToggleModal: React.FC = () => {
 				}
 			})
 			.catch((err: Error) => {
-				console.error("Failed to toggle workflow:", err)
+				debug.error("Failed to toggle workflow:", err)
 			})
 	}
 

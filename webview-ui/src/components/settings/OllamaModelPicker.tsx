@@ -1,5 +1,5 @@
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import Fuse from "fuse.js"
+import type Fuse from "fuse.js"
 import React, { KeyboardEvent, memo, useEffect, useMemo, useRef, useState } from "react"
 import styled from "styled-components"
 import { highlight } from "../history/HistoryView"
@@ -51,8 +51,23 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({
 		}))
 	}, [ollamaModels])
 
+	// Lazy load Fuse.js only when needed (when search is used)
+	const [FuseConstructor, setFuseConstructor] = useState<typeof Fuse | null>(null)
+
+	useEffect(() => {
+		// Only load Fuse.js if there's a search term
+		if (searchTerm && !FuseConstructor) {
+			import("fuse.js").then((module) => {
+				setFuseConstructor(() => module.default)
+			})
+		}
+	}, [searchTerm, FuseConstructor])
+
 	const fuse = useMemo(() => {
-		return new Fuse(searchableItems, {
+		if (!FuseConstructor) {
+			return null
+		}
+		return new FuseConstructor(searchableItems, {
 			keys: ["html"],
 			threshold: 0.6,
 			shouldSort: true,
@@ -61,10 +76,10 @@ const OllamaModelPicker: React.FC<OllamaModelPickerProps> = ({
 			includeMatches: true,
 			minMatchCharLength: 1,
 		})
-	}, [searchableItems])
+	}, [searchableItems, FuseConstructor])
 
 	const modelSearchResults = useMemo(() => {
-		return searchTerm ? highlight(fuse.search(searchTerm), "ollama-model-item-highlight") : searchableItems
+		return searchTerm && fuse ? highlight(fuse.search(searchTerm), "ollama-model-item-highlight") : searchableItems
 	}, [searchableItems, searchTerm, fuse])
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {

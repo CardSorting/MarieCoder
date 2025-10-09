@@ -1,4 +1,5 @@
 import React from "react"
+import { debug } from "@/utils/debug_logger"
 
 interface ChatErrorBoundaryProps {
 	children: React.ReactNode
@@ -27,8 +28,8 @@ export class ChatErrorBoundary extends React.Component<ChatErrorBoundaryProps, C
 	}
 
 	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-		console.error("Error in ChatErrorBoundary:", error.message)
-		console.error("Component stack:", errorInfo.componentStack)
+		debug.error("Error in ChatErrorBoundary:", error.message)
+		debug.error("Component stack:", errorInfo.componentStack)
 	}
 
 	render() {

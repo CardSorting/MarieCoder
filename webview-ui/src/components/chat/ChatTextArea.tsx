@@ -10,7 +10,7 @@ import { Mode } from "@shared/storage/types"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { AtSignIcon, PlusIcon } from "lucide-react"
 import type React from "react"
-import { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { forwardRef, lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import DynamicTextArea from "react-textarea-autosize"
 import { useClickAway, useWindowSize } from "react-use"
 import styled from "styled-components"
@@ -43,11 +43,14 @@ import {
 	slashCommandDeleteRegex,
 	validateSlashCommand,
 } from "@/utils/chat"
+import { debug } from "@/utils/debug_logger"
 import { isSafari } from "@/utils/platformUtils"
 import { validateApiConfiguration, validateModelId } from "@/utils/validate"
 import ClineRulesToggleModal from "../cline-rules/ClineRulesToggleModal"
 import ServersToggleModal from "./ServersToggleModal"
-import VoiceRecorder from "./VoiceRecorder"
+
+// Lazy load VoiceRecorder - only loads when dictation is enabled
+const VoiceRecorder = lazy(() => import("./VoiceRecorder"))
 
 const { MAX_IMAGES_AND_FILES_PER_MESSAGE } = CHAT_CONSTANTS
 
@@ -62,7 +65,7 @@ const getImageDimensions = (dataUrl: string): Promise<{ width: number; height: n
 			}
 		}
 		img.onerror = (err) => {
-			console.error("Failed to load image for dimension check:", err)
+			debug.error("Failed to load image for dimension check:", err)
 			reject(new Error("Failed to load image to check dimensions."))
 		}
 		img.src = dataUrl
@@ -346,7 +349,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						}
 					})
 					.catch((error) => {
-						console.error("Error searching commits:", error)
+						debug.error("Error searching commits:", error)
 					})
 			}
 		}, [selectedType, searchQuery])
@@ -434,7 +437,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									setSearchLoading(false)
 								})
 								.catch((error) => {
-									console.error("Error searching files:", error)
+									debug.error("Error searching files:", error)
 									setFileSearchResults([])
 									setSearchLoading(false)
 								})
@@ -806,7 +809,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									setSearchLoading(false)
 								})
 								.catch((error) => {
-									console.error("Error searching files:", error)
+									debug.error("Error searching files:", error)
 									setFileSearchResults([])
 									setSearchLoading(false)
 								})
@@ -897,7 +900,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							const reader = new FileReader()
 							reader.onloadend = async () => {
 								if (reader.error) {
-									console.error("Error reading file:", reader.error)
+									debug.error("Error reading file:", reader.error)
 									resolve(null)
 								} else {
 									const result = reader.result
@@ -906,7 +909,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 											await getImageDimensions(result)
 											resolve(result)
 										} catch (error) {
-											console.warn((error as Error).message)
+											debug.warn((error as Error).message)
 											showDimensionErrorMessage()
 											resolve(null)
 										}
@@ -930,7 +933,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							setSelectedImages((prevImages) => [...prevImages, ...dataUrls.slice(0, imagesToAdd)])
 						}
 					} else {
-						console.warn("No valid images were processed")
+						debug.warn("No valid images were processed")
 					}
 				}
 			},
@@ -1030,15 +1033,15 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						}),
 					)
 				} catch (error) {
-					console.error("Failed to update API configuration:", error)
+					debug.error("Failed to update API configuration:", error)
 				}
 			} else {
 				StateServiceClient.getLatestState(EmptyRequest.create())
 					.then(() => {
-						console.log("State refreshed")
+						debug.log("State refreshed")
 					})
 					.catch((error) => {
-						console.error("Error refreshing state:", error)
+						debug.error("Error refreshing state:", error)
 					})
 			}
 		}, [apiConfiguration, openRouterModels])
@@ -1302,7 +1305,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					uris = JSON.parse(resourceUrlsData)
 					uris = uris.map((uri) => decodeURIComponent(uri))
 				} catch (error) {
-					console.error("Failed to parse resourceurls JSON:", error)
+					debug.error("Failed to parse resourceurls JSON:", error)
 					uris = [] // Reset if parsing failed
 				}
 			}
@@ -1330,7 +1333,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						}
 					})
 					.catch((error) => {
-						console.error("Error getting relative paths:", error)
+						debug.error("Error getting relative paths:", error)
 					})
 				return
 			}
@@ -1366,7 +1369,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					setSelectedImages((prevImages) => [...prevImages, ...dataUrls.slice(0, imagesToAdd)])
 				}
 			} else {
-				console.warn("No valid images were processed")
+				debug.warn("No valid images were processed")
 			}
 		}
 
@@ -1400,7 +1403,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							reader.onloadend = async () => {
 								// Make async
 								if (reader.error) {
-									console.error("Error reading file:", reader.error)
+									debug.error("Error reading file:", reader.error)
 									resolve(null)
 								} else {
 									const result = reader.result
@@ -1409,7 +1412,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 											await getImageDimensions(result) // Check dimensions
 											resolve(result)
 										} catch (error) {
-											console.warn((error as Error).message)
+											debug.warn((error as Error).message)
 											showDimensionErrorMessage() // Show error to user
 											resolve(null) // Don't add this image
 										}
@@ -1632,41 +1635,43 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						style={{ height: textAreaBaseHeight }}>
 						<div className="flex flex-row items-center">
 							{dictationSettings?.dictationEnabled === true && dictationSettings?.featureEnabled && (
-								<VoiceRecorder
-									disabled={sendingDisabled}
-									isAuthenticated={true}
-									language={dictationSettings?.dictationLanguage || "en"}
-									onProcessingStateChange={(isProcessing, message) => {
-										if (isProcessing && message) {
-											// Show processing message in input
-											setInputValue(`${inputValue} [${message}]`.trim())
-										}
-										// When processing is done, the onTranscription callback will handle the final text
-									}}
-									onRecordingStateChange={setIsVoiceRecording}
-									onTranscription={(text) => {
-										// Remove any processing text first
-										const processingPattern = /\s*\[Transcribing\.\.\.\]$/
-										const cleanedValue = inputValue.replace(processingPattern, "")
-
-										if (!text) {
-											setInputValue(cleanedValue)
-											return
-										}
-
-										// Append the transcribed text to the cleaned input
-										const newValue = cleanedValue + (cleanedValue ? " " : "") + text
-										setInputValue(newValue)
-										// Focus the textarea and move cursor to end
-										setTimeout(() => {
-											if (textAreaRef.current) {
-												textAreaRef.current.focus()
-												const length = newValue.length
-												textAreaRef.current.setSelectionRange(length, length)
+								<Suspense fallback={<div className="w-8 h-8" />}>
+									<VoiceRecorder
+										disabled={sendingDisabled}
+										isAuthenticated={true}
+										language={dictationSettings?.dictationLanguage || "en"}
+										onProcessingStateChange={(isProcessing, message) => {
+											if (isProcessing && message) {
+												// Show processing message in input
+												setInputValue(`${inputValue} [${message}]`.trim())
 											}
-										}, 0)
-									}}
-								/>
+											// When processing is done, the onTranscription callback will handle the final text
+										}}
+										onRecordingStateChange={setIsVoiceRecording}
+										onTranscription={(text) => {
+											// Remove any processing text first
+											const processingPattern = /\s*\[Transcribing\.\.\.\]$/
+											const cleanedValue = inputValue.replace(processingPattern, "")
+
+											if (!text) {
+												setInputValue(cleanedValue)
+												return
+											}
+
+											// Append the transcribed text to the cleaned input
+											const newValue = cleanedValue + (cleanedValue ? " " : "") + text
+											setInputValue(newValue)
+											// Focus the textarea and move cursor to end
+											setTimeout(() => {
+												if (textAreaRef.current) {
+													textAreaRef.current.focus()
+													const length = newValue.length
+													textAreaRef.current.setSelectionRange(length, length)
+												}
+											}, 0)
+										}}
+									/>
+								</Suspense>
 							)}
 							{!isVoiceRecording && (
 								<div

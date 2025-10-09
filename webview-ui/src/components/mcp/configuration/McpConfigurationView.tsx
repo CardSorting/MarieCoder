@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import AddRemoteServerForm from "./tabs/add-server/AddRemoteServerForm"
 import ConfigureServersView from "./tabs/installed/ConfigureServersView"
 import McpMarketplaceView from "./tabs/marketplace/McpMarketplaceView"
@@ -41,7 +42,7 @@ const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
 					setMcpMarketplaceCatalog(response)
 				})
 				.catch((error) => {
-					console.error("Error refreshing MCP marketplace:", error)
+					debug.error("Error refreshing MCP marketplace:", error)
 				})
 
 			McpServiceClient.getLatestMcpServers(EmptyRequest.create({}))
@@ -52,7 +53,7 @@ const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
 					}
 				})
 				.catch((error) => {
-					console.error("Failed to fetch MCP servers:", error)
+					debug.error("Failed to fetch MCP servers:", error)
 				})
 		}
 	}, [mcpMarketplaceEnabled])

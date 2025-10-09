@@ -3,6 +3,7 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useRef, useState } from "react"
 import { useClickAway } from "react-use"
 import { FileServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
 interface NewRuleRowProps {
 	isGlobal: boolean
@@ -70,7 +71,7 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType }) => {
 					}),
 				)
 			} catch (err) {
-				console.error("Error creating rule file:", err)
+				debug.error("Error creating rule file:", err)
 			}
 
 			setFilename("")

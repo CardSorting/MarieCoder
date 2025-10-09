@@ -20,6 +20,7 @@ import { useCallback, useState } from "react"
 import { Button } from "@/components/common/button"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { getMcpServerDisplayName } from "@/utils/mcp"
 import McpResourceRow from "./McpResourceRow"
 import McpToolRow from "./McpToolRow"
@@ -64,11 +65,11 @@ const ServerRow = ({
 		}
 	}, [])
 
-	const handleRowClick = () => {
+	const handleRowClick = useCallback(() => {
 		if (!server.error && isExpandable) {
 			setIsExpanded(!isExpanded)
 		}
-	}
+	}, [server.error, isExpandable, isExpanded])
 
 	const [timeoutValue, setTimeoutValue] = useState<string>(() => {
 		try {
@@ -79,26 +80,29 @@ const ServerRow = ({
 		}
 	})
 
-	const handleTimeoutChange = (e: any) => {
-		const select = e.target as HTMLSelectElement
-		const value = select.value
-		const num = parseInt(value)
-		setTimeoutValue(value)
+	const handleTimeoutChange = useCallback(
+		(e: any) => {
+			const select = e.target as HTMLSelectElement
+			const value = select.value
+			const num = parseInt(value)
+			setTimeoutValue(value)
 
-		McpServiceClient.updateMcpTimeout({
-			serverName: server.name,
-			timeout: num,
-		} as UpdateMcpTimeoutRequest)
-			.then((response: McpServers) => {
-				const mcpServers = convertProtoMcpServersToMcpServers(response.mcpServers)
-				setMcpServers(mcpServers)
-			})
-			.catch((error) => {
-				console.error("Error updating MCP server timeout", error)
-			})
-	}
+			McpServiceClient.updateMcpTimeout({
+				serverName: server.name,
+				timeout: num,
+			} as UpdateMcpTimeoutRequest)
+				.then((response: McpServers) => {
+					const mcpServers = convertProtoMcpServersToMcpServers(response.mcpServers)
+					setMcpServers(mcpServers)
+				})
+				.catch((error) => {
+					debug.error("Error updating MCP server timeout", error)
+				})
+		},
+		[server.name, setMcpServers],
+	)
 
-	const handleRestart = () => {
+	const handleRestart = useCallback(() => {
 		// Set local state to show "connecting" status
 		setIsRestarting(true)
 
@@ -115,11 +119,11 @@ const ServerRow = ({
 			.catch((error) => {
 				// Reset the restarting state
 				setIsRestarting(false)
-				console.error("Error restarting MCP server", error)
+				debug.error("Error restarting MCP server", error)
 			})
-	}
+	}, [server.name, setMcpServers])
 
-	const handleDelete = () => {
+	const handleDelete = useCallback(() => {
 		setIsDeleting(true)
 		McpServiceClient.deleteMcpServer({
 			value: server.name,
@@ -130,12 +134,12 @@ const ServerRow = ({
 				setIsDeleting(false)
 			})
 			.catch((error) => {
-				console.error("Error deleting MCP server", error)
+				debug.error("Error deleting MCP server", error)
 				setIsDeleting(false)
 			})
-	}
+	}, [server.name, setMcpServers])
 
-	const handleAutoApproveChange = () => {
+	const handleAutoApproveChange = useCallback(() => {
 		if (!server.name) {
 			return
 		}
@@ -152,11 +156,11 @@ const ServerRow = ({
 				setMcpServers(mcpServers)
 			})
 			.catch((error) => {
-				console.error("Error toggling all tools auto-approve", error)
+				debug.error("Error toggling all tools auto-approve", error)
 			})
-	}
+	}, [server.name, server.tools, setMcpServers])
 
-	const handleToggleMcpServer = () => {
+	const handleToggleMcpServer = useCallback(() => {
 		McpServiceClient.toggleMcpServer(
 			ToggleMcpServerRequest.create({
 				serverName: server.name,
@@ -168,9 +172,9 @@ const ServerRow = ({
 				setMcpServers(mcpServers)
 			})
 			.catch((error) => {
-				console.error("Error toggling MCP server", error)
+				debug.error("Error toggling MCP server", error)
 			})
-	}
+	}, [server.name, server.disabled, setMcpServers])
 
 	return (
 		<div style={{ marginBottom: "10px" }}>

@@ -1,6 +1,6 @@
-import { memo, useEffect } from "react"
+import { memo, useEffect, useState } from "react"
 import { useRemark } from "react-remark"
-import rehypeHighlight, { Options } from "rehype-highlight"
+import type { Options } from "rehype-highlight"
 import styled from "styled-components"
 import { visit } from "unist-util-visit"
 import "./codeblock-parser.css"
@@ -111,6 +111,15 @@ const StyledPre = styled.pre<{ theme: any }>`
 `
 
 const CodeBlock = memo(({ source, forceWrap = false }: CodeBlockProps) => {
+	// Lazy load syntax highlighting - only loads when code blocks are rendered
+	const [rehypeHighlight, setRehypeHighlight] = useState<any>(null)
+
+	useEffect(() => {
+		import("rehype-highlight").then((module) => {
+			setRehypeHighlight(() => module.default)
+		})
+	}, [])
+
 	const [reactContent, setMarkdownSource] = useRemark({
 		remarkPlugins: [
 			() => {
@@ -126,12 +135,14 @@ const CodeBlock = memo(({ source, forceWrap = false }: CodeBlockProps) => {
 				}
 			},
 		],
-		rehypePlugins: [
-			rehypeHighlight as any,
-			{
-				// languages: {},
-			} as Options,
-		],
+		rehypePlugins: rehypeHighlight
+			? [
+					rehypeHighlight as any,
+					{
+						// languages: {},
+					} as Options,
+				]
+			: [],
 		rehypeReactOptions: {
 			components: {
 				pre: ({ node, ...preProps }: any) => <StyledPre {...preProps} />,

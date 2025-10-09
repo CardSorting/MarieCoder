@@ -17,6 +17,7 @@ import { useEvent } from "react-use"
 import HeroTooltip from "@/components/common/HeroTooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { Tab, TabContent, TabHeader, TabList, TabTrigger } from "../common/Tab"
 import SectionHeader from "./SectionHeader"
 import AboutSection from "./sections/AboutSection"
@@ -195,7 +196,7 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 		try {
 			await StateServiceClient.resetState(ResetStateRequest.create({ global: resetGlobalState }))
 		} catch (error) {
-			console.error("Failed to reset state:", error)
+			debug.error("Failed to reset state:", error)
 		}
 	}, [])
 

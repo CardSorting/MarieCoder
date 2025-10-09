@@ -9,6 +9,7 @@ import HeroTooltip from "@/components/common/HeroTooltip"
 import ServersToggleList from "@/components/mcp/configuration/tabs/installed/ServersToggleList"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
 const ServersToggleModal: React.FC = () => {
 	const { mcpServers, navigateToMcp, setMcpServers } = useExtensionState()
@@ -46,7 +47,7 @@ const ServersToggleModal: React.FC = () => {
 					}
 				})
 				.catch((error) => {
-					console.error("Failed to fetch MCP servers:", error)
+					debug.error("Failed to fetch MCP servers:", error)
 				})
 		}
 	}, [isVisible])

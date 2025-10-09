@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import { useDebounceEffect } from "@/hooks"
 import { FileServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
 const MERMAID_THEME = {
 	background: "#1e1e1e", // VS Code dark theme background
@@ -144,7 +145,7 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 					containerRef.current.innerHTML = svg
 				}
 			} catch (err) {
-				console.warn("Mermaid parse/render failed:", err)
+				debug.warn("Mermaid parse/render failed:", err)
 				if (containerRef.current) {
 					containerRef.current.innerHTML = code.replace(/</g, "&lt;").replace(/>/g, "&gt;")
 				}
@@ -172,10 +173,10 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 		try {
 			const pngDataUrl = await svgToPng(svgEl)
 			FileServiceClient.openImage(StringRequest.create({ value: pngDataUrl })).catch((err) =>
-				console.error("Failed to open image:", err),
+				debug.error("Failed to open image:", err),
 			)
 		} catch (err) {
-			console.error("Error converting SVG to PNG:", err)
+			debug.error("Error converting SVG to PNG:", err)
 		}
 	}
 
@@ -183,7 +184,7 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 		try {
 			await navigator.clipboard.writeText(code)
 		} catch (err) {
-			console.error("Copy failed", err)
+			debug.error("Copy failed", err)
 		}
 	}
 
@@ -201,7 +202,7 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 }
 
 async function svgToPng(svgEl: SVGElement): Promise<string> {
-	console.log("svgToPng function called")
+	debug.log("svgToPng function called")
 	// Clone the SVG to avoid modifying the original
 	const svgClone = svgEl.cloneNode(true) as SVGElement
 

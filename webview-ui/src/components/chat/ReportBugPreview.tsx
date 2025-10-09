@@ -1,4 +1,5 @@
 import React from "react"
+import { debug } from "@/utils/debug_logger"
 import MarkdownBlock from "../common/MarkdownBlock"
 
 interface ReportBugPreviewProps {
@@ -11,7 +12,7 @@ const ReportBugPreview: React.FC<ReportBugPreviewProps> = ({ data }) => {
 		try {
 			return JSON.parse(data || "{}")
 		} catch (e) {
-			console.error("Failed to parse bug report data", e)
+			debug.error("Failed to parse bug report data", e)
 			return {}
 		}
 	}, [data])

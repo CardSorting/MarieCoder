@@ -3,6 +3,7 @@ import { TranscribeAudioRequest } from "@shared/proto/cline/dictation"
 import { EmptyRequest } from "@shared/proto/index.cline"
 import React, { useCallback, useEffect, useRef, useState } from "react"
 import { DictationServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { formatSeconds } from "@/utils/format"
 import HeroTooltip from "../common/HeroTooltip"
 
@@ -59,16 +60,16 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 			const response = await DictationServiceClient.startRecording(EmptyRequest.create({}))
 
 			if (!response.success) {
-				console.error("Failed to start recording:", response.error)
+				debug.error("Failed to start recording:", response.error)
 				setError(response.error || "Failed to start recording")
 				return
 			}
 
 			// Only set recording state after backend confirms success
 			setIsRecording(true)
-			console.log("Recording started successfully")
+			debug.log("Recording started successfully")
 		} catch (error) {
-			console.error("Error starting recording:", error)
+			debug.error("Error starting recording:", error)
 			const errorMessage = error instanceof Error ? error.message : "Failed to start recording"
 			setError(errorMessage)
 		} finally {
@@ -87,7 +88,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 			const response = await DictationServiceClient.stopRecording(EmptyRequest.create({}))
 
 			if (!response.success) {
-				console.error("Failed to stop recording:", response.error)
+				debug.error("Failed to stop recording:", response.error)
 				setIsProcessing(false)
 				const errorMessage = response.error || "Failed to stop recording"
 				setError(errorMessage)
@@ -128,7 +129,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 				onProcessingStateChange?.(false)
 			}
 		} catch (error) {
-			console.error("Error stopping recording:", error)
+			debug.error("Error stopping recording:", error)
 			const errorMessage = error instanceof Error ? error.message : "An error occurred"
 			setError(errorMessage)
 			onTranscription("")
@@ -151,7 +152,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 					}
 				}
 			} catch (error) {
-				console.error("Error polling recording status:", error)
+				debug.error("Error polling recording status:", error)
 			}
 		}
 
@@ -185,14 +186,14 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 			const response = await DictationServiceClient.cancelRecording(EmptyRequest.create({}))
 
 			if (!response.success) {
-				console.error("Failed to cancel recording:", response.error)
+				debug.error("Failed to cancel recording:", response.error)
 				setError(response.error || "Failed to cancel recording")
 				return
 			}
 
-			console.log("Recording canceled successfully")
+			debug.log("Recording canceled successfully")
 		} catch (error) {
-			console.error("Error canceling recording:", error)
+			debug.error("Error canceling recording:", error)
 			const errorMessage = error instanceof Error ? error.message : "Failed to cancel recording"
 			setError(errorMessage)
 		}

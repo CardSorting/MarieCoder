@@ -1,9 +1,11 @@
 import { StringRequest } from "@shared/proto/cline/common"
 import { RuleFileRequest } from "@shared/proto/index.cline"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import React from "react"
 import { FileServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
-const RuleRow: React.FC<{
+const RuleRowComponent: React.FC<{
 	rulePath: string
 	enabled: boolean
 	isGlobal: boolean
@@ -58,7 +60,7 @@ const RuleRow: React.FC<{
 
 	const handleEditClick = () => {
 		FileServiceClient.openFile(StringRequest.create({ value: rulePath })).catch((err) =>
-			console.error("Failed to open file:", err),
+			debug.error("Failed to open file:", err),
 		)
 	}
 
@@ -69,7 +71,7 @@ const RuleRow: React.FC<{
 				isGlobal,
 				type: ruleType || "cline",
 			}),
-		).catch((err) => console.error("Failed to delete rule file:", err))
+		).catch((err) => debug.error("Failed to delete rule file:", err))
 	}
 
 	return (
@@ -128,5 +130,23 @@ const RuleRow: React.FC<{
 		</div>
 	)
 }
+
+// Memoize to prevent re-renders in rules list
+const RuleRow = React.memo(RuleRowComponent, (prevProps, nextProps) => {
+	// Only re-render if the rule's enabled state or path changed
+	if (prevProps.rulePath !== nextProps.rulePath) {
+		return false
+	}
+	if (prevProps.enabled !== nextProps.enabled) {
+		return false
+	}
+	if (prevProps.isGlobal !== nextProps.isGlobal) {
+		return false
+	}
+	if (prevProps.ruleType !== nextProps.ruleType) {
+		return false
+	}
+	return true
+})
 
 export default RuleRow

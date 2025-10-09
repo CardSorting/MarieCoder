@@ -1,6 +1,6 @@
 import { Mode } from "@shared/storage/types"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import Fuse from "fuse.js"
+import type Fuse from "fuse.js"
 import { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
 import styled from "styled-components"
 import { normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
@@ -77,8 +77,23 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 		}))
 	}, [providerOptions])
 
+	// Lazy load Fuse.js only when needed (when search is used)
+	const [FuseConstructor, setFuseConstructor] = useState<typeof Fuse | null>(null)
+
+	useEffect(() => {
+		// Only load Fuse.js if there's a search term
+		if (searchTerm && searchTerm !== currentProviderLabel && !FuseConstructor) {
+			import("fuse.js").then((module) => {
+				setFuseConstructor(() => module.default)
+			})
+		}
+	}, [searchTerm, currentProviderLabel, FuseConstructor])
+
 	const fuse = useMemo(() => {
-		return new Fuse(searchableItems, {
+		if (!FuseConstructor) {
+			return null
+		}
+		return new FuseConstructor(searchableItems, {
 			keys: ["html"],
 			threshold: 0.3,
 			shouldSort: true,
@@ -87,10 +102,10 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 			includeMatches: true,
 			minMatchCharLength: 1,
 		})
-	}, [searchableItems])
+	}, [searchableItems, FuseConstructor])
 
 	const providerSearchResults = useMemo(() => {
-		return searchTerm && searchTerm !== currentProviderLabel
+		return searchTerm && searchTerm !== currentProviderLabel && fuse
 			? highlight(fuse.search(searchTerm), "provider-item-highlight")
 			: searchableItems
 	}, [searchableItems, searchTerm, fuse, currentProviderLabel])

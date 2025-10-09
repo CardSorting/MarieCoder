@@ -5,6 +5,7 @@ import { useCallback } from "react"
 import { useMount } from "react-use"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { getAsVar, VSC_INACTIVE_SELECTION_BACKGROUND } from "@/utils/vscStyles"
 import { useApiConfigurationHandlers } from "../settings/utils/useApiConfigurationHandlers"
 
@@ -23,7 +24,7 @@ export const NewModelBanner: React.FC = () => {
 
 		// Update state instead of localStorage
 		StateServiceClient.updateModelBannerVersion(Int64Request.create({ value: CURRENT_MODEL_BANNER_VERSION })).catch(
-			console.error,
+			debug.error,
 		)
 	}, [])
 

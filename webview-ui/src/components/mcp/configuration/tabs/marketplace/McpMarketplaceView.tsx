@@ -11,6 +11,7 @@ import {
 import { useEffect, useMemo, useState } from "react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import McpMarketplaceCard from "./McpMarketplaceCard"
 import McpSubmitCard from "./McpSubmitCard"
 
@@ -85,7 +86,7 @@ const McpMarketplaceView = () => {
 					setMcpMarketplaceCatalog(response)
 				})
 				.catch((error) => {
-					console.error("Error refreshing MCP marketplace:", error)
+					debug.error("Error refreshing MCP marketplace:", error)
 					setError("Failed to load marketplace data")
 					setIsLoading(false)
 					setIsRefreshing(false)

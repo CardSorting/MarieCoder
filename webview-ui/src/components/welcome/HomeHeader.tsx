@@ -2,6 +2,7 @@ import { EmptyRequest } from "@shared/proto/cline/common"
 import NormieDevLogo from "@/assets/NormieDevLogo"
 import HeroTooltip from "@/components/common/HeroTooltip"
 import { UiServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
 interface HomeHeaderProps {
 	shouldShowQuickWins?: boolean
@@ -12,7 +13,7 @@ const HomeHeader = ({ shouldShowQuickWins = false }: HomeHeaderProps) => {
 		try {
 			await UiServiceClient.openWalkthrough(EmptyRequest.create())
 		} catch (error) {
-			console.error("Error opening walkthrough:", error)
+			debug.error("Error opening walkthrough:", error)
 		}
 	}
 

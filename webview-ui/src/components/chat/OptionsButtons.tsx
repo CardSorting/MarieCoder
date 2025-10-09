@@ -2,6 +2,7 @@ import { AskResponseRequest } from "@shared/proto/cline/task"
 import styled from "styled-components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import { TaskServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
 const OptionButton = styled.button<{ isSelected?: boolean; isNotSelectable?: boolean }>`
 	padding: 8px 12px;
@@ -58,7 +59,7 @@ export const OptionsButtons = ({
 					id={`options-button-${index}`}
 					isNotSelectable={hasSelected || !isActive}
 					isSelected={option === selected}
-					key={index}
+					key={option}
 					onClick={async () => {
 						if (hasSelected || !isActive) {
 							return
@@ -72,7 +73,7 @@ export const OptionsButtons = ({
 								}),
 							)
 						} catch (error) {
-							console.error("Error sending option response:", error)
+							debug.error("Error sending option response:", error)
 						}
 					}}>
 					<span className="ph-no-capture">{option}</span>

@@ -1,12 +1,14 @@
 import { BooleanRequest, EmptyRequest, StringArrayRequest, StringRequest } from "@shared/proto/cline/common"
 import { GetTaskHistoryRequest, TaskFavoriteRequest } from "@shared/proto/cline/task"
 import { VSCodeButton, VSCodeCheckbox, VSCodeRadio, VSCodeRadioGroup, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import Fuse, { FuseResult } from "fuse.js"
+import type Fuse from "fuse.js"
+import type { FuseResult } from "fuse.js"
 import { memo, useCallback, useEffect, useMemo, useState } from "react"
 import { Virtuoso } from "react-virtuoso"
 import { Button } from "@/components/common/button"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { TaskServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { formatLargeNumber, formatSize } from "@/utils/format"
 
 type HistoryViewProps = {
@@ -74,7 +76,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 			)
 			setTasks(response.tasks || [])
 		} catch (error) {
-			console.error("Error loading task history:", error)
+			debug.error("Error loading task history:", error)
 		}
 	}, [showFavoritesOnly, showCurrentWorkspaceOnly, searchQuery, sortOption, taskHistory])
 
@@ -106,7 +108,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 					loadTaskHistory()
 				}
 			} catch (err) {
-				console.error(`[FAVORITE_TOGGLE_UI] Error for task ${taskId}:`, err)
+				debug.error(`[FAVORITE_TOGGLE_UI] Error for task ${taskId}:`, err)
 				// Revert optimistic update
 				setPendingFavoriteToggles((prev) => {
 					const updated = { ...prev }
@@ -143,7 +145,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 				setTotalTasksSize?.(response.value || 0)
 			}
 		} catch (error) {
-			console.error("Error getting total tasks size:", error)
+			debug.error("Error getting total tasks size:", error)
 		}
 	}, [setTotalTasksSize])
 
@@ -164,7 +166,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 
 	const handleShowTaskWithId = useCallback((id: string) => {
 		TaskServiceClient.showTaskWithId(StringRequest.create({ value: id })).catch((error) =>
-			console.error("Error showing task:", error),
+			debug.error("Error showing task:", error),
 		)
 	}, [])
 
@@ -182,7 +184,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		(id: string) => {
 			TaskServiceClient.deleteTasksWithIds(StringArrayRequest.create({ value: [id] }))
 				.then(() => fetchTotalTasksSize())
-				.catch((error) => console.error("Error deleting task:", error))
+				.catch((error) => debug.error("Error deleting task:", error))
 		},
 		[fetchTotalTasksSize],
 	)
@@ -192,7 +194,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 			if (ids.length > 0) {
 				TaskServiceClient.deleteTasksWithIds(StringArrayRequest.create({ value: ids }))
 					.then(() => fetchTotalTasksSize())
-					.catch((error) => console.error("Error deleting tasks:", error))
+					.catch((error) => debug.error("Error deleting tasks:", error))
 				setSelectedItems([])
 			}
 		},
@@ -214,8 +216,23 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 			.toUpperCase()
 	}, [])
 
+	// Lazy load Fuse.js only when needed (when search is used)
+	const [FuseConstructor, setFuseConstructor] = useState<typeof Fuse | null>(null)
+
+	useEffect(() => {
+		// Only load Fuse.js if there's a search query
+		if (searchQuery && !FuseConstructor) {
+			import("fuse.js").then((module) => {
+				setFuseConstructor(() => module.default)
+			})
+		}
+	}, [searchQuery, FuseConstructor])
+
 	const fuse = useMemo(() => {
-		return new Fuse(tasks, {
+		if (!FuseConstructor) {
+			return null
+		}
+		return new FuseConstructor(tasks, {
 			keys: ["task"],
 			threshold: 0.6,
 			shouldSort: true,
@@ -224,10 +241,10 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 			includeMatches: true,
 			minMatchCharLength: 1,
 		})
-	}, [tasks])
+	}, [tasks, FuseConstructor])
 
 	const taskHistorySearchResults = useMemo(() => {
-		const results = searchQuery ? highlight(fuse.search(searchQuery)) : tasks
+		const results = searchQuery && fuse ? highlight(fuse.search(searchQuery)) : tasks
 
 		results.sort((a, b) => {
 			switch (sortOption) {
@@ -708,7 +725,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 								setDeleteAllDisabled(true)
 								TaskServiceClient.deleteAllTaskHistory(BooleanRequest.create({}))
 									.then(() => fetchTotalTasksSize())
-									.catch((error) => console.error("Error deleting task history:", error))
+									.catch((error) => debug.error("Error deleting task history:", error))
 									.finally(() => setDeleteAllDisabled(false))
 							}}
 							style={{ width: "100%" }}
@@ -730,7 +747,7 @@ const ExportButton = ({ itemId }: { itemId: string }) => (
 		onClick={(e) => {
 			e.stopPropagation()
 			TaskServiceClient.exportTaskWithId(StringRequest.create({ value: itemId })).catch((err) =>
-				console.error("Failed to export task:", err),
+				debug.error("Failed to export task:", err),
 			)
 		}}>
 		<div style={{ fontSize: "11px", fontWeight: 500, opacity: 1 }}>EXPORT</div>

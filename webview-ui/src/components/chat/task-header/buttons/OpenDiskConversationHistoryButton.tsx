@@ -3,6 +3,7 @@ import { StringRequest } from "@shared/proto/cline/common"
 import { ArrowDownToLineIcon } from "lucide-react"
 import HeroTooltip from "@/components/common/HeroTooltip"
 import { FileServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
 const OpenDiskConversationHistoryButton: React.FC<{
 	taskId?: string
@@ -14,7 +15,7 @@ const OpenDiskConversationHistoryButton: React.FC<{
 		}
 
 		FileServiceClient.openDiskConversationHistory(StringRequest.create({ value: taskId })).catch((err) => {
-			console.error(err)
+			debug.error(err)
 		})
 	}
 

@@ -18,7 +18,7 @@ interface TaskTimelineProps {
 	onBlockClick?: (messageIndex: number) => void
 }
 
-const TaskTimeline: React.FC<TaskTimelineProps> = ({ messages, onBlockClick }) => {
+const TaskTimelineComponent: React.FC<TaskTimelineProps> = ({ messages, onBlockClick }) => {
 	const containerRef = useRef<HTMLDivElement>(null)
 	const scrollableRef = useRef<HTMLDivElement>(null)
 
@@ -208,5 +208,25 @@ const TaskTimeline: React.FC<TaskTimelineProps> = ({ messages, onBlockClick }) =
 		</div>
 	)
 }
+
+// Memoize to prevent re-renders when messages haven't changed
+const TaskTimeline = React.memo(TaskTimelineComponent, (prevProps, nextProps) => {
+	// Only re-render if messages array length or content changed
+	if (prevProps.messages.length !== nextProps.messages.length) {
+		return false
+	}
+	if (prevProps.onBlockClick !== nextProps.onBlockClick) {
+		return false
+	}
+
+	// Check if last message changed (most common case during streaming)
+	const prevLast = prevProps.messages[prevProps.messages.length - 1]
+	const nextLast = nextProps.messages[nextProps.messages.length - 1]
+	if (prevLast?.ts !== nextLast?.ts || prevLast?.text !== nextLast?.text) {
+		return false
+	}
+
+	return true
+})
 
 export default TaskTimeline

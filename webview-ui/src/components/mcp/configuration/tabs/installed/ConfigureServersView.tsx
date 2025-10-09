@@ -2,6 +2,7 @@ import { EmptyRequest, StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient, UiServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import ServersToggleList from "./ServersToggleList"
 
 const ConfigureServersView = () => {
@@ -39,7 +40,7 @@ const ConfigureServersView = () => {
 					appearance="secondary"
 					onClick={() => {
 						McpServiceClient.openMcpSettings(EmptyRequest.create({})).catch((error) => {
-							console.error("Error opening MCP settings:", error)
+							debug.error("Error opening MCP settings:", error)
 						})
 					}}
 					style={{ width: "100%", marginBottom: "5px" }}>
@@ -58,7 +59,7 @@ const ConfigureServersView = () => {
 								try {
 									await UiServiceClient.scrollToSettings(StringRequest.create({ value: "features" }))
 								} catch (error) {
-									console.error("Error scrolling to mcp settings:", error)
+									debug.error("Error scrolling to mcp settings:", error)
 								}
 							}, 300)
 						}}

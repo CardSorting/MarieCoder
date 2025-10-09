@@ -3,6 +3,7 @@ import DOMPurify from "dompurify"
 import React from "react"
 import ChatErrorBoundary from "@/components/chat/ChatErrorBoundary"
 import { WebServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { getSafeHostname, normalizeRelativeUrl } from "./utils/mcpRichUtil"
 
 interface OpenGraphData {
@@ -239,7 +240,7 @@ class LinkPreview extends React.Component<LinkPreviewProps, LinkPreviewState> {
 								}),
 							)
 						} catch (err) {
-							console.error("Error opening URL in browser:", err)
+							debug.error("Error opening URL in browser:", err)
 						}
 					}}
 					style={{
@@ -281,7 +282,7 @@ class LinkPreview extends React.Component<LinkPreviewProps, LinkPreviewState> {
 							}),
 						)
 					} catch (err) {
-						console.error("Error opening URL in browser:", err)
+						debug.error("Error opening URL in browser:", err)
 					}
 				}}
 				style={{
@@ -298,7 +299,7 @@ class LinkPreview extends React.Component<LinkPreviewProps, LinkPreviewState> {
 						<img
 							alt=""
 							onError={(e) => {
-								console.log(`Image could not be loaded: ${data.image}`)
+								debug.log(`Image could not be loaded: ${data.image}`)
 								// Hide the broken image
 								;(e.target as HTMLImageElement).style.display = "none"
 							}}

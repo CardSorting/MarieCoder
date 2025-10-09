@@ -3,6 +3,7 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { memo, useState } from "react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { TaskServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { formatLargeNumber } from "@/utils/format"
 
 type HistoryPreviewProps = {
@@ -15,7 +16,7 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 
 	const handleHistorySelect = (id: string) => {
 		TaskServiceClient.showTaskWithId(StringRequest.create({ value: id })).catch((error) =>
-			console.error("Error showing task:", error),
+			debug.error("Error showing task:", error),
 		)
 	}
 

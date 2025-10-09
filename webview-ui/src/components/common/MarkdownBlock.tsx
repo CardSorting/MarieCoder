@@ -1,9 +1,9 @@
 import { StringRequest } from "@shared/proto/cline/common"
 import { PlanActMode, TogglePlanActModeRequest } from "@shared/proto/cline/state"
 import type { ComponentProps } from "react"
-import React, { memo, useEffect, useRef } from "react"
+import React, { memo, useEffect, useRef, useState } from "react"
 import { useRemark } from "react-remark"
-import rehypeHighlight, { Options } from "rehype-highlight"
+import type { Options } from "rehype-highlight"
 import styled from "styled-components"
 import type { Node } from "unist"
 import { visit } from "unist-util-visit"
@@ -11,6 +11,7 @@ import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import MermaidBlock from "@/components/common/MermaidBlock"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { FileServiceClient, StateServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { WithCopyButton } from "./CopyButton"
 
 // Styled component for Act Mode text with more specific styling
@@ -344,7 +345,7 @@ const remarkFilePathDetection = () => {
 						}
 					})
 					.catch((err) => {
-						console.debug(`Failed to check file existence for ${node.value}:`, err)
+						debug.log(`Failed to check file existence for ${node.value}:`, err)
 					})
 
 				filePathPromises.push(promise)
@@ -356,6 +357,15 @@ const remarkFilePathDetection = () => {
 }
 
 const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
+	// Lazy load syntax highlighting - only loads when code blocks are rendered
+	const [rehypeHighlight, setRehypeHighlight] = useState<any>(null)
+
+	useEffect(() => {
+		import("rehype-highlight").then((module) => {
+			setRehypeHighlight(() => module.default)
+		})
+	}, [])
+
 	const [reactContent, setMarkdown] = useRemark({
 		remarkPlugins: [
 			remarkPreventBoldFilenames,
@@ -374,12 +384,14 @@ const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 				}
 			},
 		],
-		rehypePlugins: [
-			rehypeHighlight as any,
-			{
-				// languages: {},
-			} as Options,
-		],
+		rehypePlugins: rehypeHighlight
+			? [
+					rehypeHighlight as any,
+					{
+						// languages: {},
+					} as Options,
+				]
+			: [],
 		rehypeReactOptions: {
 			components: {
 				pre: ({ children, ...preProps }: React.HTMLAttributes<HTMLPreElement>) => {

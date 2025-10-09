@@ -4,6 +4,7 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useState } from "react"
 import styled from "styled-components"
 import { TaskServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
 interface TaskFeedbackButtonsProps {
 	messageTs: number
@@ -33,7 +34,7 @@ const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, is
 				setShouldShow(false)
 			}
 		} catch (e) {
-			console.error("Error checking feedback history:", e)
+			debug.error("Error checking feedback history:", e)
 		}
 	}, [messageTs])
 
@@ -63,10 +64,10 @@ const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, is
 				history[messageTs] = true
 				localStorage.setItem("taskFeedbackHistory", JSON.stringify(history))
 			} catch (e) {
-				console.error("Error updating feedback history:", e)
+				debug.error("Error updating feedback history:", e)
 			}
 		} catch (error) {
-			console.error("Error sending task feedback:", error)
+			debug.error("Error sending task feedback:", error)
 		}
 	}
 

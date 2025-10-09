@@ -5,6 +5,7 @@ import DynamicTextArea from "react-textarea-autosize"
 import Thumbnails from "@/components/common/Thumbnails"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { CheckpointsServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { highlightText } from "./task-header/Highlights"
 
 interface UserMessageProps {
@@ -59,7 +60,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ text, images, files, messageT
 				sendMessageFromChatRow?.(editedText, images || [], files || [])
 			}, delay)
 		} catch (err) {
-			console.error("Checkpoint restore error:", err)
+			debug.error("Checkpoint restore error:", err)
 		}
 	}
 

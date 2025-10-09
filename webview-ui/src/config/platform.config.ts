@@ -1,3 +1,4 @@
+import { debug } from "@/utils/debug_logger"
 import platformConfigs from "./platform-configs.json"
 
 export interface PlatformConfig {
@@ -24,7 +25,7 @@ function stringToPlatformType(name: string): PlatformType {
 	if (name in mapping) {
 		return mapping[name]
 	}
-	console.error("Unknown platform:", name)
+	debug.error("Unknown platform:", name)
 	// Default to VSCode for unknown types
 	return PlatformType.VSCODE
 }
@@ -60,16 +61,16 @@ const postMessageStrategies: Record<string, PostMessageFunction> = {
 		if (vsCodeApi) {
 			vsCodeApi.postMessage(message)
 		} else {
-			console.log("postMessage fallback: ", message)
+			debug.log("postMessage fallback: ", message)
 		}
 	},
 	standalone: (message: any) => {
 		if (!window.standalonePostMessage) {
-			console.error("Standalone postMessage not found.")
+			debug.error("Standalone postMessage not found.")
 			return
 		}
 		const json = JSON.stringify(message)
-		console.log("Standalone postMessage: " + json.slice(0, 200))
+		debug.log("Standalone postMessage: " + json.slice(0, 200))
 		window.standalonePostMessage(json)
 	},
 }
@@ -92,7 +93,7 @@ declare const __PLATFORM__: string
 // Get the specific platform config at compile time
 const configs = platformConfigs as PlatformConfigs
 const selectedConfig = configs[__PLATFORM__]
-console.log("[PLATFORM_CONFIG] Build platform:", __PLATFORM__)
+debug.log("[PLATFORM_CONFIG] Build platform:", __PLATFORM__)
 
 // Build the platform config with injected functions
 // Callers should use this in the situations where the react component is not available.

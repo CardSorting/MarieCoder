@@ -4,6 +4,7 @@ import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { useState } from "react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { TabButton } from "../../mcp/configuration/McpConfigurationView"
 import ApiOptions from "../ApiOptions"
 import Section from "../Section"
@@ -74,7 +75,7 @@ const ApiConfigurationSection = ({ renderSectionHeader }: ApiConfigurationSectio
 									}),
 								)
 							} catch (error) {
-								console.error("Failed to update separate models setting:", error)
+								debug.error("Failed to update separate models setting:", error)
 							}
 						}}>
 						Use different models for Plan and Act modes

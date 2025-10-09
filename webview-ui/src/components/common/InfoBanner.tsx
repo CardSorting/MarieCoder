@@ -3,12 +3,13 @@ import { useCallback } from "react"
 import { PlatformType } from "@/config/platform.config"
 import { usePlatform } from "@/context/PlatformContext"
 import { StateServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 export const CURRENT_INFO_BANNER_VERSION = 1
 export const InfoBanner: React.FC = () => {
 	const handleClose = useCallback((e: React.MouseEvent) => {
 		e.preventDefault()
 		e.stopPropagation()
-		StateServiceClient.updateInfoBannerVersion({ value: CURRENT_INFO_BANNER_VERSION }).catch(console.error)
+		StateServiceClient.updateInfoBannerVersion({ value: CURRENT_INFO_BANNER_VERSION }).catch(debug.error)
 	}, [])
 	if (usePlatform().type === PlatformType.VSCODE) {
 		return (

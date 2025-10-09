@@ -1,5 +1,6 @@
 import { StringRequest } from "@shared/proto/cline/common"
 import { WebServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 
 // Represents a URL found in the text with its position and metadata
 export interface UrlMatch {
@@ -33,11 +34,11 @@ export const safeCreateUrl = (url: string): URL | null => {
 			try {
 				return new URL(`https://${url}`)
 			} catch (_e) {
-				console.log(`Invalid URL: ${url}`)
+				debug.log(`Invalid URL: ${url}`)
 				return null
 			}
 		}
-		console.log(`Invalid URL: ${url}`)
+		debug.log(`Invalid URL: ${url}`)
 		return null
 	}
 }
@@ -107,7 +108,7 @@ export const normalizeRelativeUrl = (relativeUrl: string, baseUrl: string): stri
 			return `${baseUrlObj.protocol}//${baseUrlObj.host}${basePath}${relativeUrl}`
 		}
 	} catch (error) {
-		console.log(`Error normalizing relative URL: ${error}`)
+		debug.log(`Error normalizing relative URL: ${error}`)
 		return relativeUrl // Return original on error
 	}
 }
@@ -125,7 +126,7 @@ export const formatUrlForOpening = (url: string): string => {
 		return urlObj.href
 	}
 
-	console.log(`Invalid URL format: ${url}`)
+	debug.log(`Invalid URL format: ${url}`)
 	// Return a safe fallback that won't crash
 	return "about:blank"
 }
@@ -142,12 +143,12 @@ export const checkIfImageUrl = async (url: string): Promise<boolean> => {
 	// Convert HTTP to HTTPS for security in the network request only
 	if (secureUrl.startsWith("http://")) {
 		secureUrl = secureUrl.replace("http://", "https://")
-		console.log(`Using HTTPS version for image check: ${secureUrl}`)
+		debug.log(`Using HTTPS version for image check: ${secureUrl}`)
 	}
 
 	// Validate URL before proceeding
 	if (!isUrl(url)) {
-		console.log("Invalid URL format:", url)
+		debug.log("Invalid URL format:", url)
 		return false
 	}
 
@@ -157,7 +158,7 @@ export const checkIfImageUrl = async (url: string): Promise<boolean> => {
 			// Use the gRPC client with timeout
 			const timeoutPromise = new Promise<boolean>((resolve) => {
 				setTimeout(() => {
-					console.log("Hit timeout waiting for checkIsImageUrl")
+					debug.log("Hit timeout waiting for checkIsImageUrl")
 					resolve(false)
 				}, 3000)
 			})
@@ -166,14 +167,14 @@ export const checkIfImageUrl = async (url: string): Promise<boolean> => {
 			const servicePromise = WebServiceClient.checkIsImageUrl(StringRequest.create({ value: url }))
 				.then((result) => result.isImage)
 				.catch((error) => {
-					console.error("Error checking if URL is an image via gRPC:", error)
+					debug.error("Error checking if URL is an image via gRPC:", error)
 					return false
 				})
 
 			// Race between the service call and the timeout
 			return Promise.race([servicePromise, timeoutPromise])
 		} catch (_error) {
-			console.log("Error checking if URL is an image:", url)
+			debug.log("Error checking if URL is an image:", url)
 			// Return false to indicate it's not an image
 			return false
 		}
@@ -182,7 +183,7 @@ export const checkIfImageUrl = async (url: string): Promise<boolean> => {
 	// Don't fall back to extension check for other URLs
 	// Only data URLs (handled above) are guaranteed to be images
 	// For all other URLs, we need proper content type verification
-	console.log(`URL protocol not supported for image check: ${url}`)
+	debug.log(`URL protocol not supported for image check: ${url}`)
 	return false
 }
 
@@ -195,21 +196,21 @@ export const checkIfImageUrl = async (url: string): Promise<boolean> => {
 export const extractUrlsFromText = (text: string, maxUrls: number = 50): UrlMatch[] => {
 	const matches: UrlMatch[] = []
 	const urlRegex = /(?:https?:\/\/|data:image)[^\s<>"']+/g
-	let urlMatch: RegExpExecArray | null
 	let urlCount = 0
 
-	while ((urlMatch = urlRegex.exec(text)) !== null && urlCount < maxUrls) {
+	let urlMatch = urlRegex.exec(text)
+	while (urlMatch !== null && urlCount < maxUrls) {
 		const url = urlMatch[0]
 
 		// Skip invalid URLs
 		if (!isUrl(url)) {
-			console.log("Skipping invalid URL:", url)
+			debug.log("Skipping invalid URL:", url)
 			continue
 		}
 
 		// Skip localhost URLs to prevent security issues
 		if (isLocalhostUrl(url)) {
-			console.log("Skipping localhost URL:", url)
+			debug.log("Skipping localhost URL:", url)
 			continue
 		}
 
@@ -222,9 +223,10 @@ export const extractUrlsFromText = (text: string, maxUrls: number = 50): UrlMatc
 		})
 
 		urlCount++
+		urlMatch = urlRegex.exec(text)
 	}
 
-	console.log(`Found ${matches.length} URLs in text`)
+	debug.log(`Found ${matches.length} URLs in text`)
 	return matches.sort((a, b) => a.index - b.index)
 }
 
@@ -241,7 +243,7 @@ export const processUrlTypes = async (
 	onProgress: (updatedMatches: UrlMatch[]) => void,
 	cancellationToken: { cancelled: boolean },
 ): Promise<void> => {
-	console.log(`Starting sequential URL processing for ${matches.length} URLs`)
+	debug.log(`Starting sequential URL processing for ${matches.length} URLs`)
 
 	for (let i = 0; i < matches.length; i++) {
 		// Skip already processed URLs
@@ -251,12 +253,12 @@ export const processUrlTypes = async (
 
 		// Check if processing has been canceled
 		if (cancellationToken.cancelled) {
-			console.log("URL processing canceled")
+			debug.log("URL processing canceled")
 			return
 		}
 
 		const match = matches[i]
-		console.log(`Processing URL ${i + 1} of ${matches.length}: ${match.url}`)
+		debug.log(`Processing URL ${i + 1} of ${matches.length}: ${match.url}`)
 
 		try {
 			// Check if URL is an image
@@ -274,7 +276,7 @@ export const processUrlTypes = async (
 			// Notify progress with a new array to ensure React detects changes
 			onProgress([...matches])
 		} catch (err) {
-			console.log(`URL check error: ${match.url}`, err)
+			debug.log(`URL check error: ${match.url}`, err)
 			match.isProcessed = true
 
 			// Update state even on error
@@ -289,7 +291,7 @@ export const processUrlTypes = async (
 		}
 	}
 
-	console.log(`URL processing complete. Found ${matches.filter((m) => m.isImage).length} image URLs`)
+	debug.log(`URL processing complete. Found ${matches.filter((m) => m.isImage).length} image URLs`)
 }
 
 /**
@@ -331,7 +333,7 @@ export const processResponseUrls = (
 	// Return cleanup function
 	return () => {
 		cancellationToken.cancelled = true
-		console.log("Cleaning up URL processing")
+		debug.log("Cleaning up URL processing")
 	}
 }
 

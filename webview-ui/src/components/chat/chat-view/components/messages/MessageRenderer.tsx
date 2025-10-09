@@ -21,7 +21,7 @@ interface MessageRendererProps {
  * Specialized component for rendering different message types
  * Handles browser sessions, regular messages, and checkpoint logic
  */
-export const MessageRenderer: React.FC<MessageRendererProps> = ({
+const MessageRendererComponent: React.FC<MessageRendererProps> = ({
 	index,
 	messageOrGroup,
 	groupedMessages,
@@ -71,6 +71,37 @@ export const MessageRenderer: React.FC<MessageRendererProps> = ({
 		/>
 	)
 }
+
+// Memoize to prevent unnecessary re-renders
+// Only re-render if the message data or expansion state changes
+export const MessageRenderer = React.memo(MessageRendererComponent, (prevProps, nextProps) => {
+	// Check if the message itself has changed
+	const messageKey = Array.isArray(prevProps.messageOrGroup) ? prevProps.messageOrGroup[0]?.ts : prevProps.messageOrGroup.ts
+	const nextMessageKey = Array.isArray(nextProps.messageOrGroup) ? nextProps.messageOrGroup[0]?.ts : nextProps.messageOrGroup.ts
+
+	if (messageKey !== nextMessageKey) {
+		return false
+	}
+
+	// Check if expansion state has changed for this message
+	if (prevProps.expandedRows[messageKey] !== nextProps.expandedRows[nextMessageKey]) {
+		return false
+	}
+
+	// Check if input value changed (affects quote feature)
+	if (prevProps.inputValue !== nextProps.inputValue) {
+		return false
+	}
+
+	// Check if last modified message changed (affects status display)
+	const prevLastTs = prevProps.modifiedMessages.at(-1)?.ts
+	const nextLastTs = nextProps.modifiedMessages.at(-1)?.ts
+	if (prevLastTs !== nextLastTs) {
+		return false
+	}
+
+	return true
+})
 
 /**
  * Factory function to create the itemContent callback for Virtuoso

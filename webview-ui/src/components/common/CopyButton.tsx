@@ -1,6 +1,7 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { forwardRef, useState } from "react"
 import styled from "styled-components"
+import { debug } from "@/utils/debug_logger"
 
 // ======== Interfaces ========
 
@@ -83,7 +84,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ textToCopy, onCopy, clas
 					setCopied(true)
 					setTimeout(() => setCopied(false), 1500)
 				})
-				.catch((err) => console.error("Copy failed", err))
+				.catch((err) => debug.error("Copy failed", err))
 		}
 	}
 

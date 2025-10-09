@@ -4,6 +4,7 @@ import { VSCodeButton, VSCodeCheckbox, VSCodeDropdown, VSCodeLink, VSCodeOption 
 import { useState } from "react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { AccountServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { useOpenRouterKeyInfo } from "../../ui/hooks/useOpenRouterKeyInfo"
 import { DebouncedTextField } from "../common/DebouncedTextField"
 import { DropdownContainer } from "../common/ModelSelector"
@@ -88,7 +89,7 @@ export const OpenRouterProvider = ({ showModelOptions, isPopup, currentMode }: O
 							try {
 								await AccountServiceClient.openrouterAuthClicked(EmptyRequest.create())
 							} catch (error) {
-								console.error("Failed to open OpenRouter auth:", error)
+								debug.error("Failed to open OpenRouter auth:", error)
 							}
 						}}
 						style={{ margin: "5px 0 0 0" }}>

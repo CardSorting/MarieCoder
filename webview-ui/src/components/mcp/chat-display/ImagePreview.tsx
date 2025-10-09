@@ -3,6 +3,7 @@ import DOMPurify from "dompurify"
 import React from "react"
 import ChatErrorBoundary from "@/components/chat/ChatErrorBoundary"
 import { WebServiceClient } from "@/services/grpc-client"
+import { debug } from "@/utils/debug_logger"
 import { checkIfImageUrl, formatUrlForOpening, getSafeHostname } from "./utils/mcpRichUtil"
 
 interface ImagePreviewProps {
@@ -37,7 +38,7 @@ class ImagePreview extends React.Component<
 	componentDidMount() {
 		// Set up a timeout to handle cases where the image never loads or errors
 		this.timeoutId = setTimeout(() => {
-			console.log(`Image load timeout for ${this.props.url}`)
+			debug.log(`Image load timeout for ${this.props.url}`)
 			if (this.state.loading) {
 				this.setState({
 					loading: false,
@@ -63,15 +64,15 @@ class ImagePreview extends React.Component<
 		checkIfImageUrl(url)
 			.then((isImage) => {
 				if (isImage) {
-					console.log(`URL is confirmed as image: ${url}`)
+					debug.log(`URL is confirmed as image: ${url}`)
 					this.loadImage(url)
 				} else {
-					console.log(`URL is not an image: ${url}`)
+					debug.log(`URL is not an image: ${url}`)
 					this.handleImageError()
 				}
 			})
 			.catch((error) => {
-				console.log(`Error checking if URL is an image: ${error}`)
+				debug.log(`Error checking if URL is an image: ${error}`)
 				// Don't fallback to direct image loading on error
 				// Instead, report the error so the URL can be handled as a non-image
 				this.handleImageError()
@@ -84,7 +85,7 @@ class ImagePreview extends React.Component<
 
 		// For SVG files, we don't need to calculate aspect ratio as they're vector-based
 		if (isSvg) {
-			console.log(`SVG image detected, skipping aspect ratio calculation: ${url}`)
+			debug.log(`SVG image detected, skipping aspect ratio calculation: ${url}`)
 			// Default aspect ratio for SVGs
 			this.aspectRatio = 1
 			this.handleImageLoad()
@@ -95,7 +96,7 @@ class ImagePreview extends React.Component<
 		const testImg = new Image()
 
 		testImg.onload = () => {
-			console.log(`Test image loaded successfully: ${url}`)
+			debug.log(`Test image loaded successfully: ${url}`)
 
 			// Calculate aspect ratio for proper display
 			if (testImg.width > 0 && testImg.height > 0) {
@@ -106,7 +107,7 @@ class ImagePreview extends React.Component<
 		}
 
 		testImg.onerror = () => {
-			console.log(`Test image failed to load: ${url}`)
+			debug.log(`Test image failed to load: ${url}`)
 			this.handleImageError()
 		}
 
@@ -132,14 +133,14 @@ class ImagePreview extends React.Component<
 
 	// Handle image load event
 	handleImageLoad = () => {
-		console.log(`Image loaded successfully: ${this.props.url}`)
+		debug.log(`Image loaded successfully: ${this.props.url}`)
 		this.setState({ loading: false })
 		this.cleanup()
 	}
 
 	// Handle image error event
 	handleImageError = () => {
-		console.log(`Image failed to load: ${this.props.url}`)
+		debug.log(`Image failed to load: ${this.props.url}`)
 		this.setState({
 			loading: false,
 			error: `Failed to load image: ${this.props.url}`,
@@ -235,7 +236,7 @@ class ImagePreview extends React.Component<
 								}),
 							)
 						} catch (err) {
-							console.error("Error opening URL in browser:", err)
+							debug.error("Error opening URL in browser:", err)
 						}
 					}}
 					style={{
@@ -265,7 +266,7 @@ class ImagePreview extends React.Component<
 							}),
 						)
 					} catch (err) {
-						console.error("Error opening URL in browser:", err)
+						debug.error("Error opening URL in browser:", err)
 					}
 				}}
 				style={{
