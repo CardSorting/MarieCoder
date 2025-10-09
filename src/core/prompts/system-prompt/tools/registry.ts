@@ -60,7 +60,6 @@ export class ToolRegistryService {
 	 */
 	static initialize(): void {
 		if (ToolRegistryService.initialized) {
-			console.warn("Tool registry already initialized")
 			return
 		}
 
@@ -71,21 +70,18 @@ export class ToolRegistryService {
 					version: "1.0.0",
 					description: `Tool variants for ${toolId}`,
 				})
-			} catch (error) {
-				console.error(`Failed to register tool ${toolId}:`, error)
+			} catch {
+				// Silently skip failed tool registrations
 			}
 		}
 
 		// Validate all registered tools
 		const validation = toolRegistry.validateAll()
 		if (!validation.isValid) {
-			console.error("Tool registry validation failed:", validation.errors)
-		} else if (validation.warnings.length > 0) {
-			console.warn("Tool registry validation warnings:", validation.warnings)
+			throw new Error(`Tool registry validation failed: ${JSON.stringify(validation.errors)}`)
 		}
 
 		ToolRegistryService.initialized = true
-		console.log("Tool registry initialized successfully")
 	}
 
 	/**

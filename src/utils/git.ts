@@ -43,13 +43,11 @@ export async function searchCommits(query: string, cwd: string): Promise<GitComm
 	try {
 		const isInstalled = await checkGitInstalled()
 		if (!isInstalled) {
-			console.error("Git is not installed")
 			return []
 		}
 
 		const isRepo = await checkGitRepo(cwd)
 		if (!isRepo) {
-			console.error("Not a git repository")
 			return []
 		}
 
@@ -97,8 +95,7 @@ export async function searchCommits(query: string, cwd: string): Promise<GitComm
 		}
 
 		return commits
-	} catch (error) {
-		console.error("Error searching commits:", error)
+	} catch {
 		return []
 	}
 }
@@ -144,7 +141,6 @@ export async function getCommitInfo(hash: string, cwd: string): Promise<string> 
 		const output = summary + "\n\n" + diff.trim()
 		return truncateOutput(output)
 	} catch (error) {
-		console.error("Error getting commit info:", error)
 		return `Failed to get commit info: ${error instanceof Error ? error.message : String(error)}`
 	}
 }
@@ -180,7 +176,6 @@ export async function getWorkingState(cwd: string): Promise<string> {
 		const output = `Working directory changes:\n\n${status}\n\n${diff}`.trim()
 		return truncateOutput(output)
 	} catch (error) {
-		console.error("Error getting working state:", error)
 		return `Failed to get working state: ${error instanceof Error ? error.message : String(error)}`
 	}
 }
@@ -251,8 +246,7 @@ export async function getGitRemoteUrls(cwd: string): Promise<string[]> {
 			.filter((remote): remote is { name: string; url: string } => remote !== null)
 
 		return remotes.map((remote) => `${remote.name}: ${remote.url}`)
-	} catch (error) {
-		console.error("Error getting git remotes:", error)
+	} catch {
 		return []
 	}
 }
@@ -271,8 +265,7 @@ export async function getLatestGitCommitHash(cwd: string): Promise<string | null
 
 		const { stdout } = await execAsync("git rev-parse HEAD", { cwd })
 		return stdout.trim() || null
-	} catch (error) {
-		console.error("Error getting latest git commit hash:", error)
+	} catch {
 		return null
 	}
 }

@@ -40,8 +40,8 @@ export class FileMetadataManager {
 
 			metadata.files_in_context.push(newEntry)
 			await saveTaskMetadata(this.taskId, metadata)
-		} catch (error) {
-			console.error("Failed to add file to metadata:", error)
+		} catch {
+			// Silently fail - metadata is not critical
 		}
 	}
 
@@ -129,8 +129,7 @@ export class FileMetadataManager {
 		try {
 			const metadata = await getTaskMetadata(this.taskId)
 			return metadata.files_in_context || []
-		} catch (error) {
-			console.error("Failed to get file entries:", error)
+		} catch {
 			return []
 		}
 	}

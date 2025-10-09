@@ -56,8 +56,8 @@ export async function deleteAllTaskHistory(controller: Controller): Promise<Dele
 				// Update webview
 				try {
 					await controller.postStateToWebview()
-				} catch (webviewErr) {
-					console.error("Error posting to webview:", webviewErr)
+				} catch {
+					// Silently fail - not critical
 				}
 
 				return DeleteAllTaskHistoryCount.create({
@@ -111,15 +111,14 @@ export async function deleteAllTaskHistory(controller: Controller): Promise<Dele
 		// Update webview
 		try {
 			await controller.postStateToWebview()
-		} catch (webviewErr) {
-			console.error("Error posting to webview:", webviewErr)
+		} catch {
+			// Silently fail - not critical
 		}
 
 		return DeleteAllTaskHistoryCount.create({
 			tasksDeleted: totalTasks,
 		})
 	} catch (error) {
-		console.error("Error in deleteAllTaskHistory:", error)
 		throw error
 	}
 }
@@ -133,7 +132,6 @@ async function cleanupTaskFiles(preserveTaskIds: string[]) {
 	try {
 		if (await fileExistsAtPath(taskDirPath)) {
 			const taskDirs = await fs.readdir(taskDirPath)
-			console.debug(`[cleanupTaskFiles] Found ${taskDirs.length} task directories`)
 
 			// Delete only non-preserved task directories
 			for (const dir of taskDirs) {
@@ -146,8 +144,8 @@ async function cleanupTaskFiles(preserveTaskIds: string[]) {
 				}
 			}
 		}
-	} catch (error) {
-		console.error("Error cleaning up task files:", error)
+	} catch {
+		// Silently fail - not critical
 	}
 
 	return true

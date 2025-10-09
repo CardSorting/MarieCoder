@@ -64,8 +64,8 @@ export class CheckpointDetector {
 					}
 				}
 			}
-		} catch (error) {
-			console.error("Error checking file context metadata:", error)
+		} catch {
+			// Silently fail - metadata check is not critical
 		}
 
 		return editedFiles
@@ -91,8 +91,8 @@ export class CheckpointDetector {
 							editedFiles.push(toolData.path)
 						}
 					}
-				} catch (error) {
-					console.error("Error parsing tool message:", error)
+				} catch {
+					// Silently fail - parsing error not critical
 				}
 			}
 		}
@@ -123,8 +123,8 @@ export class CheckpointDetector {
 					}
 				}
 			}
-		} catch (error) {
-			console.error("Error checking file edit timestamp:", error)
+		} catch {
+			// Silently fail - timestamp check not critical
 		}
 
 		return false

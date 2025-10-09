@@ -62,7 +62,6 @@ export class GrpcHandler {
 		requestRegistry.registerRequest(
 			requestId,
 			() => {
-				console.log(`[DEBUG] Cleaning up streaming request: ${requestId}`)
 				if (streamingCallbacks.onComplete && !completionCalled) {
 					completionCalled = true
 					streamingCallbacks.onComplete()
@@ -83,7 +82,6 @@ export class GrpcHandler {
 
 		// Return a function to cancel the stream
 		return () => {
-			console.log(`[DEBUG] Cancelling streaming request: ${requestId}`)
 			this.cancelRequest(requestId)
 		}
 	}
@@ -107,15 +105,14 @@ export class GrpcHandler {
 
 		const cancelled = requestRegistry.cancelRequest(requestId)
 		if (!cancelled) {
-			console.log(`[DEBUG] Request not found for cancellation: ${requestId}`)
 			return false
 		}
 		if (requestInfo.responseStream) {
 			try {
 				// Send cancellation confirmation using the registered response handler
 				await requestInfo.responseStream({ cancelled: true }, true /* isLast */)
-			} catch (e) {
-				console.error(`Error sending cancellation response for ${requestId}:`, e)
+			} catch {
+				// Silently fail - cancellation response is optional
 			}
 		}
 		return true

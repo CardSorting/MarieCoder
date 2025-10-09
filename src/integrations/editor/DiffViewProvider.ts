@@ -318,15 +318,13 @@ export abstract class DiffViewProvider {
 			await this.saveDocument()
 			await this.closeAllDiffViews()
 			await fs.rm(this.absolutePath, { force: true })
-			console.log(`File ${this.absolutePath} has been deleted.`)
 
 			// Remove only the directories we created, in reverse order
 			for (let i = this.createdDirs.length - 1; i >= 0; i--) {
 				try {
 					await fs.rmdir(this.createdDirs[i])
-					console.log(`Directory ${this.createdDirs[i]} has been deleted.`)
-				} catch (error) {
-					console.log(`Could not delete directory ${this.createdDirs[i]}`, error)
+				} catch {
+					// Silently fail - directory may not be empty
 				}
 			}
 		} else {
@@ -338,7 +336,6 @@ export abstract class DiffViewProvider {
 			await this.replaceText(this.originalContent ?? "", { startLine: 0, endLine: lineCount }, undefined)
 
 			await this.saveDocument()
-			console.log(`File ${this.absolutePath} has been reverted to its original content.`)
 			if (this.documentWasOpen) {
 				openFile(this.absolutePath, true)
 			}

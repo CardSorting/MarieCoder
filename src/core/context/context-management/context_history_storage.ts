@@ -33,7 +33,7 @@ export class ContextHistoryStorage {
 				)
 			}
 		} catch (error) {
-			console.error("Failed to load context history:", error)
+			// Failed to load context history
 		}
 		return new Map()
 	}
@@ -55,7 +55,7 @@ export class ContextHistoryStorage {
 				"utf8",
 			)
 		} catch (error) {
-			console.error("Failed to save context history:", error)
+			// Failed to save context history
 		}
 	}
 }

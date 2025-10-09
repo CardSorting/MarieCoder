@@ -33,8 +33,8 @@ export class WarningPersistence {
 			// NOTE: Using 'as any' because dynamic keys like pendingFileContextWarning_${taskId}
 			// are legitimate workspace state keys but don't fit the strict LocalStateKey type system
 			this.controller.stateManager.setWorkspaceState(key as any, files)
-		} catch (error) {
-			console.error("Error storing pending file context warning:", error)
+		} catch {
+			// Silently fail - not critical
 		}
 	}
 
@@ -48,8 +48,8 @@ export class WarningPersistence {
 			const key = this.getWarningKey()
 			const files = this.controller.stateManager.getWorkspaceStateKey(key as any) as string[]
 			return files
-		} catch (error) {
-			console.error("Error retrieving pending file context warning:", error)
+		} catch {
+			// Silently fail - not critical
 		}
 		return undefined
 	}
@@ -69,8 +69,8 @@ export class WarningPersistence {
 				await this.clearWarning()
 				return files
 			}
-		} catch (error) {
-			console.error("Error retrieving and clearing pending file context warning:", error)
+		} catch {
+			// Silently fail - not critical
 		}
 		return undefined
 	}
@@ -122,13 +122,8 @@ export class WarningPersistence {
 					stateManager.clearArbitraryWorkspaceStateKey(key)
 				}
 			}
-
-			const duration = Date.now() - startTime
-			console.log(
-				`WarningPersistence: Processed ${existingTaskIds.size} tasks, found ${pendingWarningKeys.length} warnings, ${orphanedKeys.length} orphaned, deleted ${orphanedKeys.length}, took ${duration}ms`,
-			)
-		} catch (error) {
-			console.error("[WarningPersistence] Error cleaning up orphaned warnings:", error)
+		} catch {
+			// Silently fail - not critical
 		}
 	}
 }

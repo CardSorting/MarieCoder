@@ -1,3 +1,4 @@
+import { Logger } from "@/services/logging/Logger"
 import type { ClineDefaultTool } from "@/shared/tools"
 import { getModelFamily } from "../"
 import { ClineToolSet } from "../registry/tool_sets"
@@ -35,7 +36,7 @@ export class PromptBuilder {
 		for (const componentId of componentOrder) {
 			const componentFn = this.components[componentId]
 			if (!componentFn) {
-				console.warn(`Warning: Component '${componentId}' not found`)
+				Logger.warn(`Component '${componentId}' not found`)
 				continue
 			}
 
@@ -45,7 +46,9 @@ export class PromptBuilder {
 					sections[componentId] = result
 				}
 			} catch (error) {
-				console.warn(`Warning: Failed to build component '${componentId}':`, error)
+				Logger.warn(
+					`Failed to build component '${componentId}': ${error instanceof Error ? error.message : String(error)}`,
+				)
 			}
 		}
 
@@ -187,8 +190,13 @@ export class PromptBuilder {
 			return true
 		})
 
-		// Collect additional descriptions only from filtered parameters
-		const additionalDesc = filteredParams.map((p) => p.description).filter((desc): desc is string => Boolean(desc))
+		// Collect additional descriptions only from filtered parameters (single-pass optimization)
+		const additionalDesc = filteredParams.reduce<string[]>((acc, p) => {
+			if (p.description) {
+				acc.push(p.description)
+			}
+			return acc
+		}, [])
 		if (additionalDesc.length) {
 			description.push(...additionalDesc)
 		}

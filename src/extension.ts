@@ -70,8 +70,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand(commands.PlusButton, async () => {
-			console.log("[DEBUG] plusButtonClicked")
-
 			const sidebarInstance = WebviewProvider.getInstance()
 			await sidebarInstance.controller.clearTask()
 			await sidebarInstance.controller.postStateToWebview()
@@ -127,10 +125,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const handleUri = async (uri: vscode.Uri) => {
 		const url = decodeURIComponent(uri.toString())
-		const success = await SharedUriHandler.handleUri(url)
-		if (!success) {
-			console.warn("Extension URI handler: Failed to process URI:", uri.toString())
-		}
+		await SharedUriHandler.handleUri(url)
 	}
 	context.subscriptions.push(vscode.window.registerUriHandler({ handleUri }))
 
@@ -176,12 +171,9 @@ export async function activate(context: vscode.ExtensionContext) {
 				await focusChatInput()
 
 				await sendAddToInputEvent(`Terminal output:\n\`\`\`\n${terminalContents}\n\`\`\``)
-
-				console.log("addSelectedTerminalOutputToChat", terminalContents, terminal.name)
 			} catch (error) {
 				// Ensure clipboard is restored even if an error occurs
 				await writeTextToClipboard(tempCopyBuffer)
-				console.error("Error getting terminal contents:", error)
 				HostProvider.window.showMessage({
 					type: ShowMessageType.ERROR,
 					message: "Failed to get terminal contents",
@@ -371,8 +363,6 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 function setupHostProvider(context: ExtensionContext) {
-	console.log("Setting up vscode host providers...")
-
 	const createWebview = () => new VscodeWebviewProvider(context)
 	const createDiffView = () => new VscodeDiffViewProvider()
 	const outputChannel = vscode.window.createOutputChannel("NormieDev")
@@ -443,8 +433,6 @@ if (IS_DEV && IS_DEV !== "false") {
 	const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(DEV_WORKSPACE_FOLDER, "src/**/*"))
 
 	watcher.onDidChange(({ scheme, path }) => {
-		console.info(`${scheme} ${path} changed. Reloading VSCode...`)
-
 		vscode.commands.executeCommand("workbench.action.reloadWindow")
 	})
 }

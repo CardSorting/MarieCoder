@@ -37,17 +37,14 @@ export function cleanupStaleLockSync(lockFile: string, staleLockTimeout: number)
 			if (Number.isNaN(timestamp) || Date.now() - timestamp > staleLockTimeout) {
 				// Stale lock, remove it
 				unlinkSync(lockFile)
-				console.warn(`Removed stale database lock file: ${lockFile}`)
 			}
 		} catch (_readError) {
 			// If we can't read the timestamp, assume it's stale
 			unlinkSync(lockFile)
-			console.warn(`Removed unreadable database lock file: ${lockFile}`)
 		}
 	} catch (error: any) {
 		if (error.code !== "ENOENT") {
 			// Lock file doesn't exist, which is fine
-			console.warn(`Error checking lock file ${lockFile}:`, error)
 		}
 	}
 }

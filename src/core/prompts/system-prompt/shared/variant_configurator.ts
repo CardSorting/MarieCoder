@@ -42,17 +42,7 @@ export class VariantConfigService {
 				return String(err)
 			})
 			const errorMessage = `Variant configuration validation failed for '${id}': ${errorStrings.join(", ")}`
-			console.error(errorMessage, validationResult.errors)
 			throw new Error(errorMessage)
-		}
-
-		if (validationResult.warnings.length > 0) {
-			console.warn(`Variant configuration warnings for '${id}':`, validationResult.warnings)
-		}
-
-		// Log summary if requested
-		if (logSummary) {
-			console.log(`✅ Variant '${id}' configured successfully:`, DebugUtils.createVariantSummary(variant))
 		}
 
 		return variant
@@ -149,17 +139,7 @@ export function createValidatedVariantConfig(
 			return String(err)
 		})
 		const errorMessage = `Variant configuration validation failed for '${id}': ${errorStrings.join(", ")}`
-		console.error(errorMessage, validationResult.errors)
 		throw new Error(errorMessage)
-	}
-
-	if (validationResult.warnings.length > 0) {
-		console.warn(`Variant configuration warnings for '${id}':`, validationResult.warnings)
-	}
-
-	// Log summary if requested
-	if (logSummary) {
-		console.log(`✅ Variant '${id}' configured successfully:`, DebugUtils.createVariantSummary(variant))
 	}
 
 	return variant

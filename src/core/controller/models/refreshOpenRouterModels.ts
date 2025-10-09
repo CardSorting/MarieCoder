@@ -230,13 +230,10 @@ export async function refreshOpenRouterModels(
 					models[openRouterClaudeSonnet451mModelId] = claudeSonnet1mModelInfo
 				}
 			}
-		} else {
-			console.error("Invalid response from OpenRouter API")
 		}
 		await fs.writeFile(openRouterModelsFilePath, JSON.stringify(models))
-		console.log("OpenRouter models fetched and saved", JSON.stringify(models).slice(0, 300))
-	} catch (error) {
-		console.error("Error fetching OpenRouter models:", error)
+	} catch {
+		// Silently fail - will use cached models
 
 		// If we failed to fetch models, try to read cached models
 		const cachedModels = await controller.readOpenRouterModels()

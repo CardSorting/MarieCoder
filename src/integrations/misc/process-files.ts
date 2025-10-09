@@ -40,15 +40,13 @@ export async function selectFiles(imagesAllowed: boolean): Promise<{ images: str
 				const uint8Array = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength)
 				const dimensions = sizeOf(uint8Array) // Get dimensions from Uint8Array
 				if (dimensions.width! > 7680 || dimensions.height! > 7680) {
-					console.warn(`Image dimensions exceed 7500px, skipping: ${filePath}`)
 					HostProvider.window.showMessage({
 						type: ShowMessageType.ERROR,
 						message: `Image too large: ${path.basename(filePath)} was skipped (dimensions exceed 7500px).`,
 					})
 					return null
 				}
-			} catch (error) {
-				console.error(`Error reading file or getting dimensions for ${filePath}:`, error)
+			} catch {
 				HostProvider.window.showMessage({
 					type: ShowMessageType.ERROR,
 					message: `Could not read dimensions for ${path.basename(filePath)}, skipping.`,
@@ -66,15 +64,13 @@ export async function selectFiles(imagesAllowed: boolean): Promise<{ images: str
 			try {
 				const stats = await fs.stat(filePath)
 				if (stats.size > 20 * 1000 * 1024) {
-					console.warn(`File too large, skipping: ${filePath}`)
 					HostProvider.window.showMessage({
 						type: ShowMessageType.ERROR,
 						message: `File too large: ${path.basename(filePath)} was skipped (size exceeds 20MB).`,
 					})
 					return null
 				}
-			} catch (error) {
-				console.error(`Error checking file size for ${filePath}:`, error)
+			} catch {
 				HostProvider.window.showMessage({
 					type: ShowMessageType.ERROR,
 					message: `Could not check file size for ${path.basename(filePath)}, skipping.`,
@@ -86,7 +82,9 @@ export async function selectFiles(imagesAllowed: boolean): Promise<{ images: str
 	})
 
 	const dataUrlsWithNulls = await Promise.all(processFilesPromises)
-	const dataUrlsWithoutNulls = dataUrlsWithNulls.filter((item) => item !== null)
+	const dataUrlsWithoutNulls = dataUrlsWithNulls.filter(
+		(item): item is { type: "image" | "file"; data: string } => item !== null,
+	)
 
 	const images: string[] = []
 	const files: string[] = []

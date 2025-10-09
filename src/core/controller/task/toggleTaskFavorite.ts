@@ -4,8 +4,6 @@ import { Controller } from "../"
 
 export async function toggleTaskFavorite(controller: Controller, request: TaskFavoriteRequest): Promise<Empty> {
 	if (!request.taskId || request.isFavorited === undefined) {
-		const errorMsg = `[toggleTaskFavorite] Invalid request: taskId or isFavorited missing`
-		console.error(errorMsg)
 		return Empty.create({})
 	}
 
@@ -16,9 +14,7 @@ export async function toggleTaskFavorite(controller: Controller, request: TaskFa
 
 			const taskIndex = history.findIndex((item) => item.id === request.taskId)
 
-			if (taskIndex === -1) {
-				console.log(`[toggleTaskFavorite] Task not found in history array!`)
-			} else {
+			if (taskIndex !== -1) {
 				// Create a new array instead of modifying in place to ensure state change
 				const updatedHistory = [...history]
 				updatedHistory[taskIndex] = {
@@ -29,22 +25,22 @@ export async function toggleTaskFavorite(controller: Controller, request: TaskFa
 				// Update global state and wait for it to complete
 				try {
 					controller.stateManager.setGlobalState("taskHistory", updatedHistory)
-				} catch (stateErr) {
-					console.error("Error updating global state:", stateErr)
+				} catch {
+					// Silently fail - not critical
 				}
 			}
-		} catch (historyErr) {
-			console.error("Error processing task history:", historyErr)
+		} catch {
+			// Silently fail - not critical
 		}
 
 		// Post to webview
 		try {
 			await controller.postStateToWebview()
-		} catch (webviewErr) {
-			console.error("Error posting to webview:", webviewErr)
+		} catch {
+			// Silently fail - not critical
 		}
-	} catch (error) {
-		console.error("Error in toggleTaskFavorite:", error)
+	} catch {
+		// Silently fail - not critical
 	}
 
 	return Empty.create({})

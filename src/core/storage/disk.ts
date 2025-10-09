@@ -8,6 +8,7 @@ import fs from "fs/promises"
 import os from "os"
 import * as path from "path"
 import { HostProvider } from "@/hosts/host-provider"
+import { Logger } from "@/services/logging/Logger"
 import { GlobalState, Settings } from "./state-keys"
 
 export const GlobalFileNames = {
@@ -40,7 +41,7 @@ export async function getDocumentsPath(): Promise<string> {
 				return trimmedPath
 			}
 		} catch (_err) {
-			console.error("Failed to retrieve Windows Documents path. Falling back to homedir/Documents.")
+			Logger.warn("Failed to retrieve Windows Documents path. Falling back to homedir/Documents.")
 		}
 	} else if (process.platform === "linux") {
 		try {
@@ -55,7 +56,7 @@ export async function getDocumentsPath(): Promise<string> {
 			}
 		} catch {
 			// Log error but continue to fallback
-			console.error("Failed to retrieve XDG Documents path. Falling back to homedir/Documents.")
+			Logger.warn("Failed to retrieve XDG Documents path. Falling back to homedir/Documents.")
 		}
 	}
 
@@ -119,7 +120,7 @@ export async function saveApiConversationHistory(taskId: string, apiConversation
 		await fs.writeFile(filePath, JSON.stringify(apiConversationHistory))
 	} catch (error) {
 		// in the off chance this fails, we don't want to stop the task
-		console.error("Failed to save API conversation history:", error)
+		Logger.error("Failed to save API conversation history", error instanceof Error ? error : new Error(String(error)))
 	}
 }
 
@@ -145,7 +146,7 @@ export async function saveClineMessages(taskId: string, uiMessages: ClineMessage
 		const filePath = path.join(taskDir, GlobalFileNames.uiMessages)
 		await fs.writeFile(filePath, JSON.stringify(uiMessages))
 	} catch (error) {
-		console.error("Failed to save ui messages:", error)
+		Logger.error("Failed to save ui messages", error instanceof Error ? error : new Error(String(error)))
 	}
 }
 
@@ -156,7 +157,7 @@ export async function getTaskMetadata(taskId: string): Promise<TaskMetadata> {
 			return JSON.parse(await fs.readFile(filePath, "utf8"))
 		}
 	} catch (error) {
-		console.error("Failed to read task metadata:", error)
+		Logger.error("Failed to read task metadata", error instanceof Error ? error : new Error(String(error)))
 	}
 	return { files_in_context: [], model_usage: [] }
 }
@@ -167,7 +168,7 @@ export async function saveTaskMetadata(taskId: string, metadata: TaskMetadata) {
 		const filePath = path.join(taskDir, GlobalFileNames.taskMetadata)
 		await fs.writeFile(filePath, JSON.stringify(metadata, null, 2))
 	} catch (error) {
-		console.error("Failed to save task metadata:", error)
+		Logger.error("Failed to save task metadata", error instanceof Error ? error : new Error(String(error)))
 	}
 }
 
@@ -202,13 +203,13 @@ export async function readTaskHistoryFromState(): Promise<HistoryItem[]> {
 			try {
 				return JSON.parse(contents)
 			} catch (error) {
-				console.error("[Disk] Failed to parse task history:", error)
+				Logger.error("[Disk] Failed to parse task history", error instanceof Error ? error : new Error(String(error)))
 				return []
 			}
 		}
 		return []
 	} catch (error) {
-		console.error("[Disk] Failed to read task history:", error)
+		Logger.error("[Disk] Failed to read task history", error instanceof Error ? error : new Error(String(error)))
 		throw error
 	}
 }
@@ -219,7 +220,7 @@ export async function writeTaskHistoryToState(items: HistoryItem[]): Promise<voi
 		// Always create the file; if items is empty, write [] to ensure presence on first startup
 		await fs.writeFile(filePath, JSON.stringify(items))
 	} catch (error) {
-		console.error("[Disk] Failed to write task history:", error)
+		Logger.error("[Disk] Failed to write task history", error instanceof Error ? error : new Error(String(error)))
 		throw error
 	}
 }
@@ -237,7 +238,7 @@ export async function readTaskSettingsFromStorage(taskId: string): Promise<Parti
 		// Return empty object if settings file doesn't exist (new task)
 		return {}
 	} catch (error) {
-		console.error("[Disk] Failed to read task settings:", error)
+		Logger.error("[Disk] Failed to read task settings", error instanceof Error ? error : new Error(String(error)))
 		throw error
 	}
 }
@@ -256,7 +257,7 @@ export async function writeTaskSettingsToStorage(taskId: string, settings: Parti
 		const updatedSettings = { ...existingSettings, ...settings }
 		await fs.writeFile(settingsFilePath, JSON.stringify(updatedSettings, null, 2))
 	} catch (error) {
-		console.error("[Disk] Failed to write task settings:", error)
+		Logger.error("[Disk] Failed to write task settings", error instanceof Error ? error : new Error(String(error)))
 		throw error
 	}
 }

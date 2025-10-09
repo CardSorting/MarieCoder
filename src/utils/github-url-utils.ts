@@ -78,23 +78,16 @@ export function createGitHubIssueUrl(baseUrl: string, params: Map<string, string
  * @returns A promise that resolves when an attempt to open the URL has completed
  */
 export async function openUrlInBrowser(url: string): Promise<void> {
-	// For debugging
-	console.log(`Opening URL: ${url}`)
-
 	// Always copy to clipboard as a fallback
 	try {
 		await writeTextToClipboard(url)
-		console.log("URL copied to clipboard as backup")
-	} catch (error) {
-		console.error(`Failed to copy URL to clipboard: ${error}`)
+	} catch {
+		// Silently fail - not critical
 	}
 
 	// Try to open the URL using platform-specific commands
 	try {
 		const platform = os.platform()
-		console.log(`Detected platform: ${platform}`)
-
-		// Use promisify for better async error handling
 		const execPromise = util.promisify(cp.exec)
 
 		// Use platform-specific commands
@@ -102,24 +95,18 @@ export async function openUrlInBrowser(url: string): Promise<void> {
 			// Windows - try multiple approaches
 			try {
 				await execPromise(`start "" "${url}"`)
-				console.log("Opened URL with Windows 'start' command")
 				return
-			} catch (winError) {
-				console.error(`Error with Windows 'start' command: ${winError}`)
-
+			} catch {
 				try {
 					await execPromise(`powershell.exe -Command "Start-Process '${url}'"`)
-					console.log("Opened URL with PowerShell command")
 					return
-				} catch (psError) {
-					console.error(`Error with PowerShell command: ${psError}`)
+				} catch {
 					// Fall through to the fallbacks
 				}
 			}
 		} else if (platform === "darwin") {
 			// macOS
 			await execPromise(`open "${url}"`)
-			console.log("Opened URL with macOS 'open' command")
 			return
 		} else {
 			// Linux and others - try multiple commands
@@ -128,10 +115,8 @@ export async function openUrlInBrowser(url: string): Promise<void> {
 			for (const cmd of linuxCommands) {
 				try {
 					await execPromise(`${cmd} "${url}"`)
-					console.log(`Opened URL with '${cmd}' command`)
 					return
-				} catch (cmdError) {
-					console.error(`Error with '${cmd}' command: ${cmdError}`)
+				} catch {
 					// Try next command
 				}
 			}
@@ -139,19 +124,14 @@ export async function openUrlInBrowser(url: string): Promise<void> {
 
 		// If we got here, none of the OS commands worked
 		throw new Error("All OS commands failed")
-	} catch (error) {
-		console.error(`OS commands failed: ${error}`)
-
+	} catch {
 		// First fallback: Try openExternal utility
 		// Note: This will likely have encoding issues per https://github.com/microsoft/vscode/issues/85930
 		// but we include it as a fallback in case OS commands completely fail
 		try {
 			await openExternal(url)
-			console.log("Opened URL with openExternal utility (note: URL encoding may be affected)")
 			return
-		} catch (openExternalError) {
-			console.error(`Error with openExternal utility: ${openExternalError}`)
-
+		} catch {
 			// Last fallback: Show a message with instructions
 			HostProvider.window
 				.showMessage({

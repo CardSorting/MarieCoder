@@ -110,7 +110,6 @@ export async function getTaskHistory(controller: Controller, request: GetTaskHis
 			totalCount,
 		})
 	} catch (error) {
-		console.error("Error in getTaskHistory:", error)
 		throw error
 	}
 }

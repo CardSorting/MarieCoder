@@ -9,7 +9,6 @@ import { Controller } from ".."
  */
 export async function taskFeedback(_controller: Controller, request: StringRequest): Promise<Empty> {
 	if (!request.value) {
-		console.warn("taskFeedback: Missing feedback type value")
 		return Empty.create()
 	}
 

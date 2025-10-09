@@ -29,16 +29,12 @@ function convertClineAskToProtoEnum(ask: AppClineAsk | undefined): ClineAsk | un
 	}
 
 	const result = mapping[ask]
-	if (result === undefined) {
-		console.warn(`Unknown ClineAsk value: ${ask}`)
-	}
 	return result
 }
 
 // Helper function to convert ClineAsk enum to string
 function convertProtoEnumToClineAsk(ask: ClineAsk): AppClineAsk | undefined {
 	if (ask === ClineAsk.UNRECOGNIZED) {
-		console.warn("Received UNRECOGNIZED ClineAsk enum value")
 		return undefined
 	}
 
@@ -103,16 +99,12 @@ function convertClineSayToProtoEnum(say: AppClineSay | undefined): ClineSay | un
 	}
 
 	const result = mapping[say]
-	if (result === undefined) {
-		console.warn(`Unknown ClineSay value: ${say}`)
-	}
 	return result
 }
 
 // Helper function to convert ClineSay enum to string
 function convertProtoEnumToClineSay(say: ClineSay): AppClineSay | undefined {
 	if (say === ClineSay.UNRECOGNIZED) {
-		console.warn("Received UNRECOGNIZED ClineSay enum value")
 		return undefined
 	}
 

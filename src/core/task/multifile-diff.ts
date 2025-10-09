@@ -10,17 +10,14 @@ export async function showChangedFilesDiff(
 	messageTs: number,
 	seeNewChangesSinceLastTaskCompletion: boolean,
 ) {
-	console.log("presentMultifileDiff", messageTs)
 	const clineMessages = messageStateHandler.getClineMessages()
 	const messageIndex = clineMessages.findIndex((m) => m.ts === messageTs)
 	const message = clineMessages[messageIndex]
 	if (!message) {
-		console.error("Message not found")
 		return
 	}
 	const lastCheckpointHash = message.lastCheckpointHash
 	if (!lastCheckpointHash) {
-		console.error("No checkpoint hash found")
 		return
 	}
 

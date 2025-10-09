@@ -20,8 +20,7 @@ export async function isMultiRootWorkspace(): Promise<boolean> {
 	try {
 		const workspacePaths = await HostProvider.workspace.getWorkspacePaths(EmptyRequest.create({}))
 		return workspacePaths.paths.length > 1
-	} catch (error) {
-		console.error("Failed to detect multi-root workspace", error)
+	} catch {
 		return false
 	}
 }

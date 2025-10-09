@@ -78,8 +78,8 @@ export class MessageStateHandler {
 				// getFolderSize.loose silently ignores errors
 				// returns # of bytes, size/1000/1000 = MB
 				taskDirSize = await getFolderSize.loose(taskDir)
-			} catch (error) {
-				console.error("Failed to get task directory size:", taskDir, error)
+			} catch {
+				// Silently fail - size calculation is not critical
 			}
 			const cwd = await getCwd(getDesktopDir())
 			await this.updateTaskHistory({
@@ -99,8 +99,8 @@ export class MessageStateHandler {
 				isFavorited: this.taskIsFavorited,
 				checkpointManagerErrorMessage: this.taskState.checkpointManagerErrorMessage,
 			})
-		} catch (error) {
-			console.error("Failed to save cline messages:", error)
+		} catch {
+			// Silently fail - will retry on next save
 		}
 	}
 

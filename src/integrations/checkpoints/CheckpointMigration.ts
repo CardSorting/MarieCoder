@@ -67,6 +67,5 @@ export async function cleanupLegacyCheckpoints(): Promise<void> {
 		}
 	} catch (error) {
 		HostProvider.get().logToChannel(`Error cleaning up legacy checkpoints: ${error}`)
-		console.error("Error cleaning up legacy checkpoints:", error)
 	}
 }

@@ -80,8 +80,8 @@ export class ApiService {
 			for (const fallbackProvider of fallbackProviders) {
 				try {
 					return ApiService.createHandlerForProvider(fallbackProvider, configuration, mode, options)
-				} catch (fallbackError) {
-					console.warn(`Fallback provider ${fallbackProvider} failed:`, fallbackError)
+				} catch {
+					// Fallback provider failed
 				}
 			}
 

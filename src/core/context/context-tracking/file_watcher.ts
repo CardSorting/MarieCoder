@@ -32,7 +32,7 @@ export class FileWatcher {
 
 		const cwd = await getCwd()
 		if (!cwd) {
-			console.info("No workspace folder available - cannot determine current working directory")
+			// No workspace folder available
 			return false
 		}
 

@@ -13,7 +13,6 @@ import { Controller } from ".."
 export async function askResponse(controller: Controller, request: AskResponseRequest): Promise<Empty> {
 	try {
 		if (!controller.task) {
-			console.warn("askResponse: No active task to receive response")
 			return Empty.create()
 		}
 
@@ -30,7 +29,6 @@ export async function askResponse(controller: Controller, request: AskResponseRe
 				responseType = "messageResponse"
 				break
 			default:
-				console.warn(`askResponse: Unknown response type: ${request.responseType}`)
 				return Empty.create()
 		}
 
@@ -39,7 +37,6 @@ export async function askResponse(controller: Controller, request: AskResponseRe
 
 		return Empty.create()
 	} catch (error) {
-		console.error("Error in askResponse handler:", error)
 		throw error
 	}
 }

@@ -23,8 +23,7 @@ export class ModelCache {
 
 			const fileContents = await fs.readFile(filePath, "utf-8")
 			return JSON.parse(fileContents) as T
-		} catch (error) {
-			console.error(`Error reading cached models from ${fileName}:`, error)
+		} catch {
 			return undefined
 		}
 	}
@@ -36,9 +35,8 @@ export class ModelCache {
 		try {
 			const filePath = path.join(await ensureCacheDirectoryExists(), fileName)
 			await fs.writeFile(filePath, JSON.stringify(models, null, 2))
-			console.log(`Models cached successfully to ${fileName}`)
-		} catch (error) {
-			console.error(`Error writing models to cache ${fileName}:`, error)
+		} catch {
+			// Silently fail - caching is optional
 		}
 	}
 

@@ -61,7 +61,7 @@ export class FileContextTracker {
 
 		const cwd = await getCwd()
 		if (!cwd) {
-			console.info("No workspace folder available - cannot determine current working directory")
+			// No workspace folder available
 			return
 		}
 
@@ -102,7 +102,7 @@ export class FileContextTracker {
 		try {
 			const cwd = await getCwd()
 			if (!cwd) {
-				console.info("No workspace folder available - cannot determine current working directory")
+				// No workspace folder available
 				return
 			}
 
@@ -112,7 +112,7 @@ export class FileContextTracker {
 			// Set up file watcher for this file
 			await this.setupFileWatcher(filePath)
 		} catch (error) {
-			console.error("Failed to track file operation:", error)
+			// Failed to track file operation
 		}
 	}
 

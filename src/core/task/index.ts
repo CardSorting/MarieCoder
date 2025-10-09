@@ -179,10 +179,8 @@ export class Task {
 		// during compilation of the standalone manager only, so this variable only
 		// exists in that case
 		if ((global as any).standaloneTerminalManager) {
-			console.log("[DEBUG] Using vscode-impls.js terminal manager")
 			this.terminalManager = (global as any).standaloneTerminalManager
 		} else {
-			console.log("[DEBUG] Using built in terminal manager")
 			this.terminalManager = new TerminalManager()
 		}
 		this.terminalManager.setShellIntegrationTimeout(shellIntegrationTimeout)
@@ -284,12 +282,12 @@ export class Task {
 					})
 				) {
 					this.checkpointManager.initialize?.().catch((error: Error) => {
-						console.error("Failed to initialize multi-root checkpoint manager:", error)
+						Logger.error("Failed to initialize multi-root checkpoint manager", error)
 						this.taskState.checkpointManagerErrorMessage = error?.message || String(error)
 					})
 				}
 			} catch (error) {
-				console.error("Failed to initialize checkpoint manager:", error)
+				Logger.error("Failed to initialize checkpoint manager", error instanceof Error ? error : new Error(String(error)))
 				if (this.stateManager.getGlobalSettingsKey("enableCheckpointsSetting")) {
 					const errorMessage = error instanceof Error ? error.message : "Unknown error"
 					HostProvider.window.showMessage({
@@ -326,14 +324,18 @@ export class Task {
 
 						// Post the updated state to the webview so the UI reflects the retry attempt
 						await this.postStateToWebview().catch((e) =>
-							console.error("Error posting state to webview in onRetryAttempt:", e),
+							Logger.error(
+								"Error posting state to webview in onRetryAttempt",
+								e instanceof Error ? e : new Error(String(e)),
+							),
 						)
 
-						console.log(
-							`[Task ${this.taskId}] API Auto-Retry Status Update: Attempt ${attempt}/${maxRetries}, Delay: ${delay}ms`,
-						)
+						// Auto-retry in progress
 					} catch (e) {
-						console.error(`[Task ${this.taskId}] Error updating api_req_started with retryStatus:`, e)
+						Logger.error(
+							`[Task ${this.taskId}] Error updating api_req_started with retryStatus`,
+							e instanceof Error ? e : new Error(String(e)),
+						)
 					}
 				}
 			},
@@ -359,7 +361,10 @@ export class Task {
 		// Set up focus chain file watcher (async, runs in background) only if focus chain is enabled
 		if (this.FocusChainManager) {
 			this.FocusChainManager.setupFocusChainFileWatcher().catch((error) => {
-				console.error(`[Task ${this.taskId}] Failed to setup focus chain file watcher:`, error)
+				Logger.error(
+					`[Task ${this.taskId}] Failed to setup focus chain file watcher`,
+					error instanceof Error ? error : new Error(String(error)),
+				)
 			})
 		}
 
@@ -672,7 +677,7 @@ export class Task {
 		try {
 			await this.clineIgnoreController.initialize()
 		} catch (error) {
-			console.error("Failed to initialize ClineIgnoreController:", error)
+			Logger.error("Failed to initialize ClineIgnoreController", error instanceof Error ? error : new Error(String(error)))
 			// Optionally, inform the user or handle the error appropriately
 		}
 		// conversationHistory (for API) and clineMessages (for webview) need to be in sync
@@ -713,7 +718,7 @@ export class Task {
 		try {
 			await this.clineIgnoreController.initialize()
 		} catch (error) {
-			console.error("Failed to initialize ClineIgnoreController:", error)
+			Logger.error("Failed to initialize ClineIgnoreController", error instanceof Error ? error : new Error(String(error)))
 			// Optionally, inform the user or handle the error appropriately
 		}
 
@@ -976,7 +981,6 @@ export class Task {
 			// Race between command completion and timeout
 			const result = await Promise.race([childProcess, timeoutPromise]).catch((_error) => {
 				// If we get here due to timeout, return a partial result with timeout flag
-				Logger.info(`Command timed out after 30s: ${command}`)
 				return {
 					stdout: "",
 					stderr: "",
@@ -992,8 +996,6 @@ export class Task {
 			if (!output) {
 				output = result.stdout || result.stderr || ""
 			}
-
-			Logger.info(`Command executed in Node: ${command}\nOutput:\n${output}`)
 
 			// Add termination message if the command was terminated
 			if (wasTerminated) {
@@ -1015,15 +1017,11 @@ export class Task {
 	}
 
 	async executeCommandTool(command: string, timeoutSeconds: number | undefined): Promise<[boolean, ToolResponse]> {
-		Logger.info("IS_TEST: " + isInTestMode())
-
 		// Check if we're in test mode
 		if (isInTestMode()) {
 			// In test mode, execute the command directly in Node
-			Logger.info("Executing command in Node: " + command)
 			return this.executeCommandInNode(command)
 		}
-		Logger.info("Executing command in terminal: " + command)
 
 		const terminalInfo = await this.terminalManager.getOrCreateTerminal(this.cwd)
 		terminalInfo.terminal.show() // weird visual bug when creating new terminals (even manually) where there's an empty space at the top.
@@ -1309,7 +1307,7 @@ export class Task {
 		await pWaitFor(() => this.mcpHub.isConnecting !== true, {
 			timeout: 10_000,
 		}).catch(() => {
-			console.error("MCP servers failed to connect in time")
+			Logger.error("MCP servers failed to connect in time")
 		})
 
 		const providerInfo = this.getCurrentProviderInfo()
@@ -1752,7 +1750,7 @@ export class Task {
 				await ensureCheckpointInitialized({ checkpointManager: this.checkpointManager })
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : "Unknown error"
-				console.error("Failed to initialize checkpoint manager:", errorMessage)
+				Logger.error("Failed to initialize checkpoint manager", error instanceof Error ? error : new Error(errorMessage))
 				this.taskState.checkpointManagerErrorMessage = errorMessage // will be displayed right away since we saveClineMessages next which posts state to webview
 				HostProvider.window.showMessage({
 					type: ShowMessageType.ERROR,
@@ -1783,9 +1781,9 @@ export class Task {
 						}
 					})
 					.catch((error) => {
-						console.error(
-							`[TaskCheckpointManager] Failed to create checkpoint commit for task ${this.taskId}:`,
-							error,
+						Logger.error(
+							`[TaskCheckpointManager] Failed to create checkpoint commit for task ${this.taskId}`,
+							error instanceof Error ? error : new Error(String(error)),
 						)
 					})
 			}
@@ -1950,7 +1948,6 @@ export class Task {
 					// lastMessage.ts = Date.now() DO NOT update ts since it is used as a key for virtuoso list
 					lastMessage.partial = false
 					// instead of streaming partialMessage events, we do a save and post like normal to persist to disk
-					console.log("updating partial message", lastMessage)
 					// await this.saveClineMessagesAndUpdateHistory()
 				}
 
@@ -2079,7 +2076,6 @@ export class Task {
 					}
 
 					if (this.taskState.abort) {
-						console.log("aborting stream...")
 						if (!this.taskState.abandoned) {
 							// only need to gracefully abort if this instance isn't abandoned (sometimes openrouter stream hangs, in which case this would affect future instances of cline)
 							await abortStream("user_cancelled")
@@ -2236,12 +2232,9 @@ export class Task {
 				const reqId = this.getApiRequestIdSafe()
 
 				// Minimal diagnostics: structured log and telemetry
-				console.error("[EmptyAssistantMessage]", {
-					ulid: this.ulid,
-					providerId,
-					modelId: model.id,
-					requestId: reqId,
-				})
+				Logger.error(
+					`[EmptyAssistantMessage] ulid: ${this.ulid}, providerId: ${providerId}, modelId: ${model.id}, requestId: ${reqId}`,
+				)
 				telemetryService.captureProviderApiError({
 					ulid: this.ulid,
 					model: model.id,

@@ -15,7 +15,6 @@ export async function taskCompletionViewChanges(controller: Controller, request:
 		}
 		return Empty.create()
 	} catch (error) {
-		console.error("Error in taskCompletionViewChanges handler:", error)
 		throw error
 	}
 }

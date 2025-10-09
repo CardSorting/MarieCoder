@@ -118,8 +118,7 @@ export async function getGlobalClineRules(toggles: ClineRulesToggles): Promise<s
 
 		const combined = contents.join("\n\n")
 		return formatResponse.clineRulesGlobalDirectoryInstructions(rulesPath, combined)
-	} catch (error) {
-		console.error("Failed to load global Cline rules", error)
+	} catch {
 		return undefined
 	}
 }
@@ -142,8 +141,7 @@ export async function getLocalClineRules(cwd: string, toggles: ClineRulesToggles
 		return isDir
 			? formatResponse.clineRulesLocalDirectoryInstructions(cwd, combined)
 			: formatResponse.clineRulesLocalFileInstructions(cwd, combined)
-	} catch (error) {
-		console.error("Failed to load local Cline rules", error)
+	} catch {
 		return undefined
 	}
 }
@@ -161,8 +159,8 @@ export async function getLocalCursorRules(cwd: string, toggles: ClineRulesToggle
 		if (contents.length > 0) {
 			results.push(formatResponse.cursorRulesLocalFileInstructions(cwd, contents[0]))
 		}
-	} catch (error) {
-		console.error("Failed to load .cursorrules file", error)
+	} catch {
+		// Silently skip if file doesn't exist or can't be read
 	}
 
 	// Check .cursor/rules directory
@@ -172,8 +170,8 @@ export async function getLocalCursorRules(cwd: string, toggles: ClineRulesToggle
 		if (contents.length > 0) {
 			results.push(formatResponse.cursorRulesLocalDirectoryInstructions(cwd, contents.join("\n\n")))
 		}
-	} catch (error) {
-		console.error("Failed to load .cursor/rules directory", error)
+	} catch {
+		// Silently skip if directory doesn't exist or can't be read
 	}
 
 	return results
@@ -192,8 +190,7 @@ export async function getLocalWindsurfRules(cwd: string, toggles: ClineRulesTogg
 		}
 
 		return formatResponse.windsurfRulesLocalFileInstructions(cwd, contents[0])
-	} catch (error) {
-		console.error("Failed to load Windsurf rules", error)
+	} catch {
 		return undefined
 	}
 }
@@ -211,8 +208,7 @@ export async function getGlobalWorkflows(toggles: ClineRulesToggles): Promise<st
 		}
 
 		return contents.join("\n\n")
-	} catch (error) {
-		console.error("Failed to load global workflows", error)
+	} catch {
 		return undefined
 	}
 }
@@ -230,8 +226,7 @@ export async function getLocalWorkflows(cwd: string, toggles: ClineRulesToggles)
 		}
 
 		return contents.join("\n\n")
-	} catch (error) {
-		console.error("Failed to load local workflows", error)
+	} catch {
 		return undefined
 	}
 }
@@ -327,8 +322,7 @@ export async function createRuleFile(
 
 		await fs.writeFile(filePath, "", "utf8")
 		return { filePath, fileExists: false }
-	} catch (error) {
-		console.error("Failed to create rule file", error)
+	} catch {
 		return { filePath: null, fileExists: false }
 	}
 }
@@ -383,8 +377,7 @@ export async function deleteRuleFile(
 
 		const fileName = path.basename(rulePath)
 		return { success: true, message: `File "${fileName}" deleted successfully` }
-	} catch (error) {
-		console.error("Failed to delete rule file", error)
+	} catch {
 		return { success: false, message: "Failed to delete file" }
 	}
 }

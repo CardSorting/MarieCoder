@@ -14,8 +14,6 @@ export async function exportTaskWithId(controller: Controller, request: StringRe
 		}
 		return Empty.create()
 	} catch (error) {
-		// Log the error but allow it to propagate for proper gRPC error handling
-		console.error(`Error exporting task with ID ${request.value}:`, error)
 		throw error
 	}
 }

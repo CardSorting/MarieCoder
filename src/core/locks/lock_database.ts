@@ -24,14 +24,12 @@ export function initializeDatabaseWithLockSync(dbPath: string): Database.Databas
 	try {
 		mkdirSync(dbDir, { recursive: true })
 	} catch (error) {
-		console.error(`CRITICAL ERROR: Failed to create SQLite database directory ${dbDir}:`, error)
 		throw new Error(`Failed to create SQLite database directory: ${error}`)
 	}
 
 	try {
 		return initializeDatabaseWithLockSyncInternal(dbPath)
 	} catch (error) {
-		console.error(`CRITICAL ERROR: Failed to initialize SQLite database at ${dbPath}:`, error)
 		throw new Error(`Failed to initialize SQLite database: ${error}`)
 	}
 }

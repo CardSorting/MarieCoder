@@ -17,19 +17,13 @@ import type { Controller } from "../index"
  *   command: "npm install",
  *   title: "Install dependencies"
  * }
- *
- * TaskServiceClient.executeQuickWin(request)
- *   .then(() => console.log("Quick win executed successfully"))
- *   .catch(error => console.error("Failed to execute quick win:", error))
  */
 export async function executeQuickWin(controller: Controller, request: ExecuteQuickWinRequest): Promise<Empty> {
 	try {
-		const { command, title } = request
-		console.log(`Received executeQuickWin: command='${command}', title='${title}'`)
+		const { title } = request
 		await controller.initTask(title)
 		return Empty.create({})
 	} catch (error) {
-		console.error("Failed to execute quick win:", error)
 		throw error
 	}
 }

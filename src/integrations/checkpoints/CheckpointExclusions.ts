@@ -317,8 +317,8 @@ export const getLfsPatterns = async (workspacePath: string): Promise<string[]> =
 				.filter((line) => line.includes("filter=lfs"))
 				.map((line) => line.split(" ")[0].trim())
 		}
-	} catch (error) {
-		console.warn("Failed to read .gitattributes:", error)
+	} catch {
+		// Silently skip if file doesn't exist
 	}
 	return []
 }

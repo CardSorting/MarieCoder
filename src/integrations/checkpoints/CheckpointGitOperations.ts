@@ -3,6 +3,7 @@ import fs from "fs/promises"
 import { globby } from "globby"
 import * as path from "path"
 import simpleGit, { type SimpleGit } from "simple-git"
+import { Logger } from "@/services/logging/Logger"
 import { getLfsPatterns, writeExcludesFile } from "./CheckpointExclusions"
 
 interface CheckpointAddResult {
@@ -54,8 +55,6 @@ export class GitOperations {
 	 * - LFS pattern setup fails
 	 */
 	public async initShadowGit(gitPath: string, cwd: string, _taskId: string): Promise<string> {
-		console.info(`Initializing shadow git`)
-
 		// If repo exists, just verify worktree
 		if (await fileExistsAtPath(gitPath)) {
 			const git = simpleGit(path.dirname(gitPath))
@@ -63,7 +62,6 @@ export class GitOperations {
 			if (worktree.value !== cwd) {
 				throw new Error("Checkpoints can only be used in the original workspace: " + worktree.value)
 			}
-			console.warn(`Using existing shadow git at ${gitPath}`)
 
 			// shadow git repo already exists, but update the excludes just in case
 			await writeExcludesFile(gitPath, await getLfsPatterns(this.cwd))
@@ -74,7 +72,6 @@ export class GitOperations {
 		// Initialize new repo
 		const startTime = performance.now()
 		const checkpointsDir = path.dirname(gitPath)
-		console.warn(`Creating new shadow git in ${checkpointsDir}`)
 
 		const git = simpleGit(checkpointsDir)
 		await git.init()
@@ -91,7 +88,7 @@ export class GitOperations {
 
 		const addFilesResult = await this.addCheckpointFiles(git)
 		if (!addFilesResult.success) {
-			console.error("Failed to add at least one file(s) to checkpoints shadow git")
+			Logger.error("Failed to add at least one file(s) to checkpoints shadow git")
 			throw new Error("Failed to add at least one file(s) to checkpoints shadow git")
 		}
 
@@ -99,8 +96,6 @@ export class GitOperations {
 		await git.commit("initial commit", { "--allow-empty": null })
 
 		const _durationMs = Math.round(performance.now() - startTime)
-
-		console.warn(`Shadow git initialization completed`)
 
 		return gitPath
 	}
@@ -120,7 +115,7 @@ export class GitOperations {
 			const worktree = await git.getConfig("core.worktree")
 			return worktree.value || undefined
 		} catch (error) {
-			console.error("Failed to get shadow git config worktree:", error)
+			Logger.error("Failed to get shadow git config worktree", error instanceof Error ? error : new Error(String(error)))
 			return undefined
 		}
 	}
@@ -160,11 +155,10 @@ export class GitOperations {
 
 				try {
 					await fs.rename(fullPath, newPath)
-					console.log(`CheckpointTracker ${disable ? "disabled" : "enabled"} nested git repo ${gitPath}`)
 				} catch (error) {
-					console.error(
-						`CheckpointTracker failed to ${disable ? "disable" : "enable"} nested git repo ${gitPath}:`,
-						error,
+					Logger.error(
+						`CheckpointTracker failed to ${disable ? "disable" : "enable"} nested git repo ${gitPath}`,
+						error instanceof Error ? error : new Error(String(error)),
 					)
 				}
 			}),
@@ -192,18 +186,14 @@ export class GitOperations {
 	 *  - Nested git repo handling fails
 	 */
 	public async addCheckpointFiles(git: SimpleGit): Promise<CheckpointAddResult> {
-		const startTime = performance.now()
 		try {
 			// Update exclude patterns before each commit
 			await this.renameNestedGitRepos(true)
-			console.info("Starting checkpoint add operation...")
 
 			// Attempt to add all files. Any files with permissions errors will not be added,
 			// but the process will proceed and add the rest (--ignore-errors).
 			try {
 				await git.add([".", "--ignore-errors"])
-				const durationMs = Math.round(performance.now() - startTime)
-				console.debug(`Checkpoint add operation completed in ${durationMs}ms`)
 				return { success: true }
 			} catch (_error) {
 				return { success: false }

@@ -62,7 +62,6 @@ export async function showTaskWithId(controller: Controller, request: StringRequ
 			cacheReads: fetchedItem.cacheReads || 0,
 		})
 	} catch (error) {
-		console.error("Error in showTaskWithId:", error)
 		throw error
 	}
 }

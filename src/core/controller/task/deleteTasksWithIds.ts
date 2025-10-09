@@ -51,7 +51,6 @@ async function deleteTaskWithId(controller: Controller, id: string): Promise<voi
 		// Clear current task if it matches the ID being deleted
 		if (id === controller.task?.taskId) {
 			await controller.clearTask()
-			console.debug("cleared task")
 		}
 
 		// Get task file paths
@@ -74,8 +73,8 @@ async function deleteTaskWithId(controller: Controller, id: string): Promise<voi
 		// Remove empty task directory
 		try {
 			await fs.rmdir(taskDirPath) // succeeds if the dir is empty
-		} catch (error) {
-			console.debug("Could not remove task directory (may not be empty):", error)
+		} catch {
+			// Silently fail if directory is not empty
 		}
 
 		// If no tasks remain, clean up everything
@@ -91,7 +90,6 @@ async function deleteTaskWithId(controller: Controller, id: string): Promise<voi
 			}
 		}
 	} catch (error) {
-		console.debug(`Error deleting task ${id}:`, error)
 		throw error // Re-throw to let caller handle the error
 	}
 

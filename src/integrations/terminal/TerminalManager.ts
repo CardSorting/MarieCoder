@@ -2,6 +2,7 @@ import { arePathsEqual } from "@utils/path"
 import { getShellForProfile } from "@utils/shell"
 import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
+import { Logger } from "@/services/logging/Logger"
 import { mergePromise, TerminalProcess, TerminalProcessResultPromise } from "./TerminalProcess"
 import { TerminalInfo, TerminalRegistry } from "./TerminalRegistry"
 
@@ -129,7 +130,7 @@ export class TerminalManager {
 			})
 			this.disposables.push(stateChangeDisposable)
 		} catch (error) {
-			console.error("Error setting up onDidChangeTerminalState", error)
+			Logger.error("Error setting up onDidChangeTerminalState", error instanceof Error ? error : new Error(String(error)))
 		}
 	}
 
@@ -156,8 +157,7 @@ export class TerminalManager {
 	}
 
 	runCommand(terminalInfo: TerminalInfo, command: string): TerminalProcessResultPromise {
-		console.log(`[TerminalManager] Running command on terminal ${terminalInfo.id}: "${command}"`)
-		console.log(`[TerminalManager] Terminal ${terminalInfo.id} busy state before: ${terminalInfo.busy}`)
+		// Running command on terminal
 
 		terminalInfo.busy = true
 		terminalInfo.lastCommand = command
@@ -165,13 +165,13 @@ export class TerminalManager {
 		this.processes.set(terminalInfo.id, process)
 
 		process.once("completed", () => {
-			console.log(`[TerminalManager] Terminal ${terminalInfo.id} completed, setting busy to false`)
+			// Terminal completed
 			terminalInfo.busy = false
 		})
 
 		// if shell integration is not available, remove terminal so it does not get reused as it may be running a long-running process
 		process.once("no_shell_integration", () => {
-			console.log(`no_shell_integration received for terminal ${terminalInfo.id}`)
+			// No shell integration
 			// Remove the terminal so we can't reuse it (in case it's running a long-running process)
 			TerminalRegistry.removeTerminal(terminalInfo.id)
 			this.terminalIds.delete(terminalInfo.id)
@@ -183,7 +183,7 @@ export class TerminalManager {
 				resolve()
 			})
 			process.once("error", (error) => {
-				console.error(`Error in terminal ${terminalInfo.id}:`, error)
+				Logger.error(`Error in terminal ${terminalInfo.id}`, error instanceof Error ? error : new Error(String(error)))
 				reject(error)
 			})
 		})
@@ -194,24 +194,18 @@ export class TerminalManager {
 			process.run(terminalInfo.terminal, command)
 		} else {
 			// docs recommend waiting 3s for shell integration to activate
-			console.log(
-				`[TerminalManager Test] Waiting for shell integration for terminal ${terminalInfo.id} with timeout ${this.shellIntegrationTimeout}ms`,
-			)
 			pWaitFor(() => terminalInfo.terminal.shellIntegration !== undefined, {
 				timeout: this.shellIntegrationTimeout,
 			})
 				.then(() => {
-					console.log(
-						`[TerminalManager Test] Shell integration activated for terminal ${terminalInfo.id} within timeout.`,
-					)
+					// Shell integration activated
 				})
 				.catch((err) => {
-					console.warn(
+					Logger.warn(
 						`[TerminalManager Test] Shell integration timed out or failed for terminal ${terminalInfo.id}: ${err.message}`,
 					)
 				})
 				.finally(() => {
-					console.log(`[TerminalManager Test] Proceeding with command execution for terminal ${terminalInfo.id}.`)
 					const existingProcess = this.processes.get(terminalInfo.id)
 					if (existingProcess && existingProcess.waitForShellIntegration) {
 						existingProcess.waitForShellIntegration = false
@@ -229,12 +223,10 @@ export class TerminalManager {
 			this.defaultTerminalProfile !== "default" ? getShellForProfile(this.defaultTerminalProfile) : undefined
 
 		// Find available terminal from our pool first (created for this task)
-		console.log(`[TerminalManager] Looking for terminal in cwd: ${cwd}`)
-		console.log(`[TerminalManager] Available terminals: ${terminals.length}`)
+		// Looking for terminal in cwd
 
 		const matchingTerminal = terminals.find((t) => {
 			if (t.busy) {
-				console.log(`[TerminalManager] Terminal ${t.id} is busy, skipping`)
 				return false
 			}
 			// Check if shell path matches current configuration
@@ -243,15 +235,12 @@ export class TerminalManager {
 			}
 			const terminalCwd = t.terminal.shellIntegration?.cwd // one of cline's commands could have changed the cwd of the terminal
 			if (!terminalCwd) {
-				console.log(`[TerminalManager] Terminal ${t.id} has no cwd, skipping`)
 				return false
 			}
 			const matches = arePathsEqual(vscode.Uri.file(cwd).fsPath, terminalCwd.fsPath)
-			console.log(`[TerminalManager] Terminal ${t.id} cwd: ${terminalCwd.fsPath}, matches: ${matches}`)
 			return matches
 		})
 		if (matchingTerminal) {
-			console.log(`[TerminalManager] Found matching terminal ${matchingTerminal.id} in correct cwd`)
 			this.terminalIds.add(matchingTerminal.id)
 			return matchingTerminal
 		}

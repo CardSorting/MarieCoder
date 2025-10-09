@@ -13,6 +13,7 @@ import type { ConsoleMessage, ScreenshotOptions } from "puppeteer-core"
 import { Browser, connect, launch, Page, TimeoutError } from "puppeteer-core"
 import * as vscode from "vscode"
 import { StateManager } from "@/core/storage/StateManager"
+import { Logger } from "@/services/logging/Logger"
 import { discoverChromeInstances, isPortOpen, testBrowserConnection } from "./BrowserDiscovery"
 import { ensureChromiumExists } from "./utils"
 
@@ -104,8 +105,8 @@ export class BrowserSession {
 			if (systemPath && !systemPath.includes(".Trash") && (await fileExistsAtPath(systemPath))) {
 				return { path: systemPath, isBundled: false }
 			}
-		} catch (error) {
-			console.info("Could not find system Chrome:", error)
+		} catch {
+			// System Chrome not found
 		}
 
 		// Finally fall back to PCR's bundled version
@@ -120,7 +121,6 @@ export class BrowserSession {
 			if (!installation) {
 				throw new Error("Could not find Chrome installation on this system")
 			}
-			console.info("chrome installation", installation)
 
 			const userArgs = splitArgs(this.stateManager.getGlobalSettingsKey("browserSettings").customArgs)
 
@@ -181,7 +181,6 @@ export class BrowserSession {
 		const browserSettings = this.stateManager.getGlobalSettingsKey("browserSettings")
 
 		if (browserSettings.remoteBrowserEnabled) {
-			console.log(`launch browser called -- remote host mode (non-headless)`)
 			try {
 				await this.launchRemoteBrowser()
 				// Don't create a new page here, as we'll create it in launchRemoteBrowser
@@ -192,7 +191,10 @@ export class BrowserSession {
 
 				return
 			} catch (error) {
-				console.error("Failed to launch remote browser, falling back to local mode:", error)
+				Logger.error(
+					"Failed to launch remote browser, falling back to local mode",
+					error instanceof Error ? error : new Error(String(error)),
+				)
 
 				// Capture error telemetry
 				if (this.ulid) {
@@ -202,7 +204,6 @@ export class BrowserSession {
 				await this.launchLocalBrowser()
 			}
 		} else {
-			console.log(`launch browser called -- local mode (headless)`)
 			await this.launchLocalBrowser()
 		}
 
@@ -242,22 +243,19 @@ export class BrowserSession {
 		// First try auto-discovery if no host is provided
 		if (!remoteBrowserHost) {
 			try {
-				console.info("No remote browser host provided, trying auto-discovery")
 				const discoveredHost = await discoverChromeInstances()
 
 				if (discoveredHost) {
-					console.info(`Auto-discovered Chrome at ${discoveredHost}`)
 					remoteBrowserHost = discoveredHost
 				}
-			} catch (error) {
-				console.log(`Auto-discovery failed: ${error}`)
+			} catch {
+				// Auto-discovery failed, will try cached endpoint
 			}
 		}
 
 		// Try to connect with cached endpoint first if it exists and is recent (less than 1 hour old)
 		if (browserWSEndpoint && Date.now() - this.lastConnectionAttempt < 3600000) {
 			try {
-				console.info(`Attempting to connect using cached WebSocket endpoint: ${browserWSEndpoint}`)
 				this.browser = await connect({
 					browserWSEndpoint,
 					defaultViewport: getViewport(),
@@ -265,9 +263,7 @@ export class BrowserSession {
 				this.page = await this.browser?.newPage()
 				this.isConnectedToRemote = true
 				return
-			} catch (error) {
-				console.log(`Failed to connect using cached endpoint: ${error}`)
-
+			} catch {
 				// Capture error telemetry
 				if (this.ulid) {
 					// Telemetry removed
@@ -287,7 +283,6 @@ export class BrowserSession {
 			try {
 				// Fetch the WebSocket endpoint from the Chrome DevTools Protocol
 				const versionUrl = `${remoteBrowserHost.replace(/\/$/, "")}/json/version`
-				console.info(`Fetching WebSocket endpoint from ${versionUrl}`)
 
 				const response = await axios.get(versionUrl)
 				browserWSEndpoint = response.data.webSocketDebuggerUrl
@@ -295,8 +290,6 @@ export class BrowserSession {
 				if (!browserWSEndpoint) {
 					throw new Error("Could not find webSocketDebuggerUrl in the response")
 				}
-
-				console.info(`Found WebSocket browser endpoint: ${browserWSEndpoint}`)
 
 				// Cache the successful endpoint
 				this.cachedWebSocketEndpoint = browserWSEndpoint
@@ -310,7 +303,7 @@ export class BrowserSession {
 				this.isConnectedToRemote = true
 				return
 			} catch (error) {
-				console.log(`Failed to connect to remote browser: ${error}`)
+				Logger.error("Failed to connect to remote browser", error instanceof Error ? error : new Error(String(error)))
 
 				// Capture error telemetry
 				if (this.ulid) {
@@ -337,14 +330,11 @@ export class BrowserSession {
 			// Close the page/tab first if it exists
 			if (this.page) {
 				await this.page.close().catch(() => {})
-				console.info("closed remote browser tab...")
 			}
 			await this.browser.disconnect().catch(() => {})
-			console.info("disconnected from remote browser...")
 			// do not close the browser
 		} else if (this.isConnectedToRemote === false) {
 			await this.browser?.close().catch(() => {})
-			console.info("closed local browser...")
 		}
 
 		this.browser = undefined
@@ -433,7 +423,6 @@ export class BrowserSession {
 
 		if (!screenshotBase64) {
 			// choosing to try screenshot again, regardless of the initial type
-			console.info(`${screenshotType} screenshot failed, trying png`)
 			screenshotBase64 = await this.page.screenshot({
 				...options,
 				type: "png",
@@ -490,7 +479,6 @@ export class BrowserSession {
 			const currentHTMLSize = html.length
 
 			// let bodyHTMLSize = await page.evaluate(() => document.body.innerHTML.length)
-			console.info("last: ", lastHTMLSize, " <> curr: ", currentHTMLSize)
 
 			if (lastHTMLSize !== 0 && currentHTMLSize === lastHTMLSize) {
 				countStableSizeIterations++
@@ -499,7 +487,6 @@ export class BrowserSession {
 			}
 
 			if (countStableSizeIterations >= minStableSizeIterations) {
-				console.info("Page rendered fully...")
 				break
 			}
 

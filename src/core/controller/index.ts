@@ -24,6 +24,7 @@ import { HostProvider } from "@/hosts/host-provider"
 import { ExtensionRegistryInfo } from "@/registry"
 import { featureFlagsService } from "@/services/feature-flags"
 import { getDistinctId } from "@/services/logging/distinctId"
+import { Logger } from "@/services/logging/Logger"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import { getLatestAnnouncementId } from "@/utils/announcements"
 import { getCwd, getDesktopDir } from "@/utils/path"
@@ -66,7 +67,10 @@ export class Controller {
 
 		StateManager.get().registerCallbacks({
 			onPersistenceError: async ({ error }: PersistenceErrorEvent) => {
-				console.error("[Controller] Cache persistence failed, recovering:", error)
+				Logger.error(
+					"[Controller] Cache persistence failed, recovering",
+					error instanceof Error ? error : new Error(String(error)),
+				)
 				try {
 					await StateManager.get().reInitialize(this.task?.taskId)
 					await this.postStateToWebview()
@@ -75,7 +79,10 @@ export class Controller {
 						message: "Saving settings to storage failed.",
 					})
 				} catch (recoveryError) {
-					console.error("[Controller] Cache recovery failed:", recoveryError)
+					Logger.error(
+						"[Controller] Cache recovery failed",
+						recoveryError instanceof Error ? recoveryError : new Error(String(recoveryError)),
+					)
 					HostProvider.window.showMessage({
 						type: ShowMessageType.ERROR,
 						message: "Failed to save settings. Please restart the extension.",
@@ -95,7 +102,7 @@ export class Controller {
 
 		// Clean up legacy checkpoints
 		cleanupLegacyCheckpoints().catch((error) => {
-			console.error("Failed to cleanup legacy checkpoints:", error)
+			Logger.error("Failed to cleanup legacy checkpoints", error instanceof Error ? error : new Error(String(error)))
 		})
 	}
 
@@ -108,7 +115,7 @@ export class Controller {
 		await this.clearTask()
 		this.mcpHub.dispose()
 
-		console.error("Controller disposed")
+		Logger.debug("Controller disposed")
 	}
 
 	// Auth methods removed - standalone extension no longer requires auth
@@ -258,7 +265,7 @@ export class Controller {
 			try {
 				await this.task.abortTask()
 			} catch (error) {
-				console.error("Failed to abort task", error)
+				Logger.error("Failed to abort task", error instanceof Error ? error : new Error(String(error)))
 			}
 			await pWaitFor(
 				() =>
@@ -270,7 +277,7 @@ export class Controller {
 					timeout: 3_000,
 				},
 			).catch(() => {
-				console.error("Failed to abort task")
+				Logger.error("Failed to abort task")
 			})
 			if (this.task) {
 				// 'abandoned' will prevent this cline instance from affecting future cline instance gui. this may happen if its hanging on a streaming request
@@ -313,7 +320,7 @@ export class Controller {
 			this.stateManager.setGlobalState("mcpMarketplaceCatalog", catalog)
 			return catalog
 		} catch (error) {
-			console.error("Failed to fetch MCP marketplace:", error)
+			Logger.error("Failed to fetch MCP marketplace", error instanceof Error ? error : new Error(String(error)))
 			if (!silent) {
 				const errorMessage = error instanceof Error ? error.message : "Failed to fetch MCP marketplace"
 				HostProvider.window.showMessage({
@@ -351,7 +358,7 @@ export class Controller {
 			this.stateManager.setGlobalState("mcpMarketplaceCatalog", catalog)
 			return catalog
 		} catch (error) {
-			console.error("Failed to fetch MCP marketplace:", error)
+			Logger.error("Failed to fetch MCP marketplace", error instanceof Error ? error : new Error(String(error)))
 			if (!silent) {
 				const errorMessage = error instanceof Error ? error.message : "Failed to fetch MCP marketplace"
 				throw new Error(errorMessage)
@@ -367,7 +374,7 @@ export class Controller {
 				await sendMcpMarketplaceCatalogEvent(catalog)
 			}
 		} catch (error) {
-			console.error("Failed to silently refresh MCP marketplace:", error)
+			Logger.error("Failed to silently refresh MCP marketplace", error instanceof Error ? error : new Error(String(error)))
 		}
 	}
 
@@ -380,7 +387,10 @@ export class Controller {
 		try {
 			return await this.fetchMcpMarketplaceFromApiRPC(true)
 		} catch (error) {
-			console.error("Failed to silently refresh MCP marketplace (RPC):", error)
+			Logger.error(
+				"Failed to silently refresh MCP marketplace (RPC)",
+				error instanceof Error ? error : new Error(String(error)),
+			)
 			return undefined
 		}
 	}
@@ -397,7 +407,7 @@ export class Controller {
 				throw new Error("Invalid response from OpenRouter API")
 			}
 		} catch (error) {
-			console.error("Error exchanging code for API key:", error)
+			Logger.error("Error exchanging code for API key", error instanceof Error ? error : new Error(String(error)))
 			throw error
 		}
 
@@ -432,7 +442,7 @@ export class Controller {
 				return appendClineStealthModels(models)
 			}
 		} catch (error) {
-			console.error("Error reading cached OpenRouter models:", error)
+			Logger.error("Error reading cached OpenRouter models", error instanceof Error ? error : new Error(String(error)))
 		}
 		return undefined
 	}

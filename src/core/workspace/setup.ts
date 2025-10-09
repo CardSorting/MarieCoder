@@ -33,7 +33,6 @@ export async function setupWorkspaceManager({
 			// Multi-root: detect workspace folders
 			const roots = await detectRoots()
 			manager = new WorkspaceRootManager(roots, 0)
-			console.log(`[WorkspaceManager] Multi-root mode: ${roots.length} roots detected`)
 
 			// Persist
 			stateManager.setGlobalState("workspaceRoots", manager.getRoots())
@@ -55,7 +54,6 @@ export async function setupWorkspaceManager({
 
 		manager = await WorkspaceRootManager.fromLegacyCwd(cwd)
 
-		console.log(`[WorkspaceManager] Single-root mode: ${cwd}`)
 		const roots = manager.getRoots()
 		stateManager.setGlobalState("workspaceRoots", roots)
 		stateManager.setGlobalState("primaryRootIndex", manager.getPrimaryIndex())
@@ -64,7 +62,6 @@ export async function setupWorkspaceManager({
 		// Telemetry + graceful fallback to single-root from cwd
 		const _workspaceCount = (await HostProvider.workspace.getWorkspacePaths({})).paths?.length
 
-		console.error("[WorkspaceManager] Initialization failed:", error)
 		const manager = await WorkspaceRootManager.fromLegacyCwd(cwd)
 		const roots = manager.getRoots()
 		stateManager.setGlobalState("workspaceRoots", roots)

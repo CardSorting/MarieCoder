@@ -110,7 +110,6 @@ export class OpenRouterProvider extends HttpProvider {
 				// Check for error field directly on chunk
 				if ("error" in chunk) {
 					const error = chunk.error as OpenRouterErrorResponse["error"]
-					console.error(`OpenRouter API Error: ${error?.code} - ${error?.message}`)
 					// Include metadata in the error message if available
 					const metadataStr = error.metadata ? `\nMetadata: ${JSON.stringify(error.metadata, null, 2)}` : ""
 					throw new Error(`OpenRouter API Error ${error.code}: ${error.message}${metadataStr}`)
@@ -125,9 +124,6 @@ export class OpenRouterProvider extends HttpProvider {
 					const choiceWithError = choice as any
 					if (choiceWithError.error) {
 						const error = choiceWithError.error
-						console.error(
-							`OpenRouter Mid-Stream Error: ${error?.code || "Unknown"} - ${error?.message || "Unknown error"}`,
-						)
 						// Format error details
 						const errorDetails = typeof error === "object" ? JSON.stringify(error, null, 2) : String(error)
 						throw new Error(`OpenRouter Mid-Stream Error: ${errorDetails}`)

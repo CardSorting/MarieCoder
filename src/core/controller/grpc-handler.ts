@@ -27,8 +27,8 @@ function withRecordingMiddleware(postMessage: PostMessageToWebview, controller: 
 					response.grpc_response.request_id,
 					response.grpc_response,
 				)
-			} catch (e) {
-				console.warn("Failed to record gRPC response:", e)
+			} catch {
+				// Silently fail - recording is optional
 			}
 		}
 		return postMessage(response)
@@ -41,8 +41,8 @@ function withRecordingMiddleware(postMessage: PostMessageToWebview, controller: 
 function recordRequest(request: GrpcRequest, controller: Controller): void {
 	try {
 		GrpcRecorderBuilder.getRecorder(controller).recordRequest(request)
-	} catch (e) {
-		console.warn("Failed to record gRPC request:", e)
+	} catch {
+		// Silently fail - recording is optional
 	}
 }
 
@@ -91,7 +91,6 @@ async function handleUnaryRequest(
 		})
 	} catch (error) {
 		// Send error response
-		console.log("Protobus error:", error)
 		await postMessageToWebview({
 			type: "grpc_response",
 			grpc_response: {
@@ -142,7 +141,6 @@ async function handleStreamingRequest(
 		// The stream will be closed when the client disconnects or when the service explicitly ends it
 	} catch (error) {
 		// Send error response
-		console.log("Protobus error:", error)
 		await postMessageToWebview({
 			type: "grpc_response",
 			grpc_response: {
@@ -172,8 +170,6 @@ export async function handleGrpcRequestCancel(postMessageToWebview: PostMessageT
 				is_streaming: false,
 			},
 		})
-	} else {
-		console.log(`[DEBUG] Request not found for cancellation: ${request.request_id}`)
 	}
 }
 

@@ -1,6 +1,7 @@
 import fs from "fs/promises"
 import path from "path"
 import * as vscode from "vscode"
+import { Logger } from "@/services/logging/Logger"
 import { HistoryItem } from "@/shared/HistoryItem"
 import { ensureRulesDirectoryExists, readTaskHistoryFromState, writeTaskHistoryToState } from "./disk"
 
@@ -53,7 +54,7 @@ export async function migrateWorkspaceToGlobalStorage(context: vscode.ExtensionC
 		const globalValue = await context.globalState.get(key)
 
 		if (workspaceValue !== undefined && globalValue === undefined) {
-			console.log(`[Storage Migration] migrating key: ${key} to global storage. Current value: ${workspaceValue}`)
+			// Migrating key to global storage
 
 			// Move to global storage using raw VSCode method to avoid type errors
 			await context.globalState.update(key, workspaceValue)
@@ -61,7 +62,7 @@ export async function migrateWorkspaceToGlobalStorage(context: vscode.ExtensionC
 			await context.workspaceState.update(key, undefined)
 			const newWorkspaceValue = await context.workspaceState.get(key)
 
-			console.log(`[Storage Migration] migrated key: ${key} to global storage. Current value: ${newWorkspaceValue}`)
+			// Migrated key to global storage
 		}
 	}
 }
@@ -76,7 +77,7 @@ export async function migrateTaskHistoryToFile(context: vscode.ExtensionContext)
 
 		// Early return if no migration needed
 		if (oldLocationData.length === 0) {
-			console.log("[Storage Migration] No task history to migrate")
+			// No task history to migrate
 			return
 		}
 
@@ -101,12 +102,12 @@ export async function migrateTaskHistoryToFile(context: vscode.ExtensionContext)
 		const successfullyWrittenData = await readTaskHistoryFromState()
 
 		if (!Array.isArray(successfullyWrittenData)) {
-			console.error("[Storage Migration] Failed to write taskHistory to file: Written data is not an array")
+			Logger.error("[Storage Migration] Failed to write taskHistory to file: Written data is not an array")
 			return
 		}
 
 		if (successfullyWrittenData.length !== finalData.length) {
-			console.error(
+			Logger.error(
 				"[Storage Migration] Failed to write taskHistory to file: Written data does not match the old location data",
 			)
 			return
@@ -114,9 +115,12 @@ export async function migrateTaskHistoryToFile(context: vscode.ExtensionContext)
 
 		await context.globalState.update("taskHistory", undefined)
 
-		console.log(`[Storage Migration] ${migrationAction}`)
+		// Migration complete
 	} catch (error) {
-		console.error("[Storage Migration] Failed to migrate task history to file:", error)
+		Logger.error(
+			"[Storage Migration] Failed to migrate task history to file",
+			error instanceof Error ? error : new Error(String(error)),
+		)
 	}
 }
 
@@ -148,7 +152,7 @@ export async function migrateCustomInstructionsToGlobalRules(context: vscode.Ext
 		const customInstructions = (await context.globalState.get("customInstructions")) as string | undefined
 
 		if (customInstructions?.trim()) {
-			console.log("Migrating custom instructions to global Cline rules...")
+			// Migrating custom instructions to global Cline rules
 
 			// Create global .clinerules directory if it doesn't exist
 			const globalRulesDir = await ensureRulesDirectoryExists()
@@ -172,18 +176,24 @@ export async function migrateCustomInstructionsToGlobalRules(context: vscode.Ext
 					: customInstructions.trim()
 
 				await fs.writeFile(migrationFilePath, contentToWrite)
-				console.log(`Successfully ${existingContent ? "appended to" : "created"} migration file: ${migrationFilePath}`)
+				// Successfully migrated custom instructions
 			} catch (fileError) {
-				console.error("Failed to write migration file:", fileError)
+				Logger.error(
+					"Failed to write migration file",
+					fileError instanceof Error ? fileError : new Error(String(fileError)),
+				)
 				return
 			}
 
 			// Remove customInstructions from global state only after successful file creation
 			await context.globalState.update("customInstructions", undefined)
-			console.log("Successfully migrated custom instructions to global Cline rules")
+			// Migration complete
 		}
 	} catch (error) {
-		console.error("Failed to migrate custom instructions to global rules:", error)
+		Logger.error(
+			"Failed to migrate custom instructions to global rules",
+			error instanceof Error ? error : new Error(String(error)),
+		)
 		// Continue execution - migration failure shouldn't break extension startup
 	}
 }
@@ -193,11 +203,11 @@ export async function migrateLegacyApiConfigurationToModeSpecific(context: vscod
 		// Check if migration is needed - if planModeApiProvider already exists, skip migration
 		const planModeApiProvider = await context.globalState.get("planModeApiProvider")
 		if (planModeApiProvider !== undefined) {
-			console.log("Legacy API configuration migration already completed, skipping...")
+			// Legacy API configuration migration already completed
 			return
 		}
 
-		console.log("Starting legacy API configuration migration to mode-specific keys...")
+		// Starting legacy API configuration migration
 
 		// Get the planActSeparateModelsSetting to determine migration strategy
 		const planActSeparateModelsSetting = (await context.globalState.get("planActSeparateModelsSetting")) as
@@ -243,7 +253,7 @@ export async function migrateLegacyApiConfigurationToModeSpecific(context: vscod
 
 		// Migrate based on planActSeparateModelsSetting
 		if (planActSeparateModelsSetting === false) {
-			console.log("Migrating with separate models DISABLED - using current values for both modes")
+			// Migrating with separate models DISABLED
 
 			// Use current values for both plan and act modes
 			if (apiProvider !== undefined) {
@@ -343,7 +353,7 @@ export async function migrateLegacyApiConfigurationToModeSpecific(context: vscod
 				await context.globalState.update("actModeHuggingFaceModelInfo", huggingFaceModelInfo)
 			}
 		} else {
-			console.log("Migrating with separate models ENABLED - using current->plan, previous->act")
+			// Migrating with separate models ENABLED
 
 			// Use current values for plan mode
 			if (apiProvider !== undefined) {
@@ -515,7 +525,7 @@ export async function migrateLegacyApiConfigurationToModeSpecific(context: vscod
 		}
 
 		// Clean up legacy keys after successful migration
-		console.log("Cleaning up legacy keys...")
+		// Cleaning up legacy keys
 		await context.globalState.update("apiProvider", undefined)
 		await context.globalState.update("apiModelId", undefined)
 		await context.globalState.update("thinkingBudgetTokens", undefined)
@@ -550,9 +560,12 @@ export async function migrateLegacyApiConfigurationToModeSpecific(context: vscod
 		await context.globalState.update("previousModeAwsBedrockCustomModelBaseId", undefined)
 		await context.globalState.update("previousModeSapAiCoreModelId", undefined)
 
-		console.log("Successfully migrated legacy API configuration to mode-specific keys")
+		// Migration complete
 	} catch (error) {
-		console.error("Failed to migrate legacy API configuration to mode-specific keys:", error)
+		Logger.error(
+			"Failed to migrate legacy API configuration to mode-specific keys",
+			error instanceof Error ? error : new Error(String(error)),
+		)
 		// Continue execution - migration failure shouldn't break extension startup
 	}
 }
