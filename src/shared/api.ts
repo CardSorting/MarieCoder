@@ -56,6 +56,7 @@ export interface ModelInfo {
 	cacheWritesPrice?: number
 	cacheReadsPrice?: number
 	description?: string
+	supportsGlobalEndpoint?: boolean
 	tiers?: readonly {
 		contextWindow: number
 		inputPrice?: number
@@ -235,3 +236,71 @@ export const clineCodeSupernovaModelInfo: ModelInfo = {
 	cacheWritesPrice: 0,
 	description: "A versatile agentic coding stealth model that supports image inputs.",
 }
+
+// Gemini
+export type GeminiModelId = keyof typeof geminiModels
+export const geminiModels = {
+	"gemini-2.5-pro": {
+		maxTokens: 65536,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 2.5,
+		outputPrice: 15,
+		cacheReadsPrice: 0.625,
+	},
+} as const satisfies Record<string, ModelInfo>
+
+// Vercel AI Gateway
+export const vercelAiGatewayDefaultModelId = "anthropic/claude-sonnet-4"
+export const vercelAiGatewayDefaultModelInfo: ModelInfo = {
+	maxTokens: 8192,
+	contextWindow: 200_000,
+	supportsImages: true,
+	supportsPromptCache: true,
+	inputPrice: 3.0,
+	outputPrice: 15.0,
+	cacheWritesPrice: 3.75,
+	cacheReadsPrice: 0.3,
+}
+
+// Groq
+export type GroqModelId = keyof typeof groqModels
+export const groqDefaultModelId: GroqModelId = "llama-3.1-70b-versatile"
+export const groqModels = {
+	"llama-3.1-70b-versatile": {
+		maxTokens: 8192,
+		contextWindow: 131072,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.59,
+		outputPrice: 0.79,
+	},
+} as const satisfies Record<string, ModelInfo>
+
+// Requesty
+export const requestyDefaultModelId = "anthropic/claude-3-7-sonnet-latest"
+export const requestyDefaultModelInfo: ModelInfo = {
+	maxTokens: 8192,
+	contextWindow: 200_000,
+	supportsImages: true,
+	supportsPromptCache: true,
+	inputPrice: 3.0,
+	outputPrice: 15.0,
+	cacheWritesPrice: 3.75,
+	cacheReadsPrice: 0.3,
+}
+
+// Baseten
+export const basetenModels = {
+	"llama-3.1-70b-instruct": {
+		maxTokens: 8192,
+		contextWindow: 131072,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.5,
+		outputPrice: 0.75,
+	},
+} as const satisfies Record<string, ModelInfo>
+export type BasetenModelId = keyof typeof basetenModels
+export const basetenDefaultModelId = "llama-3.1-70b-instruct" satisfies BasetenModelId

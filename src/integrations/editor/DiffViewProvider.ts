@@ -34,7 +34,8 @@ export abstract class DiffViewProvider {
 		this.relPath = options?.displayPath ?? relPath
 		const fileExists = this.editType === "modify"
 
-		// if the file is already open, ensure it's not dirty before getting its contents
+		// CRITICAL: Always read the file from disk to get the most up-to-date content
+		// This ensures that subsequent edits to the same file work correctly
 		if (fileExists) {
 			await HostProvider.workspace.saveOpenDocumentIfDirty({
 				filePath: this.absolutePath!,

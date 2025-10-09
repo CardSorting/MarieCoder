@@ -352,11 +352,10 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 				diff = removeInvalidChars(diff)
 			}
 
-			// open the editor if not done already.  This is to fix diff error when model provides correct search-replace text but Cline throws error
-			// because file is not open.
-			if (!config.services.diffViewProvider.isEditing) {
-				await config.services.diffViewProvider.open(absolutePath, { displayPath: relPath })
-			}
+			// CRITICAL FIX: Always call open() to ensure we have fresh content from disk
+			// This prevents stale originalContent issues when editing the same file multiple times
+			// Even if already editing, we need to refresh the originalContent for subsequent edits
+			await config.services.diffViewProvider.open(absolutePath, { displayPath: relPath })
 
 			try {
 				newContent = await constructNewFileContent(
