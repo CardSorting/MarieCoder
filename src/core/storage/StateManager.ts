@@ -476,7 +476,6 @@ export class StateManager {
 			sapAiResourceGroup,
 			sapAiCoreUseOrchestrationMode,
 			claudeCodePath,
-			qwenCodeOauthPath,
 			basetenApiKey,
 			huggingFaceApiKey,
 			huaweiCloudMaasApiKey,
@@ -664,7 +663,6 @@ export class StateManager {
 			sapAiCoreUseOrchestrationMode,
 			claudeCodePath,
 			difyBaseUrl,
-			qwenCodeOauthPath,
 			ocaBaseUrl,
 		})
 
@@ -715,7 +713,7 @@ export class StateManager {
 			throw new Error(STATE_MANAGER_NOT_INITIALIZED)
 		}
 		if (this.taskStateCache[key] !== undefined) {
-			return this.taskStateCache[key]
+			return this.taskStateCache[key] as Settings[K]
 		}
 		return this.globalStateCache[key]
 	}
@@ -1011,7 +1009,6 @@ export class StateManager {
 			sapAiCoreUseOrchestrationMode:
 				this.taskStateCache["sapAiCoreUseOrchestrationMode"] || this.globalStateCache["sapAiCoreUseOrchestrationMode"],
 			claudeCodePath: this.taskStateCache["claudeCodePath"] || this.globalStateCache["claudeCodePath"],
-			qwenCodeOauthPath: this.taskStateCache["qwenCodeOauthPath"] || this.globalStateCache["qwenCodeOauthPath"],
 			difyBaseUrl: this.taskStateCache["difyBaseUrl"] || this.globalStateCache["difyBaseUrl"],
 			ocaBaseUrl: this.globalStateCache["ocaBaseUrl"],
 

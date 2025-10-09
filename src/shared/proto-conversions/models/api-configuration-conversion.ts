@@ -240,74 +240,6 @@ function convertApiProviderToProto(provider: string | undefined): ProtoApiProvid
 			return ProtoApiProvider.ANTHROPIC
 		case "openrouter":
 			return ProtoApiProvider.OPENROUTER
-		case "bedrock":
-			return ProtoApiProvider.BEDROCK
-		case "vertex":
-			return ProtoApiProvider.VERTEX
-		case "openai":
-			return ProtoApiProvider.OPENAI
-		case "ollama":
-			return ProtoApiProvider.OLLAMA
-		case "lmstudio":
-			return ProtoApiProvider.LMSTUDIO
-		case "gemini":
-			return ProtoApiProvider.GEMINI
-		case "openai-native":
-			return ProtoApiProvider.OPENAI_NATIVE
-		case "requesty":
-			return ProtoApiProvider.REQUESTY
-		case "together":
-			return ProtoApiProvider.TOGETHER
-		case "deepseek":
-			return ProtoApiProvider.DEEPSEEK
-		case "qwen":
-			return ProtoApiProvider.QWEN
-		case "qwen-code":
-			return ProtoApiProvider.QWEN_CODE
-		case "doubao":
-			return ProtoApiProvider.DOUBAO
-		case "mistral":
-			return ProtoApiProvider.MISTRAL
-		case "vscode-lm":
-			return ProtoApiProvider.VSCODE_LM
-		case "cline":
-			return ProtoApiProvider.CLINE
-		case "litellm":
-			return ProtoApiProvider.LITELLM
-		case "moonshot":
-			return ProtoApiProvider.MOONSHOT
-		case "huggingface":
-			return ProtoApiProvider.HUGGINGFACE
-		case "nebius":
-			return ProtoApiProvider.NEBIUS
-		case "fireworks":
-			return ProtoApiProvider.FIREWORKS
-		case "asksage":
-			return ProtoApiProvider.ASKSAGE
-		case "xai":
-			return ProtoApiProvider.XAI
-		case "sambanova":
-			return ProtoApiProvider.SAMBANOVA
-		case "cerebras":
-			return ProtoApiProvider.CEREBRAS
-		case "groq":
-			return ProtoApiProvider.GROQ
-		case "baseten":
-			return ProtoApiProvider.BASETEN
-		case "sapaicore":
-			return ProtoApiProvider.SAPAICORE
-		case "claude-code":
-			return ProtoApiProvider.CLAUDE_CODE
-		case "huawei-cloud-maas":
-			return ProtoApiProvider.HUAWEI_CLOUD_MAAS
-		case "vercel-ai-gateway":
-			return ProtoApiProvider.VERCEL_AI_GATEWAY
-		case "zai":
-			return ProtoApiProvider.ZAI
-		case "dify":
-			return ProtoApiProvider.DIFY
-		case "oca":
-			return ProtoApiProvider.OCA
 		default:
 			return ProtoApiProvider.ANTHROPIC
 	}
@@ -320,74 +252,6 @@ export function convertProtoToApiProvider(provider: ProtoApiProvider): ApiProvid
 			return "anthropic"
 		case ProtoApiProvider.OPENROUTER:
 			return "openrouter"
-		case ProtoApiProvider.BEDROCK:
-			return "bedrock"
-		case ProtoApiProvider.VERTEX:
-			return "vertex"
-		case ProtoApiProvider.OPENAI:
-			return "openai"
-		case ProtoApiProvider.OLLAMA:
-			return "ollama"
-		case ProtoApiProvider.LMSTUDIO:
-			return "lmstudio"
-		case ProtoApiProvider.GEMINI:
-			return "gemini"
-		case ProtoApiProvider.OPENAI_NATIVE:
-			return "openai-native"
-		case ProtoApiProvider.REQUESTY:
-			return "requesty"
-		case ProtoApiProvider.TOGETHER:
-			return "together"
-		case ProtoApiProvider.DEEPSEEK:
-			return "deepseek"
-		case ProtoApiProvider.QWEN:
-			return "qwen"
-		case ProtoApiProvider.QWEN_CODE:
-			return "qwen-code"
-		case ProtoApiProvider.DOUBAO:
-			return "doubao"
-		case ProtoApiProvider.MISTRAL:
-			return "mistral"
-		case ProtoApiProvider.VSCODE_LM:
-			return "vscode-lm"
-		case ProtoApiProvider.CLINE:
-			return "cline"
-		case ProtoApiProvider.LITELLM:
-			return "litellm"
-		case ProtoApiProvider.MOONSHOT:
-			return "moonshot"
-		case ProtoApiProvider.HUGGINGFACE:
-			return "huggingface"
-		case ProtoApiProvider.NEBIUS:
-			return "nebius"
-		case ProtoApiProvider.FIREWORKS:
-			return "fireworks"
-		case ProtoApiProvider.ASKSAGE:
-			return "asksage"
-		case ProtoApiProvider.XAI:
-			return "xai"
-		case ProtoApiProvider.SAMBANOVA:
-			return "sambanova"
-		case ProtoApiProvider.CEREBRAS:
-			return "cerebras"
-		case ProtoApiProvider.GROQ:
-			return "groq"
-		case ProtoApiProvider.BASETEN:
-			return "baseten"
-		case ProtoApiProvider.SAPAICORE:
-			return "sapaicore"
-		case ProtoApiProvider.CLAUDE_CODE:
-			return "claude-code"
-		case ProtoApiProvider.HUAWEI_CLOUD_MAAS:
-			return "huawei-cloud-maas"
-		case ProtoApiProvider.VERCEL_AI_GATEWAY:
-			return "vercel-ai-gateway"
-		case ProtoApiProvider.ZAI:
-			return "zai"
-		case ProtoApiProvider.DIFY:
-			return "dify"
-		case ProtoApiProvider.OCA:
-			return "oca"
 		default:
 			return "anthropic"
 	}
@@ -439,7 +303,6 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 		fireworksModelMaxCompletionTokens: config.fireworksModelMaxCompletionTokens,
 		fireworksModelMaxTokens: config.fireworksModelMaxTokens,
 		qwenApiKey: config.qwenApiKey,
-		qwenCodeOauthPath: config.qwenCodeOauthPath,
 		doubaoApiKey: config.doubaoApiKey,
 		mistralApiKey: config.mistralApiKey,
 		azureApiVersion: config.azureApiVersion,
@@ -588,7 +451,6 @@ export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguratio
 		fireworksModelMaxCompletionTokens: protoConfig.fireworksModelMaxCompletionTokens,
 		fireworksModelMaxTokens: protoConfig.fireworksModelMaxTokens,
 		qwenApiKey: protoConfig.qwenApiKey,
-		qwenCodeOauthPath: protoConfig.qwenCodeOauthPath,
 		doubaoApiKey: protoConfig.doubaoApiKey,
 		mistralApiKey: protoConfig.mistralApiKey,
 		azureApiVersion: protoConfig.azureApiVersion,

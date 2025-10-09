@@ -238,7 +238,6 @@ export async function readGlobalStateFromDisk(context: ExtensionContext): Promis
 		const lastDismissedModelBannerVersion = context.globalState.get<
 			GlobalStateAndSettings["lastDismissedModelBannerVersion"]
 		>("lastDismissedModelBannerVersion")
-		const qwenCodeOauthPath = context.globalState.get<GlobalStateAndSettings["qwenCodeOauthPath"]>("qwenCodeOauthPath")
 		const customPrompt = context.globalState.get<GlobalStateAndSettings["customPrompt"]>("customPrompt")
 		const autoCondenseThreshold =
 			context.globalState.get<GlobalStateAndSettings["autoCondenseThreshold"]>("autoCondenseThreshold") // number from 0 to 1
@@ -551,7 +550,6 @@ export async function readGlobalStateFromDisk(context: ExtensionContext): Promis
 			defaultTerminalProfile: defaultTerminalProfile ?? "default",
 			globalWorkflowToggles: globalWorkflowToggles || {},
 			mcpMarketplaceCatalog,
-			qwenCodeOauthPath,
 			customPrompt,
 			autoCondenseThreshold: autoCondenseThreshold || 0.75, // default to 0.75 if not set
 			lastDismissedInfoBannerVersion: lastDismissedInfoBannerVersion ?? 0,

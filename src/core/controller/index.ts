@@ -282,14 +282,6 @@ export class Controller {
 		}
 	}
 
-	async handleAuthCallback(_customToken: string, _provider: string | null = null) {
-		// Auth callback removed - standalone extension no longer requires auth
-	}
-
-	async handleOcaAuthCallback(_code: string, _state: string) {
-		// OCA auth callback removed - standalone extension no longer requires auth
-	}
-
 	async handleTaskCreation(prompt: string) {
 		await sendChatButtonClickedEvent()
 		await this.initTask(prompt)
