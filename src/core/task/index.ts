@@ -1,6 +1,7 @@
 import { setTimeout as setTimeoutPromise } from "node:timers/promises"
 import { Anthropic } from "@anthropic-ai/sdk"
 import { ApiHandler, ApiService, ProviderInfo } from "@core/api"
+import { ErrorService } from "@core/api/services/error-service"
 import { ApiStream } from "@core/api/transform/stream"
 import { parseAssistantMessageV2 } from "@core/assistant-message"
 import { ContextManager } from "@core/context/context-management/context_manager"
@@ -16,7 +17,7 @@ import {
 } from "@core/context/instructions/user-instructions/rule_loader"
 import { sendPartialMessageEvent } from "@core/controller/ui/subscribeToPartialMessage"
 import { ClineIgnoreController } from "@core/ignore/ClineIgnoreController"
-import { parseMentions } from "@core/mentions"
+import { parseMentionsInTags } from "@core/mentions"
 import { summarizeTask } from "@core/prompts/context_summarization"
 import { formatResponse } from "@core/prompts/response_formatters"
 import { parseSlashCommands } from "@core/slash-commands"
@@ -1404,9 +1405,7 @@ export class Task {
 			this.taskState.isWaitingForFirstChunk = false
 		} catch (error) {
 			const isContextWindowExceededError = checkContextWindowExceededError(error)
-			// TODO: Implement toClineError method in ErrorService
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			const clineError = { message: errorMessage, serialize: () => errorMessage }
+			const clineError = ErrorService.toClineError(error)
 
 			// Capture provider failure telemetry using clineError
 			// TODO: Move into errorService
@@ -2102,9 +2101,7 @@ export class Task {
 				// abandoned happens when extension is no longer waiting for the cline instance to finish aborting (error is thrown here when any function in the for loop throws due to this.abort)
 				if (!this.taskState.abandoned) {
 					this.abortTask() // if the stream failed, there's various states the task could be in (i.e. could have streamed some tools the user may have executed), so we just resort to replicating a cancel task
-					// TODO: Implement toClineError method in ErrorService
-					const errorText = error instanceof Error ? error.message : String(error)
-					const clineError = { message: errorText, serialize: () => errorText }
+					const clineError = ErrorService.toClineError(error)
 					const errorMessage = clineError.serialize()
 
 					await abortStream("streaming_failed", errorMessage)
@@ -2295,14 +2292,14 @@ export class Task {
 				userContent.map(async (block) => {
 					if (block.type === "text") {
 						// We need to ensure any user generated content is wrapped in one of these tags so that we know to parse mentions
-						// FIXME: Only parse text in between these tags instead of the entire text block which may contain other tool results. This is part of a larger issue where we shouldn't be using regex to parse mentions in the first place (ie for cases where file paths have spaces)
+						// Now using parseMentionsInTags which only parses text within these specific tags
 						if (
 							block.text.includes("<feedback>") ||
 							block.text.includes("<answer>") ||
 							block.text.includes("<task>") ||
 							block.text.includes("<user_message>")
 						) {
-							const parsedText = await parseMentions(
+							const parsedText = await parseMentionsInTags(
 								block.text,
 								this.cwd,
 								this.urlContentFetcher,

@@ -24,7 +24,74 @@ import {
 import { getFilePathFromMention, isCommitHash, isFileMention } from "./mention_utils"
 
 /**
+ * Parse mentions only within specific tags to avoid parsing tool results
+ * Tags: <feedback>, <answer>, <task>, <user_message>
+ */
+export async function parseMentionsInTags(
+	text: string,
+	cwd: string,
+	urlContentFetcher: UrlContentFetcher,
+	fileContextTracker?: FileContextTracker,
+): Promise<string> {
+	const mentions: Set<string> = new Set()
+	const tags = ["feedback", "answer", "task", "user_message"]
+
+	// Create a regex that matches content within any of the specified tags
+	const tagRegex = new RegExp(`<(${tags.join("|")})>([\\s\\S]*?)<\\/\\1>`, "g")
+
+	// Replace mentions only within tags
+	let parsedText = text.replace(tagRegex, (_fullMatch, tagName, tagContent) => {
+		const processedContent = tagContent.replace(mentionRegexGlobal, (_match: string, mention: string) => {
+			mentions.add(mention)
+			return getMentionPlaceholder(mention)
+		})
+		return `<${tagName}>${processedContent}</${tagName}>`
+	})
+
+	// Handle URL browser launch if needed
+	const urlMention = Array.from(mentions).find((mention) => mention.startsWith("http"))
+	let launchBrowserError: Error | undefined
+	if (urlMention) {
+		try {
+			await urlContentFetcher.launchBrowser()
+		} catch (error) {
+			launchBrowserError = error
+			HostProvider.window.showMessage({
+				type: ShowMessageType.ERROR,
+				message: `Error fetching content for ${urlMention}: ${error.message}`,
+			})
+		}
+	}
+
+	// Process each unique mention
+	const uniqueMentions = Array.from(new Set(mentions))
+	for (const mention of uniqueMentions) {
+		// Safety guard: skip bare "/" mention to prevent workspace root expansion
+		if (mention === "/") {
+			continue
+		}
+
+		const content = await processMention(mention, cwd, urlContentFetcher, fileContextTracker, launchBrowserError)
+		if (content) {
+			parsedText += `\n\n${content}`
+		}
+	}
+
+	// Cleanup browser if used
+	if (urlMention) {
+		try {
+			await urlContentFetcher.closeBrowser()
+		} catch (error) {
+			console.error(`Error closing browser: ${error.message}`)
+		}
+	}
+
+	return parsedText
+}
+
+/**
  * Parse mentions from text and replace with content
+ * @deprecated Use parseMentionsInTags for better control over where mentions are parsed
  */
 export async function parseMentions(
 	text: string,

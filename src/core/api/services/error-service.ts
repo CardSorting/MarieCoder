@@ -257,4 +257,16 @@ export class ErrorService {
 
 		return Math.min(errorDelay, backoffDelay)
 	}
+
+	/**
+	 * Convert any error to ClineError format
+	 * Provides a standardized way to convert errors for consistency across the codebase
+	 */
+	static toClineError(error: any): { message: string; serialize: () => string } {
+		const errorMessage = error instanceof Error ? error.message : String(error)
+		return {
+			message: errorMessage,
+			serialize: () => errorMessage,
+		}
+	}
 }

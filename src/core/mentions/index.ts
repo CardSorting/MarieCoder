@@ -19,6 +19,6 @@ export {
 	handleUrlMention,
 } from "./mention_handlers"
 // Re-export main functions from organized modules
-export { parseMentions } from "./mention_parsers"
+export { parseMentions, parseMentionsInTags } from "./mention_parsers"
 // Re-export utilities for advanced usage
 export { getFileMentionFromPath, getFilePathFromMention, isCommitHash, isFileMention, openMention } from "./mention_utils"
