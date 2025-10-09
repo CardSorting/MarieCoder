@@ -35,8 +35,6 @@ import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import type { TelemetryService } from "../telemetry"
 import { DEFAULT_REQUEST_TIMEOUT_MS } from "./constants"
-import { NoormmeAutoDetector } from "./NoormmeAutoDetector"
-import { NoormmeSetup } from "./NoormmeSetup"
 import { BaseConfigSchema, McpSettingsSchema, ServerConfigSchema } from "./schemas"
 import { McpConnection, McpServerConfig, Transport } from "./types"
 export class McpHub {
@@ -165,33 +163,6 @@ export class McpHub {
 	private async initializeMcpServers(): Promise<void> {
 		const settings = await this.readAndValidateMcpSettingsFile()
 		const servers = settings?.mcpServers || {}
-
-		// Auto-detect and configure NOORMME Artisan server
-		try {
-			const projectRoot = process.cwd()
-			const autoDetector = new NoormmeAutoDetector(projectRoot)
-			const setup = new NoormmeSetup(projectRoot)
-
-			// Ensure NOORMME Artisan is ready
-			const isReady = await setup.ensureReady()
-
-			if (isReady) {
-				const noormmeConfig = await autoDetector.detectNoormmeArtisan()
-
-				if (noormmeConfig) {
-					// Add NOORMME Artisan to servers if not already configured
-					const serverName = "noormme-artisan"
-					if (!servers[serverName]) {
-						servers[serverName] = noormmeConfig
-						console.log("🚀 NOORMME Artisan server auto-configured and ready")
-					}
-				}
-			} else {
-				console.log("⚠️ NOORMME Artisan server setup incomplete - run 'npm run mcp:build' to fix")
-			}
-		} catch (error) {
-			console.error("Error auto-detecting NOORMME Artisan server:", error)
-		}
 
 		await this.updateServerConnections(servers)
 	}

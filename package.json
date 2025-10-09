@@ -336,21 +336,7 @@
 		"docs": "cd docs && npm run dev",
 		"docs:check-links": "cd docs && npm run check",
 		"docs:rename-file": "cd docs && npm run rename",
-		"report-issue": "node scripts/report-issue.js",
-		"mcp:build": "npm run mcp:build:artisan",
-		"mcp:build:artisan": "cd mcp-servers/noormme-artisan && ./build.sh",
-		"mcp:start:artisan": "cd mcp-servers/noormme-artisan && npm start",
-		"mcp:clean": "npm run mcp:clean:artisan",
-		"mcp:clean:artisan": "cd mcp-servers/noormme-artisan && npm run clean",
-		"setup:noormme": "node scripts/setup-noormme.mjs",
-		"artisan": "cd mcp-servers/noormme-artisan && npm run build && node dist/index.js",
-		"make:component": "npm run artisan -- make:component",
-		"make:service": "npm run artisan -- make:service",
-		"make:migration": "npm run artisan -- make:migration",
-		"db:migrate": "npm run artisan -- db:migrate",
-		"db:seed": "npm run artisan -- db:seed",
-		"serve": "npm run artisan -- serve",
-		"test:artisan": "npm run artisan -- test"
+		"report-issue": "node scripts/report-issue.js"
 	},
 	"lint-staged": {
 		"*": [
