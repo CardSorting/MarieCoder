@@ -41,8 +41,8 @@ describe("ApiOptions Component", () => {
 		//@ts-expect-error - vscode is not defined in the global namespace in test environment
 		global.vscode = { postMessage: mockPostMessage }
 		mockExtensionState({
-			planModeApiProvider: "requesty",
-			actModeApiProvider: "requesty",
+			planModeApiProvider: "anthropic",
+			actModeApiProvider: "anthropic",
 		})
 	})
 
@@ -75,8 +75,8 @@ describe("ApiOptions Component", () => {
 		//@ts-expect-error - vscode is not defined in the global namespace in test environment
 		global.vscode = { postMessage: mockPostMessage }
 		mockExtensionState({
-			planModeApiProvider: "together",
-			actModeApiProvider: "together",
+			planModeApiProvider: "openrouter",
+			actModeApiProvider: "openrouter",
 		})
 	})
 
@@ -110,13 +110,8 @@ describe("ApiOptions Component", () => {
 		global.vscode = { postMessage: mockPostMessage }
 
 		mockExtensionState({
-			planModeApiProvider: "fireworks",
-			actModeApiProvider: "fireworks",
-			fireworksApiKey: "",
-			planModeFireworksModelId: "",
-			actModeFireworksModelId: "",
-			fireworksModelMaxCompletionTokens: 2000,
-			fireworksModelMaxTokens: 4000,
+			planModeApiProvider: "anthropic",
+			actModeApiProvider: "anthropic",
 		})
 	})
 
@@ -150,8 +145,8 @@ describe("OpenApiInfoOptions", () => {
 		//@ts-expect-error - vscode is not defined in the global namespace in test environment
 		global.vscode = { postMessage: mockPostMessage }
 		mockExtensionState({
-			planModeApiProvider: "openai",
-			actModeApiProvider: "openai",
+			planModeApiProvider: "openrouter",
+			actModeApiProvider: "openrouter",
 		})
 	})
 
@@ -198,9 +193,8 @@ describe("ApiOptions Component", () => {
 		global.vscode = { postMessage: mockPostMessage }
 
 		mockExtensionState({
-			planModeApiProvider: "nebius",
-			actModeApiProvider: "nebius",
-			nebiusApiKey: "",
+			planModeApiProvider: "anthropic",
+			actModeApiProvider: "anthropic",
 		})
 	})
 

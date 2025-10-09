@@ -21,7 +21,7 @@ import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import HeroTooltip from "@/components/common/HeroTooltip"
 import Thumbnails from "@/components/common/Thumbnails"
 import ApiOptions from "@/components/settings/ApiOptions"
-import { getModeSpecificFields, normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
+import { normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { usePlatform } from "@/context/PlatformContext"
 import { useMetaKeyDetection, useShortcut } from "@/hooks"
@@ -1142,34 +1142,11 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		// Get model display name
 		const modelDisplayName = useMemo(() => {
 			const { selectedProvider, selectedModelId } = normalizeApiConfiguration(apiConfiguration, mode)
-			const { vsCodeLmModelSelector, togetherModelId, lmStudioModelId, ollamaModelId, liteLlmModelId, requestyModelId } =
-				getModeSpecificFields(apiConfiguration, mode)
 			const unknownModel = "unknown"
 			if (!apiConfiguration) {
 				return unknownModel
 			}
-			switch (selectedProvider) {
-				case "cline":
-					return `${selectedProvider}:${selectedModelId}`
-				case "openai":
-					return `openai-compat:${selectedModelId}`
-				case "vscode-lm":
-					return `vscode-lm:${vsCodeLmModelSelector ? `${vsCodeLmModelSelector.vendor ?? ""}/${vsCodeLmModelSelector.family ?? ""}` : unknownModel}`
-				case "together":
-					return `${selectedProvider}:${togetherModelId}`
-				case "lmstudio":
-					return `${selectedProvider}:${lmStudioModelId}`
-				case "ollama":
-					return `${selectedProvider}:${ollamaModelId}`
-				case "litellm":
-					return `${selectedProvider}:${liteLlmModelId}`
-				case "requesty":
-					return `${selectedProvider}:${requestyModelId}`
-				case "anthropic":
-				case "openrouter":
-				default:
-					return `${selectedProvider}:${selectedModelId}`
-			}
+			return `${selectedProvider}:${selectedModelId}`
 		}, [apiConfiguration, mode])
 
 		// Calculate arrow position and menu position based on button location

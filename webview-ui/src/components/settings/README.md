@@ -14,15 +14,8 @@ settings/
 │   ├── ModelInfoView.tsx       # Model information display
 │   └── ModelSelector.tsx       # Model selection dropdown
 ├── providers/                   # Provider-specific components
-│   ├── ClineProvider.tsx       # Cline configuration
 │   ├── AnthropicProvider.tsx   # Anthropic-specific configuration
-│   ├── BedrockProvider.tsx     # AWS Bedrock configuration
-│   ├── GeminiProvider.tsx      # Google Gemini configuration
-│   ├── MistralProvider.tsx     # Mistral configuration
-│   ├── OllamaProvider.tsx      # Ollama configuration
-│   ├── OpenAICompatibleProvider.tsx  # OpenAI compatible API configuration
-│   ├── OpenRouterProvider.tsx  # OpenRouter configuration
-│   └── ...
+│   └── OpenRouterProvider.tsx  # OpenRouter configuration
 └── utils/                       # Utility functions
     ├── pricingUtils.ts         # Pricing formatting utilities
     └── providerUtils.ts        # API configuration normalization

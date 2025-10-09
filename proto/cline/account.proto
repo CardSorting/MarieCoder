@@ -17,9 +17,7 @@ service AccountService {
   // Clears API keys and user state.
   rpc accountLogoutClicked(EmptyRequest) returns (Empty);
 
-  // Subscribe to auth status update events (when authentication state changes)
-  rpc subscribeToAuthStatusUpdate(EmptyRequest) 
-      returns (stream AuthState);
+  // Auth status update removed - standalone extension no longer requires auth
     
   // Handles authentication state changes from the Firebase context.
   // Updates the user info in global state and returns the updated value.

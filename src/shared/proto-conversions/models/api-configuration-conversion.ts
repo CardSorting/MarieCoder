@@ -1,22 +1,10 @@
 import {
-	LiteLLMModelInfo,
-	ModelTier,
-	OpenAiCompatibleModelInfo,
 	OpenRouterModelInfo,
 	ModelsApiConfiguration as ProtoApiConfiguration,
 	ApiProvider as ProtoApiProvider,
-	OcaModelInfo as ProtoOcaModelInfo,
 	ThinkingConfig,
 } from "@shared/proto/cline/models"
-import {
-	ApiConfiguration,
-	ApiProvider,
-	LiteLLMModelInfo as AppLiteLLMModelInfo,
-	OpenAiCompatibleModelInfo as AppOpenAiCompatibleModelInfo,
-	BedrockModelId,
-	ModelInfo,
-	OcaModelInfo,
-} from "../../api"
+import { ApiConfiguration, ApiProvider, ModelInfo } from "../../api"
 
 // Convert application ThinkingConfig to proto ThinkingConfig
 function convertThinkingConfigToProto(config: ModelInfo["thinkingConfig"]): ThinkingConfig | undefined {
@@ -27,20 +15,11 @@ function convertThinkingConfigToProto(config: ModelInfo["thinkingConfig"]): Thin
 	return {
 		maxBudget: config.maxBudget,
 		outputPrice: config.outputPrice,
-		outputPriceTiers: config.outputPriceTiers || [], // Provide empty array if undefined
-	}
-}
-
-// Convert proto ThinkingConfig to application ThinkingConfig
-function convertProtoToThinkingConfig(config: ThinkingConfig | undefined): ModelInfo["thinkingConfig"] | undefined {
-	if (!config) {
-		return undefined
-	}
-
-	return {
-		maxBudget: config.maxBudget,
-		outputPrice: config.outputPrice,
-		outputPriceTiers: config.outputPriceTiers.length > 0 ? config.outputPriceTiers : undefined,
+		outputPriceTiers:
+			config.outputPriceTiers?.map((tier) => ({
+				tokenLimit: tier.tokenLimit,
+				price: tier.price,
+			})) || [],
 	}
 }
 
@@ -54,15 +33,21 @@ function convertModelInfoToProtoOpenRouter(info: ModelInfo | undefined): OpenRou
 		maxTokens: info.maxTokens,
 		contextWindow: info.contextWindow,
 		supportsImages: info.supportsImages,
-		supportsPromptCache: info.supportsPromptCache ?? false,
+		supportsPromptCache: info.supportsPromptCache,
 		inputPrice: info.inputPrice,
 		outputPrice: info.outputPrice,
 		cacheWritesPrice: info.cacheWritesPrice,
 		cacheReadsPrice: info.cacheReadsPrice,
 		description: info.description,
 		thinkingConfig: convertThinkingConfigToProto(info.thinkingConfig),
-		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
-		tiers: info.tiers ? (info.tiers as ModelTier[]) : [],
+		tiers:
+			info.tiers?.map((tier) => ({
+				contextWindow: tier.contextWindow,
+				inputPrice: tier.inputPrice,
+				outputPrice: tier.outputPrice,
+				cacheWritesPrice: tier.cacheWritesPrice,
+				cacheReadsPrice: tier.cacheReadsPrice,
+			})) || [],
 	}
 }
 
@@ -82,154 +67,23 @@ function convertProtoToModelInfo(info: OpenRouterModelInfo | undefined): ModelIn
 		cacheWritesPrice: info.cacheWritesPrice,
 		cacheReadsPrice: info.cacheReadsPrice,
 		description: info.description,
-		thinkingConfig: convertProtoToThinkingConfig(info.thinkingConfig),
-		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
-		tiers: info.tiers.length > 0 ? info.tiers : undefined,
-	}
-}
-
-// Convert application ModelInfo to proto OcaModelInfo
-function convertOcaModelInfoToProtoOcaModelInfo(info: OcaModelInfo | undefined): ProtoOcaModelInfo | undefined {
-	if (!info) {
-		return undefined
-	}
-
-	return {
-		maxTokens: info.maxTokens,
-		contextWindow: info.contextWindow,
-		supportsImages: info.supportsImages,
-		supportsPromptCache: info.supportsPromptCache ?? false,
-		inputPrice: info.inputPrice,
-		outputPrice: info.outputPrice,
-		cacheWritesPrice: info.cacheWritesPrice,
-		cacheReadsPrice: info.cacheReadsPrice,
-		description: info.description,
-		thinkingConfig: convertThinkingConfigToProto(info.thinkingConfig),
-		surveyContent: info.surveyContent,
-		surveyId: info.surveyId,
-		banner: info.banner,
-		modelName: info.modelName,
-	}
-}
-
-// Convert proto OpenRouterModelInfo to application ModelInfo
-function convertProtoOcaModelInfoToOcaModelInfo(info: ProtoOcaModelInfo | undefined): OcaModelInfo | undefined {
-	if (!info) {
-		return undefined
-	}
-
-	return {
-		maxTokens: info.maxTokens,
-		contextWindow: info.contextWindow,
-		supportsImages: info.supportsImages,
-		supportsPromptCache: info.supportsPromptCache,
-		inputPrice: info.inputPrice,
-		outputPrice: info.outputPrice,
-		cacheWritesPrice: info.cacheWritesPrice,
-		cacheReadsPrice: info.cacheReadsPrice,
-		description: info.description,
-		surveyContent: info.surveyContent,
-		surveyId: info.surveyId,
-		banner: info.banner,
-		modelName: info.modelName,
-	}
-}
-
-// Convert application LiteLLMModelInfo to proto LiteLLMModelInfo
-function convertLiteLLMModelInfoToProto(info: AppLiteLLMModelInfo | undefined): LiteLLMModelInfo | undefined {
-	if (!info) {
-		return undefined
-	}
-
-	return {
-		maxTokens: info.maxTokens,
-		contextWindow: info.contextWindow,
-		supportsImages: info.supportsImages,
-		supportsPromptCache: info.supportsPromptCache ?? false,
-		inputPrice: info.inputPrice,
-		outputPrice: info.outputPrice,
-		thinkingConfig: convertThinkingConfigToProto(info.thinkingConfig),
-		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
-		cacheWritesPrice: info.cacheWritesPrice,
-		cacheReadsPrice: info.cacheReadsPrice,
-		description: info.description,
-		tiers: info.tiers ? (info.tiers as ModelTier[]) : [],
-		temperature: info.temperature,
-	}
-}
-
-// Convert proto LiteLLMModelInfo to application LiteLLMModelInfo
-function convertProtoToLiteLLMModelInfo(info: LiteLLMModelInfo | undefined): AppLiteLLMModelInfo | undefined {
-	if (!info) {
-		return undefined
-	}
-
-	return {
-		maxTokens: info.maxTokens,
-		contextWindow: info.contextWindow,
-		supportsImages: info.supportsImages,
-		supportsPromptCache: info.supportsPromptCache,
-		inputPrice: info.inputPrice,
-		outputPrice: info.outputPrice,
-		thinkingConfig: convertProtoToThinkingConfig(info.thinkingConfig),
-		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
-		cacheWritesPrice: info.cacheWritesPrice,
-		cacheReadsPrice: info.cacheReadsPrice,
-		description: info.description,
-		tiers: info.tiers.length > 0 ? info.tiers : undefined,
-		temperature: info.temperature,
-	}
-}
-
-// Convert application OpenAiCompatibleModelInfo to proto OpenAiCompatibleModelInfo
-function convertOpenAiCompatibleModelInfoToProto(
-	info: AppOpenAiCompatibleModelInfo | undefined,
-): OpenAiCompatibleModelInfo | undefined {
-	if (!info) {
-		return undefined
-	}
-
-	return {
-		maxTokens: info.maxTokens,
-		contextWindow: info.contextWindow,
-		supportsImages: info.supportsImages,
-		supportsPromptCache: info.supportsPromptCache ?? false,
-		inputPrice: info.inputPrice,
-		outputPrice: info.outputPrice,
-		thinkingConfig: convertThinkingConfigToProto(info.thinkingConfig),
-		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
-		cacheWritesPrice: info.cacheWritesPrice,
-		cacheReadsPrice: info.cacheReadsPrice,
-		description: info.description,
-		tiers: info.tiers ? (info.tiers as ModelTier[]) : [],
-		temperature: info.temperature,
-		isR1FormatRequired: info.isR1FormatRequired,
-	}
-}
-
-// Convert proto OpenAiCompatibleModelInfo to application OpenAiCompatibleModelInfo
-function convertProtoToOpenAiCompatibleModelInfo(
-	info: OpenAiCompatibleModelInfo | undefined,
-): AppOpenAiCompatibleModelInfo | undefined {
-	if (!info) {
-		return undefined
-	}
-
-	return {
-		maxTokens: info.maxTokens,
-		contextWindow: info.contextWindow,
-		supportsImages: info.supportsImages,
-		supportsPromptCache: info.supportsPromptCache,
-		inputPrice: info.inputPrice,
-		outputPrice: info.outputPrice,
-		thinkingConfig: convertProtoToThinkingConfig(info.thinkingConfig),
-		supportsGlobalEndpoint: info.supportsGlobalEndpoint,
-		cacheWritesPrice: info.cacheWritesPrice,
-		cacheReadsPrice: info.cacheReadsPrice,
-		description: info.description,
-		tiers: info.tiers.length > 0 ? info.tiers : undefined,
-		temperature: info.temperature,
-		isR1FormatRequired: info.isR1FormatRequired,
+		thinkingConfig: info.thinkingConfig
+			? {
+					maxBudget: info.thinkingConfig.maxBudget,
+					outputPrice: info.thinkingConfig.outputPrice,
+					outputPriceTiers: info.thinkingConfig.outputPriceTiers?.map((tier) => ({
+						tokenLimit: tier.tokenLimit,
+						price: tier.price,
+					})),
+				}
+			: undefined,
+		tiers: info.tiers?.map((tier) => ({
+			contextWindow: tier.contextWindow,
+			inputPrice: tier.inputPrice,
+			outputPrice: tier.outputPrice,
+			cacheWritesPrice: tier.cacheWritesPrice,
+			cacheReadsPrice: tier.cacheReadsPrice,
+		})),
 	}
 }
 
@@ -262,297 +116,57 @@ export function convertApiConfigurationToProto(config: ApiConfiguration): ProtoA
 	return {
 		// Global configuration fields
 		apiKey: config.apiKey,
-		clineAccountId: config.clineAccountId,
 		ulid: config.ulid,
-		liteLlmBaseUrl: config.liteLlmBaseUrl,
-		liteLlmApiKey: config.liteLlmApiKey,
-		liteLlmUsePromptCache: config.liteLlmUsePromptCache,
-		openAiHeaders: config.openAiHeaders || {},
 		anthropicBaseUrl: config.anthropicBaseUrl,
 		openRouterApiKey: config.openRouterApiKey,
 		openRouterProviderSorting: config.openRouterProviderSorting,
-		awsAccessKey: config.awsAccessKey,
-		awsSecretKey: config.awsSecretKey,
-		awsSessionToken: config.awsSessionToken,
-		awsRegion: config.awsRegion,
-		awsUseCrossRegionInference: config.awsUseCrossRegionInference,
-		awsBedrockUsePromptCache: config.awsBedrockUsePromptCache,
-		awsUseProfile: config.awsUseProfile,
-		awsAuthentication: config.awsAuthentication,
-		awsProfile: config.awsProfile,
-		awsBedrockApiKey: config.awsBedrockApiKey,
-		awsBedrockEndpoint: config.awsBedrockEndpoint,
-		claudeCodePath: config.claudeCodePath,
-		vertexProjectId: config.vertexProjectId,
-		vertexRegion: config.vertexRegion,
-		openAiBaseUrl: config.openAiBaseUrl,
-		openAiApiKey: config.openAiApiKey,
-		ollamaBaseUrl: config.ollamaBaseUrl,
-		ollamaApiKey: config.ollamaApiKey,
-		ollamaApiOptionsCtxNum: config.ollamaApiOptionsCtxNum,
-		lmStudioBaseUrl: config.lmStudioBaseUrl,
-		lmStudioMaxTokens: config.lmStudioMaxTokens,
-		geminiApiKey: config.geminiApiKey,
-		geminiBaseUrl: config.geminiBaseUrl,
-		openAiNativeApiKey: config.openAiNativeApiKey,
-		deepSeekApiKey: config.deepSeekApiKey,
-		requestyApiKey: config.requestyApiKey,
-		requestyBaseUrl: config.requestyBaseUrl,
-		togetherApiKey: config.togetherApiKey,
-		fireworksApiKey: config.fireworksApiKey,
-		fireworksModelMaxCompletionTokens: config.fireworksModelMaxCompletionTokens,
-		fireworksModelMaxTokens: config.fireworksModelMaxTokens,
-		qwenApiKey: config.qwenApiKey,
-		doubaoApiKey: config.doubaoApiKey,
-		mistralApiKey: config.mistralApiKey,
-		azureApiVersion: config.azureApiVersion,
-		qwenApiLine: config.qwenApiLine,
-		moonshotApiLine: config.moonshotApiLine,
-		moonshotApiKey: config.moonshotApiKey,
-		huggingFaceApiKey: config.huggingFaceApiKey,
-		nebiusApiKey: config.nebiusApiKey,
-		asksageApiUrl: config.asksageApiUrl,
-		asksageApiKey: config.asksageApiKey,
-		xaiApiKey: config.xaiApiKey,
-		sambanovaApiKey: config.sambanovaApiKey,
-		cerebrasApiKey: config.cerebrasApiKey,
-		vercelAiGatewayApiKey: config.vercelAiGatewayApiKey,
-		groqApiKey: config.groqApiKey,
-		basetenApiKey: config.basetenApiKey,
+		openAiHeaders: {},
 		requestTimeoutMs: config.requestTimeoutMs,
-		sapAiCoreClientId: config.sapAiCoreClientId,
-		sapAiCoreClientSecret: config.sapAiCoreClientSecret,
-		sapAiResourceGroup: config.sapAiResourceGroup,
-		sapAiCoreTokenUrl: config.sapAiCoreTokenUrl,
-		sapAiCoreBaseUrl: config.sapAiCoreBaseUrl,
-		sapAiCoreUseOrchestrationMode: config.sapAiCoreUseOrchestrationMode,
-		huaweiCloudMaasApiKey: config.huaweiCloudMaasApiKey,
-		zaiApiLine: config.zaiApiLine,
-		zaiApiKey: config.zaiApiKey,
-		difyApiKey: config.difyApiKey,
-		difyBaseUrl: config.difyBaseUrl,
-		ocaBaseUrl: config.ocaBaseUrl,
 
 		// Plan mode configurations
 		planModeApiProvider: config.planModeApiProvider ? convertApiProviderToProto(config.planModeApiProvider) : undefined,
 		planModeApiModelId: config.planModeApiModelId,
 		planModeThinkingBudgetTokens: config.planModeThinkingBudgetTokens,
 		planModeReasoningEffort: config.planModeReasoningEffort,
-		planModeVsCodeLmModelSelector: config.planModeVsCodeLmModelSelector,
-		planModeAwsBedrockCustomSelected: config.planModeAwsBedrockCustomSelected,
-		planModeAwsBedrockCustomModelBaseId: config.planModeAwsBedrockCustomModelBaseId as string | undefined,
 		planModeOpenRouterModelId: config.planModeOpenRouterModelId,
 		planModeOpenRouterModelInfo: convertModelInfoToProtoOpenRouter(config.planModeOpenRouterModelInfo),
-		planModeOpenAiModelId: config.planModeOpenAiModelId,
-		planModeOpenAiModelInfo: convertOpenAiCompatibleModelInfoToProto(config.planModeOpenAiModelInfo),
-		planModeOllamaModelId: config.planModeOllamaModelId,
-		planModeLmStudioModelId: config.planModeLmStudioModelId,
-		planModeLiteLlmModelId: config.planModeLiteLlmModelId,
-		planModeLiteLlmModelInfo: convertLiteLLMModelInfoToProto(config.planModeLiteLlmModelInfo),
-		planModeRequestyModelId: config.planModeRequestyModelId,
-		planModeRequestyModelInfo: convertModelInfoToProtoOpenRouter(config.planModeRequestyModelInfo),
-		planModeTogetherModelId: config.planModeTogetherModelId,
-		planModeFireworksModelId: config.planModeFireworksModelId,
-		planModeGroqModelId: config.planModeGroqModelId,
-		planModeGroqModelInfo: convertModelInfoToProtoOpenRouter(config.planModeGroqModelInfo),
-		planModeBasetenModelId: config.planModeBasetenModelId,
-		planModeBasetenModelInfo: convertModelInfoToProtoOpenRouter(config.planModeBasetenModelInfo),
-		planModeHuggingFaceModelId: config.planModeHuggingFaceModelId,
-		planModeHuggingFaceModelInfo: convertModelInfoToProtoOpenRouter(config.planModeHuggingFaceModelInfo),
-		planModeSapAiCoreModelId: config.planModeSapAiCoreModelId,
-		planModeHuaweiCloudMaasModelId: config.planModeHuaweiCloudMaasModelId,
-		planModeHuaweiCloudMaasModelInfo: convertModelInfoToProtoOpenRouter(config.planModeHuaweiCloudMaasModelInfo),
-		planModeSapAiCoreDeploymentId: config.planModeSapAiCoreDeploymentId,
-		planModeVercelAiGatewayModelId: config.planModeVercelAiGatewayModelId,
-		planModeVercelAiGatewayModelInfo: convertModelInfoToProtoOpenRouter(config.planModeVercelAiGatewayModelInfo),
-		planModeOcaModelId: config.planModeOcaModelId,
-		planModeOcaModelInfo: convertOcaModelInfoToProtoOcaModelInfo(config.planModeOcaModelInfo),
 
 		// Act mode configurations
 		actModeApiProvider: config.actModeApiProvider ? convertApiProviderToProto(config.actModeApiProvider) : undefined,
 		actModeApiModelId: config.actModeApiModelId,
 		actModeThinkingBudgetTokens: config.actModeThinkingBudgetTokens,
 		actModeReasoningEffort: config.actModeReasoningEffort,
-		actModeVsCodeLmModelSelector: config.actModeVsCodeLmModelSelector,
-		actModeAwsBedrockCustomSelected: config.actModeAwsBedrockCustomSelected,
-		actModeAwsBedrockCustomModelBaseId: config.actModeAwsBedrockCustomModelBaseId as string | undefined,
 		actModeOpenRouterModelId: config.actModeOpenRouterModelId,
 		actModeOpenRouterModelInfo: convertModelInfoToProtoOpenRouter(config.actModeOpenRouterModelInfo),
-		actModeOpenAiModelId: config.actModeOpenAiModelId,
-		actModeOpenAiModelInfo: convertOpenAiCompatibleModelInfoToProto(config.actModeOpenAiModelInfo),
-		actModeOllamaModelId: config.actModeOllamaModelId,
-		actModeLmStudioModelId: config.actModeLmStudioModelId,
-		actModeLiteLlmModelId: config.actModeLiteLlmModelId,
-		actModeLiteLlmModelInfo: convertLiteLLMModelInfoToProto(config.actModeLiteLlmModelInfo),
-		actModeRequestyModelId: config.actModeRequestyModelId,
-		actModeRequestyModelInfo: convertModelInfoToProtoOpenRouter(config.actModeRequestyModelInfo),
-		actModeTogetherModelId: config.actModeTogetherModelId,
-		actModeFireworksModelId: config.actModeFireworksModelId,
-		actModeGroqModelId: config.actModeGroqModelId,
-		actModeGroqModelInfo: convertModelInfoToProtoOpenRouter(config.actModeGroqModelInfo),
-		actModeBasetenModelId: config.actModeBasetenModelId,
-		actModeBasetenModelInfo: convertModelInfoToProtoOpenRouter(config.actModeBasetenModelInfo),
-		actModeHuggingFaceModelId: config.actModeHuggingFaceModelId,
-		actModeHuggingFaceModelInfo: convertModelInfoToProtoOpenRouter(config.actModeHuggingFaceModelInfo),
-		actModeSapAiCoreModelId: config.actModeSapAiCoreModelId,
-		actModeHuaweiCloudMaasModelId: config.actModeHuaweiCloudMaasModelId,
-		actModeHuaweiCloudMaasModelInfo: convertModelInfoToProtoOpenRouter(config.actModeHuaweiCloudMaasModelInfo),
-		actModeSapAiCoreDeploymentId: config.actModeSapAiCoreDeploymentId,
-		actModeVercelAiGatewayModelId: config.actModeVercelAiGatewayModelId,
-		actModeVercelAiGatewayModelInfo: convertModelInfoToProtoOpenRouter(config.actModeVercelAiGatewayModelInfo),
-		actModeOcaModelId: config.actModeOcaModelId,
-		actModeOcaModelInfo: convertOcaModelInfoToProtoOcaModelInfo(config.actModeOcaModelInfo),
 	}
 }
 
 // Converts proto ApiConfiguration to application ApiConfiguration
 export function convertProtoToApiConfiguration(protoConfig: ProtoApiConfiguration): ApiConfiguration {
 	return {
-		// Global configuration fields
 		apiKey: protoConfig.apiKey,
-		clineAccountId: protoConfig.clineAccountId,
-		ulid: protoConfig.ulid,
-		liteLlmBaseUrl: protoConfig.liteLlmBaseUrl,
-		liteLlmApiKey: protoConfig.liteLlmApiKey,
-		liteLlmUsePromptCache: protoConfig.liteLlmUsePromptCache,
-		openAiHeaders: Object.keys(protoConfig.openAiHeaders || {}).length > 0 ? protoConfig.openAiHeaders : undefined,
-		anthropicBaseUrl: protoConfig.anthropicBaseUrl,
 		openRouterApiKey: protoConfig.openRouterApiKey,
+		ulid: protoConfig.ulid,
+		anthropicBaseUrl: protoConfig.anthropicBaseUrl,
 		openRouterProviderSorting: protoConfig.openRouterProviderSorting,
-		awsAccessKey: protoConfig.awsAccessKey,
-		awsSecretKey: protoConfig.awsSecretKey,
-		awsSessionToken: protoConfig.awsSessionToken,
-		awsRegion: protoConfig.awsRegion,
-		awsUseCrossRegionInference: protoConfig.awsUseCrossRegionInference,
-		awsBedrockUsePromptCache: protoConfig.awsBedrockUsePromptCache,
-		awsUseProfile: protoConfig.awsUseProfile,
-		awsAuthentication: protoConfig.awsAuthentication,
-		awsProfile: protoConfig.awsProfile,
-		awsBedrockApiKey: protoConfig.awsBedrockApiKey,
-		awsBedrockEndpoint: protoConfig.awsBedrockEndpoint,
-		claudeCodePath: protoConfig.claudeCodePath,
-		vertexProjectId: protoConfig.vertexProjectId,
-		vertexRegion: protoConfig.vertexRegion,
-		openAiBaseUrl: protoConfig.openAiBaseUrl,
-		openAiApiKey: protoConfig.openAiApiKey,
-		ollamaBaseUrl: protoConfig.ollamaBaseUrl,
-		ollamaApiKey: protoConfig.ollamaApiKey,
-		ollamaApiOptionsCtxNum: protoConfig.ollamaApiOptionsCtxNum,
-		lmStudioBaseUrl: protoConfig.lmStudioBaseUrl,
-		lmStudioMaxTokens: protoConfig.lmStudioMaxTokens,
-		geminiApiKey: protoConfig.geminiApiKey,
-		geminiBaseUrl: protoConfig.geminiBaseUrl,
-		openAiNativeApiKey: protoConfig.openAiNativeApiKey,
-		deepSeekApiKey: protoConfig.deepSeekApiKey,
-		requestyApiKey: protoConfig.requestyApiKey,
-		requestyBaseUrl: protoConfig.requestyBaseUrl,
-		togetherApiKey: protoConfig.togetherApiKey,
-		fireworksApiKey: protoConfig.fireworksApiKey,
-		fireworksModelMaxCompletionTokens: protoConfig.fireworksModelMaxCompletionTokens,
-		fireworksModelMaxTokens: protoConfig.fireworksModelMaxTokens,
-		qwenApiKey: protoConfig.qwenApiKey,
-		doubaoApiKey: protoConfig.doubaoApiKey,
-		mistralApiKey: protoConfig.mistralApiKey,
-		azureApiVersion: protoConfig.azureApiVersion,
-		qwenApiLine: protoConfig.qwenApiLine,
-		moonshotApiLine: protoConfig.moonshotApiLine,
-		moonshotApiKey: protoConfig.moonshotApiKey,
-		huggingFaceApiKey: protoConfig.huggingFaceApiKey,
-		nebiusApiKey: protoConfig.nebiusApiKey,
-		asksageApiUrl: protoConfig.asksageApiUrl,
-		asksageApiKey: protoConfig.asksageApiKey,
-		xaiApiKey: protoConfig.xaiApiKey,
-		sambanovaApiKey: protoConfig.sambanovaApiKey,
-		cerebrasApiKey: protoConfig.cerebrasApiKey,
-		vercelAiGatewayApiKey: protoConfig.vercelAiGatewayApiKey,
-		groqApiKey: protoConfig.groqApiKey,
-		basetenApiKey: protoConfig.basetenApiKey,
 		requestTimeoutMs: protoConfig.requestTimeoutMs,
-		sapAiCoreClientId: protoConfig.sapAiCoreClientId,
-		sapAiCoreClientSecret: protoConfig.sapAiCoreClientSecret,
-		sapAiResourceGroup: protoConfig.sapAiResourceGroup,
-		sapAiCoreTokenUrl: protoConfig.sapAiCoreTokenUrl,
-		sapAiCoreBaseUrl: protoConfig.sapAiCoreBaseUrl,
-		sapAiCoreUseOrchestrationMode: protoConfig.sapAiCoreUseOrchestrationMode,
-		huaweiCloudMaasApiKey: protoConfig.huaweiCloudMaasApiKey,
-		zaiApiLine: protoConfig.zaiApiLine,
-		zaiApiKey: protoConfig.zaiApiKey,
-		difyApiKey: protoConfig.difyApiKey,
-		difyBaseUrl: protoConfig.difyBaseUrl,
-		ocaBaseUrl: protoConfig.ocaBaseUrl,
 
-		// Plan mode configurations
-		planModeApiProvider:
-			protoConfig.planModeApiProvider !== undefined
-				? convertProtoToApiProvider(protoConfig.planModeApiProvider)
-				: undefined,
+		planModeApiProvider: protoConfig.planModeApiProvider
+			? convertProtoToApiProvider(protoConfig.planModeApiProvider)
+			: undefined,
 		planModeApiModelId: protoConfig.planModeApiModelId,
 		planModeThinkingBudgetTokens: protoConfig.planModeThinkingBudgetTokens,
 		planModeReasoningEffort: protoConfig.planModeReasoningEffort,
-		planModeVsCodeLmModelSelector: protoConfig.planModeVsCodeLmModelSelector,
-		planModeAwsBedrockCustomSelected: protoConfig.planModeAwsBedrockCustomSelected,
-		planModeAwsBedrockCustomModelBaseId: protoConfig.planModeAwsBedrockCustomModelBaseId as BedrockModelId | undefined,
 		planModeOpenRouterModelId: protoConfig.planModeOpenRouterModelId,
 		planModeOpenRouterModelInfo: convertProtoToModelInfo(protoConfig.planModeOpenRouterModelInfo),
-		planModeOpenAiModelId: protoConfig.planModeOpenAiModelId,
-		planModeOpenAiModelInfo: convertProtoToOpenAiCompatibleModelInfo(protoConfig.planModeOpenAiModelInfo),
-		planModeOllamaModelId: protoConfig.planModeOllamaModelId,
-		planModeLmStudioModelId: protoConfig.planModeLmStudioModelId,
-		planModeLiteLlmModelId: protoConfig.planModeLiteLlmModelId,
-		planModeLiteLlmModelInfo: convertProtoToLiteLLMModelInfo(protoConfig.planModeLiteLlmModelInfo),
-		planModeRequestyModelId: protoConfig.planModeRequestyModelId,
-		planModeRequestyModelInfo: convertProtoToModelInfo(protoConfig.planModeRequestyModelInfo),
-		planModeTogetherModelId: protoConfig.planModeTogetherModelId,
-		planModeFireworksModelId: protoConfig.planModeFireworksModelId,
-		planModeGroqModelId: protoConfig.planModeGroqModelId,
-		planModeGroqModelInfo: convertProtoToModelInfo(protoConfig.planModeGroqModelInfo),
-		planModeBasetenModelId: protoConfig.planModeBasetenModelId,
-		planModeBasetenModelInfo: convertProtoToModelInfo(protoConfig.planModeBasetenModelInfo),
-		planModeHuggingFaceModelId: protoConfig.planModeHuggingFaceModelId,
-		planModeHuggingFaceModelInfo: convertProtoToModelInfo(protoConfig.planModeHuggingFaceModelInfo),
-		planModeSapAiCoreModelId: protoConfig.planModeSapAiCoreModelId,
-		planModeHuaweiCloudMaasModelId: protoConfig.planModeHuaweiCloudMaasModelId,
-		planModeHuaweiCloudMaasModelInfo: convertProtoToModelInfo(protoConfig.planModeHuaweiCloudMaasModelInfo),
-		planModeSapAiCoreDeploymentId: protoConfig.planModeSapAiCoreDeploymentId,
-		planModeVercelAiGatewayModelId: protoConfig.planModeVercelAiGatewayModelId,
-		planModeVercelAiGatewayModelInfo: convertProtoToModelInfo(protoConfig.planModeVercelAiGatewayModelInfo),
-		planModeOcaModelId: protoConfig.planModeOcaModelId,
-		planModeOcaModelInfo: convertProtoOcaModelInfoToOcaModelInfo(protoConfig.planModeOcaModelInfo),
 
-		// Act mode configurations
-		actModeApiProvider:
-			protoConfig.actModeApiProvider !== undefined ? convertProtoToApiProvider(protoConfig.actModeApiProvider) : undefined,
+		actModeApiProvider: protoConfig.actModeApiProvider
+			? convertProtoToApiProvider(protoConfig.actModeApiProvider)
+			: undefined,
 		actModeApiModelId: protoConfig.actModeApiModelId,
 		actModeThinkingBudgetTokens: protoConfig.actModeThinkingBudgetTokens,
 		actModeReasoningEffort: protoConfig.actModeReasoningEffort,
-		actModeVsCodeLmModelSelector: protoConfig.actModeVsCodeLmModelSelector,
-		actModeAwsBedrockCustomSelected: protoConfig.actModeAwsBedrockCustomSelected,
-		actModeAwsBedrockCustomModelBaseId: protoConfig.actModeAwsBedrockCustomModelBaseId as BedrockModelId | undefined,
 		actModeOpenRouterModelId: protoConfig.actModeOpenRouterModelId,
 		actModeOpenRouterModelInfo: convertProtoToModelInfo(protoConfig.actModeOpenRouterModelInfo),
-		actModeOpenAiModelId: protoConfig.actModeOpenAiModelId,
-		actModeOpenAiModelInfo: convertProtoToOpenAiCompatibleModelInfo(protoConfig.actModeOpenAiModelInfo),
-		actModeOllamaModelId: protoConfig.actModeOllamaModelId,
-		actModeLmStudioModelId: protoConfig.actModeLmStudioModelId,
-		actModeLiteLlmModelId: protoConfig.actModeLiteLlmModelId,
-		actModeLiteLlmModelInfo: convertProtoToLiteLLMModelInfo(protoConfig.actModeLiteLlmModelInfo),
-		actModeRequestyModelId: protoConfig.actModeRequestyModelId,
-		actModeRequestyModelInfo: convertProtoToModelInfo(protoConfig.actModeRequestyModelInfo),
-		actModeTogetherModelId: protoConfig.actModeTogetherModelId,
-		actModeFireworksModelId: protoConfig.actModeFireworksModelId,
-		actModeGroqModelId: protoConfig.actModeGroqModelId,
-		actModeGroqModelInfo: convertProtoToModelInfo(protoConfig.actModeGroqModelInfo),
-		actModeBasetenModelId: protoConfig.actModeBasetenModelId,
-		actModeBasetenModelInfo: convertProtoToModelInfo(protoConfig.actModeBasetenModelInfo),
-		actModeHuggingFaceModelId: protoConfig.actModeHuggingFaceModelId,
-		actModeHuggingFaceModelInfo: convertProtoToModelInfo(protoConfig.actModeHuggingFaceModelInfo),
-		actModeSapAiCoreModelId: protoConfig.actModeSapAiCoreModelId,
-		actModeHuaweiCloudMaasModelId: protoConfig.actModeHuaweiCloudMaasModelId,
-		actModeHuaweiCloudMaasModelInfo: convertProtoToModelInfo(protoConfig.actModeHuaweiCloudMaasModelInfo),
-		actModeSapAiCoreDeploymentId: protoConfig.actModeSapAiCoreDeploymentId,
-		actModeVercelAiGatewayModelId: protoConfig.actModeVercelAiGatewayModelId,
-		actModeVercelAiGatewayModelInfo: convertProtoToModelInfo(protoConfig.actModeVercelAiGatewayModelInfo),
-		actModeOcaModelId: protoConfig.actModeOcaModelId,
-		actModeOcaModelInfo: convertProtoOcaModelInfoToOcaModelInfo(protoConfig.actModeOcaModelInfo),
 	}
 }

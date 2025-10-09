@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { insertMention, insertMentionDirectly } from "../context-mentions"
+import { insertMention, insertMentionDirectly } from "../chat/context_mentions"
 
 describe("context-mentions", () => {
 	describe("insertMention", () => {

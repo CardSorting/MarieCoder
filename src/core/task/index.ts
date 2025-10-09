@@ -341,14 +341,7 @@ export class Task {
 		const mode = this.stateManager.getGlobalSettingsKey("mode")
 		const currentProvider = mode === "plan" ? apiConfiguration.planModeApiProvider : apiConfiguration.actModeApiProvider
 
-		const openaiReasoningEffort = this.stateManager.getGlobalSettingsKey("openaiReasoningEffort")
-		if (currentProvider === "openai" || currentProvider === "openai-native" || currentProvider === "sapaicore") {
-			if (mode === "plan") {
-				effectiveApiConfiguration.planModeReasoningEffort = openaiReasoningEffort
-			} else {
-				effectiveApiConfiguration.actModeReasoningEffort = openaiReasoningEffort
-			}
-		}
+		// Reasoning effort handling removed - only anthropic and openrouter supported
 
 		// Now that ulid is initialized, we can build the API handler
 		this.api = ApiService.createHandler(effectiveApiConfiguration, mode)
@@ -373,10 +366,10 @@ export class Task {
 		// initialize telemetry
 		if (historyItem) {
 			// Open task from history
-			telemetryService.captureTaskRestarted(this.ulid, currentProvider)
+			telemetryService.captureTaskRestarted(this.ulid, currentProvider || "anthropic")
 		} else {
 			// New task started
-			telemetryService.captureTaskCreated(this.ulid, currentProvider)
+			telemetryService.captureTaskCreated(this.ulid, currentProvider || "anthropic")
 		}
 
 		this.toolExecutor = new ToolExecutor(
@@ -1927,12 +1920,7 @@ export class Task {
 		// Capture task initialization timing telemetry for the first API request
 		if (isFirstRequest) {
 			const durationMs = Math.round(performance.now() - this.taskInitializationStartTime)
-			telemetryService.captureTaskInitialization(
-				this.ulid,
-				this.taskId,
-				durationMs,
-				this.stateManager.getGlobalSettingsKey("enableCheckpointsSetting"),
-			)
+			telemetryService.captureTaskInitialization(this.ulid, this.taskId, durationMs, providerId)
 		}
 
 		// since we sent off a placeholder api_req_started message to update the webview while waiting to actually start the API request (to load potential details for example), we need to update the text of that message

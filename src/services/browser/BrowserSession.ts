@@ -6,6 +6,7 @@ import axios from "axios"
 import { spawn } from "child_process"
 import * as chromeLauncher from "chrome-launcher"
 import os from "os"
+import pWaitFor from "p-wait-for"
 import * as path from "path"
 // @ts-ignore
 import type { ConsoleMessage, ScreenshotOptions } from "puppeteer-core"
@@ -39,6 +40,9 @@ export class BrowserSession {
 	private cachedWebSocketEndpoint?: string
 	private lastConnectionAttempt: number = 0
 	private isConnectedToRemote: boolean = false
+	private useWebp: boolean = true
+	private browserActions: string[] = []
+	private currentMousePosition?: string
 
 	// Telemetry tracking properties
 	private sessionStartTime: number = 0

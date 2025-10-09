@@ -64,12 +64,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 	const { selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, mode)
 	const modeFields = getModeSpecificFields(apiConfiguration, mode)
 
-	const isCostAvailable =
-		(totalCost &&
-			modeFields.apiProvider === "openai" &&
-			modeFields.openAiModelInfo?.inputPrice &&
-			modeFields.openAiModelInfo?.outputPrice) ||
-		(modeFields.apiProvider !== "vscode-lm" && modeFields.apiProvider !== "ollama" && modeFields.apiProvider !== "lmstudio")
+	const isCostAvailable = totalCost !== undefined
 
 	// Event handlers
 	const toggleTaskExpanded = useCallback(() => setIsTaskExpanded(!isTaskExpanded), [setIsTaskExpanded, isTaskExpanded])

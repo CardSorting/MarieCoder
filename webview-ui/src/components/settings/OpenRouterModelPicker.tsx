@@ -121,13 +121,8 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 	const modelIds = useMemo(() => {
 		const unfilteredModelIds = Object.keys(openRouterModels).sort((a, b) => a.localeCompare(b))
 
-		if (modeFields.apiProvider === "cline") {
-			// For Cline provider: exclude :free models
-			return unfilteredModelIds.filter((id) => !id.includes(":free"))
-		} else {
-			// For OpenRouter provider: exclude Cline-specific models
-			return unfilteredModelIds.filter((id) => !id.startsWith("cline/"))
-		}
+		// For OpenRouter provider: exclude Cline-specific models
+		return unfilteredModelIds.filter((id) => !id.startsWith("cline/"))
 	}, [openRouterModels, modeFields.apiProvider])
 
 	const searchableItems = useMemo(() => {
@@ -262,7 +257,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 					<span style={{ fontWeight: 500 }}>Model</span>
 				</label>
 
-				{modeFields.apiProvider === "cline" && (
+				{false && (
 					<div style={{ marginBottom: "6px", marginTop: 4 }}>
 						{featuredModels.map((model) => (
 							<FeaturedModelCard

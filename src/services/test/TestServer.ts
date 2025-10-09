@@ -2,7 +2,6 @@ import { getSavedApiConversationHistory, getSavedClineMessages } from "@core/sto
 import { WebviewProvider } from "@core/webview"
 import { Logger } from "@services/logging/Logger"
 import { AutoApprovalSettings, DEFAULT_AUTO_APPROVAL_SETTINGS } from "@shared/AutoApprovalSettings"
-import { ApiProvider } from "@shared/api"
 import { HistoryItem } from "@shared/HistoryItem"
 import { execa } from "execa"
 import * as http from "http"
@@ -214,21 +213,19 @@ export async function createTestServer(controller: Controller): Promise<http.Ser
 						// Update API configuration with API key
 						const updatedConfig = {
 							...apiConfiguration,
-							apiProvider: "cline" as ApiProvider,
-							clineAccountId: apiKey,
 						}
 
 						// Store the API key securely
-						visibleWebview.controller.stateManager.setSecret("clineAccountId", apiKey)
+						visibleWebview.controller.stateManager.setSecret("apiKey", apiKey)
 
 						visibleWebview.controller.stateManager.setApiConfiguration(updatedConfig)
 
-						// Update cache service to use cline provider
+						// Update cache service to use anthropic provider
 						const currentConfig = visibleWebview.controller.stateManager.getApiConfiguration()
 						visibleWebview.controller.stateManager.setApiConfiguration({
 							...currentConfig,
-							planModeApiProvider: "cline",
-							actModeApiProvider: "cline",
+							planModeApiProvider: "anthropic",
+							actModeApiProvider: "anthropic",
 						})
 
 						// Post state to webview to reflect changes
