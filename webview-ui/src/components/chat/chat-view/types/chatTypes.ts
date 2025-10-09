@@ -142,7 +142,6 @@ export interface TaskSectionProps {
  */
 export interface WelcomeSectionProps {
 	showHistoryView: () => void
-	telemetrySetting: string
 	version: string
 	taskHistory: any[]
 	shouldShowQuickWins: boolean

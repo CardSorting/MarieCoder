@@ -11,13 +11,7 @@ import { WelcomeSectionProps } from "../../types/chatTypes"
  * Welcome section shown when there's no active task
  * Includes info banner, home header, and history preview
  */
-export const WelcomeSection: React.FC<WelcomeSectionProps> = ({
-	showHistoryView,
-	telemetrySetting,
-	version,
-	taskHistory,
-	shouldShowQuickWins,
-}) => {
+export const WelcomeSection: React.FC<WelcomeSectionProps> = ({ showHistoryView, version, taskHistory, shouldShowQuickWins }) => {
 	const { lastDismissedInfoBannerVersion, lastDismissedModelBannerVersion } = useExtensionState()
 
 	const shouldShowInfoBanner = lastDismissedInfoBannerVersion < CURRENT_INFO_BANNER_VERSION

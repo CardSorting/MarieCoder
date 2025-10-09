@@ -6,7 +6,6 @@ import { COMMAND_REQ_APP_STRING } from "@shared/combineCommandSequences"
 import { ClineAsk } from "@shared/ExtensionMessage"
 import { arePathsEqual } from "@utils/path"
 import { fixModelHtmlEscaping } from "@utils/string"
-import { telemetryService } from "@/services/telemetry"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ToolResponse } from "../../index"
 import { showNotificationForApprovalIfAutoApprovalEnabled } from "../../utils"
@@ -129,7 +128,7 @@ export class ExecuteCommandToolHandler implements IFullyManagedTool {
 
 		// Determine workspace context for telemetry
 		const resolvedToNonPrimary = !arePathsEqual(executionDir, config.cwd)
-		const workspaceContext = {
+		const _workspaceContext = {
 			isMultiRootEnabled: config.isMultiRootEnabled || false,
 			usedWorkspaceHint: workspaceHintUsed,
 			resolvedToNonPrimary,
@@ -138,15 +137,7 @@ export class ExecuteCommandToolHandler implements IFullyManagedTool {
 
 		// Capture workspace path resolution telemetry
 		if (config.isMultiRootEnabled && config.workspaceManager) {
-			telemetryService.captureWorkspacePathResolved(
-				config.ulid,
-				"ExecuteCommandToolHandler",
-				workspaceHintUsed ? "hint_provided" : "fallback_to_primary",
-				workspaceHintUsed ? "workspace_name" : undefined,
-				resolvedToNonPrimary, // resolution success = resolved to different workspace
-				undefined, // TODO: could calculate workspace index if needed
-				true,
-			)
+			// Telemetry removed
 		}
 
 		if ((!requiresApprovalPerLLM && autoApproveSafe) || (requiresApprovalPerLLM && autoApproveSafe && autoApproveAll)) {
@@ -155,7 +146,6 @@ export class ExecuteCommandToolHandler implements IFullyManagedTool {
 			await config.callbacks.say("command", actualCommand, undefined, undefined, false)
 			config.taskState.consecutiveAutoApprovedRequestsCount++
 			didAutoApprove = true
-			telemetryService.captureToolUsage(config.ulid, block.name, config.api.getModel().id, true, true, workspaceContext)
 		} else {
 			// Manual approval flow
 			showNotificationForApprovalIfAutoApprovalEnabled(
@@ -170,17 +160,8 @@ export class ExecuteCommandToolHandler implements IFullyManagedTool {
 				config,
 			)
 			if (!didApprove) {
-				telemetryService.captureToolUsage(
-					config.ulid,
-					block.name,
-					config.api.getModel().id,
-					false,
-					false,
-					workspaceContext,
-				)
 				return formatResponse.toolDenied()
 			}
-			telemetryService.captureToolUsage(config.ulid, block.name, config.api.getModel().id, false, true, workspaceContext)
 		}
 
 		// Setup timeout notification for long-running auto-approved commands

@@ -3,7 +3,6 @@ import fs from "fs/promises"
 import { globby } from "globby"
 import * as path from "path"
 import simpleGit, { type SimpleGit } from "simple-git"
-import { telemetryService } from "@/services/telemetry"
 import { getLfsPatterns, writeExcludesFile } from "./CheckpointExclusions"
 
 interface CheckpointAddResult {
@@ -54,7 +53,7 @@ export class GitOperations {
 	 * - Unable to create initial commit
 	 * - LFS pattern setup fails
 	 */
-	public async initShadowGit(gitPath: string, cwd: string, taskId: string): Promise<string> {
+	public async initShadowGit(gitPath: string, cwd: string, _taskId: string): Promise<string> {
 		console.info(`Initializing shadow git`)
 
 		// If repo exists, just verify worktree
@@ -99,8 +98,7 @@ export class GitOperations {
 		// Initial commit only on first repo creation
 		await git.commit("initial commit", { "--allow-empty": null })
 
-		const durationMs = Math.round(performance.now() - startTime)
-		telemetryService.captureCheckpointUsage(taskId, "shadow_git_initialized", durationMs)
+		const _durationMs = Math.round(performance.now() - startTime)
 
 		console.warn(`Shadow git initialization completed`)
 

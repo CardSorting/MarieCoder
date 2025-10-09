@@ -3,7 +3,6 @@ import { showSystemNotification } from "@integrations/notifications"
 import { findLast, parsePartialArrayString } from "@shared/array"
 import { ClineAsk, ClineAskQuestion } from "@shared/ExtensionMessage"
 import { ClineDefaultTool } from "@shared/tools"
-import { telemetryService } from "@/services/telemetry"
 import { ToolUse } from "../../../assistant-message"
 import { formatResponse } from "../../../prompts/response_formatters"
 import { ToolResponse } from "../.."
@@ -64,8 +63,6 @@ export class AskFollowupQuestionToolHandler implements IToolHandler, IPartialBlo
 
 		// Check if options contains the text response
 		if (optionsRaw && text && options.includes(text)) {
-			telemetryService.captureOptionSelected(config.ulid, options.length, "act")
-
 			// Valid option selected, update last followup message with selected option
 			const clineMessages = config.messageState.getClineMessages()
 			const lastFollowupMessage = findLast(clineMessages, (m: any) => m.ask === "followup")
@@ -78,7 +75,6 @@ export class AskFollowupQuestionToolHandler implements IToolHandler, IPartialBlo
 			}
 		} else {
 			// Option not selected, send user feedback
-			telemetryService.captureOptionsIgnored(config.ulid, options.length, "act")
 			await config.callbacks.say("user_feedback", text ?? "", images, followupFiles)
 		}
 

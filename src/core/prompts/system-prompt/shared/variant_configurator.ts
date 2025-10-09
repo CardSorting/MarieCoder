@@ -33,7 +33,9 @@ export class VariantConfigService {
 
 		if (!validationResult.isValid) {
 			const errorStrings = validationResult.errors.map((err) => {
-				if (typeof err === "string") return err
+				if (typeof err === "string") {
+					return err
+				}
 				if (err && typeof err === "object") {
 					return JSON.stringify(err, null, 2)
 				}
@@ -138,7 +140,9 @@ export function createValidatedVariantConfig(
 
 	if (!validationResult.isValid) {
 		const errorStrings = validationResult.errors.map((err) => {
-			if (typeof err === "string") return err
+			if (typeof err === "string") {
+				return err
+			}
 			if (err && typeof err === "object") {
 				return JSON.stringify(err, null, 2)
 			}

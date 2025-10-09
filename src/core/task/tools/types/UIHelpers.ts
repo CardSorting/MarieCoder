@@ -1,7 +1,6 @@
 import type { ClineAsk, ClineSay } from "@shared/ExtensionMessage"
 import type { ClineDefaultTool } from "@shared/tools"
 import type { ClineAskResponse } from "@shared/WebviewMessage"
-import { telemetryService } from "@/services/telemetry"
 import type { ToolParamName, ToolUse } from "../../../assistant-message"
 import { showNotificationForApprovalIfAutoApprovalEnabled } from "../../utils"
 import { removeClosingTag } from "../utils/ToolConstants"
@@ -57,9 +56,7 @@ export function createUIHelpers(config: TaskConfig): StronglyTypedUIHelpers {
 			const { response } = await config.callbacks.ask(messageType, message, false)
 			return response === "yesButtonClicked"
 		},
-		captureTelemetry: (toolName: ClineDefaultTool, autoApproved: boolean, approved: boolean) => {
-			telemetryService.captureToolUsage(config.ulid, toolName, config.api.getModel().id, autoApproved, approved)
-		},
+		captureTelemetry: (_toolName: ClineDefaultTool, _autoApproved: boolean, _approved: boolean) => {},
 		showNotificationIfEnabled: (message: string) => {
 			showNotificationForApprovalIfAutoApprovalEnabled(
 				message,

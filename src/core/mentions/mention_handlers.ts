@@ -13,7 +13,6 @@ import { diagnosticsToProblemsString } from "@integrations/diagnostics"
 import { extractTextFromFile } from "@integrations/misc/extract-text"
 import { getLatestTerminalOutput } from "@integrations/terminal/get-latest-output"
 import { UrlContentFetcher } from "@services/browser/UrlContentFetcher"
-import { telemetryService } from "@services/telemetry"
 import { getCommitInfo, getWorkingState } from "@utils/git"
 import fs from "fs/promises"
 import { isBinaryFile } from "isbinaryfile"
@@ -33,13 +32,11 @@ export async function handleUrlMention(
 ): Promise<string> {
 	if (launchBrowserError) {
 		const errorMsg = `Error fetching content: ${launchBrowserError.message}`
-		telemetryService.captureMentionFailed("url", "network_error", launchBrowserError?.message || "")
 		return `<url_content url="${mention}">\n${errorMsg}\n</url_content>`
 	}
 
 	try {
 		const markdown = await urlContentFetcher.urlToMarkdown(mention)
-		telemetryService.captureMentionUsed("url", markdown.length)
 		return `<url_content url="${mention}">\n${markdown}\n</url_content>`
 	} catch (error) {
 		HostProvider.window.showMessage({
@@ -47,7 +44,6 @@ export async function handleUrlMention(
 			message: `Error fetching content for ${mention}: ${error.message}`,
 		})
 		const errorMsg = `Error fetching content: ${error.message}`
-		telemetryService.captureMentionFailed("url", "network_error", error.message)
 		return `<url_content url="${mention}">\n${errorMsg}\n</url_content>`
 	}
 }
@@ -61,31 +57,28 @@ export async function handleFileMention(
 	isFolder: boolean,
 	fileContextTracker?: FileContextTracker,
 ): Promise<string> {
-	const mentionType = isFolder ? "folder" : "file"
+	const _mentionType = isFolder ? "folder" : "file"
 
 	try {
 		const content = await getFileOrFolderContent(mentionPath, cwd)
 
 		if (isFolder) {
-			telemetryService.captureMentionUsed(mentionType, content.length)
 			return `<folder_content path="${mentionPath}">\n${content}\n</folder_content>`
 		} else {
 			// Track that this file was mentioned
 			if (fileContextTracker) {
 				await fileContextTracker.trackFileContext(mentionPath, "file_mentioned")
 			}
-			telemetryService.captureMentionUsed(mentionType, content.length)
 			return `<file_content path="${mentionPath}">\n${content}\n</file_content>`
 		}
 	} catch (error) {
 		// Map file access errors to appropriate error types
-		let errorType: "not_found" | "permission_denied" | "unknown" = "unknown"
+		let _errorType: "not_found" | "permission_denied" | "unknown" = "unknown"
 		if (error.message.includes("ENOENT") || error.message.includes("Failed to access")) {
-			errorType = "not_found"
+			_errorType = "not_found"
 		} else if (error.message.includes("EACCES") || error.message.includes("permission")) {
-			errorType = "permission_denied"
+			_errorType = "permission_denied"
 		}
-		telemetryService.captureMentionFailed(mentionType, errorType, error.message)
 
 		const errorMsg = `Error fetching content: ${error.message}`
 		return isFolder
@@ -157,10 +150,8 @@ async function getFileOrFolderContent(mentionPath: string, cwd: string): Promise
 export async function handleProblemsMention(): Promise<string> {
 	try {
 		const problems = await getWorkspaceProblems()
-		telemetryService.captureMentionUsed("problems", problems.length)
 		return `<workspace_diagnostics>\n${problems}\n</workspace_diagnostics>`
 	} catch (error) {
-		telemetryService.captureMentionFailed("problems", "unknown", error.message)
 		return `<workspace_diagnostics>\nError fetching diagnostics: ${error.message}\n</workspace_diagnostics>`
 	}
 }
@@ -182,10 +173,8 @@ async function getWorkspaceProblems(): Promise<string> {
 export async function handleTerminalMention(): Promise<string> {
 	try {
 		const terminalOutput = await getLatestTerminalOutput()
-		telemetryService.captureMentionUsed("terminal", terminalOutput.length)
 		return `<terminal_output>\n${terminalOutput}\n</terminal_output>`
 	} catch (error) {
-		telemetryService.captureMentionFailed("terminal", "unknown", error.message)
 		return `<terminal_output>\nError fetching terminal output: ${error.message}\n</terminal_output>`
 	}
 }
@@ -196,10 +185,8 @@ export async function handleTerminalMention(): Promise<string> {
 export async function handleGitChangesMention(cwd: string): Promise<string> {
 	try {
 		const workingState = await getWorkingState(cwd)
-		telemetryService.captureMentionUsed("git-changes", workingState.length)
 		return `<git_working_state>\n${workingState}\n</git_working_state>`
 	} catch (error) {
-		telemetryService.captureMentionFailed("git-changes", "unknown", error.message)
 		return `<git_working_state>\nError fetching working state: ${error.message}\n</git_working_state>`
 	}
 }
@@ -210,10 +197,8 @@ export async function handleGitChangesMention(cwd: string): Promise<string> {
 export async function handleCommitMention(mention: string, cwd: string): Promise<string> {
 	try {
 		const commitInfo = await getCommitInfo(mention, cwd)
-		telemetryService.captureMentionUsed("commit", commitInfo.length)
 		return `<git_commit hash="${mention}">\n${commitInfo}\n</git_commit>`
 	} catch (error) {
-		telemetryService.captureMentionFailed("commit", "unknown", error.message)
 		return `<git_commit hash="${mention}">\nError fetching commit info: ${error.message}\n</git_commit>`
 	}
 }

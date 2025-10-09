@@ -43,7 +43,7 @@ export class ClineAccountService {
 		return null
 	}
 
-	async transcribeAudio(audioBase64: string, language?: string): Promise<{ text?: string; error?: string }> {
+	async transcribeAudio(_audioBase64: string, _language?: string): Promise<{ text?: string; error?: string }> {
 		throw new Error("Audio transcription not implemented")
 	}
 

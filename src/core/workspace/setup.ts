@@ -1,5 +1,4 @@
 import { HostProvider } from "@/hosts/host-provider"
-import { telemetryService } from "@/services/telemetry"
 import type { HistoryItem } from "@/shared/HistoryItem"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import { getCwd, getDesktopDir } from "@/utils/path"
@@ -25,7 +24,7 @@ export async function setupWorkspaceManager({
 	detectRoots: DetectRoots
 }): Promise<WorkspaceRootManager> {
 	const cwd = await getCwd(getDesktopDir())
-	const startTime = performance.now()
+	const _startTime = performance.now()
 	const multiRootEnabled = isMultiRootEnabled(stateManager)
 	try {
 		let manager: WorkspaceRootManager
@@ -35,14 +34,6 @@ export async function setupWorkspaceManager({
 			const roots = await detectRoots()
 			manager = new WorkspaceRootManager(roots, 0)
 			console.log(`[WorkspaceManager] Multi-root mode: ${roots.length} roots detected`)
-
-			// Telemetry
-			telemetryService.captureWorkspaceInitialized(
-				roots.length,
-				roots.map((r) => r.vcs.toString()),
-				performance.now() - startTime,
-				true,
-			)
 
 			// Persist
 			stateManager.setGlobalState("workspaceRoots", manager.getRoots())
@@ -57,30 +48,12 @@ export async function setupWorkspaceManager({
 		// 		const primaryIndex = stateManager.getPrimaryRootIndex()
 		// 		manager = new WorkspaceRootManager(savedRoots, primaryIndex)
 		// 		console.log(`[WorkspaceManager] Restored ${savedRoots.length} roots from state`)
-		// 		telemetryService.captureWorkspaceInitialized(
-		// 			savedRoots.length,
-		// 			savedRoots.map((r) => r.vcs.toString()),
-		// 			performance.now() - startTime,
-		// 			false,
-		// 		)
 		// 	} else {
 		// 		manager = await WorkspaceRootManager.fromLegacyCwd(cwd)
-		// 		telemetryService.captureWorkspaceInitialized(
-		// 			1,
-		// 			[manager.getRoots()[0].vcs.toString()],
-		// 			performance.now() - startTime,
-		// 			false,
-		// 		)
 		// 	}
 		// }
 
 		manager = await WorkspaceRootManager.fromLegacyCwd(cwd)
-		telemetryService.captureWorkspaceInitialized(
-			1,
-			[manager.getRoots()[0].vcs.toString()],
-			performance.now() - startTime,
-			false,
-		)
 
 		console.log(`[WorkspaceManager] Single-root mode: ${cwd}`)
 		const roots = manager.getRoots()
@@ -89,8 +62,7 @@ export async function setupWorkspaceManager({
 		return manager
 	} catch (error) {
 		// Telemetry + graceful fallback to single-root from cwd
-		const workspaceCount = (await HostProvider.workspace.getWorkspacePaths({})).paths?.length
-		telemetryService.captureWorkspaceInitError(error as Error, true, workspaceCount)
+		const _workspaceCount = (await HostProvider.workspace.getWorkspacePaths({})).paths?.length
 
 		console.error("[WorkspaceManager] Initialization failed:", error)
 		const manager = await WorkspaceRootManager.fromLegacyCwd(cwd)

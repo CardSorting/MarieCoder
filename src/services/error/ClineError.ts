@@ -42,7 +42,9 @@ export class ClineError extends Error {
 	 * Parse an error message string into a ClineError
 	 */
 	static parse(errorMessage: string | null | undefined): ClineError | null {
-		if (!errorMessage) return null
+		if (!errorMessage) {
+			return null
+		}
 
 		try {
 			// Try to parse as JSON first

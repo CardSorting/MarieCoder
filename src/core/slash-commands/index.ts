@@ -1,6 +1,5 @@
 import { ClineRulesToggles } from "@shared/cline-rules"
 import fs from "fs/promises"
-import { telemetryService } from "@/services/telemetry"
 import {
 	condenseToolResponse,
 	deepPlanningToolResponse,
@@ -17,7 +16,7 @@ export async function parseSlashCommands(
 	text: string,
 	localWorkflowToggles: ClineRulesToggles,
 	globalWorkflowToggles: ClineRulesToggles,
-	ulid: string,
+	_ulid: string,
 	focusChainSettings?: { enabled: boolean },
 ): Promise<{ processedText: string; needsClinerulesFileCheck: boolean }> {
 	const SUPPORTED_DEFAULT_COMMANDS = ["newtask", "smol", "compact", "newrule", "reportbug", "deep-planning"]
@@ -67,7 +66,6 @@ export async function parseSlashCommands(
 				const processedText = commandReplacements[commandName] + textWithoutSlashCommand
 
 				// Track telemetry for builtin slash command usage
-				telemetryService.captureSlashCommandUsed(ulid, commandName, "builtin")
 
 				return { processedText: processedText, needsClinerulesFileCheck: commandName === "newrule" }
 			}
@@ -120,7 +118,6 @@ export async function parseSlashCommands(
 						textWithoutSlashCommand
 
 					// Track telemetry for workflow command usage
-					telemetryService.captureSlashCommandUsed(ulid, commandName, "workflow")
 
 					return { processedText, needsClinerulesFileCheck: false }
 				} catch (error) {

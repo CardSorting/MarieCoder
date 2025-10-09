@@ -1,6 +1,5 @@
 import { getFileMentionFromPath } from "@/core/mentions"
 import { HostProvider } from "@/hosts/host-provider"
-import { telemetryService } from "@/services/telemetry"
 import { CommandContext, Empty } from "@/shared/proto/index.cline"
 import { ShowMessageType } from "@/shared/proto/index.host"
 import { Controller } from "../index"
@@ -18,8 +17,6 @@ export async function improveWithCline(controller: Controller, request: CommandC
 \`\`\`${request.language}\n${request.selectedText}\n\`\`\``
 
 	await controller.initTask(prompt)
-
-	telemetryService.captureButtonClick("codeAction_improveCode", controller.task?.ulid)
 
 	return {}
 }

@@ -104,24 +104,9 @@ export class VoiceTranscriptionService {
 		try {
 			Logger.info("Transcribing audio with Cline transcription service...")
 
-			// Check if using organization account for telemetry
-			const userInfo = await this.clineAccountService.fetchMe()
-			const activeOrg = userInfo?.organizations?.find((org) => org.active)
-			const isOrgAccount = !!activeOrg
-
 			const result = await this.clineAccountService.transcribeAudio(audioBase64, language)
 
 			Logger.info("Transcription successful")
-
-			// Capture telemetry with account type - use dynamic import to avoid circular dependency
-			const { telemetryService } = await import("@/services/telemetry")
-			telemetryService.captureVoiceTranscriptionCompleted(
-				undefined, // taskId
-				result.text?.length,
-				undefined, // duration
-				language,
-				isOrgAccount,
-			)
 
 			return { text: result.text }
 		} catch (error) {

@@ -1,6 +1,5 @@
 import { RecordingResult } from "@shared/proto/cline/dictation"
 import { audioRecordingService } from "@/services/dictation/AudioRecordingService"
-import { telemetryService } from "@/services/telemetry"
 import { Controller } from ".."
 
 /**
@@ -9,9 +8,9 @@ import { Controller } from ".."
  * @returns RecordingResult indicating success or failure
  */
 export const cancelRecording = async (controller: Controller): Promise<RecordingResult> => {
-	const taskId = controller.task?.taskId
+	const _taskId = controller.task?.taskId
 	const recordingStatus = audioRecordingService.getRecordingStatus()
-	const recordingDuration = recordingStatus.durationSeconds * 1000 // Convert to milliseconds
+	const _recordingDuration = recordingStatus.durationSeconds * 1000 // Convert to milliseconds
 	let errorMessage = ""
 	let isSuccess = true
 	try {
@@ -24,7 +23,6 @@ export const cancelRecording = async (controller: Controller): Promise<Recording
 		errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
 	}
 
-	telemetryService.captureVoiceRecordingStopped(taskId, recordingDuration, false, process.platform)
 	return RecordingResult.create({
 		success: isSuccess,
 		error: errorMessage ?? "",

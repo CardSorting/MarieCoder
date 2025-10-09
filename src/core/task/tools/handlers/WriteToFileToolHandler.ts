@@ -9,7 +9,6 @@ import { ClineSayTool } from "@shared/ExtensionMessage"
 import { fileExistsAtPath } from "@utils/fs"
 import { arePathsEqual, getReadablePath, isLocatedInWorkspace } from "@utils/path"
 import { fixModelHtmlEscaping, removeInvalidChars } from "@utils/string"
-import { telemetryService } from "@/services/telemetry"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ToolResponse } from "../../index"
 import { showNotificationForApprovalIfAutoApprovalEnabled } from "../../utils"
@@ -164,7 +163,6 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 				config.taskState.consecutiveAutoApprovedRequestsCount++
 
 				// Capture telemetry
-				telemetryService.captureToolUsage(config.ulid, block.name, config.api.getModel().id, true, true, workspaceContext)
 
 				// we need an artificial delay to let the diagnostics catch up to the changes
 				await setTimeoutPromise(3_500)
@@ -213,14 +211,6 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 					// await config.services.diffViewProvider.reset()
 
 					config.taskState.didRejectTool = true
-					telemetryService.captureToolUsage(
-						config.ulid,
-						block.name,
-						config.api.getModel().id,
-						false,
-						false,
-						workspaceContext,
-					)
 
 					await config.services.diffViewProvider.revertChanges()
 					return `The user denied this operation. ${fileDeniedNote}`
@@ -241,15 +231,6 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 						)
 						await config.callbacks.say("user_feedback", text, images, files)
 					}
-
-					telemetryService.captureToolUsage(
-						config.ulid,
-						block.name,
-						config.api.getModel().id,
-						false,
-						true,
-						workspaceContext,
-					)
 				}
 			}
 
@@ -388,13 +369,12 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 				await config.callbacks.say("diff_error", relPath)
 
 				// Extract error type from error message if possible
-				const errorType =
+				const _errorType =
 					error instanceof Error && error.message.includes("does not match anything")
 						? "search_not_found"
 						: "other_diff_error"
 
 				// Add telemetry for diff edit failure
-				telemetryService.captureDiffEditFailure(config.ulid, config.api.getModel().id, errorType)
 
 				// Push tool result with detailed error using existing utilities
 				const errorResponse = formatResponse.toolError(

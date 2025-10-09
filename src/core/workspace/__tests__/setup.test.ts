@@ -4,7 +4,6 @@ import * as path from "path"
 import sinon from "sinon"
 import { HostProvider } from "@/hosts/host-provider"
 import * as featureFlags from "@/services/feature-flags"
-import * as telemetry from "@/services/telemetry"
 import * as pathUtils from "@/utils/path"
 import { setupWorkspaceManager } from "../setup"
 import type { WorkspaceRoot } from "../WorkspaceRoot"
@@ -12,7 +11,7 @@ import { WorkspaceRootManager } from "../WorkspaceRootManager"
 
 describe("setupWorkspaceManager", () => {
 	const sandbox = sinon.createSandbox()
-	let fakeTelemetry: any
+	let _fakeTelemetry: any
 
 	const cwd = "/Users/test/project"
 	const defaultRoots: WorkspaceRoot[] = [
@@ -75,13 +74,6 @@ describe("setupWorkspaceManager", () => {
 		sandbox.stub(HostProvider, "workspace").value({
 			getWorkspacePaths: sandbox.stub().resolves({ paths: ["/ws/root1", "/ws/root2"] }),
 		} as any)
-
-		// Telemetry stubs
-		fakeTelemetry = {
-			captureWorkspaceInitialized: sandbox.stub(),
-			captureWorkspaceInitError: sandbox.stub(),
-		}
-		sandbox.stub(telemetry, "telemetryService").value(fakeTelemetry)
 
 		// Stub WorkspaceRootManager.fromLegacyCwd to be deterministic
 		sandbox.stub(WorkspaceRootManager, "fromLegacyCwd").callsFake(async (legacyCwd: string) => {

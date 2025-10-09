@@ -33,7 +33,6 @@ import ReconnectingEventSource from "reconnecting-eventsource"
 import { z } from "zod"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
-import type { TelemetryService } from "../telemetry"
 import { DEFAULT_REQUEST_TIMEOUT_MS } from "./constants"
 import { BaseConfigSchema, McpSettingsSchema, ServerConfigSchema } from "./schemas"
 import { McpConnection, McpServerConfig, Transport } from "./types"
@@ -41,7 +40,6 @@ export class McpHub {
 	getMcpServersPath: () => Promise<string>
 	private getSettingsDirectoryPath: () => Promise<string>
 	private clientVersion: string
-	private telemetryService: TelemetryService
 
 	private settingsWatcher?: FSWatcher
 	private fileWatchers: Map<string, FSWatcher> = new Map()
@@ -63,12 +61,10 @@ export class McpHub {
 		getMcpServersPath: () => Promise<string>,
 		getSettingsDirectoryPath: () => Promise<string>,
 		clientVersion: string,
-		telemetryService: TelemetryService,
 	) {
 		this.getMcpServersPath = getMcpServersPath
 		this.getSettingsDirectoryPath = getSettingsDirectoryPath
 		this.clientVersion = clientVersion
-		this.telemetryService = telemetryService
 		this.watchMcpSettingsFile()
 		this.initializeMcpServers()
 	}
@@ -814,7 +810,7 @@ export class McpHub {
 		serverName: string,
 		toolName: string,
 		toolArguments: Record<string, unknown> | undefined,
-		ulid: string,
+		_ulid: string,
 	): Promise<McpToolCallResponse> {
 		const connection = this.connections.find((conn) => conn.server.name === serverName)
 		if (!connection) {
@@ -837,15 +833,6 @@ export class McpHub {
 			console.error(`Failed to parse timeout configuration for server ${serverName}: ${error}`)
 		}
 
-		this.telemetryService.captureMcpToolCall(
-			ulid,
-			serverName,
-			toolName,
-			"started",
-			undefined,
-			toolArguments ? Object.keys(toolArguments) : undefined,
-		)
-
 		try {
 			const result = await connection.client.request(
 				{
@@ -861,28 +848,11 @@ export class McpHub {
 				},
 			)
 
-			this.telemetryService.captureMcpToolCall(
-				ulid,
-				serverName,
-				toolName,
-				"success",
-				undefined,
-				toolArguments ? Object.keys(toolArguments) : undefined,
-			)
-
 			return {
 				...result,
 				content: result.content ?? [],
 			}
 		} catch (error) {
-			this.telemetryService.captureMcpToolCall(
-				ulid,
-				serverName,
-				toolName,
-				"error",
-				error instanceof Error ? error.message : String(error),
-				toolArguments ? Object.keys(toolArguments) : undefined,
-			)
 			throw error
 		}
 	}

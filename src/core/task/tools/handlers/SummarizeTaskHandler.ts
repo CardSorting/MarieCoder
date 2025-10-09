@@ -3,7 +3,6 @@ import { continuationPrompt } from "@core/prompts/contextManagement"
 import { formatResponse } from "@core/prompts/response_formatters"
 import { ensureTaskDirectoryExists } from "@core/storage/disk"
 import { ClineSayTool } from "@shared/ExtensionMessage"
-import { telemetryService } from "@/services/telemetry"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ToolResponse } from "../../index"
 import type { IPartialBlockHandler, IToolHandler } from "../ToolExecutorCoordinator"
@@ -71,12 +70,7 @@ export class SummarizeTaskHandler implements IToolHandler, IPartialBlockHandler 
 			)
 
 			if (telemetryData) {
-				telemetryService.captureSummarizeTask(
-					config.ulid,
-					config.api.getModel().id,
-					telemetryData.tokensUsed,
-					telemetryData.maxContextWindow,
-				)
+				// Telemetry removed
 			}
 
 			return toolResult

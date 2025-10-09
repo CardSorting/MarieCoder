@@ -1,7 +1,6 @@
 import { McpMarketplaceCatalog } from "@shared/mcp"
 import { Empty, EmptyRequest } from "@shared/proto/cline/common"
 import { OpenRouterCompatibleModelInfo } from "@shared/proto/cline/models"
-import { telemetryService } from "@/services/telemetry"
 import type { Controller } from "../index"
 import { sendMcpMarketplaceCatalogEvent } from "../mcp/subscribeToMcpMarketplaceCatalog"
 import { refreshOpenRouterModels } from "../models/refreshOpenRouterModels"
@@ -82,13 +81,6 @@ export async function initializeWebview(controller: Controller, _request: EmptyR
 
 		// Silently refresh MCP marketplace catalog
 		controller.silentlyRefreshMcpMarketplace()
-
-		// Initialize telemetry service with user's current setting
-		controller.getStateToPostToWebview().then((state) => {
-			const { telemetrySetting } = state
-			const isOptedIn = telemetrySetting !== "disabled"
-			telemetryService.updateTelemetryState(isOptedIn)
-		})
 
 		return Empty.create({})
 	} catch (error) {

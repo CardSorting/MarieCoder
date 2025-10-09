@@ -1,7 +1,6 @@
 import { TranscribeAudioRequest, Transcription } from "@shared/proto/cline/dictation"
 import { HostProvider } from "@/hosts/host-provider"
 import { getVoiceTranscriptionService } from "@/services/dictation/VoiceTranscriptionService"
-import { telemetryService } from "@/services/telemetry"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import { Controller } from ".."
 
@@ -12,36 +11,31 @@ import { Controller } from ".."
  * @returns Transcription with transcribed text or error
  */
 export const transcribeAudio = async (controller: Controller, request: TranscribeAudioRequest): Promise<Transcription> => {
-	const taskId = controller.task?.taskId
+	const _taskId = controller.task?.taskId
 	const startTime = Date.now()
-
-	// Capture telemetry for transcription start
-	telemetryService.captureVoiceTranscriptionStarted(taskId, request.language ?? "en")
 
 	try {
 		// Transcribe the audio
 		const result = await getVoiceTranscriptionService().transcribeAudio(request.audioBase64, request.language ?? "en")
-		const durationMs = Date.now() - startTime
+		const _durationMs = Date.now() - startTime
 
 		if (result.error) {
-			let errorType = "api_error"
+			let _errorType = "api_error"
 			if (result.error.includes("Authentication failed")) {
-				errorType = "invalid_jwt_token"
+				_errorType = "invalid_jwt_token"
 			} else if (result.error.includes("Insufficient credits")) {
-				errorType = "insufficient_credits"
+				_errorType = "insufficient_credits"
 			} else if (result.error.includes("Invalid audio format")) {
-				errorType = "invalid_audio_format"
+				_errorType = "invalid_audio_format"
 			} else if (result.error.includes("No internet connection")) {
-				errorType = "no_internet"
+				_errorType = "no_internet"
 			} else if (result.error.includes("Cannot connect")) {
-				errorType = "connection_error"
+				_errorType = "connection_error"
 			} else if (result.error.includes("Connection timed out")) {
-				errorType = "timeout_error"
+				_errorType = "timeout_error"
 			} else if (result.error.includes("Network error")) {
-				errorType = "network_error"
+				_errorType = "network_error"
 			}
-
-			telemetryService.captureVoiceTranscriptionError(taskId, errorType, result.error, durationMs)
 
 			// Use the error message directly from the service as it's already user-friendly
 			const errorMessage = result.error
@@ -50,8 +44,6 @@ export const transcribeAudio = async (controller: Controller, request: Transcrib
 				type: ShowMessageType.ERROR,
 				message: errorMessage,
 			})
-		} else if (result.text) {
-			telemetryService.captureVoiceTranscriptionCompleted(taskId, result.text.length, durationMs, request.language ?? "en")
 		}
 
 		return Transcription.create({
@@ -60,10 +52,7 @@ export const transcribeAudio = async (controller: Controller, request: Transcrib
 		})
 	} catch (error) {
 		console.error("Error transcribing audio:", error)
-		const durationMs = Date.now() - startTime
 		const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
-
-		telemetryService.captureVoiceTranscriptionError(taskId, "unexpected_error", errorMessage, durationMs)
 
 		return Transcription.create({
 			text: "",

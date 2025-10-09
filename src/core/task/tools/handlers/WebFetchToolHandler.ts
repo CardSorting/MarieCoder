@@ -1,7 +1,6 @@
 import { UrlContentFetcher } from "@services/browser/UrlContentFetcher"
 import { ClineAsk, ClineSayTool } from "@shared/ExtensionMessage"
 import { ClineDefaultTool } from "@shared/tools"
-import { telemetryService } from "@/services/telemetry"
 import { ToolUse } from "../../../assistant-message"
 import { formatResponse } from "../../../prompts/response_formatters"
 import { ToolResponse } from "../.."
@@ -60,7 +59,6 @@ export class WebFetchToolHandler implements IFullyManagedTool {
 				await config.callbacks.removeLastPartialMessageIfExistsWithType("ask", "tool")
 				await config.callbacks.say("tool", completeMessage, undefined, undefined, false)
 				config.taskState.consecutiveAutoApprovedRequestsCount++
-				telemetryService.captureToolUsage(config.ulid, "web_fetch", config.api.getModel().id, true, true)
 			} else {
 				// Manual approval flow
 				showNotificationForApprovalIfAutoApprovalEnabled(
@@ -72,10 +70,8 @@ export class WebFetchToolHandler implements IFullyManagedTool {
 
 				const didApprove = await ToolResultUtils.askApprovalAndPushFeedback("tool", completeMessage, config)
 				if (!didApprove) {
-					telemetryService.captureToolUsage(config.ulid, block.name, config.api.getModel().id, false, false)
 					return formatResponse.toolDenied()
 				} else {
-					telemetryService.captureToolUsage(config.ulid, block.name, config.api.getModel().id, false, true)
 				}
 			}
 

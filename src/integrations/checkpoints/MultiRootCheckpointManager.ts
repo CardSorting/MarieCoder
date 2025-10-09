@@ -24,7 +24,6 @@
 import { MessageStateHandler } from "@core/task/message-state"
 import { showChangedFilesDiff } from "@core/task/multifile-diff"
 import { WorkspaceRootManager } from "@core/workspace"
-import { telemetryService } from "@services/telemetry"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import CheckpointTracker from "./CheckpointTracker"
@@ -76,7 +75,7 @@ export class MultiRootCheckpointManager implements ICheckpointManager {
 			return
 		}
 
-		const startTime = performance.now()
+		const _startTime = performance.now()
 		const roots = this.workspaceManager.getRoots()
 		console.log(`[MultiRootCheckpointManager] Initializing for ${roots.length} workspace roots`)
 
@@ -100,20 +99,13 @@ export class MultiRootCheckpointManager implements ICheckpointManager {
 
 		const results = await Promise.all(initPromises)
 		const successCount = results.filter((r) => r).length
-		const failureCount = results.length - successCount
+		const _failureCount = results.length - successCount
 
 		this.initialized = true
 		console.log(`[MultiRootCheckpointManager] Initialization complete. Active trackers: ${this.trackers.size}`)
 
 		// TELEMETRY: Track multi-root checkpoint initialization
-		telemetryService.captureMultiRootCheckpoint(
-			this.taskId,
-			"initialized",
-			roots.length,
-			successCount,
-			failureCount,
-			performance.now() - startTime,
-		)
+		// Telemetry removed
 	}
 
 	/**
@@ -150,22 +142,15 @@ export class MultiRootCheckpointManager implements ICheckpointManager {
 
 		// Don't await - let commits happen in background for better performance
 		// But do catch any errors to prevent unhandled promise rejections
-		const startTime = performance.now()
+		const _startTime = performance.now()
 		Promise.all(commitPromises)
 			.then((results) => {
 				const successful = results.filter((r) => r.success).length
-				const failed = results.length - successful
+				const _failed = results.length - successful
 				console.log(`[MultiRootCheckpointManager] Checkpoint complete: ${successful}/${results.length} successful`)
 
 				// TELEMETRY: Track checkpoint commits
-				telemetryService.captureMultiRootCheckpoint(
-					this.taskId,
-					"committed",
-					results.length,
-					successful,
-					failed,
-					performance.now() - startTime,
-				)
+				// Telemetry removed
 			})
 			.catch((error) => {
 				console.error("[MultiRootCheckpointManager] Unexpected error during checkpoint:", error)

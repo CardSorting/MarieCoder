@@ -6,14 +6,12 @@ import axios from "axios"
 import { spawn } from "child_process"
 import * as chromeLauncher from "chrome-launcher"
 import os from "os"
-import pWaitFor from "p-wait-for"
 import * as path from "path"
 // @ts-ignore
 import type { ConsoleMessage, ScreenshotOptions } from "puppeteer-core"
 import { Browser, connect, launch, Page, TimeoutError } from "puppeteer-core"
 import * as vscode from "vscode"
 import { StateManager } from "@/core/storage/StateManager"
-import { telemetryService } from "@/services/telemetry"
 import { discoverChromeInstances, isPortOpen, testBrowserConnection } from "./BrowserDiscovery"
 import { ensureChromiumExists } from "./utils"
 
@@ -38,15 +36,12 @@ function splitArgs(str?: string | null): string[] {
 export class BrowserSession {
 	private browser?: Browser
 	private page?: Page
-	private currentMousePosition?: string
 	private cachedWebSocketEndpoint?: string
 	private lastConnectionAttempt: number = 0
 	private isConnectedToRemote: boolean = false
-	private useWebp: boolean
 
 	// Telemetry tracking properties
 	private sessionStartTime: number = 0
-	private browserActions: string[] = []
 	private ulid?: string
 	private stateManager: StateManager
 
@@ -189,7 +184,6 @@ export class BrowserSession {
 
 				// Send telemetry for browser tool start
 				if (this.ulid) {
-					telemetryService.captureBrowserToolStart(this.ulid, browserSettings)
 				}
 
 				return
@@ -198,15 +192,7 @@ export class BrowserSession {
 
 				// Capture error telemetry
 				if (this.ulid) {
-					telemetryService.captureBrowserError(
-						this.ulid,
-						"remote_browser_launch_error",
-						error instanceof Error ? error.message : String(error),
-						{
-							isRemote: true,
-							remoteBrowserHost: browserSettings.remoteBrowserHost,
-						},
-					)
+					// Telemetry removed
 				}
 
 				await this.launchLocalBrowser()
@@ -220,7 +206,6 @@ export class BrowserSession {
 
 		// Send telemetry for browser tool start
 		if (this.ulid) {
-			telemetryService.captureBrowserToolStart(this.ulid, browserSettings)
 		}
 	}
 
@@ -281,15 +266,7 @@ export class BrowserSession {
 
 				// Capture error telemetry
 				if (this.ulid) {
-					telemetryService.captureBrowserError(
-						this.ulid,
-						"cached_endpoint_connection_error",
-						error instanceof Error ? error.message : String(error),
-						{
-							isRemote: true,
-							endpoint: browserWSEndpoint,
-						},
-					)
+					// Telemetry removed
 				}
 
 				// Clear the cached endpoint since it's no longer valid
@@ -333,15 +310,7 @@ export class BrowserSession {
 
 				// Capture error telemetry
 				if (this.ulid) {
-					telemetryService.captureBrowserError(
-						this.ulid,
-						"remote_host_connection_error",
-						error instanceof Error ? error.message : String(error),
-						{
-							isRemote: true,
-							remoteBrowserHost,
-						},
-					)
+					// Telemetry removed
 				}
 			}
 		}
@@ -356,38 +325,39 @@ export class BrowserSession {
 		if (this.browser || this.page) {
 			// Send telemetry for browser tool end if we have a task ID and session was started
 			if (this.ulid && this.sessionStartTime > 0) {
-				const sessionDuration = Date.now() - this.sessionStartTime
-				telemetryService.captureBrowserToolEnd(this.ulid, {
-					actionCount: this.browserActions.length,
-					duration: sessionDuration,
-					actions: this.browserActions,
-				})
+				// Telemetry removed
 			}
-
-			if (this.isConnectedToRemote && this.browser) {
-				// Close the page/tab first if it exists
-				if (this.page) {
-					await this.page.close().catch(() => {})
-					console.info("closed remote browser tab...")
-				}
-				await this.browser.disconnect().catch(() => {})
-				console.info("disconnected from remote browser...")
-				// do not close the browser
-			} else if (this.isConnectedToRemote === false) {
-				await this.browser?.close().catch(() => {})
-				console.info("closed local browser...")
-			}
-
-			this.browser = undefined
-			this.page = undefined
-			this.currentMousePosition = undefined
-			this.isConnectedToRemote = false
-
-			// Reset tracking properties
-			this.sessionStartTime = 0
-			this.browserActions = []
 		}
-		return {}
+
+		if (this.isConnectedToRemote && this.browser) {
+			// Close the page/tab first if it exists
+			if (this.page) {
+				await this.page.close().catch(() => {})
+				console.info("closed remote browser tab...")
+			}
+			await this.browser.disconnect().catch(() => {})
+			console.info("disconnected from remote browser...")
+			// do not close the browser
+		} else if (this.isConnectedToRemote === false) {
+			await this.browser?.close().catch(() => {})
+			console.info("closed local browser...")
+		}
+
+		this.browser = undefined
+		this.page = undefined
+		this.currentMousePosition = undefined
+		this.isConnectedToRemote = false
+
+		// Reset tracking properties
+		this.sessionStartTime = 0
+		this.browserActions = []
+
+		return {
+			screenshot: "",
+			logs: "",
+			currentUrl: "",
+			currentMousePosition: undefined,
+		}
 	}
 
 	async doAction(action: (page: Page) => Promise<void>): Promise<BrowserActionResult> {
@@ -398,7 +368,7 @@ export class BrowserSession {
 		}
 
 		const logs: string[] = []
-		let lastLogTs = Date.now()
+		let _lastLogTs = Date.now()
 
 		const consoleListener = (msg: ConsoleMessage) => {
 			if (msg.type() === "log") {
@@ -406,12 +376,12 @@ export class BrowserSession {
 			} else {
 				logs.push(`[${msg.type()}] ${msg.text()}`)
 			}
-			lastLogTs = Date.now()
+			_lastLogTs = Date.now()
 		}
 
 		const errorListener = (err: Error) => {
 			logs.push(`[Page Error] ${err.toString()}`)
-			lastLogTs = Date.now()
+			_lastLogTs = Date.now()
 		}
 
 		// Add the listeners
@@ -428,16 +398,13 @@ export class BrowserSession {
 
 				// Capture error telemetry
 				if (this.ulid) {
-					telemetryService.captureBrowserError(this.ulid, "browser_action_error", errorMessage, {
-						isRemote: this.isConnectedToRemote,
-						action: this.browserActions[this.browserActions.length - 1],
-					})
+					// Telemetry removed
 				}
 			}
 		}
 
 		// Wait for console inactivity, with a timeout
-		await pWaitFor(() => Date.now() - lastLogTs >= 500, {
+		await pWaitFor(() => Date.now() - _lastLogTs >= 500, {
 			timeout: 3_000,
 			interval: 100,
 		}).catch(() => {})
@@ -473,10 +440,7 @@ export class BrowserSession {
 		if (!screenshotBase64) {
 			// Capture error telemetry
 			if (this.ulid) {
-				telemetryService.captureBrowserError(this.ulid, "screenshot_error", "Failed to take screenshot", {
-					isRemote: this.isConnectedToRemote,
-					action: this.browserActions[this.browserActions.length - 1],
-				})
+				// Telemetry removed
 			}
 			throw new Error("Failed to take screenshot.")
 		}

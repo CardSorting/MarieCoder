@@ -45,7 +45,6 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 		clineMessages: messages,
 		taskHistory,
 		apiConfiguration,
-		telemetrySetting,
 		mode,
 		userInfo,
 		currentFocusChainChecklist,
@@ -346,7 +345,6 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 						shouldShowQuickWins={shouldShowQuickWins}
 						showHistoryView={showHistoryView}
 						taskHistory={taskHistory}
-						telemetrySetting={telemetrySetting}
 						version={version}
 					/>
 				)}

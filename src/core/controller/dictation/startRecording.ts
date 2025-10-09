@@ -2,7 +2,6 @@ import { RecordingResult } from "@shared/proto/cline/dictation"
 import * as os from "os"
 import { HostProvider } from "@/hosts/host-provider"
 import { audioRecordingService } from "@/services/dictation/AudioRecordingService"
-import { telemetryService } from "@/services/telemetry"
 import { AUDIO_PROGRAM_CONFIG } from "@/shared/audioProgramConstants"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import { Controller } from ".."
@@ -108,7 +107,7 @@ function isMissingDependencyError(
  * @returns RecordingResult with success status
  */
 export const startRecording = async (controller: Controller): Promise<RecordingResult> => {
-	const taskId = controller.task?.taskId
+	const _taskId = controller.task?.taskId
 
 	try {
 		// Verify user authentication
@@ -122,7 +121,6 @@ export const startRecording = async (controller: Controller): Promise<RecordingR
 
 		// Handle successful recording start
 		if (result.success) {
-			telemetryService.captureVoiceRecordingStarted(taskId, process.platform)
 			return RecordingResult.create({
 				success: true,
 				error: "",

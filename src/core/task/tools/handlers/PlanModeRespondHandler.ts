@@ -1,7 +1,6 @@
 import type { ToolUse } from "@core/assistant-message"
 import { formatResponse } from "@core/prompts/response_formatters"
 import { findLast, parsePartialArrayString } from "@shared/array"
-import { telemetryService } from "@/services/telemetry"
 import { ClinePlanModeResponse } from "@/shared/ExtensionMessage"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ToolResponse } from "../../index"
@@ -98,7 +97,6 @@ export class PlanModeRespondHandler implements IToolHandler, IPartialBlockHandle
 
 		// Check if options contains the text response
 		if (optionsRaw && text && parsePartialArrayString(optionsRaw).includes(text)) {
-			telemetryService.captureOptionSelected(config.ulid, options.length, "plan")
 			// Valid option selected, don't show user message in UI
 			// Update last plan message with selected option
 			const lastPlanMessage = findLast(config.messageState.getClineMessages(), (m: any) => m.ask === this.name)
@@ -112,7 +110,6 @@ export class PlanModeRespondHandler implements IToolHandler, IPartialBlockHandle
 		} else {
 			// Option not selected, send user feedback
 			if (text || (images && images.length > 0) || (planResponseFiles && planResponseFiles.length > 0)) {
-				telemetryService.captureOptionsIgnored(config.ulid, options.length, "plan")
 				await config.callbacks.say("user_feedback", text ?? "", images, planResponseFiles)
 			}
 		}

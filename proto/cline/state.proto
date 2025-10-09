@@ -17,7 +17,6 @@ service StateService {
   rpc togglePlanActModeProto(TogglePlanActModeRequest) returns (Boolean);
   rpc updateAutoApprovalSettings(AutoApprovalSettingsRequest) returns (Empty);
   rpc updateSettings(UpdateSettingsRequest) returns (Empty);
-  rpc updateTelemetrySetting(TelemetrySettingRequest) returns (Empty);
   rpc updateInfoBannerVersion(Int64Request) returns (Empty);
   rpc updateModelBannerVersion(Int64Request) returns (Empty);
   rpc getProcessInfo(EmptyRequest) returns (ProcessInfo);
@@ -101,17 +100,6 @@ message AutoApprovalSettingsRequest {
   int32 max_requests = 5;
   bool enable_notifications = 6;
   repeated string favorites = 7;
-}
-
-enum TelemetrySettingEnum {
-  UNSET = 0;
-  ENABLED = 1;
-  DISABLED = 2;
-}
-
-message TelemetrySettingRequest {
-  Metadata metadata = 1;
-  TelemetrySettingEnum setting = 2;
 }
 
 // Browser settings for UpdateSettingsRequest

@@ -1,7 +1,6 @@
 import fs from "fs/promises"
 import * as path from "path"
 import simpleGit from "simple-git"
-import { telemetryService } from "@/services/telemetry"
 import { GitOperations } from "./CheckpointGitOperations"
 import { getShadowGitPath, hashWorkingDir } from "./CheckpointUtils"
 
@@ -134,8 +133,7 @@ class CheckpointTracker {
 			const gitPath = await getShadowGitPath(newTracker.cwdHash)
 			await newTracker.gitOperations.initShadowGit(gitPath, workingDir, taskId)
 
-			const durationMs = Math.round(performance.now() - startTime)
-			telemetryService.captureCheckpointUsage(taskId, "shadow_git_initialized", durationMs)
+			const _durationMs = Math.round(performance.now() - startTime)
 
 			return newTracker
 		} catch (error) {
@@ -194,8 +192,7 @@ class CheckpointTracker {
 			const commitHash = (result.commit || "").replace(/^HEAD\s+/, "")
 			console.warn(`Checkpoint commit created: `, commitHash)
 
-			const durationMs = Math.round(performance.now() - startTime)
-			telemetryService.captureCheckpointUsage(this.taskId, "commit_created", durationMs)
+			const _durationMs = Math.round(performance.now() - startTime)
 
 			return commitHash
 		} catch (error) {
@@ -270,8 +267,7 @@ class CheckpointTracker {
 		await git.reset(["--hard", this.cleanCommitHash(commitHash)]) // Hard reset to target commit
 		console.debug(`Successfully reset to checkpoint: ${commitHash}`)
 
-		const durationMs = Math.round(performance.now() - startTime)
-		telemetryService.captureCheckpointUsage(this.taskId, "restored", durationMs)
+		const _durationMs = Math.round(performance.now() - startTime)
 	}
 
 	/**
@@ -348,8 +344,7 @@ class CheckpointTracker {
 			})
 		}
 
-		const durationMs = Math.round(performance.now() - startTime)
-		telemetryService.captureCheckpointUsage(this.taskId, "diff_generated", durationMs)
+		const _durationMs = Math.round(performance.now() - startTime)
 
 		return result
 	}
@@ -377,8 +372,7 @@ class CheckpointTracker {
 		const diffRange = cleanRhs ? `${this.cleanCommitHash(lhsHash)}..${cleanRhs}` : this.cleanCommitHash(lhsHash)
 		const diffSummary = await git.diffSummary([diffRange])
 
-		const durationMs = Math.round(performance.now() - startTime)
-		telemetryService.captureCheckpointUsage(this.taskId, "diff_generated", durationMs)
+		const _durationMs = Math.round(performance.now() - startTime)
 
 		return diffSummary.files.length
 	}
