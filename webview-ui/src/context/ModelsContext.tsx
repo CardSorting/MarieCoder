@@ -16,6 +16,7 @@ import { EmptyRequest } from "@shared/proto/cline/common"
 import type { OpenRouterCompatibleModelInfo } from "@shared/proto/cline/models"
 import type React from "react"
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
+import { createContextSelector } from "@/hooks/use_context_selector"
 import { debug, logError } from "@/utils/debug_logger"
 import {
 	basetenDefaultModelId,
@@ -155,3 +156,28 @@ export const useModelsState = () => {
 	}
 	return context
 }
+
+/**
+ * Optimized selector hook for models state
+ * Reduces re-renders by only updating when selected model lists change
+ *
+ * @example
+ * ```typescript
+ * // Single provider:
+ * const openRouterModels = useModelsStateSelector(state => state.openRouterModels)
+ *
+ * // Multiple providers:
+ * const { openRouterModels, groqModels } = useModelsStateSelector(
+ *   state => ({
+ *     openRouterModels: state.openRouterModels,
+ *     groqModels: state.groqModels,
+ *   })
+ * )
+ *
+ * // Computed value:
+ * const modelCount = useModelsStateSelector(
+ *   state => Object.keys(state.openRouterModels).length
+ * )
+ * ```
+ */
+export const useModelsStateSelector = createContextSelector(useModelsState)

@@ -16,6 +16,7 @@ import { EmptyRequest } from "@shared/proto/cline/common"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
 import type React from "react"
 import { createContext, useContext, useEffect, useRef, useState } from "react"
+import { createContextSelector } from "@/hooks/use_context_selector"
 import { debug, logError } from "@/utils/debug_logger"
 import type { McpMarketplaceCatalog, McpServer } from "../../../src/shared/mcp"
 import { McpServiceClient } from "../services/grpc-client"
@@ -112,3 +113,28 @@ export const useMcpState = () => {
 	}
 	return context
 }
+
+/**
+ * Optimized selector hook for MCP state
+ * Reduces re-renders by only updating when selected MCP data changes
+ *
+ * @example
+ * ```typescript
+ * // Single value:
+ * const servers = useMcpStateSelector(state => state.mcpServers)
+ *
+ * // Filtered servers:
+ * const activeServers = useMcpStateSelector(
+ *   state => state.mcpServers.filter(s => s.status === 'active')
+ * )
+ *
+ * // Multiple values:
+ * const { servers, catalog } = useMcpStateSelector(
+ *   state => ({
+ *     servers: state.mcpServers,
+ *     catalog: state.mcpMarketplaceCatalog,
+ *   })
+ * )
+ * ```
+ */
+export const useMcpStateSelector = createContextSelector(useMcpState)

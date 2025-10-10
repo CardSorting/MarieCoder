@@ -23,6 +23,7 @@ import { EmptyRequest } from "@shared/proto/cline/common"
 import { type TerminalProfile } from "@shared/proto/cline/state"
 import type React from "react"
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import { createContextSelector } from "@/hooks/use_context_selector"
 import { debug, logError } from "@/utils/debug_logger"
 import { StateServiceClient, UiServiceClient } from "../services/grpc-client"
 
@@ -277,3 +278,28 @@ export const useSettingsState = () => {
 	}
 	return context
 }
+
+/**
+ * Optimized selector hook for settings state
+ * Reduces re-renders by only updating when selected settings change
+ *
+ * @example
+ * ```typescript
+ * // Single setting:
+ * const autoApproval = useSettingsStateSelector(state => state.autoApprovalSettings)
+ *
+ * // Multiple settings:
+ * const { browserSettings, dictationSettings } = useSettingsStateSelector(
+ *   state => ({
+ *     browserSettings: state.browserSettings,
+ *     dictationSettings: state.dictationSettings,
+ *   })
+ * )
+ *
+ * // Computed value:
+ * const isConfigured = useSettingsStateSelector(
+ *   state => !!state.apiConfiguration
+ * )
+ * ```
+ */
+export const useSettingsStateSelector = createContextSelector(useSettingsState)

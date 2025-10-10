@@ -1,3 +1,4 @@
+import type { McpMarketplaceItem } from "@shared/mcp"
 import { EmptyRequest } from "@shared/proto/cline/common"
 import {
 	VSCodeButton,
@@ -9,6 +10,7 @@ import {
 	VSCodeTextField,
 } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useMemo, useState } from "react"
+import { Virtuoso } from "react-virtuoso"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
@@ -259,7 +261,7 @@ const McpMarketplaceView = () => {
 				}
 			`}
 			</style>
-			<div style={{ display: "flex", flexDirection: "column" }}>
+			<div style={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
 				{filteredItems.length === 0 ? (
 					<div
 						style={{
@@ -275,11 +277,20 @@ const McpMarketplaceView = () => {
 							: "No MCP servers found in the marketplace"}
 					</div>
 				) : (
-					filteredItems.map((item) => (
-						<McpMarketplaceCard installedServers={mcpServers} item={item} key={item.mcpId} setError={setError} />
-					))
+					<Virtuoso<McpMarketplaceItem>
+						components={{
+							Footer: () => <McpSubmitCard />,
+						}}
+						data={filteredItems}
+						itemContent={(_index: number, item: McpMarketplaceItem) => (
+							<McpMarketplaceCard installedServers={mcpServers} item={item} key={item.mcpId} setError={setError} />
+						)}
+						style={{
+							flexGrow: 1,
+							overflowY: "scroll",
+						}}
+					/>
 				)}
-				<McpSubmitCard />
 			</div>
 		</div>
 	)

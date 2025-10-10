@@ -20,6 +20,7 @@ import { EmptyRequest } from "@shared/proto/cline/common"
 import { convertProtoToClineMessage } from "@shared/proto-conversions/cline-message"
 import type React from "react"
 import { createContext, useContext, useEffect, useRef, useState } from "react"
+import { createContextSelector } from "@/hooks/use_context_selector"
 import { debug, logError } from "@/utils/debug_logger"
 import { UiServiceClient } from "../services/grpc-client"
 
@@ -121,3 +122,28 @@ export const useTaskState = () => {
 	}
 	return context
 }
+
+/**
+ * Optimized selector hook for task state
+ * Reduces re-renders by only updating when selected state changes
+ *
+ * @example
+ * ```typescript
+ * // Single value:
+ * const messages = useTaskStateSelector(state => state.clineMessages)
+ *
+ * // Computed value:
+ * const messageCount = useTaskStateSelector(
+ *   state => state.clineMessages.length
+ * )
+ *
+ * // Multiple values:
+ * const { messages, taskId } = useTaskStateSelector(
+ *   state => ({
+ *     messages: state.clineMessages,
+ *     taskId: state.currentTaskId,
+ *   })
+ * )
+ * ```
+ */
+export const useTaskStateSelector = createContextSelector(useTaskState)

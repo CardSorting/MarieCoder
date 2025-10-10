@@ -16,6 +16,7 @@ import type { McpViewTab } from "@shared/mcp"
 import { EmptyRequest } from "@shared/proto/cline/common"
 import type React from "react"
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
+import { createContextSelector } from "@/hooks/use_context_selector"
 import { debug, logError } from "@/utils/debug_logger"
 import { UiServiceClient } from "../services/grpc-client"
 
@@ -296,3 +297,24 @@ export const useUIState = () => {
 	}
 	return context
 }
+
+/**
+ * Optimized selector hook for UI state
+ * Reduces re-renders by only updating when selected state changes
+ *
+ * @example
+ * ```typescript
+ * // Single value:
+ * const showSettings = useUIStateSelector(state => state.showSettings)
+ *
+ * // Multiple values (will only re-render if any of these change):
+ * const { showSettings, navigateToSettings } = useUIStateSelector(
+ *   state => ({
+ *     showSettings: state.showSettings,
+ *     navigateToSettings: state.navigateToSettings,
+ *   })
+ * )
+ * ```
+ */
+
+export const useUIStateSelector = createContextSelector(useUIState)
