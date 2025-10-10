@@ -1,6 +1,7 @@
-import { cn, Tooltip } from "@heroui/react"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { FoldVerticalIcon } from "lucide-react"
+import { Tooltip } from "@/components/common/Tooltip"
+import { FoldVerticalIcon } from "@/components/icons"
+import { cn } from "@/utils/classnames"
 
 const CompactTaskButton: React.FC<{
 	className?: string

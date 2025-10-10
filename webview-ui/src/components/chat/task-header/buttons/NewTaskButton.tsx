@@ -1,6 +1,6 @@
-import { cn } from "@heroui/react"
-import { XIcon } from "lucide-react"
 import HeroTooltip from "@/components/common/HeroTooltip"
+import { XIcon } from "@/components/icons"
+import { cn } from "@/utils/classnames"
 
 const NewTaskButton: React.FC<{
 	onClick: () => void

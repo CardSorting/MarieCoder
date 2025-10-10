@@ -1,4 +1,3 @@
-import { flip, offset, shift, useFloating } from "@floating-ui/react"
 import { CheckpointRestoreRequest } from "@shared/proto/cline/checkpoints"
 import { Int64Request } from "@shared/proto/cline/common"
 import { ClineCheckpointRestore } from "@shared/WebviewMessage"
@@ -22,6 +21,9 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 	const [restoreWorkspaceDisabled, setRestoreWorkspaceDisabled] = useState(false)
 	const [restoreBothDisabled, setRestoreBothDisabled] = useState(false)
 	const [showRestoreConfirm, setShowRestoreConfirm] = useState(false)
+	const [floatingPosition, setFloatingPosition] = useState({ x: 0, y: 0, placement: "bottom-end" as const })
+	const referenceRef = useRef<HTMLDivElement>(null)
+	const floatingRef = useRef<HTMLDivElement>(null)
 	const { onRelinquishControl } = useExtensionState()
 
 	// Debounce
@@ -59,31 +61,28 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 		}
 	}, [isCheckpointCheckedOut, restoreWorkspaceDisabled])
 
-	const { refs, floatingStyles, update, placement } = useFloating({
-		placement: "bottom-end",
-		middleware: [
-			offset({
-				mainAxis: 8,
-				crossAxis: 10,
-			}),
-			flip(),
-			shift(),
-		],
-	})
-
-	useEffect(() => {
-		const handleScroll = () => {
-			update()
+	// Update floating position
+	const updatePosition = useCallback(() => {
+		if (referenceRef.current && floatingRef.current) {
+			const position = calculatePosition(referenceRef.current, floatingRef.current, {
+				placement: "bottom-end",
+				offset: { mainAxis: 8, crossAxis: 10 },
+				flip: true,
+				shift: true,
+				padding: 8,
+			})
+			setFloatingPosition(position)
 		}
-		window.addEventListener("scroll", handleScroll, true)
-		return () => window.removeEventListener("scroll", handleScroll, true)
-	}, [update])
+	}, [])
 
 	useEffect(() => {
 		if (showRestoreConfirm) {
-			update()
+			updatePosition()
+			const handleScroll = () => updatePosition()
+			window.addEventListener("scroll", handleScroll, true)
+			return () => window.removeEventListener("scroll", handleScroll, true)
 		}
-	}, [showRestoreConfirm, update])
+	}, [showRestoreConfirm, updatePosition])
 
 	// Use the onRelinquishControl hook instead of message event
 	useEffect(() => {
@@ -202,7 +201,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 						Compare
 					</CustomButton>
 					<DottedLine $isCheckedOut={isCheckpointCheckedOut} small />
-					<div ref={refs.setReference} style={{ position: "relative", marginTop: -2 }}>
+					<div ref={referenceRef} style={{ position: "relative", marginTop: -2 }}>
 						<CustomButton
 							$isCheckedOut={isCheckpointCheckedOut}
 							isActive={showRestoreConfirm}
@@ -212,11 +211,16 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 						{showRestoreConfirm &&
 							createPortal(
 								<RestoreConfirmTooltip
-									data-placement={placement}
+									data-placement={floatingPosition.placement}
 									onMouseEnter={handleMouseEnter}
 									onMouseLeave={handleMouseLeave}
-									ref={refs.setFloating}
-									style={floatingStyles}>
+									ref={floatingRef}
+									style={{
+										position: "fixed",
+										left: `${floatingPosition.x}px`,
+										top: `${floatingPosition.y}px`,
+										zIndex: 9999,
+									}}>
 									<RestoreOption>
 										<VSCodeButton
 											disabled={restoreWorkspaceDisabled || isCheckpointCheckedOut}

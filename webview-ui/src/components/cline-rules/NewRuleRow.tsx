@@ -1,10 +1,10 @@
 import { RuleFileRequest } from "@shared/proto/index.cline"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useRef, useState } from "react"
-import { useClickAway } from "react-use"
 import { FileServiceClient } from "@/services/grpc-client"
 import { useFocusManagement } from "@/utils/accessibility/focus_management"
 import { debug } from "@/utils/debug_logger"
+import { useClickAway } from "@/utils/hooks"
 
 interface NewRuleRowProps {
 	isGlobal: boolean

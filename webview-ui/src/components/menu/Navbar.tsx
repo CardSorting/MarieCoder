@@ -1,6 +1,6 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { HistoryIcon, PlusIcon, SettingsIcon } from "lucide-react"
 import { useMemo } from "react"
+import { HistoryIcon, PlusIcon, SettingsIcon } from "@/components/icons"
 import { TaskServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { useExtensionState } from "../../context/ExtensionStateContext"

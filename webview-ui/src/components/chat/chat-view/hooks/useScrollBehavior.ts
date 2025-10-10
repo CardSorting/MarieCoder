@@ -1,8 +1,8 @@
 import { ClineMessage } from "@shared/ExtensionMessage"
-import debounce from "debounce"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useEvent } from "react-use"
 import { VirtuosoHandle } from "react-virtuoso"
+import { debounce } from "@/utils/debounce"
+import { useEvent } from "@/utils/hooks"
 import { ScrollBehavior } from "../types/chatTypes"
 
 /**

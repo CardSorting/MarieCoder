@@ -1,7 +1,8 @@
 import { ExtensionMessage } from "@shared/ExtensionMessage"
 import { ResetStateRequest } from "@shared/proto/cline/state"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import debounce from "debounce"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import HeroTooltip from "@/components/common/HeroTooltip"
 import {
 	CheckCheck,
 	FlaskConical,
@@ -11,13 +12,12 @@ import {
 	SquareMousePointer,
 	SquareTerminal,
 	Wrench,
-} from "lucide-react"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useEvent } from "react-use"
-import HeroTooltip from "@/components/common/HeroTooltip"
+} from "@/components/icons"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
+import { debounce } from "@/utils/debounce"
 import { debug } from "@/utils/debug_logger"
+import { useEvent } from "@/utils/hooks"
 import { Tab, TabContent, TabHeader, TabList, TabTrigger } from "../common/Tab"
 import SectionHeader from "./SectionHeader"
 import AboutSection from "./sections/AboutSection"

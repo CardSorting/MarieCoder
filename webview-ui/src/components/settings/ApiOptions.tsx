@@ -83,7 +83,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 	useEffect(() => {
 		// Only load Fuse.js if there's a search term
 		if (searchTerm && searchTerm !== currentProviderLabel && !FuseConstructor) {
-			import("fuse.js").then((module) => {
+			import("fuse.js/min-basic").then((module) => {
 				setFuseConstructor(() => module.default)
 			})
 		}

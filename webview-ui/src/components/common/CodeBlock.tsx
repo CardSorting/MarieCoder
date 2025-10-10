@@ -1,8 +1,5 @@
 import { memo, useEffect, useState } from "react"
-import { useRemark } from "react-remark"
-import type { Options } from "rehype-highlight"
 import styled from "styled-components"
-import { visit } from "unist-util-visit"
 import "./codeblock-parser.css"
 
 export const CODE_BLOCK_BG_COLOR = "var(--vscode-editor-background, --vscode-sideBar-background, rgb(30 30 30))"
@@ -111,48 +108,17 @@ const StyledPre = styled.pre<{ theme: any }>`
 `
 
 const CodeBlock = memo(({ source, forceWrap = false }: CodeBlockProps) => {
-	// Lazy load syntax highlighting - only loads when code blocks are rendered
-	const [rehypeHighlight, setRehypeHighlight] = useState<any>(null)
+	const [htmlContent, setHtmlContent] = useState("")
 
 	useEffect(() => {
-		import("rehype-highlight").then((module) => {
-			setRehypeHighlight(() => module.default)
-		})
-	}, [])
+		// Wrap source in code fence with language detection
+		const processedSource = source || ""
+		// If source doesn't start with ```, wrap it
+		const markdown = processedSource.startsWith("```") ? processedSource : `\`\`\`javascript\n${processedSource}\n\`\`\``
 
-	const [reactContent, setMarkdownSource] = useRemark({
-		remarkPlugins: [
-			() => {
-				return (tree) => {
-					visit(tree, "code", (node: any) => {
-						if (!node.lang) {
-							node.lang = "javascript"
-						} else if (node.lang.includes(".")) {
-							// if the language is a file, get the extension
-							node.lang = node.lang.split(".").slice(-1)[0]
-						}
-					})
-				}
-			},
-		],
-		rehypePlugins: rehypeHighlight
-			? [
-					rehypeHighlight as any,
-					{
-						// languages: {},
-					} as Options,
-				]
-			: [],
-		rehypeReactOptions: {
-			components: {
-				pre: ({ node, ...preProps }: any) => <StyledPre {...preProps} />,
-			},
-		},
-	})
-
-	useEffect(() => {
-		setMarkdownSource(source || "")
-	}, [source, setMarkdownSource])
+		const html = renderMarkdownSync(markdown, { inline: false })
+		setHtmlContent(html)
+	}, [source])
 
 	return (
 		<div
@@ -161,9 +127,7 @@ const CodeBlock = memo(({ source, forceWrap = false }: CodeBlockProps) => {
 				maxHeight: forceWrap ? "none" : "100%",
 				backgroundColor: CODE_BLOCK_BG_COLOR,
 			}}>
-			<StyledMarkdown className="ph-no-capture" forceWrap={forceWrap}>
-				{reactContent}
-			</StyledMarkdown>
+			<StyledMarkdown className="ph-no-capture" dangerouslySetInnerHTML={{ __html: htmlContent }} forceWrap={forceWrap} />
 		</div>
 	)
 })

@@ -3,7 +3,6 @@ import { McpServers } from "@shared/proto/cline/mcp"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useRef, useState } from "react"
-import { useClickAway, useWindowSize } from "react-use"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import HeroTooltip from "@/components/common/HeroTooltip"
 import ServersToggleList from "@/components/mcp/configuration/tabs/installed/ServersToggleList"
@@ -11,6 +10,7 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import { useModalFocus } from "@/utils/accessibility/focus_management"
 import { debug } from "@/utils/debug_logger"
+import { useClickAway, useWindowSize } from "@/utils/hooks"
 
 const ServersToggleModal: React.FC = () => {
 	const { mcpServers, navigateToMcp, setMcpServers } = useExtensionState()

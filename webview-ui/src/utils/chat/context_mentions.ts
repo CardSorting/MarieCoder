@@ -1,5 +1,5 @@
 import { mentionRegex } from "@shared/context-mentions"
-import { Fzf } from "fzf"
+import Fuse from "fuse.js/min-basic"
 import { PLATFORM_CONFIG } from "@/config/platform.config"
 
 /**
@@ -217,19 +217,21 @@ export function getContextMenuOptions(
 		}
 	}
 
-	// Create searchable strings array for fzf
+	// Create searchable strings array for fuzzy search
 	const searchableItems = queryItems.map((item) => ({
-		original: item,
+		...item,
 		searchStr: [item.value, item.label, item.description].filter(Boolean).join(" "),
 	}))
 
-	// Initialize fzf instance for fuzzy search
-	const fzf = new Fzf(searchableItems, {
-		selector: (item) => item.searchStr,
+	// Initialize Fuse.js instance for fuzzy search
+	const fuse = new Fuse(searchableItems, {
+		keys: ["searchStr"],
+		threshold: 0.4,
+		ignoreLocation: true,
 	})
 
 	// Get fuzzy matching items
-	const matchingItems = query ? fzf.find(query).map((result) => result.item.original) : []
+	const matchingItems = query ? fuse.search(query).map((result) => result.item) : searchableItems
 
 	// Separate matches by type
 	const fileMatches = matchingItems.filter(

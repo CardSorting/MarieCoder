@@ -1,6 +1,5 @@
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { memo, useEffect, useRef, useState } from "react"
-import { useRemark } from "react-remark"
 import styled from "styled-components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 
@@ -63,14 +62,15 @@ export const ModelDescriptionMarkdown = memo(
 		setIsExpanded: (isExpanded: boolean) => void
 		isPopup?: boolean
 	}) => {
-		const [reactContent, setMarkdown] = useRemark()
+		const [htmlContent, setHtmlContent] = useState("")
 		const [showSeeMore, setShowSeeMore] = useState(false)
 		const textContainerRef = useRef<HTMLDivElement>(null)
 		const textRef = useRef<HTMLDivElement>(null)
 
 		useEffect(() => {
-			setMarkdown(markdown || "")
-		}, [markdown, setMarkdown])
+			const html = renderMarkdownSync(markdown || "", { inline: false })
+			setHtmlContent(html)
+		}, [markdown])
 
 		useEffect(() => {
 			if (textRef.current && textContainerRef.current) {
@@ -79,7 +79,7 @@ export const ModelDescriptionMarkdown = memo(
 				const isOverflowing = scrollHeight > clientHeight
 				setShowSeeMore(isOverflowing)
 			}
-		}, [reactContent, setIsExpanded])
+		}, [htmlContent, setIsExpanded])
 
 		return (
 			<StyledMarkdown key={key} style={{ display: "inline-block", marginBottom: 0 }}>
@@ -92,15 +92,15 @@ export const ModelDescriptionMarkdown = memo(
 						overflowWrap: "anywhere",
 					}}>
 					<div
+						dangerouslySetInnerHTML={{ __html: htmlContent }}
 						ref={textRef}
 						style={{
 							display: "-webkit-box",
 							WebkitLineClamp: isExpanded ? "unset" : 3,
 							WebkitBoxOrient: "vertical",
 							overflow: "hidden",
-						}}>
-						{reactContent}
-					</div>
+						}}
+					/>
 					{!isExpanded && showSeeMore && (
 						<div
 							style={{

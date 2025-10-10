@@ -1,4 +1,16 @@
-import prettyBytes from "pretty-bytes"
+/**
+ * Format bytes into human-readable format
+ * Replaces pretty-bytes package to reduce dependencies
+ */
+function formatBytes(bytes: number): string {
+	if (bytes === 0) return "0 B"
+
+	const k = 1024
+	const sizes = ["B", "kB", "MB", "GB", "TB"]
+	const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+	return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
+}
 
 export function formatLargeNumber(num: number): string {
 	if (num >= 1e9) {
@@ -60,7 +72,7 @@ export function formatSize(bytes?: number) {
 		return "--kb"
 	}
 
-	return prettyBytes(bytes)
+	return formatBytes(bytes)
 }
 export function formatSeconds(seconds?: number): string {
 	if (seconds === undefined) {

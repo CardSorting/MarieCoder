@@ -4,13 +4,12 @@ import { Mode } from "@shared/storage/types"
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import type Fuse from "fuse.js"
 import React, { KeyboardEvent, memo, useEffect, useMemo, useRef, useState } from "react"
-import { useRemark } from "react-remark"
-import { useMount } from "react-use"
 import styled from "styled-components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
+import { useMount } from "@/utils/hooks"
 import { highlight } from "../history/HistoryView"
 import { ContextWindowSwitcher } from "./common/ContextWindowSwitcher"
 import { ModelInfoView } from "./common/ModelInfoView"
@@ -138,7 +137,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 	useEffect(() => {
 		// Only load Fuse.js if there's a search term
 		if (searchTerm && !FuseConstructor) {
-			import("fuse.js").then((module) => {
+			import("fuse.js/min-basic").then((module) => {
 				setFuseConstructor(() => module.default)
 			})
 		}
@@ -488,15 +487,16 @@ export const ModelDescriptionMarkdown = memo(
 		setIsExpanded: (isExpanded: boolean) => void
 		isPopup?: boolean
 	}) => {
-		const [reactContent, setMarkdown] = useRemark()
+		const [htmlContent, setHtmlContent] = useState("")
 		// const [isExpanded, setIsExpanded] = useState(false)
 		const [showSeeMore, setShowSeeMore] = useState(false)
 		const textContainerRef = useRef<HTMLDivElement>(null)
 		const textRef = useRef<HTMLDivElement>(null)
 
 		useEffect(() => {
-			setMarkdown(markdown || "")
-		}, [markdown, setMarkdown])
+			const html = renderMarkdownSync(markdown || "", { inline: false })
+			setHtmlContent(html)
+		}, [markdown])
 
 		useEffect(() => {
 			if (textRef.current && textContainerRef.current) {
@@ -508,7 +508,7 @@ export const ModelDescriptionMarkdown = memo(
 				// 	setIsExpanded(false)
 				// }
 			}
-		}, [reactContent, setIsExpanded])
+		}, [htmlContent, setIsExpanded])
 
 		return (
 			<StyledMarkdown key={key} style={{ display: "inline-block", marginBottom: 0 }}>
@@ -521,6 +521,7 @@ export const ModelDescriptionMarkdown = memo(
 						overflowWrap: "anywhere",
 					}}>
 					<div
+						dangerouslySetInnerHTML={{ __html: htmlContent }}
 						ref={textRef}
 						style={{
 							display: "-webkit-box",
@@ -530,9 +531,8 @@ export const ModelDescriptionMarkdown = memo(
 							// whiteSpace: "pre-wrap",
 							// wordBreak: "break-word",
 							// overflowWrap: "anywhere",
-						}}>
-						{reactContent}
-					</div>
+						}}
+					/>
 					{!isExpanded && showSeeMore && (
 						<div
 							style={{

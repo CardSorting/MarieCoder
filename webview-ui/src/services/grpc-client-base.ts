@@ -5,7 +5,24 @@
  * including non-React code. The configuration is compile-time constant, so direct
  * import is safe and ensures the methods work consistently regardless of React context.
  */
-import { v4 as uuidv4 } from "uuid"
+/**
+ * Generate a random UUID using the Web Crypto API
+ * Replaces uuid package to reduce dependencies
+ */
+const generateUUID = (): string => {
+	// Use crypto.randomUUID() if available (modern browsers and Node 19+)
+	if (typeof crypto !== "undefined" && crypto.randomUUID) {
+		return crypto.randomUUID()
+	}
+
+	// Fallback implementation (RFC4122 version 4)
+	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+		const r = (Math.random() * 16) | 0
+		const v = c === "x" ? r : (r & 0x3) | 0x8
+		return v.toString(16)
+	})
+}
+
 import { debug } from "@/utils/debug_logger"
 import { PLATFORM_CONFIG } from "../config/platform.config"
 
@@ -25,7 +42,7 @@ export abstract class ProtoBusClient {
 		decodeResponse: (_: { [key: string]: any }) => TResponse,
 	): Promise<TResponse> {
 		return new Promise((resolve, reject) => {
-			const requestId = uuidv4()
+			const requestId = generateUUID()
 
 			// Set up one-time listener for this specific request
 			const handleResponse = (event: MessageEvent) => {

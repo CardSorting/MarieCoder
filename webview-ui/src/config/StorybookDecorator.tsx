@@ -1,4 +1,3 @@
-import { cn } from "@heroui/react"
 import type { Decorator } from "@storybook/react-vite"
 import React from "react"
 import {
@@ -7,6 +6,7 @@ import {
 	ExtensionStateContextType,
 	useExtensionState,
 } from "@/context/ExtensionStateContext"
+import { cn } from "@/utils/classnames"
 import { StorybookThemes } from "../../.storybook/themes"
 
 // Component that handles theme switching

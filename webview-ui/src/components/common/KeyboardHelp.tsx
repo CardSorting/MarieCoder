@@ -1,5 +1,5 @@
-import { X } from "lucide-react"
 import { useEffect, useState } from "react"
+import { X } from "@/components/icons"
 
 /**
  * Keyboard help overlay showing all available keyboard shortcuts

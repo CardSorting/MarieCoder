@@ -222,7 +222,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	useEffect(() => {
 		// Only load Fuse.js if there's a search query
 		if (searchQuery && !FuseConstructor) {
-			import("fuse.js").then((module) => {
+			import("fuse.js/min-basic").then((module) => {
 				setFuseConstructor(() => module.default)
 			})
 		}

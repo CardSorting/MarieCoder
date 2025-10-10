@@ -1,11 +1,11 @@
-import { cn } from "@heroui/react"
 import { isCompletedFocusChainItem, isFocusChainItem } from "@shared/focus-chain-utils"
 import { StringRequest } from "@shared/proto/cline/common"
-import { ChevronDownIcon, ChevronRightIcon } from "lucide-react"
 import React, { memo, useCallback, useMemo, useState } from "react"
 import ChecklistRenderer from "@/components/common/ChecklistRenderer"
 import LightMarkdown from "@/components/common/LightMarkdown"
+import { ChevronDownIcon, ChevronRightIcon } from "@/components/icons"
 import { FileServiceClient } from "@/services/grpc-client"
+import { cn } from "@/utils/classnames"
 
 // Optimized interface with readonly properties to prevent accidental mutations
 interface TodoInfo {

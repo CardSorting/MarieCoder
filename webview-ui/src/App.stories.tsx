@@ -1,4 +1,3 @@
-import { HeroUIProvider } from "@heroui/react"
 import { DEFAULT_AUTO_APPROVAL_SETTINGS } from "@shared/AutoApprovalSettings"
 import type { ApiConfiguration } from "@shared/api"
 import type { ClineMessage } from "@shared/ExtensionMessage"
@@ -10,11 +9,7 @@ import ChatView from "./components/chat/ChatView"
 
 // Mock component that mimics App behavior but works in Storybook
 const MockApp = () => {
-	return (
-		<HeroUIProvider>
-			<ChatView isHidden={false} showHistoryView={() => {}} />
-		</HeroUIProvider>
-	)
+	return <ChatView isHidden={false} showHistoryView={() => {}} />
 }
 
 // Constants

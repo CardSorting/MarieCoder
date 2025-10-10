@@ -2,13 +2,13 @@ import { CheckpointRestoreRequest } from "@shared/proto/cline/checkpoints"
 import { Int64Request } from "@shared/proto/cline/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useRef, useState } from "react"
-import { useClickAway } from "react-use"
 import styled from "styled-components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { CheckpointsServiceClient } from "@/services/grpc-client"
 import { useFocusManagement } from "@/utils/accessibility/focus_management"
 import { debug } from "@/utils/debug_logger"
+import { useClickAway } from "@/utils/hooks"
 
 interface CheckpointOverlayProps {
 	messageTs?: number

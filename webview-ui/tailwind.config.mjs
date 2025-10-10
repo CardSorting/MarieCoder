@@ -1,11 +1,9 @@
-import { heroui } from "@heroui/react"
-
 /** @type {import('tailwindcss').Config} */
 
 export default {
 	content: {
 		relative: true,
-		files: ["./src/**/*.{jsx,tsx,mdx}", "./node_modules/@heroui/theme/dist/**/*.{ts,tsx}"],
+		files: ["./src/**/*.{jsx,tsx,mdx}"],
 	},
 	theme: {
 		extend: {
@@ -102,16 +100,5 @@ export default {
 		},
 	},
 	darkMode: "class",
-	plugins: [
-		heroui({
-			defaultTheme: "vscode",
-			themes: {
-				vscode: {
-					colors: {
-						background: "",
-					},
-				},
-			},
-		}),
-	],
+	plugins: [],
 }

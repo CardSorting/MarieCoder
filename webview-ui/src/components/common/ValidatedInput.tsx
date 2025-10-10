@@ -1,6 +1,6 @@
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import { Check, X } from "lucide-react"
 import { useState } from "react"
+import { Check, X } from "@/components/icons"
 
 /**
  * Text input with visual validation feedback

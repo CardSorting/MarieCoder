@@ -1,11 +1,11 @@
 /**
  * Utility functions for handling markdown conversions and cleanup
+ *
+ * Migrated from unified/rehype/remark to turndown for HTML→Markdown conversion
+ * turndown is much smaller (30KB vs 3MB+) and does exactly what we need
  */
 
-import rehypeParse from "rehype-parse"
-import rehypeRemark from "rehype-remark"
-import remarkStringify from "remark-stringify"
-import { unified } from "unified"
+import TurndownService from "turndown"
 
 /**
  * Clean up markdown escape characters
@@ -31,28 +31,23 @@ export function cleanupMarkdownEscapes(markdown: string): string {
 }
 
 /**
- * Convert HTML to Markdown
+ * Convert HTML to Markdown using turndown
+ * Replaces unified/rehype/remark with lighter alternative
  */
-export async function convertHtmlToMarkdown(html: string): Promise<string> {
-	// Process the HTML to Markdown
-	const result = await unified()
-		.use(rehypeParse as any, { fragment: true }) // Parse HTML fragments
-		.use(rehypeRemark as any) // Convert HTML to Markdown AST
-		.use(remarkStringify as any, {
-			// Convert Markdown AST to text
-			bullet: "-", // Use - for unordered lists
-			emphasis: "*", // Use * for emphasis
-			strong: "_", // Use _ for strong
-			listItemIndent: "one", // Use one space for list indentation
-			rule: "-", // Use - for horizontal rules
-			ruleSpaces: false, // No spaces in horizontal rules
-			fences: true,
-			escape: false,
-			entities: false,
-		})
-		.process(html)
+export function convertHtmlToMarkdown(html: string): string {
+	const turndown = new TurndownService({
+		headingStyle: "atx", // Use # for headings
+		hr: "---", // Use --- for horizontal rules
+		bulletListMarker: "-", // Use - for unordered lists
+		codeBlockStyle: "fenced", // Use ``` for code blocks
+		fence: "```", // Use ``` as fence
+		emDelimiter: "*", // Use * for emphasis
+		strongDelimiter: "**", // Use ** for strong
+		linkStyle: "inlined", // Use [text](url) for links
+	})
 
-	const md = String(result)
+	const markdown = turndown.turndown(html)
+
 	// Apply comprehensive cleanup of escape characters
-	return cleanupMarkdownEscapes(md)
+	return cleanupMarkdownEscapes(markdown)
 }

@@ -1,11 +1,11 @@
 import { Int64Request } from "@shared/proto/index.cline"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { Megaphone } from "lucide-react"
 import { useCallback } from "react"
-import { useMount } from "react-use"
+import { Megaphone } from "@/components/icons"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
+import { useMount } from "@/utils/hooks"
 import { getAsVar, VSC_INACTIVE_SELECTION_BACKGROUND } from "@/utils/vscStyles"
 import { useApiConfigurationHandlers } from "../settings/utils/useApiConfigurationHandlers"
 

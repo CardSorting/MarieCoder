@@ -2,8 +2,8 @@
  * Utility functions for scroll behavior and management
  */
 
-import debounce from "debounce"
 import { VirtuosoHandle } from "react-virtuoso"
+import { debounce } from "@/utils/debounce"
 
 /**
  * Create a debounced smooth scroll function

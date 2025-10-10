@@ -5,8 +5,9 @@ import styled from "styled-components"
 import { useDebounceEffect } from "@/hooks"
 import { FileServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
+import { loadMermaid } from "@/utils/mermaid_loader"
 
-const MERMAID_THEME = {
+const MERMAID_THEME_FOR_EXPORT = {
 	background: "#1e1e1e", // VS Code dark theme background
 	textColor: "#ffffff", // Main text color
 	mainBkg: "#2d2d2d", // Background for nodes
@@ -34,76 +35,6 @@ const MERMAID_THEME = {
 	fillType0: "#2d2d2d",
 	fillType1: "#3c3c3c",
 	fillType2: "#454545",
-}
-
-/**
- * Lazy loader for Mermaid library
- * Only loads the library when actually needed (when a diagram is rendered)
- * This reduces initial bundle size by ~500KB
- */
-let mermaidInstance: typeof import("mermaid").default | null = null
-let mermaidLoadPromise: Promise<typeof import("mermaid").default> | null = null
-
-const loadMermaid = async (): Promise<typeof import("mermaid").default> => {
-	// Return cached instance if already loaded
-	if (mermaidInstance) {
-		return mermaidInstance
-	}
-
-	// Return existing load promise if currently loading
-	if (mermaidLoadPromise) {
-		return mermaidLoadPromise
-	}
-
-	// Start loading mermaid
-	mermaidLoadPromise = import("mermaid").then((module) => {
-		mermaidInstance = module.default
-
-		// Initialize mermaid with theme configuration
-		mermaidInstance.initialize({
-			startOnLoad: false,
-			securityLevel: "loose",
-			theme: "dark",
-			themeVariables: {
-				...MERMAID_THEME,
-				fontSize: "16px",
-				fontFamily: "var(--vscode-font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif)",
-
-				// Additional styling
-				noteTextColor: "#ffffff",
-				noteBkgColor: "#454545",
-				noteBorderColor: "#888888",
-
-				// Improve contrast for special elements
-				critBorderColor: "#ff9580",
-				critBkgColor: "#803d36",
-
-				// Task diagram specific
-				taskTextColor: "#ffffff",
-				taskTextOutsideColor: "#ffffff",
-				taskTextLightColor: "#ffffff",
-
-				// Numbers/sections
-				sectionBkgColor: "#2d2d2d",
-				sectionBkgColor2: "#3c3c3c",
-
-				// Alt sections in sequence diagrams
-				altBackground: "#2d2d2d",
-
-				// Links
-				linkColor: "#6cb6ff",
-
-				// Borders and lines
-				compositeBackground: "#2d2d2d",
-				compositeBorder: "#888888",
-				titleColor: "#ffffff",
-			},
-		})
-
-		return mermaidInstance
-	})
-
-	return mermaidLoadPromise
 }
 
 interface MermaidBlockProps {
@@ -147,7 +78,7 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 			} catch (err) {
 				debug.warn("Mermaid parse/render failed:", err)
 				if (containerRef.current) {
-					containerRef.current.innerHTML = code.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+					containerRef.current.innerHTML = `<pre style="color: var(--vscode-errorForeground); padding: 8px;">${code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>`
 				}
 			} finally {
 				setIsLoading(false)
@@ -244,7 +175,7 @@ async function svgToPng(svgEl: SVGElement): Promise<string> {
 			}
 
 			// Fill background with Mermaid's dark theme background color
-			ctx.fillStyle = MERMAID_THEME.background
+			ctx.fillStyle = MERMAID_THEME_FOR_EXPORT.background
 			ctx.fillRect(0, 0, canvas.width, canvas.height)
 
 			ctx.imageSmoothingEnabled = true

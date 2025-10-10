@@ -1,5 +1,5 @@
-import { cn } from "@heroui/react"
 import React, { useEffect, useMemo, useRef, useState } from "react"
+import { cn } from "@/utils/classnames"
 
 export const AutoCondenseMarker: React.FC<{
 	threshold: number

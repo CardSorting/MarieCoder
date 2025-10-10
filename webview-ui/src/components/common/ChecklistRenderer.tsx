@@ -1,7 +1,7 @@
-import { cn } from "@heroui/react"
 import { parseFocusChainItem } from "@shared/focus-chain-utils"
-import { CheckIcon, CircleIcon } from "lucide-react"
 import React, { useCallback, useEffect, useRef, useState } from "react"
+import { CheckIcon, CircleIcon } from "@/components/icons"
+import { cn } from "@/utils/classnames"
 import LightMarkdown from "./LightMarkdown"
 
 interface ChecklistRendererProps {
