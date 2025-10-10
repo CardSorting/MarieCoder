@@ -28,7 +28,6 @@ import pWaitFor from "p-wait-for"
 import { ulid } from "ulid"
 import * as vscode from "vscode"
 import { HostProvider } from "@/hosts/host-provider"
-import { telemetryService } from "@/services/telemetry"
 import { ShowMessageType } from "@/shared/proto/index.host"
 import { Controller } from "../controller"
 import { StateManager } from "../storage/StateManager"
@@ -299,12 +298,11 @@ export class Task {
 			},
 		}
 		const mode = this.stateManager.getGlobalSettingsKey("mode")
-		const currentProvider = mode === "plan" ? apiConfiguration.planModeApiProvider : apiConfiguration.actModeApiProvider
 
 		// Build API handler with effective configuration
 		this.api = ApiService.createHandler(effectiveApiConfiguration, mode)
 
-		// Set ulid on browserSession for telemetry tracking
+		// Set ulid on browserSession for tracking
 		this.browserSession.setUlid(this.ulid)
 
 		// Set up focus chain file watcher (async, runs in background) only if focus chain is enabled
@@ -315,15 +313,6 @@ export class Task {
 					error instanceof Error ? error : new Error(String(error)),
 				)
 			})
-		}
-
-		// initialize telemetry
-		if (historyItem) {
-			// Open task from history
-			telemetryService.captureTaskRestarted(this.ulid, currentProvider || "anthropic")
-		} else {
-			// New task started
-			telemetryService.captureTaskCreated(this.ulid, currentProvider || "anthropic")
 		}
 
 		// Initialize services
