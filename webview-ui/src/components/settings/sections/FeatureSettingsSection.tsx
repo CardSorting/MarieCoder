@@ -3,6 +3,7 @@ import { McpDisplayMode } from "@shared/McpDisplayMode"
 import { OpenaiReasoningEffort } from "@shared/storage/types"
 import { VSCodeCheckbox, VSCodeDropdown, VSCodeOption, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import { memo } from "react"
+import { OptimisticCheckbox } from "@/components/common/OptimisticCheckbox"
 import McpDisplayModeDropdown from "@/components/mcp/chat-display/McpDisplayModeDropdown"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import Section from "../Section"
@@ -37,28 +38,28 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 			<Section>
 				<div style={{ marginBottom: 20 }}>
 					<div>
-						<VSCodeCheckbox
-							checked={enableCheckpointsSetting}
+						<OptimisticCheckbox
+							checked={enableCheckpointsSetting ?? false}
 							onChange={(e: any) => {
 								const checked = e.target.checked === true
 								updateSetting("enableCheckpointsSetting", checked)
 							}}>
 							Enable Checkpoints
-						</VSCodeCheckbox>
+						</OptimisticCheckbox>
 						<p className="text-xs text-[var(--vscode-descriptionForeground)]">
 							Enables extension to save checkpoints of workspace throughout the task. Uses git under the hood which
 							may not work well with large workspaces.
 						</p>
 					</div>
 					<div style={{ marginTop: 10 }}>
-						<VSCodeCheckbox
-							checked={mcpMarketplaceEnabled}
+						<OptimisticCheckbox
+							checked={mcpMarketplaceEnabled ?? false}
 							onChange={(e: any) => {
 								const checked = e.target.checked === true
 								updateSetting("mcpMarketplaceEnabled", checked)
 							}}>
 							Enable MCP Marketplace
-						</VSCodeCheckbox>
+						</OptimisticCheckbox>
 						<p className="text-xs text-[var(--vscode-descriptionForeground)]">
 							Enables the MCP Marketplace tab for discovering and installing MCP servers.
 						</p>

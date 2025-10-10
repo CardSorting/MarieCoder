@@ -1,8 +1,9 @@
 import { EmptyRequest } from "@shared/proto/cline/common"
 import { AddRemoteMcpServerRequest, McpServers } from "@shared/proto/cline/mcp"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
-import { VSCodeButton, VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { useState } from "react"
+import { ValidatedInput, validators } from "@/components/common/ValidatedInput"
 import { LINKS } from "@/constants"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
@@ -74,32 +75,36 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 			</div>
 
 			<form onSubmit={handleSubmit}>
-				<div className="mb-2">
-					<VSCodeTextField
-						className="w-full"
+				<div className="mb-3">
+					<ValidatedInput
 						disabled={isSubmitting}
+						label="Server Name"
 						onChange={(e) => {
 							setServerName((e.target as HTMLInputElement).value)
 							setError("")
 						}}
+						onValidate={validators.required("Server name is required")}
 						placeholder="mcp-server"
-						value={serverName}>
-						Server Name
-					</VSCodeTextField>
+						required
+						validateOn="blur"
+						value={serverName}
+					/>
 				</div>
 
-				<div className="mb-2">
-					<VSCodeTextField
-						className="w-full mr-4"
+				<div className="mb-3">
+					<ValidatedInput
 						disabled={isSubmitting}
+						label="Server URL"
 						onChange={(e) => {
 							setServerUrl((e.target as HTMLInputElement).value)
 							setError("")
 						}}
+						onValidate={validators.url("Please enter a valid URL (e.g., https://example.com/mcp-server)")}
 						placeholder="https://example.com/mcp-server"
-						value={serverUrl}>
-						Server URL
-					</VSCodeTextField>
+						required
+						validateOn="blur"
+						value={serverUrl}
+					/>
 				</div>
 
 				{error && <div className="mb-3 text-[var(--vscode-errorForeground)]">{error}</div>}
