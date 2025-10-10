@@ -1,6 +1,6 @@
 # Dependency Optimization Campaign
 
-**Project:** NormieDev webview-ui  
+**Project:** MarieCoder webview-ui  
 **Status:** ✅ COMPLETE (All 5 Phases)  
 **Last Updated:** October 10, 2025
 

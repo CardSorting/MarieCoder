@@ -24,7 +24,7 @@ const meta: Meta<typeof MockApp> = {
 		docs: {
 			description: {
 				component: `
-The ChatView component is the main interface for interacting with Cline. It provides a comprehensive chat experience with AI assistance, task management, and various tools.
+The ChatView component is the main interface for interacting with Marie. It provides a comprehensive chat experience with AI assistance, task management, and various tools.
 
 **Key Features:**
 - **Task Management**: Create, resume, and manage AI-assisted tasks
@@ -227,7 +227,7 @@ export const ActiveConversation: Story = {
 	parameters: {
 		docs: {
 			description: {
-				story: "An active conversation showing a typical interaction with Cline, including task creation, tool usage, and AI responses.",
+				story: "An active conversation showing a typical interaction with Marie, including task creation, tool usage, and AI responses.",
 			},
 		},
 	},
@@ -589,9 +589,9 @@ export const NewTaskWithContext = quickStory(
 export const AutoApprovalMaxReached = quickStory(
 	"Auto-approval Limit",
 	"auto_approval_max_req_reached",
-	"Cline has auto-approved 5 API requests. Would you like to reset the count and proceed with the task?",
+	"Marie has auto-approved 5 API requests. Would you like to reset the count and proceed with the task?",
 	"Shows auto-approval limit reached state with Proceed/Start New Task options.",
-	"Cline has auto-approved 5 API requests. Would you like to reset the count and proceed with the task?",
+	"Marie has auto-approved 5 API requests. Would you like to reset the count and proceed with the task?",
 )
 export const ApiRequestActive: Story = {
 	decorators: [

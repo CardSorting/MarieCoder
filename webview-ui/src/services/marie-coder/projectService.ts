@@ -1,4 +1,4 @@
-// Simple project service for NormieDev
+// Simple project service for MarieCoder
 export interface ProjectTemplate {
 	id: string
 	name: string

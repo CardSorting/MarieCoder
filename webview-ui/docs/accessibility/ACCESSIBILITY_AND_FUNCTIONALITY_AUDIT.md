@@ -1,7 +1,7 @@
 # Webview UI - Accessibility & Functionality Audit Report
 
 **Date**: October 10, 2025  
-**Scope**: `/Users/bozoegg/Desktop/NormieDev/webview-ui/src`  
+**Scope**: `/Users/bozoegg/Desktop/MarieCoder/webview-ui/src`  
 **Status**: ✅ Comprehensive audit completed
 
 ---

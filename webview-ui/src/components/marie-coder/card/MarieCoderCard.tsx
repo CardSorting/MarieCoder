@@ -1,6 +1,6 @@
 import React from "react"
 
-interface NormieDevCardProps {
+interface MarieCoderCardProps {
 	children: React.ReactNode
 	className?: string
 	variant?: "default" | "subtle" | "accent"
@@ -8,7 +8,7 @@ interface NormieDevCardProps {
 	disabled?: boolean
 }
 
-const NormieDevCard: React.FC<NormieDevCardProps> = ({
+const MarieCoderCard: React.FC<MarieCoderCardProps> = ({
 	children,
 	className = "",
 	variant = "default",
@@ -18,9 +18,9 @@ const NormieDevCard: React.FC<NormieDevCardProps> = ({
 	const getVariantStyles = () => {
 		switch (variant) {
 			case "subtle":
-				return "normie-dev-subtle"
+				return "marie-coder-subtle"
 			case "accent":
-				return "normie-dev-accent"
+				return "marie-coder-accent"
 			default:
 				return "bg-[var(--vscode-editor-background)] border border-[var(--vscode-input-border)]"
 		}
@@ -50,4 +50,4 @@ const NormieDevCard: React.FC<NormieDevCardProps> = ({
 	)
 }
 
-export default NormieDevCard
+export default MarieCoderCard

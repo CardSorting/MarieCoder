@@ -249,5 +249,5 @@ A: Yes! Use selectors for data, regular hooks for actions.
 ---
 
 **Last Updated**: October 10, 2025  
-**For**: NormieDev Contributors
+**For**: MarieCoder Contributors
 

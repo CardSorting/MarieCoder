@@ -22,7 +22,7 @@ export const DEFAULT_SLASH_COMMANDS: SlashCommand[] = [
 	},
 	{
 		name: "reportbug",
-		description: "Create a Github issue with Cline",
+		description: "Create a Github issue with Marie",
 		section: "default",
 	},
 	{

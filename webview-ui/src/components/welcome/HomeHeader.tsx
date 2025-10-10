@@ -1,5 +1,5 @@
 import { EmptyRequest } from "@shared/proto/cline/common"
-import NormieDevLogo from "@/assets/NormieDevLogo"
+import MarieCoderLogo from "@/assets/MarieCoderLogo"
 import HeroTooltip from "@/components/common/HeroTooltip"
 import { UiServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
@@ -20,7 +20,7 @@ const HomeHeader = ({ shouldShowQuickWins = false }: HomeHeaderProps) => {
 	return (
 		<div className="flex flex-col items-center mb-5">
 			<div className="my-5">
-				<NormieDevLogo className="size-16" size={64} />
+				<MarieCoderLogo className="size-16" size={64} />
 			</div>
 			<div className="text-center flex items-center justify-center">
 				<h1 className="m-0 text-lg">{"What can I do for you?"}</h1>

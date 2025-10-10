@@ -1,9 +1,9 @@
-// Simple style utilities for NormieDev
+// Simple style utilities for MarieCoder
 export const getVariantStyles = (variant: string) => {
 	const variants = {
-		default: "normie-dev-subtle",
-		accent: "normie-dev-accent",
-		brand: "normie-dev-brand",
+		default: "marie-coder-subtle",
+		accent: "marie-coder-accent",
+		brand: "marie-coder-brand",
 	}
 	return variants[variant as keyof typeof variants] || variants.default
 }

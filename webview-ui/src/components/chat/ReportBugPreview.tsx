@@ -66,7 +66,7 @@ const ReportBugPreview: React.FC<ReportBugPreviewProps> = ({ data }) => {
 
 				{bugData.cline_version && (
 					<div>
-						<div className="font-semibold">Cline Version</div>
+						<div className="font-semibold">Marie Version</div>
 						<MarkdownBlock markdown={bugData.cline_version} />
 					</div>
 				)}

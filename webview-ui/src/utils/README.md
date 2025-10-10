@@ -8,7 +8,7 @@ General-purpose utility functions organized by domain and purpose.
 Related utilities are grouped into subdirectories by domain:
 - `chat/` - Chat-specific utilities (mentions, slash commands)
 - `mcp/` - MCP-specific utilities (server management, display)
-- `normie-dev/` - NormieDev-specific utilities (styles, constants)
+- `marie-coder/` - MarieCoder-specific utilities (styles, constants)
 
 ### 2. **Root-Level Utilities**
 General-purpose utilities that don't belong to a specific domain:
@@ -29,7 +29,7 @@ utils/
 ├── mcp/               # MCP domain utilities
 │   ├── mcp_utils.ts
 │   └── index.ts
-├── normie_dev/        # NormieDev-specific utilities
+├── marie_coder/       # MarieCoder-specific utilities
 │   ├── constants.ts
 │   ├── style_utils.ts
 │   └── index.ts
@@ -51,8 +51,8 @@ import { getContextMenuOptions, getAllSlashCommands } from "@/utils/chat"
 // MCP utilities
 import { getMcpServerDisplayName } from "@/utils/mcp"
 
-// NormieDev utilities
-import { NORMIE_DEV } from "@/utils/normie-dev"
+// MarieCoder utilities
+import { MARIE_CODER } from "@/utils/marie-coder"
 ```
 
 ### General Utils

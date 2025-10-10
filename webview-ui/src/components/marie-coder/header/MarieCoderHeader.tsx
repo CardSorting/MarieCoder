@@ -1,21 +1,21 @@
 import React from "react"
-import NormieDevLogo from "@/assets/NormieDevLogo"
+import MarieCoderLogo from "@/assets/MarieCoderLogo"
 
-interface NormieDevHeaderProps {
+interface MarieCoderHeaderProps {
 	className?: string
 	showSubtitle?: boolean
 	variant?: "default" | "compact" | "minimal"
 }
 
-const NormieDevHeader: React.FC<NormieDevHeaderProps> = ({ className = "", showSubtitle = true, variant = "default" }) => {
+const MarieCoderHeader: React.FC<MarieCoderHeaderProps> = ({ className = "", showSubtitle = true, variant = "default" }) => {
 	const getVariantStyles = () => {
 		switch (variant) {
 			case "compact":
-				return "flex items-center gap-2 p-1 normie-dev-subtle rounded-md marie-kondo-clean"
+				return "flex items-center gap-2 p-1 marie-coder-subtle rounded-md marie-kondo-clean"
 			case "minimal":
 				return "flex items-center gap-1 p-1"
 			default:
-				return "flex items-center gap-2 p-2 normie-dev-subtle rounded-lg marie-kondo-clean"
+				return "flex items-center gap-2 p-2 marie-coder-subtle rounded-lg marie-kondo-clean"
 		}
 	}
 
@@ -32,11 +32,11 @@ const NormieDevHeader: React.FC<NormieDevHeaderProps> = ({ className = "", showS
 
 	return (
 		<div className={`${getVariantStyles()} ${className}`}>
-			<NormieDevLogo className={`${getLogoSize()} normie-dev-brand`} />
+			<MarieCoderLogo className={`${getLogoSize()} marie-coder-brand`} />
 			<div className="flex flex-col">
 				<span
-					className={`normie-dev-brand font-medium ${variant === "compact" ? "text-xs" : variant === "minimal" ? "text-xs" : "text-sm"}`}>
-					Normie Dev
+					className={`marie-coder-brand font-medium ${variant === "compact" ? "text-xs" : variant === "minimal" ? "text-xs" : "text-sm"}`}>
+					Marie Coder
 				</span>
 				{showSubtitle && variant !== "minimal" && (
 					<span
@@ -49,4 +49,4 @@ const NormieDevHeader: React.FC<NormieDevHeaderProps> = ({ className = "", showS
 	)
 }
 
-export default NormieDevHeader
+export default MarieCoderHeader

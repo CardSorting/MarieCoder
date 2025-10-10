@@ -1,4 +1,4 @@
-# NormieDev Accessibility Roadmap
+# MarieCoder Accessibility Roadmap
 
 **Last Updated**: October 10, 2025  
 **Status**: Phase 2.1 Complete ✅ | Phase 2.2 Planned 📋 | Phase 3 Pending ⏳

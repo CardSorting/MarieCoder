@@ -1,6 +1,6 @@
-// Simple constants for NormieDev
-export const NORMIE_DEV = {
-	NAME: "Normie Dev",
+// Simple constants for MarieCoder
+export const MARIE_CODER = {
+	NAME: "Marie Coder",
 	TAGLINE: "Next.js & SQLite Specialist",
 	METHODOLOGY: "Marie Kondo for Code",
 } as const

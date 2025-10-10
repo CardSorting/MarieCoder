@@ -1,6 +1,6 @@
 # ✅ Dependency Optimization Campaign - COMPLETE
 
-**Project:** NormieDev webview-ui  
+**Project:** MarieCoder webview-ui  
 **Campaign Duration:** October 10, 2025  
 **Total Phases:** 5 (all complete)  
 **Status:** 🎉 **PRODUCTION READY**

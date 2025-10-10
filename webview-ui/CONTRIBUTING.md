@@ -43,7 +43,7 @@ webview-ui/src/
 ├── utils/              # Utility functions
 │   ├── chat/           # Chat-specific utilities
 │   ├── mcp/            # MCP-specific utilities
-│   ├── normie_dev/     # NormieDev-specific utilities
+│   ├── marie_coder/    # MarieCoder-specific utilities
 │   └── format.ts       # General utilities at root
 │
 ├── context/            # React contexts

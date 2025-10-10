@@ -1,11 +1,11 @@
-# NormieDev UI Components
+# MarieCoder UI Components
 
 Simple, focused UI components following the Marie Kondo methodology - keep only what sparks joy!
 
 ## Structure
 
 ```
-normie-dev/
+marie-coder/
 ├── badge/           # Badge components
 ├── button/          # Button components
 ├── card/            # Card components
@@ -18,53 +18,53 @@ normie-dev/
 
 ### Badge
 ```tsx
-import { NormieDevBadge } from '@/components/normie-dev'
+import { MarieCoderBadge } from '@/components/marie-coder'
 
-<NormieDevBadge variant="primary">New</NormieDevBadge>
+<MarieCoderBadge variant="primary">New</MarieCoderBadge>
 ```
 
 ### Button
 ```tsx
-import { NormieDevButton } from '@/components/normie-dev'
+import { MarieCoderButton } from '@/components/marie-coder'
 
-<NormieDevButton variant="primary" onClick={handleClick}>
+<MarieCoderButton variant="primary" onClick={handleClick}>
   Click me
-</NormieDevButton>
+</MarieCoderButton>
 ```
 
 ### Card
 ```tsx
-import { NormieDevCard } from '@/components/normie-dev'
+import { MarieCoderCard } from '@/components/marie-coder'
 
-<NormieDevCard title="Card Title">
+<MarieCoderCard title="Card Title">
   Card content goes here
-</NormieDevCard>
+</MarieCoderCard>
 ```
 
 ### Chat Header
 ```tsx
-import { NormieDevChatHeader } from '@/components/normie-dev'
+import { MarieCoderChatHeader } from '@/components/marie-coder'
 
-<NormieDevChatHeader title="Chat" />
+<MarieCoderChatHeader title="Chat" />
 ```
 
 ### Header
 ```tsx
-import { NormieDevHeader } from '@/components/normie-dev'
+import { MarieCoderHeader } from '@/components/marie-coder'
 
-<NormieDevHeader>Page Title</NormieDevHeader>
+<MarieCoderHeader>Page Title</MarieCoderHeader>
 ```
 
 ## Services
 
 ```tsx
-import { projectTemplates } from '@/services/normie-dev'
+import { projectTemplates } from '@/services/marie-coder'
 ```
 
 ## Utils
 
 ```tsx
-import { getVariantStyles, NORMIE_DEV } from '@/utils/normie-dev'
+import { getVariantStyles, MARIE_CODER } from '@/utils/marie-coder'
 ```
 
 ## Philosophy

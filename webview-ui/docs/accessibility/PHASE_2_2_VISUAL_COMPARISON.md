@@ -173,7 +173,7 @@ if (state === "sending") {
 } else if (state === "error") {
   // Show retry button
 } else if (state === "waiting") {
-  // Show "Cline is thinking..."
+  // Show "Marie is thinking..."
 }
 ```
 
@@ -633,7 +633,7 @@ User clicks → Change visible → (saving in background)
 ### ❌ Before (Phase 2.1)
 ```html
 <!-- Document title never changes -->
-<title>NormieDev</title>
+<title>MarieCoder</title>
 
 <!-- No semantic landmarks -->
 <div class="content">
@@ -643,18 +643,18 @@ User clicks → Change visible → (saving in background)
 </div>
 
 <!-- Screen reader hears: -->
-"NormieDev"
+"MarieCoder"
 "Content" (what content?)
 ```
 
 ### ✅ After (Phase 2.2)
 ```html
 <!-- Dynamic title reflects current view -->
-<title>Chat - NormieDev</title>
+<title>Chat - MarieCoder</title>
 <!-- or -->
-<title>Settings - NormieDev</title>
+<title>Settings - MarieCoder</title>
 <!-- or -->
-<title>Task: Build Feature - NormieDev</title>
+<title>Task: Build Feature - MarieCoder</title>
 
 <!-- Semantic landmarks -->
 <header>
@@ -673,7 +673,7 @@ User clicks → Change visible → (saving in background)
 </main>
 
 <!-- Screen reader hears: -->
-"Chat - NormieDev"
+"Chat - MarieCoder"
 "Navigation region, Main navigation"
 "Main region, Chat conversation"
 "Article, Current task: Build feature"

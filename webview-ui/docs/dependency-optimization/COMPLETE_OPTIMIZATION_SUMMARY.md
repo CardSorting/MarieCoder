@@ -1,6 +1,6 @@
 # 🎯 Complete Dependency Optimization Summary
 
-**Project:** NormieDev webview-ui  
+**Project:** MarieCoder webview-ui  
 **Optimization Period:** October 10, 2025  
 **Total Phases:** 5 (4 complete, 5 in progress)  
 **Status:** MAJOR SUCCESS - 60% reduction in dependencies

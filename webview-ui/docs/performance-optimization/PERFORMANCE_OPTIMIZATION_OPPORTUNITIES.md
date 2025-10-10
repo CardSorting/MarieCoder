@@ -1,7 +1,7 @@
 # WebView-UI Performance Optimization Opportunities
 
 **Analysis Date:** October 9, 2025  
-**Scope:** `/Users/bozoegg/Desktop/NormieDev/webview-ui`
+**Scope:** `/Users/bozoegg/Desktop/MarieCoder/webview-ui`
 
 ## Executive Summary
 

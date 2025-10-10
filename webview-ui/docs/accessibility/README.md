@@ -1,6 +1,6 @@
 # Accessibility Documentation
 
-This directory contains all accessibility implementation documentation for the NormieDev webview UI.
+This directory contains all accessibility implementation documentation for the MarieCoder webview UI.
 
 ---
 

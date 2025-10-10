@@ -191,7 +191,7 @@ Phase 5: Bundle Analysis (15 min)
 ### After Each Phase
 1. **Build Verification**
    ```bash
-   cd /Users/bozoegg/Desktop/NormieDev/webview-ui
+   cd /Users/bozoegg/Desktop/MarieCoder/webview-ui
    npm run build
    npm run lint
    ```
@@ -238,7 +238,7 @@ All optimizations follow **NOORMME development standards**:
 To begin Phase 1 implementation:
 
 ```bash
-cd /Users/bozoegg/Desktop/NormieDev/webview-ui
+cd /Users/bozoegg/Desktop/MarieCoder/webview-ui
 # Start with the console cleanup
 grep -r "console\." src/ --include="*.tsx" --include="*.ts" | wc -l
 ```

@@ -73,9 +73,9 @@ import { AtSignIcon, PlusIcon } from "lucide-react"
 ## 🔧 Implementation Details
 
 ### Barrel Export Files Identified
-1. `webview-ui/src/services/normie-dev/index.ts` (1 re-export)
+1. `webview-ui/src/services/marie-coder/index.ts` (1 re-export)
 2. `webview-ui/src/components/chat/chat-view/index.ts` (8 re-exports)
-3. `webview-ui/src/utils/normie-dev/index.ts` (2 re-exports)
+3. `webview-ui/src/utils/marie-coder/index.ts` (2 re-exports)
 4. `webview-ui/src/utils/mcp/index.ts` (1 re-export)
 5. `webview-ui/src/utils/chat/index.ts` (2 re-exports)
 

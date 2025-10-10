@@ -1,20 +1,20 @@
 {
-	"name": "normie-dev",
-	"displayName": "NormieDev",
-	"description": "AI coding agent for the rest of us. Built on Cline, for Normies. Create files, run commands, browse the web - all with your permission every step of the way.",
+	"name": "marie-coder",
+	"displayName": "MarieCoder",
+	"description": "AI coding agent for the rest of us. Built on Cline, Create files, run commands, browse the web - all with your permission every step of the way.",
 	"version": "3.32.6",
-	"icon": "assets/icons/normie-icon.png",
+	"icon": "assets/icons/Marie-icon.png",
 	"engines": {
 		"vscode": "^1.84.0"
 	},
 	"author": {
-		"name": "NormieDev Team"
+		"name": "MarieCoder Team"
 	},
 	"license": "Apache-2.0",
 	"publisher": "cardsorting",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/CardSorting/NormieDev"
+		"url": "https://github.com/CardSorting/MarieCoder"
 	},
 	"categories": [
 		"AI",
@@ -25,8 +25,8 @@
 		"Testing"
 	],
 	"keywords": [
-		"normie",
-		"normiedev",
+		"Marie",
+		"Marie Coder",
 		"cline",
 		"claude",
 		"dev",
@@ -51,22 +51,22 @@
 	"contributes": {
 		"walkthroughs": [
 			{
-				"id": "ClineWalkthrough",
-				"title": "Meet NormieDev, your AI coding partner for normies",
-				"description": "NormieDev makes coding accessible to everyone. Here are 5 ways to get started:",
+				"id": "marieWalkthrough",
+				"title": "Meet Marie Coder, your AI coding partner",
+				"description": "Marie Coder makes coding accessible to everyone. Here are 5 ways to get started:",
 				"steps": [
 					{
 						"id": "welcome",
 						"title": "Start with a Goal, Not Just a Prompt",
-						"description": "Tell NormieDev what you want to achieve. It plans, asks, and then codes, like a true partner.",
+						"description": "Tell Marie Coder what you want to achieve. It plans, asks, and then codes, like a true partner.",
 						"media": {
 							"markdown": "walkthrough/step1.md"
 						}
 					},
 					{
 						"id": "learn",
-						"title": "Let NormieDev Learn Your Codebase",
-						"description": "Point NormieDev to your project. It builds understanding to make smart, context-aware changes.",
+						"title": "Let Marie Coder Learn Your Codebase",
+						"description": "Point Marie Coder to your project. It builds understanding to make smart, context-aware changes.",
 						"media": {
 							"markdown": "walkthrough/step2.md"
 						}
@@ -74,7 +74,7 @@
 					{
 						"id": "advanced-features",
 						"title": "Always Use the Best AI Models",
-						"description": "NormieDev empowers you with State-of-the-Art AI, connecting to top models (Anthropic, Gemini, OpenAI & more).",
+						"description": "Marie Coder empowers you with State-of-the-Art AI, connecting to top models (Anthropic, Gemini, OpenAI & more).",
 						"media": {
 							"markdown": "walkthrough/step3.md"
 						}
@@ -90,7 +90,7 @@
 					{
 						"id": "getting-started",
 						"title": "You're Always in Control",
-						"description": "Review NormieDev's plans and diffs. Approve changes before they happen. No surprises.",
+						"description": "Review Marie Coder's plans and diffs. Approve changes before they happen. No surprises.",
 						"media": {
 							"markdown": "walkthrough/step5.md"
 						},
@@ -104,108 +104,108 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "normie-dev-ActivityBar",
-					"title": "NormieDev",
-					"icon": "assets/icons/normie-icon.svg"
+					"id": "Marie-coder-ActivityBar",
+					"title": "Marie Coder",
+					"icon": "assets/icons/Marie-icon.svg"
 				}
 			]
 		},
 		"views": {
-			"normie-dev-ActivityBar": [
+			"Marie-coder-ActivityBar": [
 				{
 					"type": "webview",
-					"id": "normie-dev.SidebarProvider",
+					"id": "Marie-coder.SidebarProvider",
 					"name": "",
-					"icon": "assets/icons/normie-icon.svg"
+					"icon": "assets/icons/Marie-icon.svg"
 				}
 			]
 		},
 		"commands": [
 			{
-				"command": "cline.plusButtonClicked",
+				"command": "marie.plusButtonClicked",
 				"title": "New Task",
 				"icon": "$(add)"
 			},
 			{
-				"command": "cline.mcpButtonClicked",
+				"command": "marie.mcpButtonClicked",
 				"title": "MCP Servers",
 				"icon": "$(server)"
 			},
 			{
-				"command": "cline.historyButtonClicked",
+				"command": "marie.historyButtonClicked",
 				"title": "History",
 				"icon": "$(history)"
 			},
 			{
-				"command": "cline.accountButtonClicked",
+				"command": "marie.accountButtonClicked",
 				"title": "Account",
 				"icon": "$(account)"
 			},
 			{
-				"command": "cline.settingsButtonClicked",
+				"command": "marie.settingsButtonClicked",
 				"title": "Settings",
 				"icon": "$(settings-gear)"
 			},
 			{
-				"command": "cline.dev.createTestTasks",
+				"command": "marie.dev.createTestTasks",
 				"title": "Create Test Tasks",
-				"category": "NormieDev",
-				"when": "cline.isDevMode"
+				"category": "Marie Coder",
+				"when": "marie.isDevMode"
 			},
 			{
-				"command": "cline.addToChat",
-				"title": "Add to NormieDev",
-				"category": "NormieDev"
+				"command": "marie.addToChat",
+				"title": "Add to Marie Coder",
+				"category": "Marie Coder"
 			},
 			{
-				"command": "cline.addTerminalOutputToChat",
-				"title": "Add to NormieDev",
-				"category": "NormieDev"
+				"command": "marie.addTerminalOutputToChat",
+				"title": "Add to Marie Coder",
+				"category": "Marie Coder"
 			},
 			{
-				"command": "cline.focusChatInput",
+				"command": "marie.focusChatInput",
 				"title": "Jump to Chat Input",
-				"category": "NormieDev"
+				"category": "Marie Coder"
 			},
 			{
-				"command": "cline.generateGitCommitMessage",
-				"title": "Generate Commit Message with NormieDev",
-				"category": "NormieDev",
+				"command": "marie.generateGitCommitMessage",
+				"title": "Generate Commit Message with Marie Coder",
+				"category": "Marie Coder",
 				"icon": {
-					"light": "assets/icons/normie-icon.svg",
-					"dark": "assets/icons/normie-icon.svg"
+					"light": "assets/icons/Marie-icon.svg",
+					"dark": "assets/icons/Marie-icon.svg"
 				}
 			},
 			{
-				"command": "cline.abortGitCommitMessage",
-				"title": "Generate Commit Message with NormieDev - Stop",
-				"category": "NormieDev",
+				"command": "marie.abortGitCommitMessage",
+				"title": "Generate Commit Message with Marie Coder - Stop",
+				"category": "Marie Coder",
 				"icon": "$(debug-stop)"
 			},
 			{
-				"command": "cline.explainCode",
-				"title": "Explain with NormieDev",
-				"category": "NormieDev"
+				"command": "marie.explainCode",
+				"title": "Explain with Marie Coder",
+				"category": "Marie Coder"
 			},
 			{
-				"command": "cline.improveCode",
-				"title": "Improve with NormieDev",
-				"category": "NormieDev"
+				"command": "marie.improveCode",
+				"title": "Improve with Marie Coder",
+				"category": "Marie Coder"
 			},
 			{
-				"command": "cline.openWalkthrough",
+				"command": "marie.openWalkthrough",
 				"title": "Open Walkthrough",
-				"category": "NormieDev"
+				"category": "Marie Coder"
 			},
 			{
-				"command": "cline.reconstructTaskHistory",
+				"command": "marie.reconstructTaskHistory",
 				"title": "Reconstruct Task History",
-				"category": "NormieDev"
+				"category": "Marie Coder"
 			}
 		],
 		"keybindings": [
 			{
-				"command": "cline.addToChat",
+				"command": "marie.addToChat",
 				"key": "cmd+'",
 				"mac": "cmd+'",
 				"win": "ctrl+'",
@@ -213,11 +213,11 @@
 				"when": "editorHasSelection"
 			},
 			{
-				"command": "cline.generateGitCommitMessage",
+				"command": "marie.generateGitCommitMessage",
 				"when": "config.git.enabled && scmProvider == git"
 			},
 			{
-				"command": "cline.focusChatInput",
+				"command": "marie.focusChatInput",
 				"key": "cmd+'",
 				"mac": "cmd+'",
 				"win": "ctrl+'",
@@ -228,69 +228,69 @@
 		"menus": {
 			"view/title": [
 				{
-					"command": "cline.plusButtonClicked",
+					"command": "marie.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "view == normie-dev.SidebarProvider"
+					"when": "view == Marie-coder.SidebarProvider"
 				},
 				{
-					"command": "cline.mcpButtonClicked",
+					"command": "marie.mcpButtonClicked",
 					"group": "navigation@2",
-					"when": "view == normie-dev.SidebarProvider"
+					"when": "view == Marie-coder.SidebarProvider"
 				},
 				{
-					"command": "cline.historyButtonClicked",
+					"command": "marie.historyButtonClicked",
 					"group": "navigation@3",
-					"when": "view == normie-dev.SidebarProvider"
+					"when": "view == Marie-coder.SidebarProvider"
 				},
 				{
-					"command": "cline.accountButtonClicked",
+					"command": "marie.accountButtonClicked",
 					"group": "navigation@5",
-					"when": "view == normie-dev.SidebarProvider"
+					"when": "view == Marie-coder.SidebarProvider"
 				},
 				{
-					"command": "cline.settingsButtonClicked",
+					"command": "marie.settingsButtonClicked",
 					"group": "navigation@6",
-					"when": "view == normie-dev.SidebarProvider"
+					"when": "view == Marie-coder.SidebarProvider"
 				}
 			],
 			"editor/context": [
 				{
-					"command": "cline.addToChat",
+					"command": "marie.addToChat",
 					"group": "navigation",
 					"when": "editorHasSelection"
 				}
 			],
 			"terminal/context": [
 				{
-					"command": "cline.addTerminalOutputToChat",
+					"command": "marie.addTerminalOutputToChat",
 					"group": "navigation"
 				}
 			],
 			"scm/title": [
 				{
-					"command": "cline.generateGitCommitMessage",
+					"command": "marie.generateGitCommitMessage",
 					"group": "navigation",
-					"when": "config.git.enabled && scmProvider == git && !cline.isGeneratingCommit"
+					"when": "config.git.enabled && scmProvider == git && !marie.isGeneratingCommit"
 				},
 				{
-					"command": "cline.abortGitCommitMessage",
+					"command": "marie.abortGitCommitMessage",
 					"group": "navigation",
-					"when": "config.git.enabled && scmProvider == git && cline.isGeneratingCommit"
+					"when": "config.git.enabled && scmProvider == git && marie.isGeneratingCommit"
 				}
 			],
 			"commandPalette": [
 				{
-					"command": "cline.generateGitCommitMessage",
-					"when": "config.git.enabled && scmProvider == git && !cline.isGeneratingCommit"
+					"command": "marie.generateGitCommitMessage",
+					"when": "config.git.enabled && scmProvider == git && !marie.isGeneratingCommit"
 				},
 				{
-					"command": "cline.abortGitCommitMessage",
-					"when": "config.git.enabled && scmProvider == git && cline.isGeneratingCommit"
+					"command": "marie.abortGitCommitMessage",
+					"when": "config.git.enabled && scmProvider == git && marie.isGeneratingCommit"
 				}
 			]
 		},
 		"configuration": {
-			"title": "NormieDev",
+			"title": "Marie Coder",
 			"properties": {}
 		}
 	},

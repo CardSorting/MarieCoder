@@ -123,9 +123,9 @@ These take < 1 hour each but have huge impact:
 
 ### 1. Dynamic Page Titles (30min)
 Update `document.title` based on current view:
-- "Chat - NormieDev"
-- "Settings - NormieDev"  
-- "History - NormieDev"
+- "Chat - MarieCoder"
+- "Settings - MarieCoder"  
+- "History - MarieCoder"
 
 **Impact**: Screen readers announce view changes ✅
 

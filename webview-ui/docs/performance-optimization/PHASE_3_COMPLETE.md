@@ -160,7 +160,7 @@ const results = searchQuery && fuse
 
 ### Build Status
 ```bash
-cd /Users/bozoegg/Desktop/NormieDev/webview-ui
+cd /Users/bozoegg/Desktop/MarieCoder/webview-ui
 npm run lint
 ```
 ✅ **Result:** All linting passed

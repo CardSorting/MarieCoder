@@ -1,6 +1,6 @@
 # 🎊 Performance Optimizations: ALL COMPLETE! 🎊
 
-**Project:** NormieDev webview-ui Performance Optimization  
+**Project:** MarieCoder webview-ui Performance Optimization  
 **Date:** October 9, 2025  
 **Duration:** 85 minutes  
 **Status:** ✅ **100% COMPLETE**
@@ -125,7 +125,7 @@ Memory:             Baseline → -30-40%            (Lower)
 
 ### To Review Changes
 ```bash
-cd /Users/bozoegg/Desktop/NormieDev/webview-ui
+cd /Users/bozoegg/Desktop/MarieCoder/webview-ui
 
 # See what changed
 git status

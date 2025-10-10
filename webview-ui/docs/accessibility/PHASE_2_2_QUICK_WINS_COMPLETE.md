@@ -22,11 +22,11 @@ Phase 2.2 Quick Wins provide immediate, noticeable improvements with minimal ris
 ### Features:
 ```typescript
 // Page title updates based on current view
-"Chat - NormieDev"
-"Settings - NormieDev"
-"History - NormieDev"
-"Task: Build Feature - NormieDev"
-"MCP Marketplace - NormieDev"
+"Chat - MarieCoder"
+"Settings - MarieCoder"
+"History - MarieCoder"
+"Task: Build Feature - MarieCoder"
+"MCP Marketplace - MarieCoder"
 ```
 
 ### Impact:

@@ -1,6 +1,6 @@
-# NormieDev Webview UI Documentation
+# MarieCoder Webview UI Documentation
 
-Welcome to the NormieDev webview UI documentation! This directory contains comprehensive documentation for all aspects of the webview implementation.
+Welcome to the MarieCoder webview UI documentation! This directory contains comprehensive documentation for all aspects of the webview implementation.
 
 ---
 

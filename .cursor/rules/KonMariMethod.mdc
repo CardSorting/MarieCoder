@@ -1,11 +1,11 @@
 ---
-description: NOORMME Development Standards - Compassionate, intentional software development inspired by KonMari
+description: MarieCoder Development Standards - Compassionate, intentional software development inspired by KonMari
 globs: '**/*.{ts,tsx,js,jsx}'
 alwaysApply: true
 priority: 1
 ---
 
-# NOORMME Development Standards
+# MarieCodes Development Standards
 
 > *Guidance, not gospel. Pause, reflect, and choose with intention. Continuous evolution over perfection.*
 

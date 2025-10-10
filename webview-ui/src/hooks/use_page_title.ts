@@ -6,12 +6,12 @@ import { useEffect } from "react"
  *
  * @example
  * ```tsx
- * usePageTitle("Settings") // Sets title to "Settings - NormieDev"
+ * usePageTitle("Settings") // Sets title to "Settings - MarieCoder"
  * ```
  */
 export function usePageTitle(title: string) {
 	useEffect(() => {
-		const appName = "NormieDev"
+		const appName = "MarieCoder"
 		const fullTitle = title ? `${title} - ${appName}` : appName
 
 		// Update document title

@@ -86,9 +86,9 @@ const getVariantClasses = (variant: ButtonVariant): string => {
 				active:!border-[#156528]
 			`
 		case "accent":
-			return "normie-dev-accent"
+			return "marie-coder-accent"
 		case "ghost":
-			return "bg-transparent border-transparent hover:normie-dev-subtle"
+			return "bg-transparent border-transparent hover:marie-coder-subtle"
 		case "secondary":
 			// Use VSCode theme variables for secondary style
 			return `
@@ -119,7 +119,7 @@ const getSizeClasses = (size: ButtonSize): string => {
 /**
  * Unified Button component
  *
- * Consolidates DangerButton, SuccessButton, SettingsButton, and NormieDevButton
+ * Consolidates DangerButton, SuccessButton, SettingsButton, and MarieCoderButton
  * into a single, consistent API.
  *
  * @example

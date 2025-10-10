@@ -1,6 +1,6 @@
 # 🎯 Complete Dependency Optimization Summary
 
-**Project:** NormieDev webview-ui  
+**Project:** MarieCoder webview-ui  
 **Optimization Campaign:** Phases 1-5 Complete  
 **Last Updated:** October 10, 2025  
 **Status:** ✅ PRODUCTION READY

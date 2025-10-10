@@ -1,6 +1,6 @@
 # 🎯 Final Comprehensive Dependency Optimization Report
 
-**Project:** NormieDev webview-ui  
+**Project:** MarieCoder webview-ui  
 **Date:** October 10, 2025  
 **Optimization Phases:** 3 Major + 1 Cleanup  
 

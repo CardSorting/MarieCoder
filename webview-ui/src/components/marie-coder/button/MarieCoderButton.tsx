@@ -1,7 +1,7 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React from "react"
 
-interface NormieDevButtonProps {
+interface MarieCoderButtonProps {
 	children: React.ReactNode
 	onClick?: () => void
 	variant?: "primary" | "secondary" | "accent" | "ghost"
@@ -11,7 +11,7 @@ interface NormieDevButtonProps {
 	icon?: React.ReactNode
 }
 
-const NormieDevButton: React.FC<NormieDevButtonProps> = ({
+const MarieCoderButton: React.FC<MarieCoderButtonProps> = ({
 	children,
 	onClick,
 	variant = "primary",
@@ -33,9 +33,9 @@ const NormieDevButton: React.FC<NormieDevButtonProps> = ({
 	const getVariantClasses = () => {
 		switch (variant) {
 			case "accent":
-				return "normie-dev-accent"
+				return "marie-coder-accent"
 			case "ghost":
-				return "bg-transparent border-transparent hover:normie-dev-subtle"
+				return "bg-transparent border-transparent hover:marie-coder-subtle"
 			default:
 				return ""
 		}
@@ -64,4 +64,4 @@ const NormieDevButton: React.FC<NormieDevButtonProps> = ({
 	)
 }
 
-export default NormieDevButton
+export default MarieCoderButton

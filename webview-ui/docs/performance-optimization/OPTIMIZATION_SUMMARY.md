@@ -186,7 +186,7 @@ export const MessageRenderer = React.memo(MessageRendererComponent, (prev, next)
 
 ### How to Test
 ```bash
-cd /Users/bozoegg/Desktop/NormieDev/webview-ui
+cd /Users/bozoegg/Desktop/MarieCoder/webview-ui
 
 # Build
 npm run build

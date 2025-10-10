@@ -614,7 +614,7 @@ After:
 ### Automated Testing
 ```bash
 # Build verification
-cd /Users/bozoegg/Desktop/NormieDev/webview-ui
+cd /Users/bozoegg/Desktop/MarieCoder/webview-ui
 npm run build
 
 # Linting

@@ -1,13 +1,13 @@
 import React from "react"
 
-interface NormieDevBadgeProps {
+interface MarieCoderBadgeProps {
 	children: React.ReactNode
 	variant?: "default" | "success" | "warning" | "error" | "info"
 	size?: "sm" | "md"
 	className?: string
 }
 
-const NormieDevBadge: React.FC<NormieDevBadgeProps> = ({ children, variant = "default", size = "sm", className = "" }) => {
+const MarieCoderBadge: React.FC<MarieCoderBadgeProps> = ({ children, variant = "default", size = "sm", className = "" }) => {
 	const getVariantStyles = () => {
 		switch (variant) {
 			case "success":
@@ -19,7 +19,7 @@ const NormieDevBadge: React.FC<NormieDevBadgeProps> = ({ children, variant = "de
 			case "info":
 				return "bg-blue-500/20 text-blue-400 border-blue-500/30"
 			default:
-				return "normie-dev-subtle normie-dev-brand"
+				return "marie-coder-subtle marie-coder-brand"
 		}
 	}
 
@@ -45,4 +45,4 @@ const NormieDevBadge: React.FC<NormieDevBadgeProps> = ({ children, variant = "de
 	)
 }
 
-export default NormieDevBadge
+export default MarieCoderBadge

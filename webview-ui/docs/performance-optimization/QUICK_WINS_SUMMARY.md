@@ -33,7 +33,7 @@
 
 ### Step 1: Remove Unused Dependencies (5 min)
 ```bash
-cd /Users/bozoegg/Desktop/NormieDev/webview-ui
+cd /Users/bozoegg/Desktop/MarieCoder/webview-ui
 npm uninstall firebase framer-motion
 ```
 
@@ -142,7 +142,7 @@ After each change:
 
 ### Before Optimizations:
 ```bash
-cd /Users/bozoegg/Desktop/NormieDev/webview-ui
+cd /Users/bozoegg/Desktop/MarieCoder/webview-ui
 npm run build:analyze
 ```
 Take note of:
