@@ -3,6 +3,7 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useRef, useState } from "react"
 import { useClickAway } from "react-use"
 import { FileServiceClient } from "@/services/grpc-client"
+import { useFocusManagement } from "@/utils/accessibility/focus_management"
 import { debug } from "@/utils/debug_logger"
 
 interface NewRuleRowProps {
@@ -25,11 +26,19 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType }) => {
 		}
 	}, [isExpanded])
 
+	// Use focus management for expanded state
+	const { restoreFocus } = useFocusManagement(isExpanded)
+
+	const handleClose = () => {
+		setIsExpanded(false)
+		setFilename("")
+		setError(null)
+		restoreFocus()
+	}
+
 	useClickAway(componentRef, () => {
 		if (isExpanded) {
-			setIsExpanded(false)
-			setFilename("")
-			setError(null)
+			handleClose()
 		}
 	})
 
@@ -37,9 +46,7 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType }) => {
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape" && isExpanded) {
-				setIsExpanded(false)
-				setFilename("")
-				setError(null)
+				handleClose()
 			}
 		}
 		window.addEventListener("keydown", handleKeyDown)
@@ -112,6 +119,8 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType }) => {
 				{isExpanded ? (
 					<form className="flex flex-1 items-center" onSubmit={handleSubmit}>
 						<input
+							aria-describedby={error ? "new-rule-error" : undefined}
+							aria-invalid={error ? "true" : "false"}
 							className="flex-1 bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] border-0 outline-0 rounded focus:outline-none focus:ring-0 focus:border-transparent"
 							onChange={(e) => setFilename(e.target.value)}
 							onKeyDown={handleKeyDown}
@@ -160,7 +169,11 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType }) => {
 					</>
 				)}
 			</div>
-			{isExpanded && error && <div className="text-[var(--vscode-errorForeground)] text-xs mt-1 ml-2">{error}</div>}
+			{isExpanded && error && (
+				<div className="text-[var(--vscode-errorForeground)] text-xs mt-1 ml-2" id="new-rule-error" role="alert">
+					{error}
+				</div>
+			)}
 		</div>
 	)
 }

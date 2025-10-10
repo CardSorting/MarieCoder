@@ -80,6 +80,44 @@ select:focus-visible {
 	outline-offset: 1px;
 }
 
+/* ==========================================================================
+   Screen Reader Only Utility
+   ========================================================================== */
+
+/* 
+ * Hide content visually but keep it accessible to screen readers.
+ * Used for ARIA live regions and skip navigation links.
+ */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+/* Show sr-only content when it receives focus (for skip links) */
+.sr-only:focus {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: auto;
+	height: auto;
+	padding: 1rem;
+	margin: 0;
+	overflow: visible;
+	clip: auto;
+	white-space: normal;
+	background: var(--vscode-editor-background);
+	color: var(--vscode-editor-foreground);
+	border: 2px solid var(--vscode-focusBorder);
+	z-index: 1000;
+}
+
 /*
 Use vscode native scrollbar styles
 https://github.com/gitkraken/vscode-gitlens/blob/b1d71d4844523e8b2ef16f9e007068e91f46fd88/src/webviews/apps/home/home.scss

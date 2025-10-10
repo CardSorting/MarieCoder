@@ -11,6 +11,7 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useShowNavbar } from "@/context/PlatformContext"
 import { FileServiceClient, UiServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
+import SkipNavigation from "../common/SkipNavigation"
 import { Navbar } from "../menu/Navbar"
 import AutoApproveBar from "./auto-approve-menu/AutoApproveBar"
 // Import utilities and hooks from the new structure
@@ -325,39 +326,42 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 
 	return (
 		<ChatLayout isHidden={isHidden}>
+			<SkipNavigation />
 			<div className="flex flex-col flex-1 overflow-hidden">
 				{showNavbar && <Navbar />}
-				{task ? (
-					<TaskSection
-						apiMetrics={apiMetrics}
-						lastApiReqTotalTokens={lastApiReqTotalTokens}
-						lastProgressMessageText={lastProgressMessageText}
-						messageHandlers={messageHandlers}
-						scrollBehavior={scrollBehavior}
-						selectedModelInfo={{
-							supportsPromptCache: selectedModelInfo.supportsPromptCache,
-							supportsImages: selectedModelInfo.supportsImages || false,
-						}}
-						task={task}
-					/>
-				) : (
-					<WelcomeSection
-						shouldShowQuickWins={shouldShowQuickWins}
-						showHistoryView={showHistoryView}
-						taskHistory={taskHistory}
-						version={version}
-					/>
-				)}
-				{task && (
-					<MessagesArea
-						chatState={chatState}
-						groupedMessages={groupedMessages}
-						messageHandlers={messageHandlers}
-						modifiedMessages={modifiedMessages}
-						scrollBehavior={scrollBehavior}
-						task={task}
-					/>
-				)}
+				<main className="flex flex-col flex-1 overflow-hidden" id="main-content" tabIndex={-1}>
+					{task ? (
+						<TaskSection
+							apiMetrics={apiMetrics}
+							lastApiReqTotalTokens={lastApiReqTotalTokens}
+							lastProgressMessageText={lastProgressMessageText}
+							messageHandlers={messageHandlers}
+							scrollBehavior={scrollBehavior}
+							selectedModelInfo={{
+								supportsPromptCache: selectedModelInfo.supportsPromptCache,
+								supportsImages: selectedModelInfo.supportsImages || false,
+							}}
+							task={task}
+						/>
+					) : (
+						<WelcomeSection
+							shouldShowQuickWins={shouldShowQuickWins}
+							showHistoryView={showHistoryView}
+							taskHistory={taskHistory}
+							version={version}
+						/>
+					)}
+					{task && (
+						<MessagesArea
+							chatState={chatState}
+							groupedMessages={groupedMessages}
+							messageHandlers={messageHandlers}
+							modifiedMessages={modifiedMessages}
+							scrollBehavior={scrollBehavior}
+							task={task}
+						/>
+					)}
+				</main>
 			</div>
 			<footer className="bg-[var(--vscode-sidebar-background)]" style={{ gridRow: "2" }}>
 				<AutoApproveBar />

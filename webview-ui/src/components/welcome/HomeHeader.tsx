@@ -23,7 +23,7 @@ const HomeHeader = ({ shouldShowQuickWins = false }: HomeHeaderProps) => {
 				<NormieDevLogo className="size-16" size={64} />
 			</div>
 			<div className="text-center flex items-center justify-center">
-				<h2 className="m-0 text-lg">{"What can I do for you?"}</h2>
+				<h1 className="m-0 text-lg">{"What can I do for you?"}</h1>
 				<HeroTooltip
 					className="max-w-[300px]"
 					content={

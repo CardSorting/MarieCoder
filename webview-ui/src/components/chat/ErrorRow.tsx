@@ -1,5 +1,6 @@
 import { ClineMessage } from "@shared/ExtensionMessage"
 import { memo } from "react"
+import { ErrorAnnouncement } from "@/components/common/LiveRegion"
 import { ClineError, ClineErrorType } from "../../../../src/services/error/ClineError"
 
 const _errorColor = "var(--vscode-errorForeground)"
@@ -12,6 +13,15 @@ interface ErrorRowProps {
 }
 
 const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStreamingFailedMessage }: ErrorRowProps) => {
+	// Determine error message for announcement
+	let errorMessage = ""
+	if (apiRequestFailedMessage || apiReqStreamingFailedMessage) {
+		const clineError = ClineError.parse(apiRequestFailedMessage || apiReqStreamingFailedMessage)
+		errorMessage = clineError?.message || ""
+	} else if (message.text) {
+		errorMessage = message.text
+	}
+
 	const renderErrorContent = () => {
 		switch (errorType) {
 			case "error":
@@ -25,7 +35,9 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 
 					if (clineError?.isErrorType(ClineErrorType.RateLimit)) {
 						return (
-							<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere">
+							<p
+								className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere"
+								role="alert">
 								{clineErrorMessage}
 								{requestId && <div>Request ID: {requestId}</div>}
 							</p>
@@ -34,7 +46,7 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 
 					// Default error display
 					return (
-						<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere">
+						<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere" role="alert">
 							{clineErrorMessage}
 							{requestId && <div>Request ID: {requestId}</div>}
 							{clineErrorMessage?.toLowerCase()?.includes("powershell") && (
@@ -65,7 +77,9 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 
 				// Regular error message
 				return (
-					<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere">{message.text}</p>
+					<p className="m-0 whitespace-pre-wrap text-[var(--vscode-errorForeground)] wrap-anywhere" role="alert">
+						{message.text}
+					</p>
 				)
 
 			case "diff_error":
@@ -95,8 +109,13 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 		return <>{renderErrorContent()}</>
 	}
 
-	// For other error types, show header + content
-	return <>{renderErrorContent()}</>
+	// For other error types, show header + content with ARIA announcement
+	return (
+		<>
+			{errorMessage && <ErrorAnnouncement message={`Error: ${errorMessage}`} />}
+			{renderErrorContent()}
+		</>
+	)
 })
 
 export default ErrorRow

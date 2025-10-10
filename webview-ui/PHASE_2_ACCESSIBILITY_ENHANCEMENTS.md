@@ -453,7 +453,23 @@ select:focus-visible {
 
 ---
 
-## 🚀 Next Steps (Phase 3)
+## 🚀 Next Steps
+
+### Phase 2.1: Advanced Improvements (17 hours estimated)
+
+**See**: `PHASE_2_ADVANCED_IMPROVEMENTS.md` for detailed implementation plan
+
+After completing the baseline Phase 2 improvements, a deep accessibility audit identified 7 critical areas for advanced enhancements:
+
+1. **Focus Management & Restoration** (3h) - Return focus to trigger element when modals close
+2. **ARIA Live Regions** (4h) - Announce dynamic content changes to screen readers
+3. **Focus Trapping in Modals** (3h) - Prevent tabbing out of modal dialogs
+4. **Error Announcements** (2h) - Immediate screen reader feedback for errors
+5. **Loading State Announcements** (2h) - Announce async operations
+6. **Skip Navigation Links** (1.5h) - Quick access to main content
+7. **Heading Hierarchy Audit** (1.5h) - Ensure logical semantic structure
+
+These improvements will achieve WCAG 2.1 Level AAA compliance in key areas.
 
 ### Phase 3: Testing & Documentation (9 hours estimated)
 
@@ -462,12 +478,15 @@ select:focus-visible {
    - Test with VoiceOver (macOS)
    - Verify all ARIA labels announce correctly
    - Test keyboard navigation flows
+   - Test advanced improvements (live regions, focus management)
 
 2. **Create Accessibility Guidelines** (2 hours)
    - Document button vs div usage
    - ARIA label standards
    - Keyboard navigation patterns
    - Focus indicator guidelines
+   - Focus management patterns
+   - ARIA live region usage
 
 3. **Setup Automated Testing** (3 hours)
    - Integrate axe-core accessibility testing

@@ -7,6 +7,7 @@ import styled from "styled-components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { CheckpointsServiceClient } from "@/services/grpc-client"
+import { useFocusManagement } from "@/utils/accessibility/focus_management"
 import { debug } from "@/utils/debug_logger"
 
 interface CheckpointOverlayProps {
@@ -24,10 +25,18 @@ export const CheckpointOverlay = ({ messageTs }: CheckpointOverlayProps) => {
 	const tooltipRef = useRef<HTMLDivElement>(null)
 	const { onRelinquishControl } = useExtensionState()
 
+	// Use focus management for restore confirmation
+	const { restoreFocus } = useFocusManagement(showRestoreConfirm)
+
+	const handleCloseConfirm = () => {
+		setShowRestoreConfirm(false)
+		setHasMouseEntered(false)
+		restoreFocus()
+	}
+
 	useClickAway(containerRef, () => {
 		if (showRestoreConfirm) {
-			setShowRestoreConfirm(false)
-			setHasMouseEntered(false)
+			handleCloseConfirm()
 		}
 	})
 
@@ -35,8 +44,7 @@ export const CheckpointOverlay = ({ messageTs }: CheckpointOverlayProps) => {
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape" && showRestoreConfirm) {
-				setShowRestoreConfirm(false)
-				setHasMouseEntered(false)
+				handleCloseConfirm()
 			}
 		}
 		window.addEventListener("keydown", handleKeyDown)

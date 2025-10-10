@@ -5,6 +5,7 @@ import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import HeroTooltip from "@/components/common/HeroTooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useAutoApproveActions } from "@/hooks/useAutoApproveActions"
+import { useModalFocus } from "@/utils/accessibility/focus_management"
 import { getAsVar, VSC_TITLEBAR_INACTIVE_FOREGROUND } from "@/utils/vscStyles"
 import AutoApproveMenuItem from "./AutoApproveMenuItem"
 import { ActionMetadata } from "./types"
@@ -36,24 +37,35 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({
 	const [menuPosition, setMenuPosition] = useState(0)
 	const [containerWidth, setContainerWidth] = useState(0)
 
+	// Use modal focus management with focus trap
+	const { restoreFocus } = useModalFocus(modalRef, isVisible, {
+		enableFocusTrap: true,
+		focusFirstElement: false, // Don't auto-focus, let user navigate naturally
+	})
+
+	const handleClose = () => {
+		setIsVisible(false)
+		restoreFocus()
+	}
+
 	useClickAway(modalRef, (e) => {
 		// Skip if click was on the button that toggles the modal
 		if (buttonRef.current && buttonRef.current.contains(e.target as Node)) {
 			return
 		}
-		setIsVisible(false)
+		handleClose()
 	})
 
 	// Handle Escape key to close modal
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape" && isVisible) {
-				setIsVisible(false)
+				handleClose()
 			}
 		}
 		window.addEventListener("keydown", handleKeyDown)
 		return () => window.removeEventListener("keydown", handleKeyDown)
-	}, [isVisible, setIsVisible])
+	}, [isVisible])
 
 	// Calculate positions for modal and arrow
 	useEffect(() => {
@@ -154,10 +166,7 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({
 							placement="top">
 							<div className="text-base font-semibold mb-1">Auto-approve Settings</div>
 						</HeroTooltip>
-						<VSCodeButton
-							appearance="icon"
-							aria-label="Close auto-approve settings"
-							onClick={() => setIsVisible(false)}>
+						<VSCodeButton appearance="icon" aria-label="Close auto-approve settings" onClick={handleClose}>
 							<span aria-hidden="true" className="codicon codicon-close text-[10px]"></span>
 						</VSCodeButton>
 					</div>

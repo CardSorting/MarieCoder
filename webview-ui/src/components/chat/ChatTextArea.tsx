@@ -26,6 +26,7 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { usePlatform } from "@/context/PlatformContext"
 import { useMetaKeyDetection, useShortcut } from "@/hooks"
 import { FileServiceClient, ModelsServiceClient, StateServiceClient } from "@/services/grpc-client"
+import { useFocusManagement } from "@/utils/accessibility/focus_management"
 import {
 	ContextMenuOptionType,
 	getContextMenuOptionIndex,
@@ -1134,21 +1135,27 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			setShowModelSelector(!showModelSelector)
 		}
 
-		// Update click away handler to just close menu
-		useClickAway(modelSelectorRef, () => {
+		// Use focus management for model selector
+		const { restoreFocus } = useFocusManagement(showModelSelector)
+
+		const handleCloseModelSelector = useCallback(() => {
 			setShowModelSelector(false)
-		})
+			restoreFocus()
+		}, [setShowModelSelector, restoreFocus])
+
+		// Update click away handler to just close menu
+		useClickAway(modelSelectorRef, handleCloseModelSelector)
 
 		// Handle Escape key to close model selector
 		useEffect(() => {
 			const handleKeyDown = (e: KeyboardEvent) => {
 				if (e.key === "Escape" && showModelSelector) {
-					setShowModelSelector(false)
+					handleCloseModelSelector()
 				}
 			}
 			window.addEventListener("keydown", handleKeyDown)
 			return () => window.removeEventListener("keydown", handleKeyDown)
-		}, [showModelSelector])
+		}, [showModelSelector, handleCloseModelSelector])
 
 		// Get model display name
 		const modelDisplayName = useMemo(() => {

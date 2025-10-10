@@ -9,6 +9,7 @@ import HeroTooltip from "@/components/common/HeroTooltip"
 import ServersToggleList from "@/components/mcp/configuration/tabs/installed/ServersToggleList"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
+import { useModalFocus } from "@/utils/accessibility/focus_management"
 import { debug } from "@/utils/debug_logger"
 
 const ServersToggleModal: React.FC = () => {
@@ -20,16 +21,25 @@ const ServersToggleModal: React.FC = () => {
 	const [arrowPosition, setArrowPosition] = useState(0)
 	const [menuPosition, setMenuPosition] = useState(0)
 
-	// Close modal when clicking outside
-	useClickAway(modalRef, () => {
-		setIsVisible(false)
+	// Use modal focus management with focus trap
+	const { restoreFocus } = useModalFocus(modalRef, isVisible, {
+		enableFocusTrap: true,
+		focusFirstElement: false,
 	})
+
+	const handleClose = () => {
+		setIsVisible(false)
+		restoreFocus()
+	}
+
+	// Close modal when clicking outside
+	useClickAway(modalRef, handleClose)
 
 	// Handle Escape key to close modal
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape" && isVisible) {
-				setIsVisible(false)
+				handleClose()
 			}
 		}
 		window.addEventListener("keydown", handleKeyDown)
