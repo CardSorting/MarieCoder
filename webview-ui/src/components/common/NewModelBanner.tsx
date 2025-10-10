@@ -74,10 +74,11 @@ export const NewModelBanner: React.FC = () => {
 			{/* Close button */}
 			<VSCodeButton
 				appearance="icon"
+				aria-label="Close banner"
 				data-testid="info-banner-close-button"
 				onClick={handleClose}
 				style={{ position: "absolute", top: "6px", right: "6px" }}>
-				<span className="codicon codicon-close"></span>
+				<span aria-hidden="true" className="codicon codicon-close"></span>
 			</VSCodeButton>
 		</div>
 	)

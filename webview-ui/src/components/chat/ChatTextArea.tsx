@@ -1139,6 +1139,17 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			setShowModelSelector(false)
 		})
 
+		// Handle Escape key to close model selector
+		useEffect(() => {
+			const handleKeyDown = (e: KeyboardEvent) => {
+				if (e.key === "Escape" && showModelSelector) {
+					setShowModelSelector(false)
+				}
+			}
+			window.addEventListener("keydown", handleKeyDown)
+			return () => window.removeEventListener("keydown", handleKeyDown)
+		}, [showModelSelector])
+
 		// Get model display name
 		const modelDisplayName = useMemo(() => {
 			const { selectedProvider, selectedModelId } = normalizeApiConfiguration(apiConfiguration, mode)
@@ -1651,19 +1662,27 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								</Suspense>
 							)}
 							{!isVoiceRecording && (
-								<div
+								<button
+									aria-label="Send message"
 									className={cn(
 										"input-icon-button",
 										{ disabled: sendingDisabled },
 										"codicon codicon-send text-sm",
 									)}
 									data-testid="send-button"
+									disabled={sendingDisabled}
 									onClick={() => {
-										if (!sendingDisabled) {
+										setIsTextAreaFocused(false)
+										onSend()
+									}}
+									onKeyDown={(e) => {
+										if ((e.key === "Enter" || e.key === " ") && !sendingDisabled) {
+											e.preventDefault()
 											setIsTextAreaFocused(false)
 											onSend()
 										}
 									}}
+									type="button"
 								/>
 							)}
 						</div>

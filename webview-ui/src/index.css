@@ -30,12 +30,54 @@ The correct order is:
 /* Configuration directives come after all imports */
 @config "../tailwind.config.mjs";
 
+/* ==========================================================================
+   Focus Indicators - WCAG 2.1 Level AA Compliant
+   ========================================================================== */
+
+/* Textarea focus styles */
 textarea:focus {
-	outline: 1.5px solid var(--vscode-focusBorder, #007fd4);
+	outline: 2px solid var(--vscode-focusBorder, #007fd4);
+	outline-offset: 1px;
 }
 
-vscode-button::part(control):focus {
+/* Button focus styles - use focus-visible for keyboard-only focus */
+button:focus-visible,
+vscode-button::part(control):focus-visible {
+	outline: 2px solid var(--vscode-focusBorder, #007fd4);
+	outline-offset: 2px;
+}
+
+/* Remove default outline on mouse click, but keep for keyboard navigation */
+button:focus:not(:focus-visible),
+vscode-button::part(control):focus:not(:focus-visible) {
 	outline: none;
+}
+
+/* Interactive divs with role="button" */
+div[role="button"]:focus-visible {
+	outline: 2px solid var(--vscode-focusBorder, #007fd4);
+	outline-offset: 2px;
+}
+
+div[role="button"]:focus:not(:focus-visible) {
+	outline: none;
+}
+
+/* Links focus styles */
+a:focus-visible {
+	outline: 2px solid var(--vscode-focusBorder, #007fd4);
+	outline-offset: 2px;
+}
+
+a:focus:not(:focus-visible) {
+	outline: none;
+}
+
+/* Input fields focus styles */
+input:focus-visible,
+select:focus-visible {
+	outline: 2px solid var(--vscode-focusBorder, #007fd4);
+	outline-offset: 1px;
 }
 
 /*

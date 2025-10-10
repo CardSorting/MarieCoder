@@ -33,6 +33,19 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType }) => {
 		}
 	})
 
+	// Handle Escape key to close expanded state
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape" && isExpanded) {
+				setIsExpanded(false)
+				setFilename("")
+				setError(null)
+			}
+		}
+		window.addEventListener("keydown", handleKeyDown)
+		return () => window.removeEventListener("keydown", handleKeyDown)
+	}, [isExpanded])
+
 	const getExtension = (filename: string): string => {
 		if (filename.startsWith(".") && !filename.includes(".", 1)) {
 			return ""

@@ -182,6 +182,17 @@ const ClineRulesToggleModal: React.FC = () => {
 		setIsVisible(false)
 	})
 
+	// Handle Escape key to close modal
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape" && isVisible) {
+				setIsVisible(false)
+			}
+		}
+		window.addEventListener("keydown", handleKeyDown)
+		return () => window.removeEventListener("keydown", handleKeyDown)
+	}, [isVisible])
+
 	// Calculate positions for modal and arrow
 	useEffect(() => {
 		if (isVisible && buttonRef.current) {

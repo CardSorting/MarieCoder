@@ -83,8 +83,19 @@ const Thumbnails = ({ images, files, style, setImages, setFiles, onHeightChange,
 						}}
 					/>
 					{isDeletableImages && hoveredIndex === `image-${index}` && (
-						<div
-							onClick={() => handleDeleteImages(index)}
+						<button
+							aria-label={`Remove image ${index + 1}`}
+							onClick={(e) => {
+								e.stopPropagation()
+								handleDeleteImages(index)
+							}}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" || e.key === " ") {
+									e.preventDefault()
+									e.stopPropagation()
+									handleDeleteImages(index)
+								}
+							}}
 							style={{
 								position: "absolute",
 								top: -4,
@@ -97,15 +108,19 @@ const Thumbnails = ({ images, files, style, setImages, setFiles, onHeightChange,
 								justifyContent: "center",
 								alignItems: "center",
 								cursor: "pointer",
-							}}>
+								border: "none",
+								padding: 0,
+							}}
+							type="button">
 							<span
+								aria-hidden="true"
 								className="codicon codicon-close"
 								style={{
 									color: "var(--vscode-foreground)",
 									fontSize: 10,
 									fontWeight: "bold",
 								}}></span>
-						</div>
+						</button>
 					)}
 				</div>
 			))}
@@ -154,8 +169,19 @@ const Thumbnails = ({ images, files, style, setImages, setFiles, onHeightChange,
 							</span>
 						</div>
 						{isDeletableFiles && hoveredIndex === `file-${index}` && (
-							<div
-								onClick={() => handleDeleteFiles(index)}
+							<button
+								aria-label={`Remove file ${fileName}`}
+								onClick={(e) => {
+									e.stopPropagation()
+									handleDeleteFiles(index)
+								}}
+								onKeyDown={(e) => {
+									if (e.key === "Enter" || e.key === " ") {
+										e.preventDefault()
+										e.stopPropagation()
+										handleDeleteFiles(index)
+									}
+								}}
 								style={{
 									position: "absolute",
 									top: -4,
@@ -168,15 +194,19 @@ const Thumbnails = ({ images, files, style, setImages, setFiles, onHeightChange,
 									justifyContent: "center",
 									alignItems: "center",
 									cursor: "pointer",
-								}}>
+									border: "none",
+									padding: 0,
+								}}
+								type="button">
 								<span
+									aria-hidden="true"
 									className="codicon codicon-close"
 									style={{
 										color: "var(--vscode-foreground)",
 										fontSize: 10,
 										fontWeight: "bold",
 									}}></span>
-							</div>
+							</button>
 						)}
 					</div>
 				)

@@ -21,6 +21,7 @@ const CompactTaskButton: React.FC<{
 			placement="bottom">
 			<VSCodeButton
 				appearance="icon"
+				aria-label="Compact task"
 				className={cn(
 					"text-foreground flex items-center text-sm font-bold hover:bg-transparent hover:opacity-80",
 					className,

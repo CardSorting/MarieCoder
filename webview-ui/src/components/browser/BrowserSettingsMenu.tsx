@@ -148,11 +148,13 @@ export const BrowserSettingsMenu = () => {
 		<div ref={containerRef} style={{ position: "relative", marginTop: "-1px", display: "flex" }}>
 			<VSCodeButton
 				appearance="icon"
+				aria-label="Browser connection info"
 				className="browser-info-icon"
 				onClick={toggleInfoPopover}
 				style={{ marginRight: "4px" }}
 				title="Browser connection info">
 				<i
+					aria-hidden="true"
 					className={`codicon ${getIconClass()}`}
 					style={{
 						fontSize: "14.5px",
@@ -208,8 +210,8 @@ export const BrowserSettingsMenu = () => {
 				</div>
 			)}
 
-			<VSCodeButton appearance="icon" onClick={openBrowserSettings}>
-				<i className="codicon codicon-settings-gear" style={{ fontSize: "14.5px" }} />
+			<VSCodeButton appearance="icon" aria-label="Open browser settings" onClick={openBrowserSettings}>
+				<i aria-hidden="true" className="codicon codicon-settings-gear" style={{ fontSize: "14.5px" }} />
 			</VSCodeButton>
 		</div>
 	)

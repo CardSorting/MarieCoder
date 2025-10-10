@@ -31,6 +31,18 @@ export const CheckpointOverlay = ({ messageTs }: CheckpointOverlayProps) => {
 		}
 	})
 
+	// Handle Escape key to close restore confirmation
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape" && showRestoreConfirm) {
+				setShowRestoreConfirm(false)
+				setHasMouseEntered(false)
+			}
+		}
+		window.addEventListener("keydown", handleKeyDown)
+		return () => window.removeEventListener("keydown", handleKeyDown)
+	}, [showRestoreConfirm])
+
 	// Use the onRelinquishControl hook instead of message event
 	useEffect(() => {
 		return onRelinquishControl(() => {

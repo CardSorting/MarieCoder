@@ -210,24 +210,26 @@ const ServerRow = ({
 					<div style={{ display: "flex", alignItems: "center", gap: "4px", marginLeft: "8px" }}>
 						<VSCodeButton
 							appearance="icon"
+							aria-label="Restart server"
 							disabled={server.status === "connecting" || isRestarting}
 							onClick={(e) => {
 								e.stopPropagation()
 								handleRestart()
 							}}
 							title="Restart Server">
-							<span className="codicon codicon-sync"></span>
+							<span aria-hidden="true" className="codicon codicon-sync"></span>
 						</VSCodeButton>
 						{hasTrashIcon && (
 							<VSCodeButton
 								appearance="icon"
+								aria-label="Delete server"
 								disabled={isDeleting}
 								onClick={(e) => {
 									e.stopPropagation()
 									handleDelete()
 								}}
 								title="Delete Server">
-								<span className="codicon codicon-trash"></span>
+								<span aria-hidden="true" className="codicon codicon-trash"></span>
 							</VSCodeButton>
 						)}
 					</div>

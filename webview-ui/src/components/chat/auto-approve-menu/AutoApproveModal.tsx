@@ -44,6 +44,17 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({
 		setIsVisible(false)
 	})
 
+	// Handle Escape key to close modal
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape" && isVisible) {
+				setIsVisible(false)
+			}
+		}
+		window.addEventListener("keydown", handleKeyDown)
+		return () => window.removeEventListener("keydown", handleKeyDown)
+	}, [isVisible, setIsVisible])
+
 	// Calculate positions for modal and arrow
 	useEffect(() => {
 		if (isVisible && buttonRef.current) {
@@ -143,8 +154,11 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({
 							placement="top">
 							<div className="text-base font-semibold mb-1">Auto-approve Settings</div>
 						</HeroTooltip>
-						<VSCodeButton appearance="icon" onClick={() => setIsVisible(false)}>
-							<span className="codicon codicon-close text-[10px]"></span>
+						<VSCodeButton
+							appearance="icon"
+							aria-label="Close auto-approve settings"
+							onClick={() => setIsVisible(false)}>
+							<span aria-hidden="true" className="codicon codicon-close text-[10px]"></span>
 						</VSCodeButton>
 					</div>
 

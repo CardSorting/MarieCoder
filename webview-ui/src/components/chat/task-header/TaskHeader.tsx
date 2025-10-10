@@ -100,11 +100,25 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 					},
 				)}>
 				{/* Task Title */}
-				<div className="flex justify-between items-center cursor-pointer" onClick={toggleTaskExpanded}>
+				<div
+					aria-expanded={isTaskExpanded}
+					aria-label={isTaskExpanded ? "Collapse task details" : "Expand task details"}
+					className="flex justify-between items-center cursor-pointer"
+					onClick={toggleTaskExpanded}
+					onKeyDown={(e) => {
+						if (e.key === "Enter" || e.key === " ") {
+							e.preventDefault()
+							toggleTaskExpanded()
+						}
+					}}
+					role="button"
+					tabIndex={0}>
 					<div className="flex justify-between items-center">
 						{isTaskExpanded ? <ChevronDownIcon size="16" /> : <ChevronRightIcon size="16" />}
 						{isTaskExpanded && (
-							<div className="mt-1 max-h-3 flex justify-end flex-wrap cursor-pointer opacity-80">
+							<div
+								className="mt-1 max-h-3 flex justify-end flex-wrap cursor-pointer opacity-80"
+								onClick={(e) => e.stopPropagation()}>
 								<CopyTaskButton className={BUTTON_CLASS} taskText={task.text} />
 								<DeleteTaskButton
 									className={BUTTON_CLASS}

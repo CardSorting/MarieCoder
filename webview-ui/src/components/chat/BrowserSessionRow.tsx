@@ -434,22 +434,36 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 				</div>
 
 				<div style={consoleLogsContainerStyle}>
-					<div
+					<button
+						aria-expanded={consoleLogsExpanded}
+						aria-label={`${consoleLogsExpanded ? "Collapse" : "Expand"} console logs`}
 						onClick={() => {
 							setConsoleLogsExpanded(!consoleLogsExpanded)
+						}}
+						onKeyDown={(e) => {
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault()
+								setConsoleLogsExpanded(!consoleLogsExpanded)
+							}
 						}}
 						style={{
 							display: "flex",
 							alignItems: "center",
 							gap: "4px",
-							// width: "100%",
+							width: "100%",
 							justifyContent: "flex-start",
 							cursor: "pointer",
 							padding: `9px 8px ${consoleLogsExpanded ? 0 : 8}px 8px`,
-						}}>
+							background: "transparent",
+							border: "none",
+							color: "inherit",
+							font: "inherit",
+							textAlign: "left",
+						}}
+						type="button">
 						<span className={`codicon codicon-chevron-${consoleLogsExpanded ? "down" : "right"}`}></span>
 						<span style={consoleLogsTextStyle}>Console Logs</span>
-					</div>
+					</button>
 					{consoleLogsExpanded && (
 						<CodeBlock source={`${"```"}shell\n${displayState.consoleLogs || "(No new logs)"}\n${"```"}`} />
 					)}
