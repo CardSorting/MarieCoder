@@ -1,6 +1,7 @@
-import { DiffViewProviderCreator, HostProvider, WebviewProviderCreator } from "@/hosts/host-provider"
+import { DiffViewProviderCreator, HostProvider, TerminalManagerCreator, WebviewProviderCreator } from "@/hosts/host-provider"
 import { HostBridgeClientProvider } from "@/hosts/host-provider-types"
 import { vscodeHostBridgeClient } from "@/hosts/vscode/hostbridge/client/host-grpc-client"
+import { TerminalManager } from "@/integrations/terminal/TerminalManager"
 
 /**
  * Initializes the HostProvider with test defaults.
@@ -11,6 +12,7 @@ import { vscodeHostBridgeClient } from "@/hosts/vscode/hostbridge/client/host-gr
 export function setVscodeHostProviderMock(options?: {
 	webviewProviderCreator?: WebviewProviderCreator
 	diffViewProviderCreator?: DiffViewProviderCreator
+	terminalManagerCreator?: TerminalManagerCreator
 	hostBridgeClient?: HostBridgeClientProvider
 	logToChannel?: (message: string) => void
 	getCallbackUri?: () => Promise<string>
@@ -22,6 +24,7 @@ export function setVscodeHostProviderMock(options?: {
 	HostProvider.initialize(
 		options?.webviewProviderCreator ?? ((() => {}) as WebviewProviderCreator),
 		options?.diffViewProviderCreator ?? ((() => {}) as DiffViewProviderCreator),
+		options?.terminalManagerCreator ?? (() => new TerminalManager()),
 		options?.hostBridgeClient ?? vscodeHostBridgeClient,
 		options?.logToChannel ?? ((_) => {}),
 		options?.getCallbackUri ?? (async () => "http://example.com:1234/"),

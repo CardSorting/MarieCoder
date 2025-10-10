@@ -1,6 +1,7 @@
-import { WebviewProvider } from "@/core/webview"
-import { DiffViewProvider } from "@/integrations/editor/DiffViewProvider"
-import { HostBridgeClientProvider } from "./host-provider-types"
+import type { WebviewProvider } from "@/core/webview"
+import type { DiffViewProvider } from "@/integrations/editor/DiffViewProvider"
+import type { TerminalManager } from "@/integrations/terminal/TerminalManager"
+import type { HostBridgeClientProvider } from "./host-provider-types"
 /**
  * Singleton class that manages host-specific providers for dependency injection.
  *
@@ -10,15 +11,16 @@ import { HostBridgeClientProvider } from "./host-provider-types"
  * implementations in a platform-agnostic way.
  *
  * Usage:
- * - Initialize once: HostProvider.initialize(webviewCreator, diffCreator, hostBridge)
+ * - Initialize once: HostProvider.initialize(webviewCreator, diffCreator, terminalCreator, hostBridge)
  * - Access HostBridge services: HostProvider.window.showMessage()
- * - Access Host Provider factories: HostProvider.get().createDiffViewProvider()
+ * - Access Host Provider factories: HostProvider.get().createDiffViewProvider(), HostProvider.get().createTerminalManager()
  */
 export class HostProvider {
 	private static instance: HostProvider | null = null
 
 	createWebviewProvider: WebviewProviderCreator
 	createDiffViewProvider: DiffViewProviderCreator
+	createTerminalManager: TerminalManagerCreator
 	hostBridge: HostBridgeClientProvider
 
 	// Logs to a user-visible output channel.
@@ -44,6 +46,7 @@ export class HostProvider {
 	private constructor(
 		createWebviewProvider: WebviewProviderCreator,
 		createDiffViewProvider: DiffViewProviderCreator,
+		createTerminalManager: TerminalManagerCreator,
 		hostBridge: HostBridgeClientProvider,
 		logToChannel: LogToChannel,
 		getCallbackUrl: () => Promise<string>,
@@ -53,6 +56,7 @@ export class HostProvider {
 	) {
 		this.createWebviewProvider = createWebviewProvider
 		this.createDiffViewProvider = createDiffViewProvider
+		this.createTerminalManager = createTerminalManager
 		this.hostBridge = hostBridge
 		this.logToChannel = logToChannel
 		this.getCallbackUrl = getCallbackUrl
@@ -64,6 +68,7 @@ export class HostProvider {
 	public static initialize(
 		webviewProviderCreator: WebviewProviderCreator,
 		diffViewProviderCreator: DiffViewProviderCreator,
+		terminalManagerCreator: TerminalManagerCreator,
 		hostBridgeProvider: HostBridgeClientProvider,
 		logToChannel: LogToChannel,
 		getCallbackUrl: () => Promise<string>,
@@ -77,6 +82,7 @@ export class HostProvider {
 		HostProvider.instance = new HostProvider(
 			webviewProviderCreator,
 			diffViewProviderCreator,
+			terminalManagerCreator,
 			hostBridgeProvider,
 			logToChannel,
 			getCallbackUrl,
@@ -135,5 +141,10 @@ export type WebviewProviderCreator = () => WebviewProvider
  * A function that creates DiffViewProvider instances
  */
 export type DiffViewProviderCreator = () => DiffViewProvider
+
+/**
+ * A function that creates TerminalManager instances
+ */
+export type TerminalManagerCreator = () => TerminalManager
 
 export type LogToChannel = (message: string) => void
