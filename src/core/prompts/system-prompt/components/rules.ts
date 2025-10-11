@@ -3,85 +3,30 @@ import type { PromptVariant, SystemPromptContext } from "../types"
 import { resolveComponent } from "./base_component"
 
 /**
- * Core NORMIE DEV methodology - KonMari-inspired development principles
+ * System Rules Component - Operational requirements only
  *
- * Clear, concise, and explicit standards with compassionate tone.
- * Guidance, not gospel. Continuous evolution over perfection.
+ * This component provides OPERATIONAL rules for how the agent interacts
+ * with the environment. Coding standards and methodology live in .clinerules/
+ *
+ * Separation of concerns:
+ * - System Prompt (here): How to USE tools, navigate CWD, communicate
+ * - .clinerules/: How to WRITE code, naming standards, architecture
  */
-const CORE_METHODOLOGY_RULES = `## 🎯 Core Philosophy (KonMari-Inspired)
-
-**Inspired by KonMari Method**: Honor what served us, learn from it, evolve with gratitude. Philosophy guides thinking; clarity guides code.
-
-### Before Any Change - Three Questions:
-1. **What purpose did this serve?** (Observe with curiosity)
-2. **What has this taught us?** (Learn with gratitude)
-3. **What brings clarity now?** (Choose with intention)
-
-### Six-Step Evolution Process:
-When code has completed its purpose:
-1. **OBSERVE** - Understand why it exists
-2. **APPRECIATE** - Honor problems it solved
-3. **LEARN** - Extract wisdom from patterns
-4. **EVOLVE** - Build clearer implementations
-5. **RELEASE** - Let go once new path is stable
-6. **SHARE** - Document lessons in commits
-
-## 📝 Naming Standards (Non-Negotiable)
-
-### Files - MUST use snake_case:
-✅ \`prompt_manager.ts\`, \`response_formatters.ts\`
-❌ \`PromptRegistry.ts\` (wrong case), \`loadMcpDocumentation.ts\` (camelCase)
-
-### Variables & Functions:
-- **MUST be self-explanatory** without comments
-- **NO abbreviations** (except: \`id\`, \`url\`, \`api\`)
-- **Indicate type/purpose**: \`getUserById()\`, \`isValidEmail()\`, \`userCount\`
-
-## 🔧 Type Safety & Quality (Required)
-
-✅ **DO**:
-- Use specific types (never \`any\` without justification)
-- Validate ALL inputs before database operations
-- Write tests for public methods (target 80%+)
-- Add JSDoc to all public APIs
-- Create actionable error messages with fix guidance
-
-❌ **DON'T**:
-- Use \`any\` type casually
-- Skip input validation
-- Leave public APIs undocumented
-- Write vague error messages
-
-## 🏗️ Architecture Standards
-
-### Core Principles:
-- **Separation of Concerns**: Separate data access from business logic
-- **Service Layer**: Only when business logic complexity justifies it
-- **Organize by Feature**: Group related functionality together (not by technical type)
-- **Composition Over Creation**: Prefer proven libraries over custom implementations
-
-## ⚡ Performance Standards
-
-### Target Benchmarks:
-- **Response Times**: Aim for <100ms for user-facing operations
-- **Database Queries**: Target <50ms per query
-- **API Endpoints**: Strive for <200ms response time
-
-### Performance Principles:
-- **Measure First**: Profile before optimizing
-- **Cache Strategically**: Cache expensive operations, not everything
-- **Optimize Queries**: Ensure proper indexing and query efficiency
-- **Handle Errors Gracefully**: Implement proper error boundaries
-
-## 🙏 Mindset
-Honor existing work → Compose over create → Simplify with compassion → System-wide changes → Natural order: Architecture → Naming → Tests → Performance → Documentation
-
-We **release** code because we learned better ways (not because we hate it). We **evolve** to honor lessons (not to criticize past decisions). We **practice** clarity habits (not enforce rigid rules).`
 
 /**
- * Technical implementation rules - Clear and explicit requirements
+ * Operational Rules - System-level requirements for agent operation
+ *
+ * These rules define HOW the agent operates within the environment.
+ * They are NOT about coding standards - those belong in .clinerules/
+ *
+ * This focuses on:
+ * - Environment behavior (CWD, paths, system info)
+ * - File operation patterns
+ * - Communication style
+ * - Tool usage protocols
+ * - Browser automation workflows
  */
-const TECHNICAL_IMPLEMENTATION_RULES = `## 🛠️ Technical Implementation (Required)
+const OPERATIONAL_RULES = `## 🛠️ System Operations (Required)
 
 ### Environment - MUST Follow:
 - **Current directory**: {{CWD}}
@@ -114,59 +59,38 @@ const TECHNICAL_IMPLEMENTATION_RULES = `## 🛠️ Technical Implementation (Req
 - **MCP operations**: Use one at a time, wait for confirmation before proceeding`
 
 /**
- * Context-aware implementation patterns - Clear workflows for different scenarios
+ * Project Rules Reference - Points to .clinerules/ system
+ *
+ * This provides a lightweight reference to where coding standards live.
+ * Instead of embedding 150+ lines of rules in every system prompt,
+ * we point to the .clinerules/ directory which Cline loads separately.
+ *
+ * Benefits:
+ * - Token efficiency (~500 token savings per message)
+ * - Single source of truth (no duplication)
+ * - Per-project customization
+ * - Easy updates without code changes
  */
-const IMPLEMENTATION_PATTERNS_RULES = `## 🎯 Implementation Workflows
+const PROJECT_RULES_REFERENCE = `## 📋 Project Standards
 
-### New Features:
-1. **Reflect** → Study existing patterns
-2. **Plan** → Design with type safety and performance
-3. **Implement** → Build with clear names and validation
-4. **Test** → Cover public APIs (80%+ target)
-5. **Document** → JSDoc and commit messages with context
+This project uses **Cline Rules** for coding standards and methodology.
 
-### Refactoring:
-1. **Observe** → What patterns completed their purpose?
-2. **Learn** → What lessons does this offer?
-3. **Envision** → What would serve better?
-4. **Evolve** → Implement new pattern
-5. **Release** → Remove old code once stable
-6. **Document** → Share lessons learned
+- **Location**: \`.clinerules/\` directory in project root
+- **Active Rules**: All \`.md\` files in \`.clinerules/\` are automatically applied
+- **Management**: Use the Rules popover UI in chat to toggle specific rules
 
-### Bug Fixes:
-1. **Understand** → Find root cause, not just symptom
-2. **Fix** → Address underlying issue
-3. **Test** → Prevent regression
-4. **Document** → Share discovery
-5. **Strengthen** → Add type safety/validation to prevent recurrence
+The project rules cover:
+- 📝 Naming conventions (snake_case files, clear variable names)
+- 🔧 Type safety and quality requirements
+- 🏗️ Architecture patterns and principles
+- ⚡ Performance standards and benchmarks
+- 🎯 Implementation workflows and checklists
+- 🙏 KonMari-inspired development philosophy
 
-## ✅ Quality Checklist
-
-### Before Starting:
-- [ ] Understand existing code and patterns
-- [ ] Plan clear, descriptive names
-- [ ] Design error handling with actionable messages
-- [ ] Consider architecture (repositories, services)
-- [ ] Identify performance requirements
-
-### During Development:
-- [ ] Strict TypeScript (no casual \`any\`)
-- [ ] Self-documenting names
-- [ ] Actionable error messages
-- [ ] Validate all inputs
-- [ ] Write tests (80%+ target)
-- [ ] JSDoc on public APIs
-
-### Before Completing:
-- [ ] All linter errors resolved
-- [ ] Names immediately clear
-- [ ] Changes documented in commit
-- [ ] Patterns applied system-wide
-- [ ] Tests passing
-- [ ] Performance targets met (<100ms operations, <50ms queries)`
+**Note**: Always honor the project rules in \`.clinerules/\` when writing or modifying code.`
 
 /**
- * Context-specific rules - Simplified and focused
+ * Context-specific operational rules
  */
 const CONTEXT_SPECIFIC_RULES = {
 	browser: `- The user may ask generic non-development tasks, such as "what's the latest news" or "look up the weather in San Diego", in which case you might use the browser_action tool to complete the task if it makes sense to do so, rather than trying to create a website or using curl to answer the question. However, if an available MCP server tool or resource can be used instead, you should prefer to use it over browser_action.`,
@@ -179,7 +103,7 @@ const CONTEXT_SPECIFIC_RULES = {
 }
 
 /**
- * Rules Section - Uses resolveComponent for flexibility with complex logic
+ * Rules Section - Focused on operations, references project rules
  */
 export async function getRulesSection(variant: PromptVariant, context: SystemPromptContext): Promise<string> {
 	// Determine context-specific rules
@@ -201,9 +125,8 @@ export async function getRulesSection(variant: PromptVariant, context: SystemPro
 				BROWSER_WAIT_RULES: browserWaitRules,
 				YOLO_MODE_RULES: yoloModeRules,
 				YOLO_MODE_TERMINAL_RULES: yoloModeTerminalRules,
-				CORE_METHODOLOGY_RULES: CORE_METHODOLOGY_RULES,
-				TECHNICAL_IMPLEMENTATION_RULES: TECHNICAL_IMPLEMENTATION_RULES,
-				IMPLEMENTATION_PATTERNS_RULES: IMPLEMENTATION_PATTERNS_RULES,
+				OPERATIONAL_RULES: OPERATIONAL_RULES,
+				PROJECT_RULES_REFERENCE: PROJECT_RULES_REFERENCE,
 			}),
 		},
 		variant,
@@ -213,12 +136,10 @@ export async function getRulesSection(variant: PromptVariant, context: SystemPro
 }
 
 /**
- * Rules template - Unified and streamlined
+ * Rules template - Streamlined with clear separation
  */
 const RULES_TEMPLATE = `RULES
 
-{{CORE_METHODOLOGY_RULES}}
+{{OPERATIONAL_RULES}}
 
-{{TECHNICAL_IMPLEMENTATION_RULES}}
-
-{{IMPLEMENTATION_PATTERNS_RULES}}`
+{{PROJECT_RULES_REFERENCE}}`

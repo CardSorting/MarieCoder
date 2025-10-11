@@ -1,0 +1,251 @@
+# MarieCoder Development Standards
+
+> *Guidance, not gospel. Pause, reflect, and choose with intention. Continuous evolution over perfection.*
+
+---
+
+## 🎯 Core Philosophy
+
+**Inspired by KonMari Method**: We approach code with Marie Kondo's mindfulness—honoring what served us, learning from it, and evolving with gratitude. Philosophy guides our thinking; clarity guides our code.
+
+### Before Any Change - Three Questions:
+
+1. **What purpose did this serve?** (Observe with curiosity)
+2. **What has this taught us?** (Learn with gratitude)  
+3. **What brings clarity now?** (Choose with intention)
+
+### Six-Step Evolution Process:
+
+When code has completed its purpose:
+
+1. **OBSERVE** - Understand why it exists and what it taught us
+2. **APPRECIATE** - Honor the problems it solved
+3. **LEARN** - Extract wisdom from patterns and friction
+4. **EVOLVE** - Build clearer implementations with those lessons
+5. **RELEASE** - Let go of old code once new path is stable
+6. **SHARE** - Document lessons in commit messages
+
+**Example Commit Message**:
+```
+feat: Migrate to established authentication library
+
+Previous custom auth taught us session invalidation 
+and OAuth edge cases. Evolving to battle-tested solution.
+
+Lessons applied:
+- Robust session management required
+- OAuth needs comprehensive error handling
+- Security updates must be timely
+```
+
+---
+
+## 📝 Naming Standards (Non-Negotiable)
+
+### Files - MUST use snake_case:
+```
+✅ prompt_manager.ts
+✅ response_formatters.ts
+✅ context_summarization.ts
+❌ PromptRegistry.ts (wrong case)
+❌ loadMcpDocumentation.ts (camelCase)
+```
+
+**Use descriptive verbs**: `manager`, `builder`, `optimizer`, `organizer`, `validator`  
+**Use clear nouns**: `prompt`, `variant`, `template`, `tool`, `response`
+
+### Variables & Functions:
+- **MUST be self-explanatory** without comments
+- **NO abbreviations** (except: `id`, `url`, `api`)
+- **Indicate type/purpose**: `getUserById()`, `isValidEmail()`, `userCount`
+
+---
+
+## 🔧 Type Safety & Quality (Required)
+
+### Non-Negotiable Rules:
+
+✅ **DO**:
+- Use specific types (never `any` without explicit justification)
+- Validate ALL inputs before database operations
+- Write tests for public methods (target 80%+ coverage)
+- Add JSDoc to all public APIs
+- Create actionable error messages with fix guidance
+
+❌ **DON'T**:
+- Use `any` type casually
+- Skip input validation
+- Leave public APIs undocumented
+- Write vague error messages
+
+### Error Handling Pattern (Required):
+
+```typescript
+// ALWAYS include actionable guidance in error messages
+async function createUser(data: CreateUserData): Promise<User> {
+  try {
+    if (!data.email) {
+      throw new Error(
+        'Email required. Please provide a valid email address'
+      )
+    }
+    
+    if (!isValidEmail(data.email)) {
+      throw new Error(
+        'Invalid email format. Please provide a valid email address (e.g., user@example.com)'
+      )
+    }
+    
+    return await this.repository.create(data)
+  } catch (error) {
+    // Re-throw validation errors with context
+    if (error instanceof Error) {
+      throw new Error(`Failed to create user: ${error.message}`)
+    }
+    throw error
+  }
+}
+```
+
+---
+
+## 🏗️ Architecture Standards
+
+### Core Principles:
+
+- **Separation of Concerns** - Separate data access from business logic
+- **Service Layer** - Only when business logic complexity justifies it
+- **Organize by Feature** - Group related functionality together (not by technical type)
+- **Composition Over Creation** - Prefer proven libraries over custom implementations
+
+### Example Pattern:
+
+```typescript
+// Data Access Layer
+export class UserRepository {
+  async findByEmail(email: string): Promise<User | null> {
+    // Database-specific implementation
+    return await this.queryUserByEmail(email.toLowerCase())
+  }
+}
+
+// Service Layer (when business logic complexity justifies it)
+export class UserService {
+  constructor(private repo: UserRepository) {}
+  
+  async createUser(data: CreateUserData): Promise<User> {
+    const user = await this.repo.create(data)
+    await this.sendWelcomeEmail(user.email)
+    return user
+  }
+}
+```
+
+---
+
+## ⚡ Performance Standards
+
+### Target Benchmarks:
+
+- **Response Times**: Aim for <100ms for user-facing operations
+- **Database Queries**: Target <50ms per query
+- **API Endpoints**: Strive for <200ms response time
+
+### Performance Principles:
+
+- **Measure First** - Profile before optimizing
+- **Cache Strategically** - Cache expensive operations, not everything
+- **Optimize Queries** - Ensure proper indexing and query efficiency
+- **Load Progressively** - Show content incrementally when appropriate
+- **Handle Errors Gracefully** - Implement proper error boundaries
+
+---
+
+## ✅ Quality Checklist
+
+### Before Starting:
+- [ ] Understand existing code and patterns
+- [ ] Plan clear, descriptive names
+- [ ] Design error handling with actionable messages
+- [ ] Consider architecture (repositories, services)
+- [ ] Identify performance requirements
+
+### During Development:
+- [ ] Strict TypeScript (no casual `any`)
+- [ ] Self-documenting names
+- [ ] Actionable error messages
+- [ ] Validate all inputs
+- [ ] Write tests (80%+ target)
+- [ ] JSDoc on public APIs
+
+### Performance:
+- [ ] Response times <100ms for user-facing operations
+- [ ] Database queries <50ms
+- [ ] Proper caching strategies implemented
+- [ ] Error boundaries in place
+
+### Before Completing:
+- [ ] All linter errors resolved
+- [ ] Names immediately clear
+- [ ] Changes documented in commit
+- [ ] Patterns applied system-wide
+- [ ] Tests passing
+
+---
+
+## 🎯 Implementation Workflows
+
+### New Features:
+1. **Reflect** → Study existing patterns
+2. **Plan** → Design with type safety and performance
+3. **Implement** → Build with clear names and validation
+4. **Test** → Cover public APIs (80%+ target)
+5. **Document** → JSDoc and commit messages with context
+
+### Refactoring:
+1. **Observe** → What patterns completed their purpose?
+2. **Learn** → What lessons does this offer?
+3. **Envision** → What would serve better?
+4. **Evolve** → Implement new pattern
+5. **Release** → Remove old code once stable
+6. **Document** → Share lessons learned
+
+### Bug Fixes:
+1. **Understand** → Find root cause, not just symptom
+2. **Fix** → Address underlying issue
+3. **Test** → Prevent regression
+4. **Document** → Share discovery
+5. **Strengthen** → Add type safety/validation to prevent recurrence
+
+---
+
+## 🙏 Mindset
+
+**Before each session**, remember:
+
+*"I honor the code before me. I learn from every pattern. 'Legacy' was once innovative. I refactor not as criticism, but evolution. I write for clarity. I release with gratitude. I document what we learned. Every commit cares for future developers."*
+
+### The Path:
+
+- **Honor existing work** → Learn from it before changing it
+- **Compose over create** → Use proven tools and libraries over custom implementations
+- **Simplify with compassion** → Evolution, not demolition
+- **System-wide changes** → Address patterns everywhere, not piecemeal
+- **Natural order** → Architecture → Naming → Tests → Performance → Documentation
+
+### Remember:
+
+This isn't about perfection or ruthlessness—it's about **intentional, compassionate improvement**.
+
+- We **release** code because we learned better ways (not because we hate it)
+- We **evolve** to honor lessons (not to criticize past decisions)
+- We **practice** clarity habits (not enforce rigid rules)
+
+**Be gentle with yourself. Be gentle with the code. Be gentle with those who came before.**
+
+Each small act of care compounds into a codebase that brings clarity and ease.
+
+---
+
+*Philosophy guides thinking. Clarity guides implementation. Compassion guides evolution.*
+
