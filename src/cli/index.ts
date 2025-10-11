@@ -18,9 +18,11 @@ import * as readline from "node:readline"
 import { StateManager } from "@/core/storage/StateManager"
 import { HostProvider } from "@/hosts/host-provider"
 import { TerminalManager } from "@/integrations/terminal/TerminalManager"
+import { CliConfigManager } from "./cli_config_manager"
 import { CliContext } from "./cli_context"
 import { CliDiffViewProvider } from "./cli_diff_provider"
 import { CliHostBridgeClient } from "./cli_host_bridge"
+import { CliSetupWizard } from "./cli_setup_wizard"
 import { CliTaskMonitor } from "./cli_task_monitor"
 import { CliWebviewProvider } from "./cli_webview_provider"
 
@@ -53,7 +55,11 @@ class MarieCli {
 	 * Initialize the CLI environment
 	 */
 	async initialize(): Promise<void> {
-		console.log("🚀 Initializing MarieCoder CLI...")
+		console.log("\n⚡ Initializing MarieCoder CLI...")
+		console.log("─".repeat(80))
+
+		// Show workspace information
+		console.log(`📁 Workspace: ${this.options.workspace}`)
 
 		// Create CLI context
 		this.context = new CliContext(this.options.workspace)
@@ -95,6 +101,7 @@ class MarieCli {
 		await this.ensureClineRulesEnabled()
 
 		console.log("✅ MarieCoder CLI initialized")
+		console.log("─".repeat(80) + "\n")
 	}
 
 	/**
@@ -116,16 +123,16 @@ class MarieCli {
 
 			if (localRules) {
 				const ruleCount = Object.keys(allToggles.localClineRules).length
-				console.log(`✓ Loaded ${ruleCount} local rule file${ruleCount !== 1 ? "s" : ""} from .clinerules/`)
+				console.log(`📝 Loaded ${ruleCount} local rule file${ruleCount !== 1 ? "s" : ""} from .clinerules/`)
 			}
 
 			if (globalRules && this.options.verbose) {
 				const globalRuleCount = Object.keys(allToggles.globalClineRules).length
-				console.log(`✓ Loaded ${globalRuleCount} global rule file${globalRuleCount !== 1 ? "s" : ""}`)
+				console.log(`📝 Loaded ${globalRuleCount} global rule file${globalRuleCount !== 1 ? "s" : ""}`)
 			}
 
-			if (!localRules && !globalRules && this.options.verbose) {
-				console.log("ℹ No .clinerules found in workspace or global directory")
+			if (!localRules && !globalRules) {
+				console.log("💡 Tip: Create .clinerules/ to add project coding standards")
 			}
 		} catch (error) {
 			if (this.options.verbose) {
@@ -252,19 +259,27 @@ class MarieCli {
 		const apiKey = await stateManager.getState("apiKey")
 
 		if (!apiKey) {
-			console.error("❌ API key not configured!")
-			console.log("\nPlease provide an API key using one of these methods:")
-			console.log("  1. Command line: --api-key YOUR_KEY")
-			console.log("  2. Environment variable: ANTHROPIC_API_KEY or OPENAI_API_KEY")
-			console.log("  3. Configuration file: ~/.mariecoder/cli/state.json")
+			console.error("\n❌ API key not configured!")
+			console.log("\n" + "─".repeat(80))
+			console.log("To configure your API key, you have several options:")
+			console.log("\n1. Run the setup wizard (recommended for first-time users):")
+			console.log("   mariecoder --setup")
+			console.log("\n2. Provide via command line:")
+			console.log('   mariecoder --api-key YOUR_KEY "Your task"')
+			console.log("\n3. Set environment variable:")
+			console.log("   export ANTHROPIC_API_KEY=your-key")
+			console.log('   mariecoder "Your task"')
+			console.log("\n4. Edit configuration file:")
+			console.log("   ~/.mariecoder/cli/secrets.json")
 			console.log("\nExample:")
-			console.log('  mariecoder --api-key sk-ant-... "Create a component"')
+			console.log('   mariecoder --api-key sk-ant-... "Create a React component"')
+			console.log("─".repeat(80) + "\n")
 			return false
 		}
 
-		console.log(`✓ Using provider: ${provider}`)
+		console.log(`✓ Provider: ${provider}`)
 		if (this.options.model) {
-			console.log(`✓ Using model: ${this.options.model}`)
+			console.log(`✓ Model: ${this.options.model}`)
 		}
 
 		return true
@@ -274,20 +289,48 @@ class MarieCli {
 	 * Interactive mode - keep asking for prompts
 	 */
 	async interactiveMode(): Promise<void> {
-		console.log("\n🎯 Interactive Mode - Enter your prompts (type 'exit' to quit)")
+		console.log("\n" + "═".repeat(80))
+		console.log("🎯 Interactive Mode")
+		console.log("═".repeat(80))
+		console.log("\nEnter your coding tasks and I'll help you accomplish them.")
+		console.log("Commands:")
+		console.log("  • Type your task and press Enter to start")
+		console.log("  • Type 'exit' or 'quit' to end the session")
+		console.log("  • Type 'config' to show current configuration")
+		console.log("  • Type 'help' for more options")
 		console.log("─".repeat(80))
 
 		const prompt = async (): Promise<void> => {
 			this.rl.question("\n💬 You: ", async (input) => {
 				const trimmed = input.trim()
 
-				if (trimmed.toLowerCase() === "exit" || trimmed.toLowerCase() === "quit") {
-					console.log("\n👋 Goodbye!")
-					this.cleanup()
-					process.exit(0)
+				if (!trimmed) {
+					await prompt()
+					return
 				}
 
-				if (trimmed) {
+				const command = trimmed.toLowerCase()
+
+				if (command === "exit" || command === "quit") {
+					console.log("\n👋 Thanks for using MarieCoder CLI!")
+					this.cleanup()
+					process.exit(0)
+				} else if (command === "config") {
+					const { CliConfigManager: ConfigManager } = await import("./cli_config_manager")
+					const configManager = new ConfigManager()
+					configManager.displayConfig()
+					await prompt()
+					return
+				} else if (command === "help") {
+					this.showInteractiveModeHelp()
+					await prompt()
+					return
+				} else if (command === "clear") {
+					console.clear()
+					console.log("🎯 Interactive Mode - Ready for your next task")
+					await prompt()
+					return
+				} else {
 					await this.executeTask(trimmed)
 				}
 
@@ -297,6 +340,25 @@ class MarieCli {
 		}
 
 		await prompt()
+	}
+
+	/**
+	 * Show help for interactive mode
+	 */
+	private showInteractiveModeHelp(): void {
+		console.log("\n" + "─".repeat(80))
+		console.log("📚 Interactive Mode Help")
+		console.log("─".repeat(80))
+		console.log("\nAvailable Commands:")
+		console.log("  • exit, quit   - Exit interactive mode")
+		console.log("  • config       - Show current configuration")
+		console.log("  • help         - Show this help message")
+		console.log("  • clear        - Clear the screen")
+		console.log("\nTips:")
+		console.log("  • Be specific with your tasks for best results")
+		console.log("  • You can iterate on previous tasks by providing feedback")
+		console.log("  • Use Ctrl+C to interrupt a running task")
+		console.log("─".repeat(80))
 	}
 
 	/**
@@ -312,7 +374,13 @@ class MarieCli {
 /**
  * Parse command-line arguments
  */
-function parseArgs(args: string[]): { options: CliOptions; prompt?: string } {
+function parseArgs(args: string[]): {
+	options: CliOptions
+	prompt?: string
+	runSetup?: boolean
+	showConfig?: boolean
+	resetConfig?: boolean
+} {
 	const options: CliOptions = {
 		workspace: process.cwd(),
 		verbose: false,
@@ -320,6 +388,9 @@ function parseArgs(args: string[]): { options: CliOptions; prompt?: string } {
 	}
 
 	let prompt: string | undefined
+	let runSetup = false
+	let showConfig = false
+	let resetConfig = false
 	let i = 0
 
 	while (i < args.length) {
@@ -332,6 +403,12 @@ function parseArgs(args: string[]): { options: CliOptions; prompt?: string } {
 			const pkg = require("../../package.json")
 			console.log(`MarieCoder CLI v${pkg.version}`)
 			process.exit(0)
+		} else if (arg === "--setup") {
+			runSetup = true
+		} else if (arg === "--config") {
+			showConfig = true
+		} else if (arg === "--reset-config") {
+			resetConfig = true
 		} else if (arg === "--workspace" || arg === "-w") {
 			options.workspace = path.resolve(args[++i])
 		} else if (arg === "--model" || arg === "-m") {
@@ -352,12 +429,31 @@ function parseArgs(args: string[]): { options: CliOptions; prompt?: string } {
 			// This is the prompt
 			prompt = args.slice(i).join(" ")
 			break
+		} else {
+			console.warn(`⚠️  Unknown option: ${arg}`)
 		}
 
 		i++
 	}
 
-	// Check environment variables for API key
+	// Load configuration from file if no API key provided
+	if (!options.apiKey && !runSetup && !resetConfig) {
+		try {
+			const configManager = new CliConfigManager()
+			if (configManager.hasConfiguration()) {
+				const config = configManager.loadConfig()
+				options.apiKey = options.apiKey || config.apiKey
+				options.provider = options.provider || config.apiProvider
+				options.model = options.model || config.apiModelId
+				options.temperature = options.temperature ?? config.temperature
+				options.maxTokens = options.maxTokens ?? config.maxTokens
+			}
+		} catch {
+			// Ignore config loading errors during argument parsing
+		}
+	}
+
+	// Check environment variables for API key (lowest priority)
 	if (!options.apiKey) {
 		options.apiKey =
 			process.env.ANTHROPIC_API_KEY ||
@@ -366,7 +462,7 @@ function parseArgs(args: string[]): { options: CliOptions; prompt?: string } {
 			process.env.MARIE_API_KEY
 	}
 
-	return { options, prompt }
+	return { options, prompt, runSetup, showConfig, resetConfig }
 }
 
 /**
@@ -374,52 +470,83 @@ function parseArgs(args: string[]): { options: CliOptions; prompt?: string } {
  */
 function showHelp(): void {
 	console.log(`
-MarieCoder CLI - AI coding assistant for your terminal
+╔═══════════════════════════════════════════════════════════════╗
+║               MarieCoder CLI - Quick Reference                ║
+╚═══════════════════════════════════════════════════════════════╝
 
 USAGE:
-  mariecoder [options] <prompt>
+  mariecoder [options] <prompt>    # Execute a single task
   mariecoder [options]              # Interactive mode
+  mariecoder --setup                # Run setup wizard
 
-OPTIONS:
+SETUP & CONFIGURATION:
+  --setup                           Run interactive setup wizard (first-time users)
+  --config                          Show current configuration
+  --reset-config                    Reset all configuration
+
+BASIC OPTIONS:
   -h, --help                        Show this help message
   -v, --version                     Show version information
   -w, --workspace <path>            Workspace directory (default: current directory)
-  -m, --model <model>               AI model to use (e.g., claude-3-5-sonnet-20241022)
-  -k, --api-key <key>               API key for the AI provider
+
+AI PROVIDER OPTIONS:
   -p, --provider <provider>         AI provider (anthropic, openai, openrouter)
-  -t, --temperature <temp>          Temperature for AI responses (0.0 - 1.0)
+  -m, --model <model>               AI model to use
+  -k, --api-key <key>               API key for the AI provider
+  -t, --temperature <temp>          Temperature (0.0-1.0, default: 0.0)
   --max-tokens <number>             Maximum tokens for responses
-  -y, --auto-approve                Auto-approve all actions (use with caution!)
+
+EXECUTION OPTIONS:
+  -y, --auto-approve                Auto-approve all actions (⚠️  use with caution!)
   --verbose                         Show detailed logging
 
 EXAMPLES:
-  # Single task with prompt
-  mariecoder "Create a React component for a todo list"
 
-  # Interactive mode
-  mariecoder
+  First-time setup:
+    $ mariecoder --setup
 
-  # Specify workspace and model
-  mariecoder -w ./my-project -m claude-3-5-sonnet-20241022 "Add tests"
+  Single task:
+    $ mariecoder "Create a React component for a todo list"
 
-  # Use OpenAI instead of Anthropic
-  mariecoder -p openai -m gpt-4 "Refactor the authentication module"
+  Interactive mode:
+    $ mariecoder
+
+  Specify workspace:
+    $ mariecoder -w ./my-project "Add tests for the auth module"
+
+  Use specific model:
+    $ mariecoder -m claude-3-5-sonnet-20241022 "Refactor the API"
+
+  Use OpenAI:
+    $ mariecoder -p openai -m gpt-4 "Add error handling"
+
+  Auto-approve mode:
+    $ mariecoder -y "Run tests and fix failures"
 
 ENVIRONMENT VARIABLES:
   ANTHROPIC_API_KEY                 Anthropic API key
-  OPENAI_API_KEY                    OpenAI API key
+  OPENAI_API_KEY                    OpenAI API key  
   OPENROUTER_API_KEY                OpenRouter API key
   MARIE_API_KEY                     Generic API key
 
 CONFIGURATION:
-  Config is stored in: ~/.mariecoder/cli/
+  Configuration is stored in: ~/.mariecoder/cli/
   
-  Cline Rules: The CLI automatically loads and applies .clinerules from your
-  workspace directory. Rules are enabled by default and help MarieCoder
-  follow your project's coding standards and conventions.
+  config.json                       Main configuration
+  secrets.json                      API keys (secure, permissions: 0600)
 
-MORE INFO:
-  https://github.com/CardSorting/MarieCoder
+CLINE RULES:
+  The CLI automatically loads .clinerules from your workspace directory.
+  These help MarieCoder follow your project's coding standards.
+  
+  To create rules: mkdir .clinerules && echo "# Standards" > .clinerules/rules.md
+
+MORE INFORMATION:
+  Documentation: https://github.com/CardSorting/MarieCoder
+  Issues: https://github.com/CardSorting/MarieCoder/issues
+  Discord: https://discord.gg/VPxMugw2g9
+
+Made with ❤️  by the MarieCoder community
 `)
 }
 
@@ -428,7 +555,31 @@ MORE INFO:
  */
 async function main() {
 	try {
-		const { options, prompt } = parseArgs(process.argv.slice(2))
+		const { options, prompt, runSetup, showConfig, resetConfig } = parseArgs(process.argv.slice(2))
+
+		const configManager = new CliConfigManager()
+
+		// Handle --reset-config
+		if (resetConfig) {
+			console.log("\n⚠️  This will delete all MarieCoder CLI configuration.")
+			const rl = readline.createInterface({
+				input: process.stdin,
+				output: process.stdout,
+			})
+
+			await new Promise<void>((resolve) => {
+				rl.question("Are you sure? [y/N]: ", (answer) => {
+					rl.close()
+					if (answer.trim().toLowerCase() === "y") {
+						configManager.resetConfig()
+					} else {
+						console.log("Cancelled.")
+					}
+					resolve()
+				})
+			})
+			return
+		}
 
 		// Show banner
 		console.log(`
@@ -445,6 +596,111 @@ async function main() {
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 `)
+
+		// Handle --config (show configuration)
+		if (showConfig) {
+			configManager.displayConfig()
+			return
+		}
+
+		// Handle --setup (run setup wizard)
+		if (runSetup) {
+			const wizard = new CliSetupWizard()
+			const config = await wizard.runSetupWizard()
+			wizard.close()
+
+			if (!config) {
+				console.log("\n❌ Setup cancelled or failed.")
+				process.exit(1)
+			}
+
+			// Ask if they want to continue with a task
+			const rl = readline.createInterface({
+				input: process.stdin,
+				output: process.stdout,
+			})
+
+			await new Promise<void>((resolve) => {
+				rl.question("\nWould you like to start an interactive session now? [Y/n]: ", (answer) => {
+					rl.close()
+					const wantsToContinue = !answer.trim() || answer.trim().toLowerCase() === "y"
+
+					if (!wantsToContinue) {
+						console.log("\n✅ Setup complete! Run 'mariecoder' to start coding.\n")
+						process.exit(0)
+					}
+
+					resolve()
+				})
+			})
+
+			// Update options with configured values
+			options.apiKey = config.apiKey
+			options.provider = config.apiProvider
+			options.model = config.apiModelId
+			options.temperature = config.temperature
+			options.maxTokens = config.maxTokens
+		}
+
+		// Check if first run (and not --setup)
+		if (!runSetup && !configManager.hasCompletedSetup()) {
+			console.log("\n👋 Welcome to MarieCoder CLI!")
+			console.log("\n" + "─".repeat(80))
+			console.log("It looks like this is your first time running MarieCoder CLI.")
+			console.log("Let's get you set up with a quick configuration wizard.")
+			console.log("─".repeat(80) + "\n")
+
+			const rl = readline.createInterface({
+				input: process.stdin,
+				output: process.stdout,
+			})
+
+			const shouldRunSetup = await new Promise<boolean>((resolve) => {
+				rl.question("Would you like to run the setup wizard now? [Y/n]: ", (answer) => {
+					rl.close()
+					resolve(!answer.trim() || answer.trim().toLowerCase() === "y")
+				})
+			})
+
+			if (shouldRunSetup) {
+				const wizard = new CliSetupWizard()
+				const config = await wizard.runSetupWizard()
+				wizard.close()
+
+				if (!config) {
+					console.log("\n❌ Setup cancelled or failed.")
+					console.log("You can run setup later with: mariecoder --setup\n")
+					process.exit(1)
+				}
+
+				// Update options with configured values
+				options.apiKey = config.apiKey
+				options.provider = config.apiProvider
+				options.model = config.apiModelId
+				options.temperature = config.temperature
+				options.maxTokens = config.maxTokens
+			} else {
+				console.log("\n💡 You can run setup later with: mariecoder --setup")
+				console.log("For now, you'll need to provide configuration via command-line options.\n")
+
+				// Check if we have minimum required config
+				if (!options.apiKey) {
+					configManager.getConfigurationHelp()
+					process.exit(1)
+				}
+			}
+		}
+
+		// Validate configuration before proceeding
+		const mergedConfig = configManager.mergeWithOptions(options)
+		const validation = configManager.validateConfig(mergedConfig)
+
+		if (!validation.valid) {
+			console.error("\n❌ Configuration errors:")
+			validation.errors.forEach((error: string) => console.error(`  • ${error}`))
+			configManager.getConfigurationHelp()
+			process.exit(1)
+		}
 
 		// Create CLI instance
 		const cli = new MarieCli(options)
@@ -473,6 +729,9 @@ async function main() {
 		}
 	} catch (error) {
 		console.error("\n❌ Fatal error:", error)
+		if (error instanceof Error && error.stack) {
+			console.error("\nStack trace:", error.stack)
+		}
 		process.exit(1)
 	}
 }
