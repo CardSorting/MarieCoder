@@ -3,6 +3,7 @@ import { StringRequest } from "@shared/proto/cline/common"
 import React, { useCallback, useMemo } from "react"
 import Thumbnails from "@/components/common/Thumbnails"
 import { ChevronDownIcon, ChevronRightIcon } from "@/components/icons"
+import { Navbar } from "@/components/menu/Navbar"
 import { getModeSpecificFields, normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { UiServiceClient } from "@/services/grpc-client"
@@ -43,7 +44,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 	cacheReads,
 	totalCost,
 	lastApiReqTotalTokens,
-	lastProgressMessageText,
+	lastProgressMessageText: _lastProgressMessageText,
 	onClose,
 	onScrollToMessage,
 	onSendMessage,
@@ -83,6 +84,11 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 
 	return (
 		<div className={"p-2 flex flex-col gap-1.5"}>
+			{/* Navigation Menu */}
+			<div className="w-full flex justify-end -mt-1 mb-1">
+				<Navbar />
+			</div>
+
 			{/* Display Checkpoint Error */}
 			<CheckpointError
 				checkpointManagerErrorMessage={checkpointManagerErrorMessage}

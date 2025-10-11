@@ -1,9 +1,15 @@
 import MarieCoderLogo from "@/assets/MarieCoderLogo"
 import HeroTooltip from "@/components/common/HeroTooltip"
+import { Navbar } from "@/components/menu/Navbar"
 
 const HomeHeader = () => {
 	return (
 		<div className="flex flex-col items-center mb-5">
+			{/* Navigation Menu */}
+			<div className="w-full flex justify-end px-4 pt-2">
+				<Navbar />
+			</div>
+
 			<div className="my-5 relative">
 				<MarieCoderLogo className="size-16" size={64} />
 				{/* Subtle glow effect around logo */}

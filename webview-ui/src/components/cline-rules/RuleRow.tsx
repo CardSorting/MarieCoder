@@ -112,23 +112,33 @@ const RuleRowComponent: React.FC<{
 							}`}
 						/>
 					</div>
-					<VSCodeButton
-						appearance="icon"
-						aria-label="Edit rule file"
-						onClick={handleEditClick}
-						style={{ height: "20px" }}
-						title="Edit rule file">
-						<span className="codicon codicon-edit" style={{ fontSize: "14px" }} />
-					</VSCodeButton>
 					{!isProtectedRule && (
-						<VSCodeButton
-							appearance="icon"
-							aria-label="Delete rule file"
-							onClick={handleDeleteClick}
-							style={{ height: "20px" }}
-							title="Delete rule file">
-							<span className="codicon codicon-trash" style={{ fontSize: "14px" }} />
-						</VSCodeButton>
+						<>
+							<VSCodeButton
+								appearance="icon"
+								aria-label="Edit rule file"
+								onClick={handleEditClick}
+								style={{ height: "20px" }}
+								title="Edit rule file">
+								<span className="codicon codicon-edit" style={{ fontSize: "14px" }} />
+							</VSCodeButton>
+							<VSCodeButton
+								appearance="icon"
+								aria-label="Delete rule file"
+								onClick={handleDeleteClick}
+								style={{ height: "20px" }}
+								title="Delete rule file">
+								<span className="codicon codicon-trash" style={{ fontSize: "14px" }} />
+							</VSCodeButton>
+						</>
+					)}
+					{isProtectedRule && (
+						<span
+							className="text-[var(--vscode-descriptionForeground)] text-xs italic"
+							style={{ fontSize: "11px", marginLeft: "4px" }}
+							title="This rule is protected and cannot be edited or deleted">
+							Protected
+						</span>
 					)}
 				</div>
 			</div>
