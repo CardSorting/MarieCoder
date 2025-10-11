@@ -104,17 +104,17 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "Marie-coder-ActivityBar",
+					"id": "marie-coder-ActivityBar",
 					"title": "Marie Coder",
 					"icon": "assets/icons/Marie-icon.svg"
 				}
 			]
 		},
 		"views": {
-			"Marie-coder-ActivityBar": [
+			"marie-coder-ActivityBar": [
 				{
 					"type": "webview",
-					"id": "Marie-coder.SidebarProvider",
+					"id": "marie-coder.SidebarProvider",
 					"name": "",
 					"icon": "assets/icons/Marie-icon.svg"
 				}
@@ -230,27 +230,27 @@
 				{
 					"command": "marie.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "view == Marie-coder.SidebarProvider"
+					"when": "view == marie-coder.SidebarProvider"
 				},
 				{
 					"command": "marie.mcpButtonClicked",
 					"group": "navigation@2",
-					"when": "view == Marie-coder.SidebarProvider"
+					"when": "view == marie-coder.SidebarProvider"
 				},
 				{
 					"command": "marie.historyButtonClicked",
 					"group": "navigation@3",
-					"when": "view == Marie-coder.SidebarProvider"
+					"when": "view == marie-coder.SidebarProvider"
 				},
 				{
 					"command": "marie.accountButtonClicked",
 					"group": "navigation@5",
-					"when": "view == Marie-coder.SidebarProvider"
+					"when": "view == marie-coder.SidebarProvider"
 				},
 				{
 					"command": "marie.settingsButtonClicked",
 					"group": "navigation@6",
-					"when": "view == Marie-coder.SidebarProvider"
+					"when": "view == marie-coder.SidebarProvider"
 				}
 			],
 			"editor/context": [
