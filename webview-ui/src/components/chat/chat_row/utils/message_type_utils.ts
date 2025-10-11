@@ -7,10 +7,13 @@ import type { ClineMessage } from "@shared/ExtensionMessage"
 /**
  * Gets the message type from a ClineMessage
  * @param message - The message to analyze
- * @returns The message type string
+ * @returns The message type string (or empty string if undefined)
  */
 export const getMessageType = (message: ClineMessage): string => {
-	return message.type === "ask" ? message.ask : message.say
+	if (message.type === "ask") {
+		return message.ask || ""
+	}
+	return message.say || ""
 }
 
 /**

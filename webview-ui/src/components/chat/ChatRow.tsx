@@ -61,5 +61,6 @@ const ChatRow = memo(
 
 export default ChatRow
 
-// Re-export ProgressIndicator for backward compatibility
+export { ChatRowContent } from "./chat_row/ChatRowContent"
+// Re-export components for backward compatibility
 export { ProgressIndicator } from "./chat_row/components/ProgressIndicator"
