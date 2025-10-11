@@ -1,5 +1,4 @@
-import { Anthropic } from "@anthropic-ai/sdk"
-import { ApiHandler, ApiService, ProviderInfo } from "@core/api"
+import { ApiHandler, ProviderInfo } from "@core/api"
 import { ApiStream } from "@core/api/transform/stream"
 import { ContextManager } from "@core/context/context-management/context_manager"
 import { FileContextTracker } from "@core/context/context-tracking"
@@ -7,19 +6,13 @@ import { ModelContextTracker } from "@core/context/context-tracking/ModelContext
 import { sendPartialMessageEvent } from "@core/controller/ui/subscribeToPartialMessage"
 import { ClineIgnoreController } from "@core/ignore/ClineIgnoreController"
 import { formatResponse } from "@core/prompts/response_formatters"
-import { isMultiRootEnabled } from "@core/workspace/multi-root-utils"
 import { WorkspaceRootManager } from "@core/workspace/WorkspaceRootManager"
-import { buildCheckpointManager } from "@integrations/checkpoints/factory"
 import { ICheckpointManager } from "@integrations/checkpoints/types"
 import { DiffViewProvider } from "@integrations/editor/DiffViewProvider"
 import { TerminalManager } from "@integrations/terminal/TerminalManager"
 import { BrowserSession } from "@services/browser/BrowserSession"
-import { UrlContentFetcher } from "@services/browser/UrlContentFetcher"
-import { Logger } from "@services/logging/Logger"
 import { McpHub } from "@services/mcp/McpHub"
-import { ApiConfiguration } from "@shared/api"
-import { findLastIndex } from "@shared/array"
-import { ClineApiReqInfo, ClineAsk, ClineSay } from "@shared/ExtensionMessage"
+import { ClineAsk, ClineSay } from "@shared/ExtensionMessage"
 import { HistoryItem } from "@shared/HistoryItem"
 import { convertClineMessageToProto } from "@shared/proto-conversions/cline-message"
 import { ClineDefaultTool } from "@shared/tools"
@@ -27,11 +20,16 @@ import { ClineAskResponse } from "@shared/WebviewMessage"
 import pWaitFor from "p-wait-for"
 import { ulid } from "ulid"
 import * as vscode from "vscode"
-import { HostProvider } from "@/hosts/host-provider"
-import { ShowMessageType } from "@/shared/proto/index.host"
 import { Controller } from "../controller"
 import { StateManager } from "../storage/StateManager"
+// Coordinators
+import { EventCoordinator } from "./coordinators/event_coordinator"
+import { ResourceCoordinator } from "./coordinators/resource_coordinator"
+import { StateCoordinator } from "./coordinators/state_coordinator"
+import { ToolCoordinator } from "./coordinators/tool_coordinator"
 import { FocusChainManager } from "./focus-chain"
+// Initialization
+import { TaskInitializer } from "./initialization/task_initializer"
 import { MessageStateHandler } from "./message-state"
 import { TaskApiService } from "./services/task_api_service"
 import { TaskCommandService } from "./services/task_command_service"
@@ -40,31 +38,22 @@ import { TaskLifecycleService } from "./services/task_lifecycle_service"
 import { TaskMessageService } from "./services/task_message_service"
 import { TaskState } from "./TaskState"
 import { ToolExecutor } from "./ToolExecutor"
+// Types
+import type { TaskParams, ToolResponse, UserContent } from "./types/task_types"
 
-export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
-type UserContent = Array<Anthropic.ContentBlockParam>
+// Re-export types for backward compatibility
+export type { ToolResponse, UserContent, TaskParams }
 
-type TaskParams = {
-	controller: Controller
-	mcpHub: McpHub
-	updateTaskHistory: (historyItem: HistoryItem) => Promise<HistoryItem[]>
-	postStateToWebview: () => Promise<void>
-	reinitExistingTaskFromId: (taskId: string) => Promise<void>
-	cancelTask: () => Promise<void>
-	shellIntegrationTimeout: number
-	terminalReuseEnabled: boolean
-	terminalOutputLineLimit: number
-	defaultTerminalProfile: string
-	cwd: string
-	stateManager: StateManager
-	workspaceManager?: WorkspaceRootManager
-	task?: string
-	images?: string[]
-	files?: string[]
-	historyItem?: HistoryItem
-	taskId: string
-}
-
+/**
+ * Task orchestrator - coordinates task execution and manages lifecycle
+ * Refactored to use facade pattern with specialized coordinators
+ *
+ * Architecture:
+ * - Core state and dependencies
+ * - Coordinators for cross-cutting concerns (events, tools, state, resources)
+ * - Services for specific responsibilities (API, lifecycle, messages, etc.)
+ * - Public API methods delegate to appropriate coordinators/services
+ */
 export class Task {
 	// Core task variables
 	readonly taskId: string
@@ -78,20 +67,20 @@ export class Task {
 	private controller: Controller
 	private mcpHub: McpHub
 
-	// Service handlers
-	api: ApiHandler
-	terminalManager: TerminalManager
-	private urlContentFetcher: UrlContentFetcher
-	browserSession: BrowserSession
-	contextManager: ContextManager
-	private diffViewProvider: DiffViewProvider
+	// Service handlers (initialized asynchronously)
+	api!: ApiHandler
+	terminalManager!: TerminalManager
+	private urlContentFetcher!: any
+	browserSession!: BrowserSession
+	contextManager!: ContextManager
+	private diffViewProvider!: DiffViewProvider
 	public checkpointManager?: ICheckpointManager
-	private clineIgnoreController: ClineIgnoreController
-	private toolExecutor: ToolExecutor
+	private clineIgnoreController!: ClineIgnoreController
+	private toolExecutor!: ToolExecutor
 
-	// Metadata tracking
-	private fileContextTracker: FileContextTracker
-	private modelContextTracker: ModelContextTracker
+	// Metadata tracking (initialized asynchronously)
+	private fileContextTracker!: FileContextTracker
+	private modelContextTracker!: ModelContextTracker
 
 	// Focus Chain
 	private focusChainManager?: FocusChainManager
@@ -102,20 +91,31 @@ export class Task {
 	// Callback provided by controller for task re-initialization (currently unused but available for future use)
 	// biome-ignore lint/correctness/noUnusedPrivateClassMembers: Reserved for future functionality
 	private reinitExistingTaskFromId: (taskId: string) => Promise<void>
+	// Callback provided by controller for task cancellation (delegated to services)
+	// biome-ignore lint/correctness/noUnusedPrivateClassMembers: Used by services, not directly by facade
 	private cancelTask: () => Promise<void>
 
 	// Cache service
 	private stateManager: StateManager
 
-	// Message and conversation state
-	messageStateHandler: MessageStateHandler
+	// Message and conversation state (initialized asynchronously)
+	messageStateHandler!: MessageStateHandler
 
-	// Services
-	private messageService: TaskMessageService
-	private contextBuilder: TaskContextBuilder
-	private apiService: TaskApiService
-	private lifecycleService: TaskLifecycleService
-	private commandService: TaskCommandService
+	// Services (initialized asynchronously)
+	private messageService!: TaskMessageService
+	private contextBuilder!: TaskContextBuilder
+	private apiService!: TaskApiService
+	private lifecycleService!: TaskLifecycleService
+	private commandService!: TaskCommandService
+
+	// Coordinators (initialized asynchronously)
+	private eventCoordinator!: EventCoordinator
+	// Tool and state coordinators reserved for future direct coordination needs
+	// biome-ignore lint/correctness/noUnusedPrivateClassMembers: Architecture component for future coordination
+	private toolCoordinator!: ToolCoordinator
+	// biome-ignore lint/correctness/noUnusedPrivateClassMembers: Architecture component for future coordination
+	private stateCoordinator!: StateCoordinator
+	private resourceCoordinator!: ResourceCoordinator
 
 	// Workspace manager
 	workspaceManager?: WorkspaceRootManager
@@ -128,11 +128,6 @@ export class Task {
 			postStateToWebview,
 			reinitExistingTaskFromId,
 			cancelTask,
-			shellIntegrationTimeout,
-			terminalReuseEnabled,
-			terminalOutputLineLimit,
-			defaultTerminalProfile,
-			cwd,
 			stateManager,
 			workspaceManager,
 			task,
@@ -142,6 +137,7 @@ export class Task {
 			taskId,
 		} = params
 
+		// Basic initialization
 		this.taskInitializationStartTime = performance.now()
 		this.taskState = new TaskState()
 		this.controller = controller
@@ -150,19 +146,6 @@ export class Task {
 		this.postStateToWebview = postStateToWebview
 		this.reinitExistingTaskFromId = reinitExistingTaskFromId
 		this.cancelTask = cancelTask
-		this.clineIgnoreController = new ClineIgnoreController(cwd)
-
-		// Initialize terminal manager using host provider factory pattern
-		this.terminalManager = HostProvider.get().createTerminalManager()
-		this.terminalManager.setShellIntegrationTimeout(shellIntegrationTimeout)
-		this.terminalManager.setTerminalReuseEnabled(terminalReuseEnabled ?? true)
-		this.terminalManager.setTerminalOutputLineLimit(terminalOutputLineLimit)
-		this.terminalManager.setDefaultTerminalProfile(defaultTerminalProfile)
-
-		this.urlContentFetcher = new UrlContentFetcher(controller.context)
-		this.browserSession = new BrowserSession(stateManager)
-		this.contextManager = new ContextManager()
-		this.diffViewProvider = HostProvider.get().createDiffViewProvider()
 		this.stateManager = stateManager
 		this.workspaceManager = workspaceManager
 
@@ -190,242 +173,125 @@ export class Task {
 			)
 		}
 
-		this.messageStateHandler = new MessageStateHandler({
-			taskId: this.taskId,
-			ulid: this.ulid,
-			taskState: this.taskState,
-			taskIsFavorited: this.taskIsFavorited,
-			updateTaskHistory: this.updateTaskHistory,
-		})
+		// Initialize all components using TaskInitializer
+		this.initializeComponents(params)
+	}
 
-		// Initialize file context tracker
-		this.fileContextTracker = new FileContextTracker(controller, this.taskId)
-		this.modelContextTracker = new ModelContextTracker(this.taskId)
-
-		// Initialize focus chain manager only if enabled
-		const focusChainSettings = this.stateManager.getGlobalSettingsKey("focusChainSettings")
-		if (focusChainSettings.enabled) {
-			this.focusChainManager = new FocusChainManager({
-				taskId: this.taskId,
-				taskState: this.taskState,
-				mode: this.stateManager.getGlobalSettingsKey("mode"),
-				stateManager: this.stateManager,
-				postStateToWebview: this.postStateToWebview,
-				say: this.say.bind(this),
-				focusChainSettings: focusChainSettings,
-			})
-		}
-
-		// Check for multiroot workspace and warn about checkpoints
-		const isMultiRootWorkspace = this.workspaceManager && this.workspaceManager.getRoots().length > 1
-		const checkpointsEnabled = this.stateManager.getGlobalSettingsKey("enableCheckpointsSetting")
-
-		if (isMultiRootWorkspace && checkpointsEnabled) {
-			// Set checkpoint manager error message to display warning in TaskHeader
-			this.taskState.checkpointManagerErrorMessage = "Checkpoints are not currently supported in multi-root workspaces."
-		}
-
-		// Initialize checkpoint manager based on workspace configuration
-		if (!isMultiRootWorkspace) {
-			try {
-				this.checkpointManager = buildCheckpointManager({
-					taskId: this.taskId,
-					messageStateHandler: this.messageStateHandler,
-					fileContextTracker: this.fileContextTracker,
-					diffViewProvider: this.diffViewProvider,
-					taskState: this.taskState,
-					workspaceManager: this.workspaceManager,
-					updateTaskHistory: this.updateTaskHistory,
-					say: this.say.bind(this),
-					cancelTask: this.cancelTask,
-					postStateToWebview: this.postStateToWebview,
-					initialConversationHistoryDeletedRange: this.taskState.conversationHistoryDeletedRange,
-					initialCheckpointManagerErrorMessage: this.taskState.checkpointManagerErrorMessage,
-					stateManager: this.stateManager,
-				})
-			} catch (error) {
-				Logger.error("Failed to initialize checkpoint manager", error instanceof Error ? error : new Error(String(error)))
-				if (this.stateManager.getGlobalSettingsKey("enableCheckpointsSetting")) {
-					const errorMessage = error instanceof Error ? error.message : "Unknown error"
-					HostProvider.window.showMessage({
-						type: ShowMessageType.ERROR,
-						message: `Failed to initialize checkpoint manager: ${errorMessage}`,
-					})
-				}
-			}
-		}
-
-		// Prepare effective API configuration
-		const apiConfiguration = this.stateManager.getApiConfiguration()
-		const effectiveApiConfiguration: ApiConfiguration = {
-			...apiConfiguration,
-			ulid: this.ulid,
-			onRetryAttempt: async (attempt: number, maxRetries: number, delay: number, error: any) => {
-				const clineMessages = this.messageStateHandler.getClineMessages()
-				const lastApiReqStartedIndex = findLastIndex(clineMessages, (m) => m.say === "api_req_started")
-				if (lastApiReqStartedIndex !== -1) {
-					try {
-						const currentApiReqInfo: ClineApiReqInfo = JSON.parse(clineMessages[lastApiReqStartedIndex].text || "{}")
-						currentApiReqInfo.retryStatus = {
-							attempt: attempt, // attempt is already 1-indexed from retry.ts
-							maxAttempts: maxRetries, // total attempts
-							delaySec: Math.round(delay / 1000),
-							errorSnippet: error?.message ? `${String(error.message).substring(0, 50)}...` : undefined,
-						}
-						// Clear previous cancelReason and streamingFailedMessage if we are retrying
-						delete currentApiReqInfo.cancelReason
-						delete currentApiReqInfo.streamingFailedMessage
-						await this.messageStateHandler.updateClineMessage(lastApiReqStartedIndex, {
-							text: JSON.stringify(currentApiReqInfo),
-						})
-
-						// Post the updated state to the webview so the UI reflects the retry attempt
-						await this.postStateToWebview().catch((e) =>
-							Logger.error(
-								"Error posting state to webview in onRetryAttempt",
-								e instanceof Error ? e : new Error(String(e)),
-							),
-						)
-
-						// Auto-retry in progress
-					} catch (e) {
-						Logger.error(
-							`[Task ${this.taskId}] Error updating api_req_started with retryStatus`,
-							e instanceof Error ? e : new Error(String(e)),
-						)
-					}
-				}
-			},
-		}
-		const mode = this.stateManager.getGlobalSettingsKey("mode")
-
-		// Build API handler with effective configuration
-		this.api = ApiService.createHandler(effectiveApiConfiguration, mode)
-
-		// Set ulid on browserSession for tracking
-		this.browserSession.setUlid(this.ulid)
-
-		// Set up focus chain file watcher (async, runs in background) only if focus chain is enabled
-		if (this.focusChainManager) {
-			this.focusChainManager.setupFocusChainFileWatcher().catch((error) => {
-				Logger.error(
-					`[Task ${this.taskId}] Failed to setup focus chain file watcher`,
-					error instanceof Error ? error : new Error(String(error)),
-				)
-			})
-		}
-
-		// Initialize services
-		this.messageService = new TaskMessageService(this.taskState, this.messageStateHandler, postStateToWebview)
-		this.contextBuilder = new TaskContextBuilder(
-			cwd,
-			this.stateManager,
-			this.controller,
-			this.api,
-			this.terminalManager,
-			this.urlContentFetcher,
-			this.fileContextTracker,
-			this.clineIgnoreController,
-			this.messageStateHandler,
-			this.workspaceManager,
-			this.focusChainManager,
+	/**
+	 * Initialize all task components using TaskInitializer
+	 * Delegates complex initialization to specialized initializer
+	 */
+	private initializeComponents(params: TaskParams): void {
+		// Use synchronous initialization approach - components are initialized immediately
+		// The TaskInitializer returns all initialized components
+		TaskInitializer.initialize(
+			params,
 			this.taskState,
-			this.ulid,
-		)
-
-		this.toolExecutor = new ToolExecutor(
-			this.controller.context,
-			this.taskState,
-			this.messageStateHandler,
-			this.api,
-			this.urlContentFetcher,
-			this.browserSession,
-			this.diffViewProvider,
-			this.mcpHub,
-			this.fileContextTracker,
-			this.clineIgnoreController,
-			this.contextManager,
-			this.stateManager,
-			cwd,
 			this.taskId,
 			this.ulid,
-			this.workspaceManager,
-			isMultiRootEnabled(this.stateManager),
+			this.taskIsFavorited,
 			this.say.bind(this),
 			this.ask.bind(this),
 			this.saveCheckpointCallback.bind(this),
 			this.sayAndCreateMissingParamError.bind(this),
 			this.removeLastPartialMessageIfExistsWithType.bind(this),
 			this.executeCommandTool.bind(this),
-			() => this.checkpointManager?.doesLatestTaskCompletionHaveNewChanges() ?? Promise.resolve(false),
-			this.focusChainManager?.updateFCListFromToolResponse.bind(this.focusChainManager) || (async () => {}),
 			this.switchToActModeCallback.bind(this),
-		)
+		).then((components) => {
+			// Assign all initialized components
+			this.api = components.api
+			this.terminalManager = components.terminalManager
+			this.browserSession = components.browserSession
+			this.urlContentFetcher = components.urlContentFetcher
+			this.contextManager = components.contextManager
+			this.diffViewProvider = components.diffViewProvider
+			this.clineIgnoreController = components.clineIgnoreController
+			this.toolExecutor = components.toolExecutor
+			this.fileContextTracker = components.fileContextTracker
+			this.modelContextTracker = components.modelContextTracker
+			this.focusChainManager = components.focusChainManager
+			this.checkpointManager = components.checkpointManager
+			this.messageService = components.messageService
+			this.contextBuilder = components.contextBuilder
+			this.messageStateHandler = components.messageStateHandler
 
-		// Initialize API service after toolExecutor
-		this.apiService = new TaskApiService(
-			this.api,
-			this.taskState,
-			this.messageService,
-			this.contextBuilder,
-			this.messageStateHandler,
-			this.contextManager,
-			this.diffViewProvider,
-			this.toolExecutor,
-			this.stateManager,
-			cwd,
-			taskId,
-			this.ulid,
-			this.controller,
-			this.modelContextTracker,
-			this.mcpHub,
-			this.clineIgnoreController,
-			this.workspaceManager,
-			this.checkpointManager,
-			postStateToWebview,
-			this.migrateDisableBrowserToolSetting.bind(this),
-			this.getCurrentProviderInfo.bind(this),
-			this.getApiRequestIdSafe.bind(this),
-			this.taskInitializationStartTime,
-		)
+			// Initialize API service with bound callbacks
+			this.apiService = new TaskApiService(
+				components.api,
+				this.taskState,
+				components.messageService,
+				components.contextBuilder,
+				components.messageStateHandler,
+				components.contextManager,
+				components.diffViewProvider,
+				components.toolExecutor,
+				this.stateManager,
+				params.cwd,
+				this.taskId,
+				this.ulid,
+				this.controller,
+				components.modelContextTracker,
+				this.mcpHub,
+				components.clineIgnoreController,
+				this.workspaceManager,
+				components.checkpointManager,
+				this.postStateToWebview,
+				this.migrateDisableBrowserToolSetting.bind(this),
+				this.getCurrentProviderInfo.bind(this),
+				this.getApiRequestIdSafe.bind(this),
+				this.taskInitializationStartTime,
+			)
 
-		// Initialize lifecycle service
-		this.lifecycleService = new TaskLifecycleService({
-			clineIgnoreController: this.clineIgnoreController,
-			messageStateHandler: this.messageStateHandler,
-			postStateToWebview: postStateToWebview,
-			say: this.say.bind(this),
-			ask: this.ask.bind(this),
-			checkpointManager: this.checkpointManager,
-			cwd: cwd,
-			taskState: this.taskState,
-			taskId: taskId,
-			fileContextTracker: this.fileContextTracker,
-			contextManager: this.contextManager,
-			stateManager: this.stateManager,
-			terminalManager: this.terminalManager,
-			urlContentFetcher: this.urlContentFetcher,
-			browserSession: this.browserSession,
-			diffViewProvider: this.diffViewProvider,
-			mcpHub: this.mcpHub,
-			focusChainManager: this.focusChainManager,
-			recursivelyMakeClineRequests: this.recursivelyMakeClineRequests.bind(this),
+			// Initialize lifecycle service with bound callback
+			this.lifecycleService = new TaskLifecycleService({
+				clineIgnoreController: components.clineIgnoreController,
+				messageStateHandler: components.messageStateHandler,
+				postStateToWebview: this.postStateToWebview,
+				say: this.say.bind(this),
+				ask: this.ask.bind(this),
+				checkpointManager: components.checkpointManager,
+				cwd: params.cwd,
+				taskState: this.taskState,
+				taskId: this.taskId,
+				fileContextTracker: components.fileContextTracker,
+				contextManager: components.contextManager,
+				stateManager: this.stateManager,
+				terminalManager: components.terminalManager,
+				urlContentFetcher: components.urlContentFetcher,
+				browserSession: components.browserSession,
+				diffViewProvider: components.diffViewProvider,
+				mcpHub: this.mcpHub,
+				focusChainManager: components.focusChainManager,
+				recursivelyMakeClineRequests: this.recursivelyMakeClineRequests.bind(this),
+			})
+
+			this.commandService = components.commandService
+
+			// Initialize coordinators
+			this.eventCoordinator = new EventCoordinator()
+			this.toolCoordinator = new ToolCoordinator(components.toolExecutor)
+			this.stateCoordinator = new StateCoordinator(
+				this.taskState,
+				this.stateManager,
+				this.updateTaskHistory,
+				this.postStateToWebview,
+			)
+			this.resourceCoordinator = new ResourceCoordinator(
+				components.browserSession,
+				components.terminalManager,
+				components.checkpointManager,
+			)
+
+			// Initialize event coordinator
+			this.eventCoordinator.initialize()
+
+			// Start or resume task after all services are initialized
+			if (params.historyItem) {
+				this.lifecycleService.resumeTaskFromHistory()
+			} else if (params.task || params.images || params.files) {
+				this.lifecycleService.startTask(params.task, params.images, params.files)
+			}
 		})
-
-		// Initialize command service
-		this.commandService = new TaskCommandService({
-			cwd: cwd,
-			terminalManager: this.terminalManager,
-			ask: this.ask.bind(this),
-			say: this.say.bind(this),
-		})
-
-		// Start or resume task after all services are initialized
-		if (historyItem) {
-			this.lifecycleService.resumeTaskFromHistory()
-		} else if (task || images || files) {
-			this.lifecycleService.startTask(task, images, files)
-		}
 	}
 
 	public resetConsecutiveAutoApprovedRequestsCount(): void {
@@ -659,9 +525,7 @@ export class Task {
 	async sayAndCreateMissingParamError(toolName: ClineDefaultTool, paramName: string, relPath?: string) {
 		await this.say(
 			"error",
-			`Cline tried to use ${toolName}${
-				relPath ? ` for '${relPath.toPosix()}'` : ""
-			} without value for required parameter '${paramName}'. Retrying...`,
+			`Cline tried to use ${toolName}${relPath ? ` for '${relPath.toPosix()}'` : ""} without value for required parameter '${paramName}'. Retrying...`,
 		)
 		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName))
 	}
@@ -687,7 +551,11 @@ export class Task {
 
 	async abortTask() {
 		// Delegate to lifecycle service
-		return this.lifecycleService.abortTask()
+		const result = await this.lifecycleService.abortTask()
+		// Clean up resources via coordinator
+		await this.resourceCoordinator.cleanup()
+		await this.eventCoordinator.dispose()
+		return result
 	}
 
 	// Tools
