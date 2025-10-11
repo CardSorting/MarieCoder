@@ -61,16 +61,52 @@ describe("formatModelName", () => {
 	})
 
 	describe("OpenRouter models", () => {
-		it("should format openrouter anthropic models", () => {
+		it("should format openrouter anthropic models compactly", () => {
 			const result = formatModelName("openrouter:anthropic/claude-3.5-sonnet")
 			expect(result.full).toBe("openrouter:anthropic/claude-3.5-sonnet")
-			expect(result.short).toBe("openrouter:anthropic/claude-3.5-sonnet")
+			expect(result.short).toBe("OR:sonnet-3.5")
 		})
 
-		it("should simplify openrouter models with parameter counts", () => {
+		it("should format openrouter anthropic sonnet-4 models", () => {
+			const result = formatModelName("openrouter:anthropic/claude-sonnet-4-20250514")
+			expect(result.full).toBe("openrouter:anthropic/claude-sonnet-4-20250514")
+			expect(result.short).toBe("OR:sonnet-4")
+		})
+
+		it("should format openrouter openai models compactly", () => {
+			const result = formatModelName("openrouter:openai/gpt-4o-2024-05-13")
+			expect(result.full).toBe("openrouter:openai/gpt-4o-2024-05-13")
+			expect(result.short).toBe("OR:gpt-4o")
+		})
+
+		it("should format openrouter openai turbo models", () => {
+			const result = formatModelName("openrouter:openai/gpt-4-turbo-2024-04-09")
+			expect(result.full).toBe("openrouter:openai/gpt-4-turbo-2024-04-09")
+			expect(result.short).toBe("OR:gpt-4-turbo")
+		})
+
+		it("should format openrouter llama models compactly", () => {
 			const result = formatModelName("openrouter:meta-llama/llama-3.1-70b-instruct")
 			expect(result.full).toBe("openrouter:meta-llama/llama-3.1-70b-instruct")
-			expect(result.short).toBe("openrouter:meta-llama/llama-3.1")
+			expect(result.short).toBe("OR:llama-3.1")
+		})
+
+		it("should format openrouter google models", () => {
+			const result = formatModelName("openrouter:google/gemini-1.5-pro-002")
+			expect(result.full).toBe("openrouter:google/gemini-1.5-pro-002")
+			expect(result.short).toBe("OR:gemini-1.5-pro")
+		})
+
+		it("should format openrouter generic models with preview suffix", () => {
+			const result = formatModelName("openrouter:agentica-org/deepcoder-14b-preview")
+			expect(result.full).toBe("openrouter:agentica-org/deepcoder-14b-preview")
+			expect(result.short).toBe("OR:deepcoder")
+		})
+
+		it("should format openrouter models with parameter counts", () => {
+			const result = formatModelName("openrouter:mistralai/mixtral-8x7b-instruct")
+			expect(result.full).toBe("openrouter:mistralai/mixtral-8x7b-instruct")
+			expect(result.short).toBe("OR:mixtral")
 		})
 	})
 
@@ -163,7 +199,17 @@ describe("getModelIdentifier", () => {
 
 	it("should extract identifier from openrouter models", () => {
 		const identifier = getModelIdentifier("openrouter:anthropic/claude-3.5-sonnet")
-		expect(identifier).toBe("anthropic/claude-3.5-sonnet")
+		expect(identifier).toBe("sonnet-3.5")
+	})
+
+	it("should extract identifier from openrouter openai models", () => {
+		const identifier = getModelIdentifier("openrouter:openai/gpt-4o-2024-05-13")
+		expect(identifier).toBe("gpt-4o")
+	})
+
+	it("should extract identifier from openrouter generic models", () => {
+		const identifier = getModelIdentifier("openrouter:agentica-org/deepcoder-14b-preview")
+		expect(identifier).toBe("deepcoder")
 	})
 
 	it("should handle unknown models", () => {

@@ -61,22 +61,58 @@ export function formatModelName(fullModelName: string): { full: string; short: s
 		shortName = `${provider}:${modelWithoutDate}`
 	}
 
-	// OpenRouter models: Show provider and base model name
+	// OpenRouter models: Extract and format the core model name
 	else if (provider === "openrouter") {
-		// openrouter/anthropic/claude-3.5-sonnet -> anthropic/sonnet-3.5
-		// openrouter/meta-llama/llama-3.1-70b-instruct -> meta-llama/llama-3.1
+		// openrouter:anthropic/claude-3.5-sonnet -> OR:sonnet-3.5
+		// openrouter:openai/gpt-4o-2024-05-13 -> OR:gpt-4o
+		// openrouter:agentica-org/deepcoder-14b-preview -> OR:deepcoder-14b
 		const parts = modelId.split("/")
+
 		if (parts.length >= 2) {
-			const modelProvider = parts[0]
-			const model = parts[parts.length - 1]
+			const modelMaker = parts[0] // anthropic, openai, agentica-org, meta-llama, etc.
+			const modelName = parts[1]
 
-			// Try to extract key version/tier info
-			const simplifiedModel = model
-				.replace(/-instruct$/, "")
-				.replace(/-\d+b$/, "") // Remove parameter count like -70b
-				.replace(/-\d{4}-\d{2}-\d{2}$/, "") // Remove dates
+			// Apply provider-specific formatting to the model name
+			let formattedModel = modelName
 
-			shortName = `${provider}:${modelProvider}/${simplifiedModel}`
+			if (modelMaker === "anthropic") {
+				// claude-3-5-sonnet-20241022 -> sonnet-3.5
+				const tierMatch = modelName.match(/(opus|sonnet|haiku)/)
+				const versionMatch = modelName.match(/claude-(\d+)-(\d+)/) || modelName.match(/-([\d]+)/)
+
+				if (tierMatch) {
+					const tier = tierMatch[1]
+					if (versionMatch) {
+						const majorVersion = versionMatch[1]
+						const minorVersion = versionMatch[2]
+						formattedModel = minorVersion ? `${tier}-${majorVersion}.${minorVersion}` : `${tier}-${majorVersion}`
+					} else {
+						formattedModel = tier
+					}
+				}
+			} else if (modelMaker === "openai" || modelMaker === "google") {
+				// gpt-4o-2024-05-13 -> gpt-4o
+				// gemini-1.5-pro-002 -> gemini-1.5-pro
+				formattedModel = modelName
+					.replace(/-\d{4}-\d{2}-\d{2}$/, "") // Remove dates
+					.replace(/-\d{3}$/, "") // Remove version suffixes like -002
+					.replace(/-exp$/, "") // Remove experimental suffix
+					.replace(/-preview$/, "") // Remove preview suffix
+			} else if (modelMaker.includes("llama") || modelMaker === "meta-llama") {
+				// llama-3.1-70b-instruct -> llama-3.1
+				formattedModel = modelName.replace(/-instruct$/, "").replace(/-\d+b(-instruct)?$/, "") // Remove parameter count like -70b
+			} else {
+				// Generic: remove common suffixes (preview, instruct, parameter counts)
+				formattedModel = modelName
+					.replace(/-preview$/, "")
+					.replace(/-instruct$/, "")
+					.replace(/-\d+x\d+b$/, "") // Remove MoE parameter count like -8x7b
+					.replace(/-\d+b$/, "") // Remove parameter count like -14b
+					.replace(/-\d{4}-\d{2}-\d{2}$/, "") // Remove dates
+			}
+
+			// Use "OR" as compact prefix for OpenRouter
+			shortName = `OR:${formattedModel}`
 		}
 	}
 

@@ -42,10 +42,18 @@ Model names are now intelligently shortened to show the most relevant informatio
 
 ### OpenRouter Models
 
+OpenRouter models use a special compact "OR:" prefix to save space:
+
 | Full Name | Display Name |
 |-----------|--------------|
-| `openrouter:anthropic/claude-3.5-sonnet` | `openrouter:anthropic/claude-3.5-sonnet` |
-| `openrouter:meta-llama/llama-3.1-70b-instruct` | `openrouter:meta-llama/llama-3.1` |
+| `openrouter:anthropic/claude-3.5-sonnet` | `OR:sonnet-3.5` |
+| `openrouter:anthropic/claude-sonnet-4-20250514` | `OR:sonnet-4` |
+| `openrouter:openai/gpt-4o-2024-05-13` | `OR:gpt-4o` |
+| `openrouter:openai/gpt-4-turbo-2024-04-09` | `OR:gpt-4-turbo` |
+| `openrouter:google/gemini-1.5-pro-002` | `OR:gemini-1.5-pro` |
+| `openrouter:meta-llama/llama-3.1-70b-instruct` | `OR:llama-3.1` |
+| `openrouter:agentica-org/deepcoder-14b-preview` | `OR:deepcoder` |
+| `openrouter:mistralai/mixtral-8x7b-instruct` | `OR:mixtral` |
 
 ### Other Providers
 
@@ -61,8 +69,9 @@ Model names are now intelligently shortened to show the most relevant informatio
 3. **Smart Formatting**: The algorithm extracts the most meaningful parts:
    - Model tier/family (sonnet, opus, haiku, gpt-4, gemini, etc.)
    - Version numbers (major.minor when available)
-   - Provider name (always preserved)
+   - Provider name (always preserved, except OpenRouter uses "OR:" prefix)
    - Removes: Date suffixes, version codes, experimental tags, parameter counts
+4. **OpenRouter Special Handling**: Uses ultra-compact "OR:" prefix since OpenRouter already wraps other providers
 
 ## Benefits
 
