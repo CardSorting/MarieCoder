@@ -76,7 +76,7 @@ export const Navbar = () => {
 							tab.navigate()
 						}}
 						style={{ padding: "0px", height: "20px", cursor: "pointer", pointerEvents: "auto" }}>
-						<div className="flex items-center gap-1 text-xs whitespace-nowrap min-w-0 w-full pointer-events-none">
+						<div className="flex items-center gap-1 text-xs whitespace-nowrap min-w-0 w-full">
 							<tab.icon className="text-[var(--vscode-foreground)]" size={18} strokeWidth={1} />
 						</div>
 					</VSCodeButton>

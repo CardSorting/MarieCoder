@@ -11,6 +11,20 @@ export default {
 				"azeret-mono": ['"Azeret Mono"', "monospace"],
 			},
 			colors: {
+				// MarieCoder brand colors
+				brand: {
+					purple: {
+						start: "#6B46C1",
+						DEFAULT: "#7B4FD4",
+						end: "#9333EA",
+					},
+					accent: {
+						white: "#FFFFFF",
+						light: "#E0E7FF",
+						soft: "#F3E8FF",
+					},
+				},
+				// VSCode theme colors
 				background: "var(--vscode-editor-background)",
 				border: {
 					DEFAULT: "var(--vscode-focusBorder)",
@@ -96,6 +110,27 @@ export default {
 				sm: "var(--vscode-font-size)",
 				xs: "calc(0.85 * var(--vscode-font-size))",
 				xxs: "calc(0.75 * var(--vscode-font-size))",
+			},
+			spacing: {
+				xs: "4px",
+				sm: "8px",
+				md: "12px",
+				lg: "16px",
+				xl: "20px",
+			},
+			borderRadius: {
+				sm: "3px",
+				DEFAULT: "4px",
+				md: "4px",
+				lg: "6px",
+				xl: "8px",
+				"2xl": "12px",
+				"3xl": "16px",
+			},
+			transitionDuration: {
+				fast: "150ms",
+				DEFAULT: "200ms",
+				slow: "300ms",
 			},
 		},
 	},

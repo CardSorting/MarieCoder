@@ -31,19 +31,23 @@ const renderIcon = (iconName?: string) => {
 const QuickWinCard: React.FC<QuickWinCardProps> = ({ task, onExecute }) => {
 	return (
 		<div
-			className="flex items-center mb-2 py-0 px-5 space-x-3 rounded-full cursor-pointer group transition-colors duration-150 ease-in-out bg-white/[0.02] border border-[var(--vscode-panel-border)] hover:bg-[var(--vscode-list-hoverBackground)]"
-			onClick={() => onExecute()}>
-			<div className="flex-shrink-0 flex items-center justify-center w-6 h-6 text-[var(--vscode-icon-foreground)]">
+			className="marie-card branded flex items-center mb-2 py-2 px-5 space-x-3 rounded-full cursor-pointer group"
+			onClick={() => onExecute()}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault()
+					onExecute()
+				}
+			}}
+			role="button"
+			tabIndex={0}>
+			<div className="flex-shrink-0 flex items-center justify-center w-6 h-6 text-brand-purple">
 				{renderIcon(task.icon)}
 			</div>
 
 			<div className="flex-grow min-w-0">
-				<h3 className="text-sm font-medium truncate text-[var(--vscode-editor-foreground)] leading-tight mb-0 mt-0 pt-3">
-					{task.title}
-				</h3>
-				<p className="text-xs truncate text-[var(--vscode-descriptionForeground)] leading-tight mt-[1px]">
-					{task.description}
-				</p>
+				<h3 className="text-sm font-medium truncate text-foreground leading-tight mb-0 mt-0">{task.title}</h3>
+				<p className="text-xs truncate text-description leading-tight mt-[1px] mb-1">{task.description}</p>
 			</div>
 		</div>
 	)

@@ -144,7 +144,6 @@ export interface WelcomeSectionProps {
 	showHistoryView: () => void
 	version: string
 	taskHistory: any[]
-	shouldShowQuickWins: boolean
 }
 
 /**

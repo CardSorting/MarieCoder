@@ -44,16 +44,11 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 			<style>
 				{`
 					.history-preview-item {
-						background-color: color-mix(in srgb, var(--vscode-toolbar-hoverBackground) 65%, transparent);
-						border-radius: 4px;
 						position: relative;
 						overflow: hidden;
 						opacity: 0.8;
-						cursor: pointer;
-						margin-bottom: 12px;
 					}
 					.history-preview-item:hover {
-						background-color: color-mix(in srgb, var(--vscode-toolbar-hoverBackground) 100%, transparent);
 						opacity: 1;
 						pointer-events: auto;
 					}
@@ -107,10 +102,18 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 								.slice(0, 3)
 								.map((item) => (
 									<div
-										className="history-preview-item"
+										className="marie-card history-preview-item"
 										key={item.id}
-										onClick={() => handleHistorySelect(item.id)}>
-										<div style={{ padding: "12px" }}>
+										onClick={() => handleHistorySelect(item.id)}
+										onKeyDown={(e) => {
+											if (e.key === "Enter" || e.key === " ") {
+												e.preventDefault()
+												handleHistorySelect(item.id)
+											}
+										}}
+										role="button"
+										tabIndex={0}>
+										<div>
 											<div style={{ marginBottom: "8px" }}>
 												<span
 													style={{
@@ -124,11 +127,11 @@ const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
 											</div>
 											{item.isFavorited && (
 												<div
+													className="text-brand-purple"
 													style={{
 														position: "absolute",
 														top: "12px",
 														right: "12px",
-														color: "var(--vscode-button-background)",
 													}}>
 													<span aria-label="Favorited" className="codicon codicon-star-full" />
 												</div>
