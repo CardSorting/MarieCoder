@@ -327,6 +327,9 @@ export async function createRuleFile(
 	}
 }
 
+// Protected rules that cannot be deleted
+const PROTECTED_RULES = ["konmari-method.md"]
+
 /**
  * Delete a rule file
  */
@@ -340,6 +343,12 @@ export async function deleteRuleFile(
 		const fileExists = await fileExistsAtPath(rulePath)
 		if (!fileExists) {
 			return { success: false, message: `File does not exist: ${rulePath}` }
+		}
+
+		// Check if this is a protected rule
+		const ruleFileName = path.basename(rulePath)
+		if (PROTECTED_RULES.includes(ruleFileName)) {
+			return { success: false, message: `Cannot delete protected rule: ${ruleFileName}` }
 		}
 
 		await fs.rm(rulePath, { force: true })

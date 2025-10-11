@@ -61,7 +61,7 @@ export const ModelSelectorTooltip = ({
 
 export const ModelContainer = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ children }, ref) => (
 	<div
-		className="relative flex flex-1 min-w-0 max-w-[300px] px-2.5 py-1.5 rounded-md bg-[var(--vscode-editor-background)] border border-[var(--vscode-panel-border)]"
+		className="relative flex flex-1 min-w-[120px] max-w-[200px] sm:max-w-[250px] md:max-w-[300px] px-2.5 py-1.5 rounded-md bg-[var(--vscode-editor-background)] border border-[var(--vscode-panel-border)]"
 		ref={ref}
 		style={{
 			boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
@@ -92,7 +92,7 @@ export const ModelDisplayButton = ({
 	<button
 		className={`
 			px-3 py-1.5 h-auto min-h-[24px] w-full min-w-0 
-			flex items-center justify-center text-xs
+			flex items-center justify-start text-xs
 			rounded-md
 			outline-none select-none transition-all duration-200
 			font-medium
@@ -113,8 +113,8 @@ export const ModelDisplayButton = ({
 )
 
 export const ModelButtonContent = ({ children }: { children: React.ReactNode }) => (
-	<div className="w-full min-w-0 overflow-hidden text-ellipsis whitespace-nowrap flex items-center justify-center gap-1.5">
-		<span className="codicon codicon-symbol-method text-xs opacity-70" />
-		{children}
+	<div className="w-full min-w-0 flex items-center gap-1.5">
+		<span className="codicon codicon-symbol-method text-xs opacity-70 flex-shrink-0" />
+		<span className="overflow-hidden text-ellipsis whitespace-nowrap min-w-0">{children}</span>
 	</div>
 )

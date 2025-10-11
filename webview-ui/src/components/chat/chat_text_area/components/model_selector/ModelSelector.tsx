@@ -43,7 +43,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
 					onClick={onModelButtonClick}
 					role="button"
 					tabIndex={0}
-					title="Select Model / API Provider">
+					title={`${modelDisplayName}\n\nClick to select a different model or API provider`}>
 					<ModelButtonContent>{modelDisplayName}</ModelButtonContent>
 				</ModelDisplayButton>
 			</ModelButtonWrapper>

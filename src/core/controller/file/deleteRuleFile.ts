@@ -1,9 +1,13 @@
 import { deleteRuleFile as deleteRuleFileImpl } from "@core/context/instructions/user-instructions/rule_loader"
 import { getWorkspaceBasename } from "@core/workspace"
 import { RuleFile, RuleFileRequest } from "@shared/proto/cline/file"
+import * as path from "path"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import { Controller } from ".."
+
+// Protected rules that cannot be deleted
+const PROTECTED_RULES = ["konmari-method.md"]
 
 /**
  * Deletes a rule file from either global or workspace rules directory
@@ -26,6 +30,17 @@ export async function deleteRuleFile(controller: Controller, request: RuleFileRe
 			type: typeof request.type === "string" ? request.type : `Invalid: ${typeof request.type}`,
 		})
 		throw new Error("Missing or invalid parameters")
+	}
+
+	// Check if this is a protected rule
+	const ruleFileName = path.basename(request.rulePath)
+	if (PROTECTED_RULES.includes(ruleFileName)) {
+		const errorMessage = `Cannot delete protected rule: ${ruleFileName}`
+		HostProvider.window.showMessage({
+			type: ShowMessageType.ERROR,
+			message: errorMessage,
+		})
+		throw new Error(errorMessage)
 	}
 
 	const result = await deleteRuleFileImpl(controller, request.rulePath, request.isGlobal, request.type)

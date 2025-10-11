@@ -17,6 +17,9 @@ const RuleRowComponent: React.FC<{
 	// Get the filename from the path for display
 	const displayName = rulePath.split(win32Path ? "\\" : "/").pop() || rulePath
 
+	// Protected rules that cannot be deleted
+	const isProtectedRule = displayName === "konmari-method.md"
+
 	const getRuleTypeIcon = () => {
 		switch (ruleType) {
 			case "cursor":
@@ -117,14 +120,16 @@ const RuleRowComponent: React.FC<{
 						title="Edit rule file">
 						<span className="codicon codicon-edit" style={{ fontSize: "14px" }} />
 					</VSCodeButton>
-					<VSCodeButton
-						appearance="icon"
-						aria-label="Delete rule file"
-						onClick={handleDeleteClick}
-						style={{ height: "20px" }}
-						title="Delete rule file">
-						<span className="codicon codicon-trash" style={{ fontSize: "14px" }} />
-					</VSCodeButton>
+					{!isProtectedRule && (
+						<VSCodeButton
+							appearance="icon"
+							aria-label="Delete rule file"
+							onClick={handleDeleteClick}
+							style={{ height: "20px" }}
+							title="Delete rule file">
+							<span className="codicon codicon-trash" style={{ fontSize: "14px" }} />
+						</VSCodeButton>
+					)}
 				</div>
 			</div>
 		</div>
