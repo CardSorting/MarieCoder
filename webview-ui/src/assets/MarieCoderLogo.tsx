@@ -73,20 +73,51 @@ const MarieCoderLogo: React.FC<MarieCoderLogoProps> = ({ className = "", size = 
 			{/* Rounded square background with purple gradient */}
 			<rect fill={`url(#${gradientId})`} height="120" rx="24" width="120" x="4" y="4" />
 
-			{/* Elegant "M" letter for Marie */}
-			<text
-				fill={`url(#${accentId})`}
-				fontFamily="Arial, sans-serif"
-				fontSize="76"
-				fontWeight="bold"
-				textAnchor="middle"
-				x="64"
-				y="94">
-				M
-			</text>
+			{/* Code bracket left side */}
+			<path
+				d="M 38 35 L 28 35 Q 23 35 23 40 L 23 88 Q 23 93 28 93 L 38 93"
+				fill="none"
+				stroke={`url(#${accentId})`}
+				strokeLinecap="round"
+				strokeWidth="6"
+			/>
 
-			{/* Subtle accent dot */}
-			<circle cx="100" cy="28" fill={accentColor} opacity={isDark ? 0.8 : 0.9} r="8" />
+			{/* Code bracket right side */}
+			<path
+				d="M 90 35 L 100 35 Q 105 35 105 40 L 105 88 Q 105 93 100 93 L 90 93"
+				fill="none"
+				stroke={`url(#${accentId})`}
+				strokeLinecap="round"
+				strokeWidth="6"
+			/>
+
+			{/* Stylized "M" in the center made of geometric shapes */}
+			<path
+				d="M 50 50 L 50 78 M 50 50 L 64 65 M 78 50 L 64 65 M 78 50 L 78 78"
+				fill="none"
+				stroke={`url(#${accentId})`}
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				strokeWidth="7"
+			/>
+
+			{/* AI Sparkle accent - top right */}
+			<g opacity={isDark ? 0.9 : 1}>
+				<circle cx="95" cy="25" fill={accentColor} r="3" />
+				<path d="M 95 18 L 95 32 M 88 25 L 102 25" stroke={accentColor} strokeLinecap="round" strokeWidth="2" />
+			</g>
+
+			{/* Small code symbol accent - bottom left */}
+			<text
+				fill={accentColor}
+				fontFamily="monospace"
+				fontSize="14"
+				fontWeight="bold"
+				opacity={isDark ? 0.7 : 0.8}
+				x="30"
+				y="108">
+				{"</>"}
+			</text>
 		</svg>
 	)
 }
