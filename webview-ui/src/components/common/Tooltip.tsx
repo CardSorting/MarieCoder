@@ -89,12 +89,25 @@ export function Tooltip({
 	}
 
 	// Clone child and attach event handlers + ref
+	// Merge handlers with existing ones to preserve child's onClick and other events
 	const child = cloneElement(children, {
 		ref: referenceRef,
-		onMouseEnter: handleMouseEnter,
-		onMouseLeave: handleMouseLeave,
-		onFocus: handleFocus,
-		onBlur: handleBlur,
+		onMouseEnter: (e: any) => {
+			children.props.onMouseEnter?.(e)
+			handleMouseEnter()
+		},
+		onMouseLeave: (e: any) => {
+			children.props.onMouseLeave?.(e)
+			handleMouseLeave()
+		},
+		onFocus: (e: any) => {
+			children.props.onFocus?.(e)
+			handleFocus()
+		},
+		onBlur: (e: any) => {
+			children.props.onBlur?.(e)
+			handleBlur()
+		},
 		"aria-describedby": isOpen ? "tooltip" : undefined,
 	} as any)
 
