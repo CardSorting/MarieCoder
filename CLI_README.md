@@ -251,6 +251,43 @@ cd project1 && mariecoder "Task 1"
 cd ../project2 && mariecoder "Task 2"
 ```
 
+### Cline Rules Integration
+
+The CLI automatically loads and applies `.clinerules` from your workspace, just like the VSCode extension:
+
+```bash
+# Create a .clinerules directory in your project
+mkdir .clinerules
+
+# Add your coding standards
+echo "# Project Standards
+
+## Naming Conventions
+- Use snake_case for file names
+- Use camelCase for variables
+
+## Code Style  
+- Use TypeScript strict mode
+- Add JSDoc to all exports" > .clinerules/standards.md
+```
+
+**What are Cline Rules?**
+- Project-specific coding standards and conventions
+- Automatically applied to all AI interactions
+- Help maintain consistency across your codebase
+- Loaded by default - no configuration needed
+
+**Rule Locations:**
+- **Local Rules**: `.clinerules/` in your workspace (project-specific)
+- **Global Rules**: `~/Documents/Cline/Rules/` (apply to all projects)
+
+The CLI will inform you when rules are loaded:
+```
+✓ Loaded 3 local rule files from .clinerules/
+```
+
+For more details, see the [Cline Rules documentation](https://docs.getcline.com/features/cline-rules).
+
 ## 🔐 Security & Privacy
 
 - **API Keys**: Stored securely in `~/.mariecoder/cli/secrets.json` (not tracked in git)

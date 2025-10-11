@@ -91,7 +91,48 @@ class MarieCli {
 		// Create webview provider
 		this.webviewProvider = new CliWebviewProvider(this.context)
 
+		// Ensure clinerules are loaded and enabled by default for CLI
+		await this.ensureClineRulesEnabled()
+
 		console.log("✅ MarieCoder CLI initialized")
+	}
+
+	/**
+	 * Ensure clinerules are loaded and enabled by default
+	 */
+	private async ensureClineRulesEnabled(): Promise<void> {
+		try {
+			const controller = this.webviewProvider.controller
+			const { refreshAllToggles, getLocalClineRules, getGlobalClineRules } = await import(
+				"@/core/context/instructions/user-instructions/rule_loader"
+			)
+
+			// Refresh and sync all rule toggles - this automatically enables new rules
+			const allToggles = await refreshAllToggles(controller, this.options.workspace)
+
+			// Check if local rules exist and report to user
+			const localRules = await getLocalClineRules(this.options.workspace, allToggles.localClineRules)
+			const globalRules = await getGlobalClineRules(allToggles.globalClineRules)
+
+			if (localRules) {
+				const ruleCount = Object.keys(allToggles.localClineRules).length
+				console.log(`✓ Loaded ${ruleCount} local rule file${ruleCount !== 1 ? "s" : ""} from .clinerules/`)
+			}
+
+			if (globalRules && this.options.verbose) {
+				const globalRuleCount = Object.keys(allToggles.globalClineRules).length
+				console.log(`✓ Loaded ${globalRuleCount} global rule file${globalRuleCount !== 1 ? "s" : ""}`)
+			}
+
+			if (!localRules && !globalRules && this.options.verbose) {
+				console.log("ℹ No .clinerules found in workspace or global directory")
+			}
+		} catch (error) {
+			if (this.options.verbose) {
+				console.warn("⚠ Could not sync cline rules:", error)
+			}
+			// Non-fatal error - continue initialization
+		}
 	}
 
 	/**
@@ -372,6 +413,10 @@ ENVIRONMENT VARIABLES:
 
 CONFIGURATION:
   Config is stored in: ~/.mariecoder/cli/
+  
+  Cline Rules: The CLI automatically loads and applies .clinerules from your
+  workspace directory. Rules are enabled by default and help MarieCoder
+  follow your project's coding standards and conventions.
 
 MORE INFO:
   https://github.com/CardSorting/MarieCoder
