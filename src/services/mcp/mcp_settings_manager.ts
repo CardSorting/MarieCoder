@@ -69,6 +69,15 @@ export class McpSettingsManager {
 	}
 
 	/**
+	 * Get MCP servers directory path
+	 *
+	 * @returns Promise<string> - Absolute path to MCP servers directory
+	 */
+	getMcpServersPathAsync(): Promise<string> {
+		return this.getMcpServersPath()
+	}
+
+	/**
 	 * Read and validate MCP settings file
 	 *
 	 * Reads the settings file, parses JSON, and validates against the schema.

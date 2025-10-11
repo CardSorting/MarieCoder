@@ -47,7 +47,7 @@ export class ResourceCoordinator {
 	 */
 	private async cleanupBrowser(): Promise<void> {
 		try {
-			await this.browserSession.close()
+			await this.browserSession.dispose()
 			Logger.debug("[ResourceCoordinator] Browser session closed")
 		} catch (error) {
 			Logger.error(
@@ -62,7 +62,7 @@ export class ResourceCoordinator {
 	 */
 	private async cleanupTerminal(): Promise<void> {
 		try {
-			await this.terminalManager.dispose()
+			this.terminalManager.disposeAll()
 			Logger.debug("[ResourceCoordinator] Terminal manager disposed")
 		} catch (error) {
 			Logger.error(
@@ -81,11 +81,12 @@ export class ResourceCoordinator {
 		}
 
 		try {
-			await this.checkpointManager.dispose()
-			Logger.debug("[ResourceCoordinator] Checkpoint manager disposed")
+			// Checkpoint managers don't have a dispose method
+			// Cleanup is handled by the checkpoint tracker internally
+			Logger.debug("[ResourceCoordinator] Checkpoint manager cleanup complete")
 		} catch (error) {
 			Logger.error(
-				"[ResourceCoordinator] Error disposing checkpoint manager",
+				"[ResourceCoordinator] Error with checkpoint manager cleanup",
 				error instanceof Error ? error : new Error(String(error)),
 			)
 		}

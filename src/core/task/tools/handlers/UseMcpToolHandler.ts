@@ -79,9 +79,10 @@ export class UseMcpToolHandler implements IFullyManagedTool {
 			arguments: mcp_arguments,
 		} satisfies ClineAskUseMcpServer)
 
-		const isToolAutoApproved = config.services.mcpHub.connections
-			?.find((conn: any) => conn.server.name === server_name)
-			?.server.tools?.find((tool: any) => tool.name === tool_name)?.autoApprove
+		const servers = config.services.mcpHub.getServers()
+		const server = servers.find((srv: any) => srv.name === server_name)
+		const tool = server?.tools?.find((tool: any) => tool.name === tool_name)
+		const isToolAutoApproved = tool?.autoApprove
 
 		if (config.callbacks.shouldAutoApproveTool(block.name) && isToolAutoApproved) {
 			// Auto-approval flow

@@ -88,6 +88,15 @@ export class McpHub {
 	}
 
 	/**
+	 * Get MCP servers directory path (delegates to SettingsManager)
+	 *
+	 * @returns Promise<string> - Path to MCP servers directory
+	 */
+	async getMcpServersPath(): Promise<string> {
+		return await this.settingsManager.getMcpServersPathAsync()
+	}
+
+	/**
 	 * Watch MCP settings file for changes
 	 *
 	 * Sets up file watching (via SettingsManager) and triggers connection

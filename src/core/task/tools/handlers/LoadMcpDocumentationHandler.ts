@@ -1,5 +1,5 @@
 import type { ToolUse } from "@core/assistant-message"
-import { loadMcpDocumentation } from "@core/prompts/loadMcpDocumentation"
+import { loadMcpDocumentation } from "@core/prompts/mcp_server_guide"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ToolResponse } from "../../index"
 import type { IPartialBlockHandler, IToolHandler } from "../ToolExecutorCoordinator"

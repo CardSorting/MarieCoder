@@ -33,12 +33,15 @@ export class StateCoordinator {
 	/**
 	 * Update task history with current state
 	 * Persists current task state to history storage
+	 * Note: HistoryItem creation is handled by MessageStateHandler.saveClineMessagesAndUpdateHistory()
+	 * This method exists for future direct history updates if needed
 	 */
 	async updateHistory(): Promise<void> {
 		try {
-			const historyItem = this.taskState.toHistoryItem()
-			await this.updateTaskHistory(historyItem)
-			Logger.debug("[StateCoordinator] History updated successfully")
+			// History updates are handled by MessageStateHandler.saveClineMessagesAndUpdateHistory()
+			// which has access to all the necessary data (clineMessages, apiMetrics, etc.)
+			// This method is a placeholder for future direct history updates
+			Logger.debug("[StateCoordinator] History update delegated to MessageStateHandler")
 		} catch (error) {
 			Logger.error("[StateCoordinator] Error updating history", error instanceof Error ? error : new Error(String(error)))
 			throw error

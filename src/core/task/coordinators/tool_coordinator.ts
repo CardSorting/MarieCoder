@@ -1,7 +1,6 @@
 import { Logger } from "@services/logging/Logger"
 import { ClineDefaultTool } from "@shared/tools"
 import { ToolExecutor } from "../ToolExecutor"
-import type { ToolResponse } from "../types/task_types"
 
 /**
  * Coordinates tool execution and result handling
@@ -20,25 +19,21 @@ export class ToolCoordinator {
 	 * Execute a tool with full lifecycle management
 	 * Handles pre/post execution hooks and error handling
 	 *
-	 * @param toolName - Name of the tool to execute
-	 * @param toolInput - Input parameters for the tool
-	 * @returns Tool execution result
+	 * @param block - ToolUse block containing tool name and input
 	 */
-	async executeTool(toolName: string, toolInput: any): Promise<ToolResponse> {
+	async executeTool(block: any): Promise<void> {
 		try {
 			// Pre-execution hooks
-			await this.beforeToolExecution(toolName, toolInput)
+			await this.beforeToolExecution(block.name, block.input)
 
 			// Execute the tool
-			const result = await this.toolExecutor.executeTool(toolName, toolInput)
+			await this.toolExecutor.executeTool(block)
 
 			// Post-execution hooks
-			await this.afterToolExecution(toolName, result)
-
-			return result
+			await this.afterToolExecution(block.name)
 		} catch (error) {
 			Logger.error(
-				`[ToolCoordinator] Error executing tool: ${toolName}`,
+				`[ToolCoordinator] Error executing tool: ${block.name}`,
 				error instanceof Error ? error : new Error(String(error)),
 			)
 			throw error
@@ -63,7 +58,7 @@ export class ToolCoordinator {
 	 * Post-execution hook
 	 * Called after successful tool execution for result processing
 	 */
-	private async afterToolExecution(toolName: string, result: ToolResponse): Promise<void> {
+	private async afterToolExecution(toolName: string): Promise<void> {
 		Logger.debug(`[ToolCoordinator] Tool execution completed: ${toolName}`)
 
 		// Additional post-execution logic can be added here:
