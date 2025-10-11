@@ -1,7 +1,7 @@
 /**
  * Provider Metadata Types
  * Minimal definitions for provider capabilities and metadata
- * Follows NORMIE DEV methodology: only what's actually used
+ * Follows MARIECODER methodology: only what's actually used
  */
 
 /**

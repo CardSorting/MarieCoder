@@ -18,7 +18,7 @@ interface AnthropicProviderOptions extends BaseProviderOptions {
 /**
  * Refactored Anthropic provider using the new base class system
  * Demonstrates clean, maintainable provider implementation
- * Follows NORMIE DEV methodology: clean, unified, no duplication
+ * Follows MARIECODER methodology: clean, unified, no duplication
  */
 export class AnthropicProvider extends BaseProvider {
 	private anthropicOptions: AnthropicProviderOptions

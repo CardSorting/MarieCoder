@@ -25,7 +25,7 @@ export interface ModeConfiguration {
 /**
  * Configuration management service
  * Only supports Anthropic and OpenRouter
- * Follows NORMIE DEV methodology: clean, unified, no duplication
+ * Follows MARIECODER methodology: clean, unified, no duplication
  */
 export class ConfigurationService {
 	/**

@@ -1,7 +1,7 @@
 /**
  * Supported Provider Registration Index
  * Only Anthropic and OpenRouter are supported
- * Follows NORMIE DEV methodology: simple, clean, maintainable
+ * Follows MARIECODER methodology: simple, clean, maintainable
  */
 
 // Import registrations

@@ -1,7 +1,7 @@
 /**
  * Components Index - KonMari-Tidied Structure
  *
- * Clean, self-explanatory names following NORMIE DEV methodology:
+ * Clean, self-explanatory names following MARIECODER methodology:
  * - Self-explanatory file names (snake_case for multi-word files)
  * - No complex abstractions or duplicates
  * - Clear, unified exports
@@ -15,7 +15,7 @@ export * from "./file_operations" // File editing guidelines
 export * from "./mcp_servers" // MCP server integration (renamed from external_servers)
 export * from "./mission_statement" // Core mission and objectives
 export * from "./planning_modes" // ACT vs PLAN mode instructions (renamed from agent_planning_modes)
-export * from "./rules" // NORMIE DEV methodology rules
+export * from "./rules" // MARIECODER methodology rules
 export * from "./system_environment" // System environment info (renamed from environment_context)
 export * from "./task_progress" // Task and progress tracking (consolidated from task_tracking + progress_tracking)
 export * from "./tools_and_capabilities" // Tool usage and capabilities (consolidated from tool_use + available_tools)

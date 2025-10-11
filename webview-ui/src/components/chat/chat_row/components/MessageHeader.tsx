@@ -41,8 +41,8 @@ export const MessageHeader = memo(
 					...style,
 				}}>
 				<div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
-					{icon}
-					{title}
+					{icon && icon}
+					{title && title}
 					{children}
 				</div>
 				{showChevron && onToggle && (

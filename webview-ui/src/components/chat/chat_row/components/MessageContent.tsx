@@ -309,7 +309,7 @@ export const MessageContent = memo(
 						<>
 							{title && (
 								<div style={headerStyle}>
-									{icon}
+									{icon && icon}
 									{title}
 								</div>
 							)}
@@ -369,7 +369,7 @@ export const MessageContent = memo(
 						<>
 							{title && (
 								<div style={headerStyle}>
-									{icon}
+									{icon && icon}
 									{title}
 								</div>
 							)}

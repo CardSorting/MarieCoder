@@ -8,7 +8,7 @@ import { ErrorService } from "./error-service"
 /**
  * Provider factory service for creating API handlers
  * Only supports Anthropic and OpenRouter
- * Follows NORMIE DEV methodology: ruthlessly simple
+ * Follows MARIECODER methodology: ruthlessly simple
  */
 export class ProviderFactoryService {
 	/**

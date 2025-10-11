@@ -68,8 +68,8 @@ export const ApiRequestDisplay = memo(
 						msUserSelect: "none",
 					}}>
 					<div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-						{icon}
-						{title}
+						{icon && icon}
+						{title && title}
 						<VSCodeBadge style={{ opacity: cost != null && cost > 0 ? 1 : 0 }}>
 							${Number(cost || 0)?.toFixed(4)}
 						</VSCodeBadge>

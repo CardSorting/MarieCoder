@@ -9,12 +9,12 @@
 		"dark": "#000000"
 	},
 	"logo": {
-		"light": "/assets/normie-icon.png",
-		"dark": "/assets/normie-icon.png"
+		"light": "/assets/marie-icon.png",
+		"dark": "/assets/marie-icon.png"
 	},
 	"favicon": {
-		"light": "/assets/normie-icon.png",
-		"dark": "/assets/normie-icon.png"
+		"light": "/assets/marie-icon.png",
+		"dark": "/assets/marie-icon.png"
 	},
 	"background": {
 		"color": {

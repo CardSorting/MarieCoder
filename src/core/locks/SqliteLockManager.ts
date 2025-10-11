@@ -1,7 +1,7 @@
 /**
  * SQLite Lock Manager - KonMari-Tidied Structure
  *
- * Clean, self-explanatory modules following NORMIE DEV methodology:
+ * Clean, self-explanatory modules following MARIECODER methodology:
  * - lock_database.ts: Database initialization and schema
  * - lock_operations.ts: Instance registry operations
  * - lock_utils.ts: Utility functions

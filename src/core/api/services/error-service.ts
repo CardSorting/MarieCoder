@@ -83,7 +83,7 @@ export class ApiError extends Error {
 
 /**
  * Error handling service for consistent error management
- * Follows NORMIE DEV methodology: clean, unified error handling
+ * Follows MARIECODER methodology: clean, unified error handling
  */
 export class ErrorService {
 	/**

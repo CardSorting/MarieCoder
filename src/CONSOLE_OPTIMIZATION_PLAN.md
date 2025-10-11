@@ -223,7 +223,7 @@ For each file:
 
 ### Find Files with Most Console Statements
 ```bash
-cd /Users/bozoegg/Desktop/NormieDev
+cd /Users/bozoegg/Desktop/MarieCoder
 grep -r "console\." --include="*.ts" src/ | cut -d: -f1 | sort | uniq -c | sort -rn | head -20
 ```
 

@@ -227,7 +227,7 @@ function getMySection(variant, context) {
 
 ### agent_identity.ts (Simple)
 ```typescript
-const AGENT_ROLE = "You are Normie..."
+const AGENT_ROLE = "You are Marie..."
 
 export const getAgentRoleSection = createComponent({
   section: SystemPromptSection.AGENT_ROLE,

@@ -57,7 +57,7 @@ export class Controller {
 
 	constructor(readonly context: vscode.ExtensionContext) {
 		PromptRegistry.getInstance() // Ensure prompts and tools are registered
-		HostProvider.get().logToChannel("NormieProvider instantiated")
+		HostProvider.get().logToChannel("MarieProvider instantiated")
 		this.stateManager = StateManager.get()
 
 		// Initialize event emitter

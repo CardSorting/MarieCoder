@@ -44,7 +44,7 @@ Status:        Ready to deploy ✅
 ## 🚀 To Deploy
 
 ```bash
-cd /Users/bozoegg/Desktop/NormieDev
+cd /Users/bozoegg/Desktop/MarieCoder
 
 # Review
 git status

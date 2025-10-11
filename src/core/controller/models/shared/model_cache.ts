@@ -6,7 +6,7 @@ import path from "path"
 /**
  * Unified model caching service
  * Only used for OpenRouter (Anthropic models are static)
- * Follows NORMIE DEV methodology: ruthlessly simple
+ * Follows MARIECODER methodology: ruthlessly simple
  */
 export class ModelCache {
 	/**

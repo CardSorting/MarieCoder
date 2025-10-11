@@ -1,7 +1,7 @@
 /**
  * Cline Ignore Controller - KonMari-Tidied Structure
  *
- * Clean, self-explanatory modules following NORMIE DEV methodology:
+ * Clean, self-explanatory modules following MARIECODER methodology:
  * - ignore_file_loader.ts: Loading and parsing .clineignore files
  * - ignore_validator.ts: Access, command, and path validation
  * - ignore_watcher.ts: File watching functionality

@@ -1,6 +1,6 @@
 # System Prompt Components - Clear & Simple
 
-This directory contains the system prompt components with **self-explanatory names** following the NORMIE DEV methodology.
+This directory contains the system prompt components with **self-explanatory names** following the MARIECODER methodology.
 
 ## 📁 Component Overview
 
@@ -12,9 +12,9 @@ This directory contains the system prompt components with **self-explanatory nam
 | `environment_context.ts` | System environment information and context |
 | `external_servers.ts` | MCP server integration and external tool connections |
 | `file_operations.ts` | File editing guidelines (write_to_file, replace_in_file) |
-| `mission_statement.ts` | Core mission, objectives, and NORMIE DEV methodology |
+| `mission_statement.ts` | Core mission, objectives, and MARIECODER methodology |
 | `progress_tracking.ts` | Task progress management and tracking |
-| `rules.ts` | NORMIE DEV methodology rules and quality standards |
+| `rules.ts` | MARIECODER methodology rules and quality standards |
 | `task_tracking.ts` | Automatic todo list management |
 | `tool_use.ts` | Tool usage instructions and examples |
 | `user_guidance.ts` | User instruction handling and processing |
@@ -37,7 +37,7 @@ This directory contains the system prompt components with **self-explanatory nam
 - Everything in one place
 - Zero navigation complexity
 
-### **NORMIE DEV Methodology**
+### **MARIECODER Methodology**
 - **Does this spark joy?** → Clear, understandable names spark joy
 - **Can we DELETE legacy?** → Deleted cryptic, confusing names
 - **Is this the simplest solution?** → Yes, flat structure with descriptive names

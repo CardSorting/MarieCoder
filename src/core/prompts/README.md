@@ -1,6 +1,6 @@
 # Core Prompts - Clear & Simple Structure
 
-This directory contains core prompt utilities with **self-explanatory names** following the NORMIE DEV methodology.
+This directory contains core prompt utilities with **self-explanatory names** following the MARIECODER methodology.
 
 ## 📁 File Overview
 
@@ -23,7 +23,7 @@ This directory contains core prompt utilities with **self-explanatory names** fo
 - No overlapping functionality
 - Easy to maintain and modify
 
-### **NORMIE DEV Methodology**
+### **MARIECODER Methodology**
 - **Does this spark joy?** → Clear, understandable names spark joy
 - **Can we DELETE legacy?** → Deleted cryptic, confusing names
 - **Is this the simplest solution?** → Yes, descriptive names are simplest

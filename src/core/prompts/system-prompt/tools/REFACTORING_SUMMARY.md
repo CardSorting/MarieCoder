@@ -1,7 +1,7 @@
 # Tools Directory Refactoring Summary
 
 ## 🎯 Objective
-Eliminate technical debt, reduce duplication, and create a more uniform, centralized architecture for the tools directory following NOORMME/NORMIE DEV methodology.
+Eliminate technical debt, reduce duplication, and create a more uniform, centralized architecture for the tools directory following MARIECODER methodology.
 
 ## 📋 Changes Implemented
 
@@ -177,5 +177,5 @@ export const my_new_tool_variants = getToolVariants(ClineDefaultTool.MY_NEW_TOOL
 
 ---
 
-**Result**: The tools directory now follows clean, centralized architecture with dramatically reduced technical debt, improved maintainability, and consistent patterns throughout. All changes follow NOORMME/NORMIE DEV principles of eliminating legacy code, reducing complexity, and organizing with proven patterns.
+**Result**: The tools directory now follows clean, centralized architecture with dramatically reduced technical debt, improved maintainability, and consistent patterns throughout. All changes follow MARIECODER principles of eliminating legacy code, reducing complexity, and organizing with proven patterns.
 

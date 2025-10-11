@@ -1,7 +1,7 @@
 /**
  * Model validation utilities
  * Only supports Anthropic and OpenRouter
- * Follows NORMIE DEV methodology: ruthlessly simple
+ * Follows MARIECODER methodology: ruthlessly simple
  */
 
 /**

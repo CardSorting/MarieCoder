@@ -1,8 +1,8 @@
-# Protocol Buffers (Proto) System in NormieDev
+# Protocol Buffers (Proto) System in MarieCoder
 
 ## 🎯 What is Proto?
 
-**Protocol Buffers (protobuf)** is Google's language-neutral, platform-neutral extensible mechanism for serializing structured data. In NormieDev, it serves as the **communication protocol** between different parts of the VSCode extension.
+**Protocol Buffers (protobuf)** is Google's language-neutral, platform-neutral extensible mechanism for serializing structured data. In MarieCoder, it serves as the **communication protocol** between different parts of the VSCode extension.
 
 ## 🏗️ Architecture Overview
 
@@ -310,7 +310,7 @@ node scripts/build-proto.mjs
 
 ### ProtoBus vs Standard gRPC
 
-NormieDev uses a **custom "ProtoBus" system** that:
+MarieCoder uses a **custom "ProtoBus" system** that:
 - Uses Protocol Buffer message formats
 - Implements RPC pattern similar to gRPC
 - **But** communicates via VSCode's `postMessage` API instead of HTTP/2

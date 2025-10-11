@@ -1,7 +1,7 @@
 /**
  * Mentions Module - KonMari-Tidied Structure
  *
- * Clean, self-explanatory modules following NORMIE DEV methodology:
+ * Clean, self-explanatory modules following MARIECODER methodology:
  * - mention_handlers.ts: Type-specific content fetching
  * - mention_parsers.ts: Core parsing logic
  * - mention_utils.ts: Utility functions

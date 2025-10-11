@@ -314,7 +314,7 @@ console.debug(`[Perf] Operation completed in ${duration}ms`)
 - ✅ Drop-in optimizations (no external API changes)
 
 ### Best Practices
-- ✅ Follows NORMIE DEV development standards
+- ✅ Follows MARIECODER development standards
 - ✅ Self-documenting code with clear comments
 - ✅ Maintains error handling patterns
 - ✅ Preserves existing behavior
@@ -354,5 +354,5 @@ The optimizations follow the project's philosophy:
 
 ---
 
-*These optimizations align with the NORMIE DEV development standards: intentional, compassionate improvement that honors existing work while evolving toward better performance.*
+*These optimizations align with the MARIECODER development standards: intentional, compassionate improvement that honors existing work while evolving toward better performance.*
 

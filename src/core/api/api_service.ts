@@ -47,7 +47,7 @@ export interface ProviderInfo {
 /**
  * Simplified API Service
  * Only supports Anthropic and OpenRouter
- * Follows NORMIE DEV methodology: ruthlessly simple
+ * Follows MARIECODER methodology: ruthlessly simple
  */
 export class ApiService {
 	/**

@@ -1,7 +1,7 @@
 /**
  * Main API module entry point
  * Only Anthropic and OpenRouter are supported
- * Follows NORMIE DEV methodology: ruthlessly simple
+ * Follows MARIECODER methodology: ruthlessly simple
  */
 
 // Ensure provider registrations are loaded

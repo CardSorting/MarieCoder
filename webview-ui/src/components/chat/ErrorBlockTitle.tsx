@@ -51,7 +51,7 @@ export const ErrorBlockTitle = ({
 	apiReqCancelReason,
 	apiRequestFailedMessage,
 	retryStatus,
-}: ErrorBlockTitleProps): [React.ReactElement, React.ReactElement] => {
+}: ErrorBlockTitleProps): [React.ReactElement | null, React.ReactElement | null] => {
 	const getIconSpan = (iconName: string, colorClass: string) => (
 		<div className="w-4 h-4 flex items-center justify-center">
 			<span className={`codicon codicon-${iconName} text-base -mb-0.5 ${colorClass}`}></span>

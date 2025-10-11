@@ -22,7 +22,7 @@ interface OpenRouterProviderOptions extends HttpProviderOptions {
 /**
  * Refactored OpenRouter provider using the new base class system
  * Demonstrates clean, maintainable provider implementation with OpenRouter integration
- * Follows NORMIE DEV methodology: clean, unified, no duplication
+ * Follows MARIECODER methodology: clean, unified, no duplication
  */
 export class OpenRouterProvider extends HttpProvider {
 	private openRouterOptions: OpenRouterProviderOptions

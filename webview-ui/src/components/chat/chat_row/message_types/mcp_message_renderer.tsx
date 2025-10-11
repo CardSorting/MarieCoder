@@ -28,8 +28,8 @@ export const McpMessageRenderer: React.FC<McpMessageRendererProps> = ({ message,
 					gap: "10px",
 					marginBottom: "12px",
 				}}>
-				{icon}
-				{title}
+				{icon && icon}
+				{title && title}
 			</div>
 
 			<div

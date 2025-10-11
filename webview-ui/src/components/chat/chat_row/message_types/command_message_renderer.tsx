@@ -62,8 +62,8 @@ export const CommandMessageRenderer: React.FC<CommandMessageRendererProps> = ({
 					gap: "10px",
 					marginBottom: "12px",
 				}}>
-				{icon}
-				{title}
+				{icon && icon}
+				{title && title}
 			</div>
 			<div
 				style={{

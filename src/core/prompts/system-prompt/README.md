@@ -1,6 +1,6 @@
 # System Prompt Directory - Clear & Simple Structure
 
-This directory contains the system prompt architecture with **self-explanatory names** following the NORMIE DEV methodology.
+This directory contains the system prompt architecture with **self-explanatory names** following the MARIECODER methodology.
 
 ## 📁 Directory Overview
 
@@ -31,7 +31,7 @@ This directory contains the system prompt architecture with **self-explanatory n
 - Clear navigation paths
 - Zero navigation complexity
 
-### **NORMIE DEV Methodology**
+### **MARIECODER Methodology**
 - **Does this spark joy?** → Clear, understandable names spark joy
 - **Can we DELETE legacy?** → Deleted cryptic, confusing names
 - **Is this the simplest solution?** → Yes, descriptive names are simplest
@@ -65,7 +65,7 @@ ask_user_questions.ts      ← Asks user questions
 - `file_operations.ts` - File editing guidelines
 - `mission_statement.ts` - Core mission and objectives
 - `progress_tracking.ts` - Task progress management
-- `rules.ts` - NORMIE DEV methodology rules
+- `rules.ts` - MARIECODER methodology rules
 - `task_tracking.ts` - Automatic todo list management
 - `tool_use.ts` - Tool usage instructions
 - `user_guidance.ts` - User instruction handling

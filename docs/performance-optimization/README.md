@@ -8,7 +8,7 @@
 
 ## 📚 Documentation Guide
 
-This directory contains comprehensive documentation of performance optimizations implemented in NormieDev.
+This directory contains comprehensive documentation of performance optimizations implemented in MarieCoder.
 
 ### 🚀 Quick Start
 

@@ -362,7 +362,7 @@ import type { PromptVariant, SystemPromptContext } from "../types"
 import { resolveComponent } from "./base_component"
 
 /**
- * Core NORMIE DEV methodology - KonMari-inspired development principles
+ * Core MARIECODER methodology - KonMari-inspired development principles
  *
  * Clear, concise, and explicit standards with compassionate tone.
  * Guidance, not gospel. Continuous evolution over perfection.

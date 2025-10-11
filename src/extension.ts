@@ -53,7 +53,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const webview = (await initialize(context)) as VscodeWebviewProvider
 
-	Logger.log("NormieDev extension activated")
+	Logger.log("MarieCoder extension activated")
 
 	const testModeWatchers = await initializeTestMode(webview)
 	// Initialize test mode and add disposables to context
@@ -367,7 +367,7 @@ function setupHostProvider(context: ExtensionContext) {
 	const createWebview = () => new VscodeWebviewProvider(context)
 	const createDiffView = () => new VscodeDiffViewProvider()
 	const createTerminalManager = () => new TerminalManager()
-	const outputChannel = vscode.window.createOutputChannel("NormieDev")
+	const outputChannel = vscode.window.createOutputChannel("MarieCoder")
 	context.subscriptions.push(outputChannel)
 
 	const getCallbackUrl = async () => `${vscode.env.uriScheme || "vscode"}://${context.extension.id}`
@@ -418,7 +418,7 @@ export async function deactivate() {
 	// Clean up test mode
 	cleanupTestMode()
 
-	Logger.log("NormieDev extension deactivated")
+	Logger.log("MarieCoder extension deactivated")
 }
 
 // TODO: Find a solution for automatically removing DEV related content from production builds.

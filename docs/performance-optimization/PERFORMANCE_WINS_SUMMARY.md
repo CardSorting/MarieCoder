@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-I've identified and implemented **6 high-impact, low-effort performance optimizations** that improve the NormieDev codebase efficiency by an estimated **15-30% overall**.
+I've identified and implemented **6 high-impact, low-effort performance optimizations** that improve the MarieCoder codebase efficiency by an estimated **15-30% overall**.
 
 ---
 
@@ -127,7 +127,7 @@ The codebase already has excellent optimizations:
 
 ## 📚 Philosophy Alignment
 
-These optimizations honor the **NORMIE DEV development standards**:
+These optimizations honor the **MARIECODER development standards**:
 - **Intentional improvement** - Each change has measurable benefit
 - **Compassionate evolution** - Builds on existing patterns
 - **Clarity preserved** - Comments explain reasoning

@@ -13,7 +13,7 @@ export interface BaseProviderOptions extends ApiHandlerOptions {
 
 /**
  * Base provider class that implements common functionality
- * Follows NORMIE DEV methodology: clean, unified patterns
+ * Follows MARIECODER methodology: clean, unified patterns
  */
 export abstract class BaseProvider implements ApiHandler {
 	protected options: BaseProviderOptions

@@ -11,7 +11,7 @@ import { ShowMessageType } from "./shared/proto/host/window"
 import { getLatestAnnouncementId } from "./utils/announcements"
 
 /**
- * Performs initialization for NormieDev that is common to all platforms.
+ * Performs initialization for MarieCoder that is common to all platforms.
  *
  * @param context
  * @returns The webview provider
@@ -23,7 +23,7 @@ export async function initialize(context: vscode.ExtensionContext): Promise<Webv
 		console.error("[Controller] CRITICAL: Failed to initialize StateManager - extension may not function properly:", error)
 		HostProvider.window.showMessage({
 			type: ShowMessageType.ERROR,
-			message: "Failed to initialize NormieDev's application state. Please restart the extension.",
+			message: "Failed to initialize MarieCoder's application state. Please restart the extension.",
 		})
 	}
 
@@ -37,21 +37,21 @@ export async function initialize(context: vscode.ExtensionContext): Promise<Webv
 async function showVersionUpdateAnnouncement(context: vscode.ExtensionContext) {
 	// Version checking for autoupdate notification
 	const currentVersion = ExtensionRegistryInfo.version
-	const previousVersion = context.globalState.get<string>("normieVersion")
+	const previousVersion = context.globalState.get<string>("marieVersion")
 	// Perform post-update actions if necessary
 	try {
 		if (!previousVersion || currentVersion !== previousVersion) {
-			Logger.log(`NormieDev version changed: ${previousVersion} -> ${currentVersion}. First run or update detected.`)
+			Logger.log(`MarieCoder version changed: ${previousVersion} -> ${currentVersion}. First run or update detected.`)
 
 			// Use the same condition as announcements: focus when there's a new announcement to show
 			const lastShownAnnouncementId = context.globalState.get<string>("lastShownAnnouncementId")
 			const latestAnnouncementId = getLatestAnnouncementId()
 
 			if (lastShownAnnouncementId !== latestAnnouncementId) {
-				// Focus NormieDev when there's a new announcement to show (major/minor updates or fresh installs)
+				// Focus MarieCoder when there's a new announcement to show (major/minor updates or fresh installs)
 				const message = previousVersion
-					? `NormieDev has been updated to v${currentVersion}`
-					: `Welcome to NormieDev v${currentVersion}`
+					? `MarieCoder has been updated to v${currentVersion}`
+					: `Welcome to MarieCoder v${currentVersion}`
 				await HostProvider.workspace.openClineSidebarPanel({})
 				await new Promise((resolve) => setTimeout(resolve, 200))
 				HostProvider.window.showMessage({
@@ -60,7 +60,7 @@ async function showVersionUpdateAnnouncement(context: vscode.ExtensionContext) {
 				})
 			}
 			// Always update the main version tracker for the next launch.
-			await context.globalState.update("normieVersion", currentVersion)
+			await context.globalState.update("marieVersion", currentVersion)
 		}
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error)
@@ -69,7 +69,7 @@ async function showVersionUpdateAnnouncement(context: vscode.ExtensionContext) {
 }
 
 /**
- * Performs cleanup when NormieDev is deactivated that is common to all platforms.
+ * Performs cleanup when MarieCoder is deactivated that is common to all platforms.
  */
 export async function tearDown(): Promise<void> {
 	// Clean up audio recording service to ensure no orphaned processes
