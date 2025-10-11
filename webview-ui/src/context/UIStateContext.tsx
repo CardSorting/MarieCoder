@@ -22,32 +22,32 @@ import { UiServiceClient } from "../services/grpc-client"
 
 export interface UIStateContextType {
 	// View state
-	showMcp: boolean
-	mcpTab?: McpViewTab
-	showSettings: boolean
 	showHistory: boolean
-	showChatModelSelector: boolean
 	expandTaskHeader: boolean
 
-	// Navigation functions
-	navigateToMcp: (tab?: McpViewTab) => void
-	navigateToSettings: () => void
+	// Navigation functions (simplified - only History and Chat)
 	navigateToHistory: () => void
 	navigateToChat: () => void
 
 	// Hide functions
-	hideSettings: () => void
 	hideHistory: () => void
-	hideChatModelSelector: () => void
-	closeMcpView: () => void
 
 	// Setters
+	setExpandTaskHeader: (value: boolean) => void
+
+	// Legacy support (kept for backward compatibility but not actively used)
+	showMcp: boolean
+	mcpTab?: McpViewTab
+	showSettings: boolean
+	showChatModelSelector: boolean
+	navigateToMcp: (tab?: McpViewTab) => void
+	navigateToSettings: () => void
+	hideChatModelSelector: () => void
+	hideSettings: () => void
+	closeMcpView: () => void
 	setShowMcp: (value: boolean) => void
 	setMcpTab: (tab?: McpViewTab) => void
 	setShowChatModelSelector: (value: boolean) => void
-	setExpandTaskHeader: (value: boolean) => void
-
-	// Event callbacks
 	onRelinquishControl: (callback: () => void) => () => void
 }
 
@@ -56,38 +56,64 @@ const UIStateContext = createContext<UIStateContextType | undefined>(undefined)
 export const UIStateContextProvider: React.FC<{
 	children: React.ReactNode
 }> = ({ children }) => {
-	// UI view state
+	// Active UI state - simplified to only what we need
+	const [showHistory, setShowHistory] = useState(false)
+	const [expandTaskHeader, setExpandTaskHeader] = useState(true)
+
+	// Legacy state - kept for backward compatibility but not actively used in navbar
 	const [showMcp, setShowMcp] = useState(false)
 	const [mcpTab, setMcpTab] = useState<McpViewTab | undefined>(undefined)
 	const [showSettings, setShowSettings] = useState(false)
-	const [showHistory, setShowHistory] = useState(false)
 	const [showChatModelSelector, setShowChatModelSelector] = useState(false)
-	const [expandTaskHeader, setExpandTaskHeader] = useState(true)
 
-	// Subscription refs
-	const mcpButtonUnsubscribeRef = useRef<(() => void) | null>(null)
-	const historyButtonClickedSubscriptionRef = useRef<(() => void) | null>(null)
-	const chatButtonUnsubscribeRef = useRef<(() => void) | null>(null)
-	const settingsButtonClickedSubscriptionRef = useRef<(() => void) | null>(null)
+	// Subscription refs - kept for other parts of the app
 	const focusChatInputUnsubscribeRef = useRef<(() => void) | null>(null)
 	const didBecomeVisibleUnsubscribeRef = useRef<(() => void) | null>(null)
 	const relinquishControlUnsubscribeRef = useRef<(() => void) | null>(null)
 	const relinquishControlCallbacks = useRef<Set<() => void>>(new Set())
 
-	// Helper for MCP view
+	// === SIMPLIFIED NAVIGATION FUNCTIONS ===
+	// Only History and Chat - pure local state, no gRPC complexity
+
+	/**
+	 * Navigate to History view
+	 * Shows task history, hides all other views
+	 */
+	const navigateToHistory = useCallback(() => {
+		console.log("[UIStateContext] navigateToHistory - START")
+		console.log("[UIStateContext] Current state:", { showHistory, showSettings, showMcp })
+		setShowHistory(true)
+		console.log("[UIStateContext] navigateToHistory - COMPLETE, showHistory set to true")
+	}, [showHistory, showSettings, showMcp])
+
+	/**
+	 * Navigate to Chat view (New Task)
+	 * Hides history, shows chat interface
+	 */
+	const navigateToChat = useCallback(() => {
+		console.log("[UIStateContext] navigateToChat - START")
+		console.log("[UIStateContext] Current state:", { showHistory })
+		setShowHistory(false)
+		console.log("[UIStateContext] navigateToChat - COMPLETE, showHistory set to false")
+	}, [showHistory])
+
+	// Hide functions
+	const hideHistory = useCallback(() => {
+		console.log("[UIStateContext] hideHistory called")
+		setShowHistory(false)
+	}, [])
+
+	// === LEGACY FUNCTIONS (kept for backward compatibility) ===
 	const closeMcpView = useCallback(() => {
 		setShowMcp(false)
 		setMcpTab(undefined)
 	}, [])
 
-	// Hide functions
 	const hideSettings = useCallback(() => setShowSettings(false), [])
-	const hideHistory = useCallback(() => setShowHistory(false), [])
 	const hideChatModelSelector = useCallback(() => setShowChatModelSelector(false), [])
 
-	// Navigation functions
 	const navigateToMcp = useCallback((tab?: McpViewTab) => {
-		setShowSettings(false)
+		console.log("[UIStateContext] navigateToMcp (legacy) called", tab)
 		setShowHistory(false)
 		if (tab) {
 			setMcpTab(tab)
@@ -96,22 +122,10 @@ export const UIStateContextProvider: React.FC<{
 	}, [])
 
 	const navigateToSettings = useCallback(() => {
+		console.log("[UIStateContext] navigateToSettings (legacy) called")
 		setShowHistory(false)
-		closeMcpView()
 		setShowSettings(true)
-	}, [closeMcpView])
-
-	const navigateToHistory = useCallback(() => {
-		setShowSettings(false)
-		closeMcpView()
-		setShowHistory(true)
-	}, [closeMcpView])
-
-	const navigateToChat = useCallback(() => {
-		setShowSettings(false)
-		closeMcpView()
-		setShowHistory(false)
-	}, [closeMcpView])
+	}, [])
 
 	// Event callback registration
 	const onRelinquishControl = useCallback((callback: () => void) => {
@@ -121,74 +135,14 @@ export const UIStateContextProvider: React.FC<{
 		}
 	}, [])
 
-	// Subscribe to UI events
+	// Subscribe to essential UI events only (removed complex gRPC navigation subscriptions)
 	useEffect(() => {
-		// Subscribe to MCP button clicked events
-		mcpButtonUnsubscribeRef.current = UiServiceClient.subscribeToMcpButtonClicked(
-			{},
-			{
-				onResponse: () => {
-					debug.log("[DEBUG] Received mcpButtonClicked event from gRPC stream")
-					navigateToMcp()
-				},
-				onError: (error) => {
-					logError("Error in mcpButtonClicked subscription:", error)
-				},
-				onComplete: () => {
-					debug.log("mcpButtonClicked subscription completed")
-				},
-			},
-		)
-
-		// Subscribe to history button clicked events
-		historyButtonClickedSubscriptionRef.current = UiServiceClient.subscribeToHistoryButtonClicked(
-			{},
-			{
-				onResponse: () => {
-					debug.log("[DEBUG] Received history button clicked event from gRPC stream")
-					navigateToHistory()
-				},
-				onError: (error) => {
-					logError("Error in history button clicked subscription:", error)
-				},
-				onComplete: () => {
-					debug.log("History button clicked subscription completed")
-				},
-			},
-		)
-
-		// Subscribe to chat button clicked events
-		chatButtonUnsubscribeRef.current = UiServiceClient.subscribeToChatButtonClicked(
-			{},
-			{
-				onResponse: () => {
-					debug.log("[DEBUG] Received chat button clicked event from gRPC stream")
-					navigateToChat()
-				},
-				onError: (error) => {
-					logError("Error in chat button subscription:", error)
-				},
-				onComplete: () => {},
-			},
-		)
-
-		// Subscribe to settings button clicked events
-		settingsButtonClickedSubscriptionRef.current = UiServiceClient.subscribeToSettingsButtonClicked(EmptyRequest.create({}), {
-			onResponse: () => {
-				navigateToSettings()
-			},
-			onError: (error) => {
-				logError("Error in settings button clicked subscription:", error)
-			},
-			onComplete: () => {
-				debug.log("Settings button clicked subscription completed")
-			},
-		})
+		console.log("[UIStateContext] Setting up event subscriptions")
 
 		// Subscribe to didBecomeVisible events
 		didBecomeVisibleUnsubscribeRef.current = UiServiceClient.subscribeToDidBecomeVisible(EmptyRequest.create({}), {
 			onResponse: () => {
-				debug.log("[DEBUG] Received didBecomeVisible event from gRPC stream")
+				debug.log("[DEBUG] Received didBecomeVisible event")
 				window.dispatchEvent(new CustomEvent("focusChatInput"))
 			},
 			onError: (error) => {
@@ -224,24 +178,10 @@ export const UIStateContextProvider: React.FC<{
 			onComplete: () => {},
 		})
 
+		console.log("[UIStateContext] Event subscriptions complete")
+
 		// Clean up subscriptions
 		return () => {
-			if (mcpButtonUnsubscribeRef.current) {
-				mcpButtonUnsubscribeRef.current()
-				mcpButtonUnsubscribeRef.current = null
-			}
-			if (historyButtonClickedSubscriptionRef.current) {
-				historyButtonClickedSubscriptionRef.current()
-				historyButtonClickedSubscriptionRef.current = null
-			}
-			if (chatButtonUnsubscribeRef.current) {
-				chatButtonUnsubscribeRef.current()
-				chatButtonUnsubscribeRef.current = null
-			}
-			if (settingsButtonClickedSubscriptionRef.current) {
-				settingsButtonClickedSubscriptionRef.current()
-				settingsButtonClickedSubscriptionRef.current = null
-			}
 			if (didBecomeVisibleUnsubscribeRef.current) {
 				didBecomeVisibleUnsubscribeRef.current()
 				didBecomeVisibleUnsubscribeRef.current = null
@@ -255,7 +195,7 @@ export const UIStateContextProvider: React.FC<{
 				relinquishControlUnsubscribeRef.current = null
 			}
 		}
-	}, [navigateToMcp, navigateToHistory, navigateToChat, navigateToSettings])
+	}, [])
 
 	const contextValue: UIStateContextType = {
 		showMcp,

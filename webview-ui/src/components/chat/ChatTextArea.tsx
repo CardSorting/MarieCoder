@@ -12,7 +12,6 @@ import ContextMenu from "@/components/chat/ContextMenu"
 import { CHAT_CONSTANTS } from "@/components/chat/chat-view/constants"
 import SlashCommandMenu from "@/components/chat/SlashCommandMenu"
 import DynamicTextArea from "@/components/common/AutoGrowTextarea"
-import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import HeroTooltip from "@/components/common/HeroTooltip"
 import { PulsingBorder } from "@/components/common/PulsingBorder"
 import Thumbnails from "@/components/common/Thumbnails"
@@ -143,7 +142,7 @@ const Slider = ({ isAct, isPlan, ...props }: { isAct: boolean; isPlan?: boolean;
 )
 
 const ButtonGroup = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-	<div className={cn("flex items-center gap-1 flex-1 min-w-0", className)}>{children}</div>
+	<div className={cn("flex items-center gap-2 flex-1 min-w-0", className)}>{children}</div>
 )
 
 const ButtonContainer = ({ children }: { children: React.ReactNode }) => (
@@ -157,10 +156,11 @@ const ModelSelectorTooltip = ({
 	...props
 }: ModelSelectorTooltipProps & { children: React.ReactNode; [key: string]: any }) => (
 	<div
-		className="fixed left-[15px] right-[15px] border border-[var(--vscode-editorGroup-border)] p-3 rounded-[3px] z-[1000] max-h-[calc(100vh-100px)] overflow-y-auto overscroll-contain"
+		className="fixed left-[20px] right-[20px] border-2 border-[var(--vscode-focusBorder)] p-5 rounded-xl z-[1000] max-h-[calc(100vh-140px)] overflow-y-auto overscroll-contain"
 		style={{
-			bottom: "calc(100% + 9px)",
-			background: CODE_BLOCK_BG_COLOR,
+			bottom: "calc(100% + 16px)",
+			background: "var(--vscode-editor-background)",
+			boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)",
 		}}
 		{...props}>
 		<style>{`
@@ -175,15 +175,15 @@ const ModelSelectorTooltip = ({
 			.model-selector-tooltip::after {
 				content: "";
 				position: fixed;
-				bottom: calc(100vh - ${menuPosition}px);
+				bottom: calc(100vh - ${menuPosition}px - 2px);
 				right: ${arrowPosition}px;
-				width: 10px;
-				height: 10px;
-				background: ${CODE_BLOCK_BG_COLOR};
-				border-right: 1px solid var(--vscode-editorGroup-border);
-				border-bottom: 1px solid var(--vscode-editorGroup-border);
+				width: 14px;
+				height: 14px;
+				background: var(--vscode-editor-background);
+				border-right: 2px solid var(--vscode-focusBorder);
+				border-bottom: 2px solid var(--vscode-focusBorder);
 				transform: rotate(45deg);
-				z-index: -1;
+				z-index: 1001;
 			}
 		`}</style>
 		{children}
@@ -191,14 +191,19 @@ const ModelSelectorTooltip = ({
 )
 
 const ModelContainer = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ children }, ref) => (
-	<div className="relative flex flex-1 min-w-0" ref={ref}>
+	<div
+		className="relative flex flex-1 min-w-0 px-2.5 py-1.5 rounded-md bg-[var(--vscode-editor-background)] border border-[var(--vscode-panel-border)]"
+		ref={ref}
+		style={{
+			boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+		}}>
 		{children}
 	</div>
 ))
 ModelContainer.displayName = "ModelContainer"
 
 const ModelButtonWrapper = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ children }, ref) => (
-	<div className="inline-flex min-w-0 max-w-full" ref={ref}>
+	<div className="flex flex-1 min-w-0 w-full" ref={ref}>
 		{children}
 	</div>
 ))
@@ -215,15 +220,34 @@ const ModelDisplayButton = ({
 	children: React.ReactNode
 	[key: string]: any
 }) => (
-	<a
-		className={`p-0 h-5 w-full min-w-0 flex items-center text-[10px] outline-none select-none ${disabled ? "cursor-not-allowed opacity-50 pointer-events-none" : "cursor-pointer"} ${isActive ? "underline text-[var(--vscode-foreground)]" : "no-underline text-[var(--vscode-descriptionForeground)]"} ${!disabled ? "hover:text-[var(--vscode-foreground)] hover:underline focus:text-[var(--vscode-foreground)] focus:underline active:text-[var(--vscode-foreground)] active:underline focus:outline-none focus-visible:outline-none" : "hover:text-[var(--vscode-descriptionForeground)] hover:no-underline focus:text-[var(--vscode-descriptionForeground)] focus:no-underline active:text-[var(--vscode-descriptionForeground)] active:no-underline"}`}
+	<button
+		className={`
+			px-3 py-1.5 h-auto min-h-[24px] w-full min-w-0 
+			flex items-center justify-center text-xs
+			rounded-md
+			outline-none select-none transition-all duration-200
+			font-medium
+			${disabled ? "cursor-not-allowed opacity-50 pointer-events-none" : "cursor-pointer"}
+			${
+				isActive
+					? "bg-[var(--vscode-button-background)] text-[var(--vscode-button-foreground)] shadow-sm"
+					: "bg-transparent text-[var(--vscode-foreground)] hover:bg-[var(--vscode-list-hoverBackground)]"
+			}
+			${!disabled && !isActive ? "hover:shadow-sm active:scale-[0.98]" : ""}
+			${!disabled && isActive ? "active:opacity-90" : ""}
+		`}
+		disabled={disabled}
+		type="button"
 		{...props}>
 		{children}
-	</a>
+	</button>
 )
 
 const ModelButtonContent = ({ children }: { children: React.ReactNode }) => (
-	<div className="w-full min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{children}</div>
+	<div className="w-full min-w-0 overflow-hidden text-ellipsis whitespace-nowrap flex items-center justify-center gap-1.5">
+		<span className="codicon codicon-symbol-method text-xs opacity-70" />
+		{children}
+	</div>
 )
 
 const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
@@ -1713,20 +1737,32 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									</ModelDisplayButton>
 								</ModelButtonWrapper>
 								{showModelSelector && (
-									<ModelSelectorTooltip
-										arrowPosition={arrowPosition}
-										menuPosition={menuPosition}
-										style={{
-											bottom: `calc(100vh - ${menuPosition}px + 6px)`,
-										}}>
-										<ApiOptions
-											apiErrorMessage={undefined}
-											currentMode={mode}
-											isPopup={true}
-											modelIdErrorMessage={undefined}
-											showModelOptions={true}
+									<>
+										{/* Backdrop overlay */}
+										<div
+											className="fixed inset-0 z-[999]"
+											onClick={handleModelButtonClick}
+											style={{
+												background: "rgba(0, 0, 0, 0.3)",
+												backdropFilter: "blur(2px)",
+											}}
 										/>
-									</ModelSelectorTooltip>
+										{/* Model selector popup */}
+										<ModelSelectorTooltip
+											arrowPosition={arrowPosition}
+											menuPosition={menuPosition}
+											style={{
+												bottom: `calc(100vh - ${menuPosition}px + 6px)`,
+											}}>
+											<ApiOptions
+												apiErrorMessage={undefined}
+												currentMode={mode}
+												isPopup={true}
+												modelIdErrorMessage={undefined}
+												showModelOptions={true}
+											/>
+										</ModelSelectorTooltip>
+									</>
 								)}
 							</ModelContainer>
 						</ButtonGroup>

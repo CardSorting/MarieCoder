@@ -13,7 +13,6 @@ import { debug } from "@/utils/debug_logger"
 import { useMount } from "@/utils/hooks"
 import SkipNavigation from "../common/SkipNavigation"
 import { Navbar } from "../menu/Navbar"
-import AutoApproveBar from "./auto-approve-menu/AutoApproveBar"
 // Import utilities and hooks from the new structure
 import {
 	ActionButtons,
@@ -356,8 +355,12 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 					)}
 				</main>
 			</div>
-			<footer className="bg-[var(--vscode-sidebar-background)]" style={{ gridRow: "2" }}>
-				<AutoApproveBar />
+			<footer
+				className="bg-[var(--vscode-editor-background)] border-t border-[var(--vscode-panel-border)]"
+				style={{
+					gridRow: "2",
+					boxShadow: "0 -2px 8px rgba(0, 0, 0, 0.05)",
+				}}>
 				<ActionButtons
 					chatState={chatState}
 					messageHandlers={messageHandlers}

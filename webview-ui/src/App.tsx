@@ -25,6 +25,9 @@ const AppContent = () => {
 		currentTaskItem,
 	} = useExtensionState()
 
+	// Debug logging
+	console.log("[App] Render state:", { showSettings, showHistory, showMcp, didHydrateState })
+
 	// Dynamic page title based on current view
 	const pageTitle = showSettings
 		? "Settings"
