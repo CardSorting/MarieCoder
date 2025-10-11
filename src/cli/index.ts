@@ -22,7 +22,6 @@ import { CliConfigManager } from "./cli_config_manager"
 import { CliContext } from "./cli_context"
 import { CliDiffViewProvider } from "./cli_diff_provider"
 import { CliHostBridgeClient } from "./cli_host_bridge"
-import { CliSetupWizard } from "./cli_setup_wizard"
 import { CliTaskMonitor } from "./cli_task_monitor"
 import { CliWebviewProvider } from "./cli_webview_provider"
 
@@ -42,6 +41,8 @@ class MarieCli {
 	private webviewProvider!: CliWebviewProvider
 	private rl!: readline.Interface
 	private taskMonitor!: CliTaskMonitor
+	private mcpManager!: import("./cli_mcp_manager").CliMcpManager
+	private taskHistoryManager!: import("./cli_task_history_manager").CliTaskHistoryManager
 
 	constructor(private options: CliOptions) {
 		this.rl = readline.createInterface({
@@ -99,6 +100,15 @@ class MarieCli {
 
 		// Ensure clinerules are loaded and enabled by default for CLI
 		await this.ensureClineRulesEnabled()
+
+		// Initialize MCP manager
+		const { CliMcpManager: McpManager } = await import("./cli_mcp_manager")
+		this.mcpManager = new McpManager(this.webviewProvider.controller, this.options.verbose || false)
+		await this.mcpManager.initialize()
+
+		// Initialize task history manager
+		const { CliTaskHistoryManager: HistoryManager } = await import("./cli_task_history_manager")
+		this.taskHistoryManager = new HistoryManager(this.webviewProvider.controller, this.options.verbose || false)
 
 		console.log("✅ MarieCoder CLI initialized")
 		console.log("─".repeat(80) + "\n")
@@ -230,35 +240,45 @@ class MarieCli {
 	private async checkApiConfiguration(): Promise<boolean> {
 		// Check if API key is configured
 		const stateManager = this.webviewProvider.controller.stateManager
+		const configManager = new CliConfigManager()
+		const config = configManager.loadConfig()
 
-		// Get current API configuration
-		// @ts-expect-error - State manager API needs to be properly typed for CLI
-		const _currentProvider = await stateManager.getState("apiProvider")
-		// @ts-expect-error - State manager API needs to be properly typed for CLI
-		const _currentApiKey = await stateManager.getState("apiKey")
+		// Set up API configuration with plan/act mode support
+		const mode = config.mode || "act"
 
-		if (this.options.apiKey) {
-			// @ts-expect-error - State manager API needs to be properly typed for CLI
-			await stateManager.setState("apiKey", this.options.apiKey)
+		// Determine which provider/model to use based on current mode
+		let provider = config.apiProvider
+		let model = config.apiModelId
+
+		// If separate models are configured, use mode-specific settings
+		if (config.planActSeparateModelsSetting) {
+			if (mode === "plan") {
+				provider = config.planModeApiProvider || provider
+				model = config.planModeApiModelId || model
+			} else {
+				provider = config.actModeApiProvider || provider
+				model = config.actModeApiModelId || model
+			}
 		}
 
-		if (this.options.provider) {
-			// @ts-expect-error - State manager API needs to be properly typed for CLI
-			await stateManager.setState("apiProvider", this.options.provider)
+		// Set API configuration in state manager
+		stateManager.setGlobalState("mode", mode)
+
+		const apiConfiguration = {
+			apiKey: config.apiKey,
+			planModeApiProvider: (config.planModeApiProvider || provider) as any,
+			planModeApiModelId: config.planModeApiModelId || model,
+			actModeApiProvider: (config.actModeApiProvider || provider) as any,
+			actModeApiModelId: config.actModeApiModelId || model,
+			temperature: config.temperature,
+			maxTokens: config.maxTokens,
 		}
 
-		if (this.options.model) {
-			// @ts-expect-error - State manager API needs to be properly typed for CLI
-			await stateManager.setState("apiModelId", this.options.model)
-		}
+		stateManager.setApiConfiguration(apiConfiguration)
+		stateManager.setGlobalState("planActSeparateModelsSetting", config.planActSeparateModelsSetting || false)
 
-		// Validate configuration
-		// @ts-expect-error - State manager API needs to be properly typed for CLI
-		const provider = (await stateManager.getState("apiProvider")) || "anthropic"
-		// @ts-expect-error - State manager API needs to be properly typed for CLI
-		const apiKey = await stateManager.getState("apiKey")
-
-		if (!apiKey) {
+		// Validate API key exists
+		if (!config.apiKey) {
 			console.error("\n❌ API key not configured!")
 			console.log("\n" + "─".repeat(80))
 			console.log("To configure your API key, you have several options:")
@@ -277,9 +297,13 @@ class MarieCli {
 			return false
 		}
 
+		// Display configuration
 		console.log(`✓ Provider: ${provider}`)
-		if (this.options.model) {
-			console.log(`✓ Model: ${this.options.model}`)
+		console.log(`✓ Model: ${model}`)
+		console.log(`✓ Mode: ${mode}`)
+
+		if (config.planActSeparateModelsSetting) {
+			console.log(`✓ Separate Plan/Act Models: Enabled`)
 		}
 
 		return true
@@ -297,6 +321,9 @@ class MarieCli {
 		console.log("  • Type your task and press Enter to start")
 		console.log("  • Type 'exit' or 'quit' to end the session")
 		console.log("  • Type 'config' to show current configuration")
+		console.log("  • Type 'mode' or 'toggle' to switch between plan/act modes")
+		console.log("  • Type 'mcp' to show MCP server status")
+		console.log("  • Type 'history' to view task history")
 		console.log("  • Type 'help' for more options")
 		console.log("─".repeat(80))
 
@@ -321,6 +348,22 @@ class MarieCli {
 					configManager.displayConfig()
 					await prompt()
 					return
+				} else if (command === "mode" || command === "toggle") {
+					await this.toggleMode()
+					await prompt()
+					return
+				} else if (command === "mcp") {
+					await this.mcpManager.displayStatus()
+					await prompt()
+					return
+				} else if (command === "mcp tools") {
+					await this.mcpManager.displayAvailableTools()
+					await prompt()
+					return
+				} else if (command === "history" || command.startsWith("history ")) {
+					await this.handleHistoryCommand(trimmed)
+					await prompt()
+					return
 				} else if (command === "help") {
 					this.showInteractiveModeHelp()
 					await prompt()
@@ -343,6 +386,104 @@ class MarieCli {
 	}
 
 	/**
+	 * Handle history commands
+	 */
+	private async handleHistoryCommand(input: string): Promise<void> {
+		const parts = input.split(" ")
+		const subcommand = parts[1]
+		const arg = parts[2]
+
+		if (!subcommand) {
+			// Show history
+			await this.taskHistoryManager.displayHistory()
+			return
+		}
+
+		switch (subcommand) {
+			case "export":
+				if (!arg) {
+					console.log("\n❌ Task ID required")
+					console.log("Usage: history export <task-id>\n")
+					return
+				}
+				await this.taskHistoryManager.exportTask(arg)
+				break
+
+			case "resume":
+				if (!arg) {
+					console.log("\n❌ Task ID required")
+					console.log("Usage: history resume <task-id>\n")
+					return
+				}
+				await this.taskHistoryManager.resumeTask(arg)
+				break
+
+			case "delete":
+				if (!arg) {
+					console.log("\n❌ Task ID required")
+					console.log("Usage: history delete <task-id>\n")
+					return
+				}
+				await this.taskHistoryManager.deleteTask(arg)
+				break
+
+			case "search":
+				if (!arg) {
+					console.log("\n❌ Search query required")
+					console.log("Usage: history search <query>\n")
+					return
+				}
+				// Join remaining parts as query
+				const query = parts.slice(2).join(" ")
+				await this.taskHistoryManager.searchHistory(query)
+				break
+
+			case "details":
+				if (!arg) {
+					console.log("\n❌ Task ID required")
+					console.log("Usage: history details <task-id>\n")
+					return
+				}
+				await this.taskHistoryManager.displayTaskDetails(arg)
+				break
+
+			default:
+				console.log(`\n❌ Unknown history command: ${subcommand}`)
+				console.log("Available commands: export, resume, delete, search, details\n")
+		}
+	}
+
+	/**
+	 * Toggle between plan and act modes
+	 */
+	private async toggleMode(): Promise<void> {
+		const stateManager = this.webviewProvider.controller.stateManager
+		const currentMode = stateManager.getGlobalSettingsKey("mode")
+		const newMode = currentMode === "plan" ? "act" : "plan"
+
+		console.log("\n" + "─".repeat(80))
+		console.log(`🔄 Mode Switch: ${currentMode} → ${newMode}`)
+		console.log("─".repeat(80))
+
+		// Update state manager
+		await this.webviewProvider.controller.togglePlanActMode(newMode)
+
+		// Update configuration file
+		const configManager = new CliConfigManager()
+		configManager.updateConfig({ mode: newMode })
+
+		console.log(`✓ Now in ${newMode} mode`)
+
+		if (newMode === "plan") {
+			console.log("\n💡 Plan Mode: AI will propose changes for your review")
+		} else {
+			console.log("\n⚡ Act Mode: AI will execute approved changes directly")
+		}
+
+		console.log("─".repeat(80))
+	}
+
+	/**
 	 * Show help for interactive mode
 	 */
 	private showInteractiveModeHelp(): void {
@@ -352,12 +493,28 @@ class MarieCli {
 		console.log("\nAvailable Commands:")
 		console.log("  • exit, quit   - Exit interactive mode")
 		console.log("  • config       - Show current configuration")
+		console.log("  • mode, toggle - Switch between plan and act modes")
+		console.log("  • mcp          - Show MCP server status")
+		console.log("  • mcp tools    - Show available MCP tools and resources")
+		console.log("  • history      - Show task history")
+		console.log("  • history export <id>   - Export task as markdown")
+		console.log("  • history resume <id>   - Resume a previous task")
+		console.log("  • history delete <id>   - Delete task from history")
+		console.log("  • history search <query> - Search task history")
 		console.log("  • help         - Show this help message")
 		console.log("  • clear        - Clear the screen")
+		console.log("\nModes:")
+		console.log("  • plan mode    - AI proposes changes for your review (safer)")
+		console.log("  • act mode     - AI executes changes directly (faster)")
+		console.log("\nMCP (Model Context Protocol):")
+		console.log("  • Extends MarieCoder with custom tools and capabilities")
+		console.log("  • Configure servers in extension settings or .mcp directory")
+		console.log("  • Access databases, file systems, APIs, and custom workflows")
 		console.log("\nTips:")
 		console.log("  • Be specific with your tasks for best results")
 		console.log("  • You can iterate on previous tasks by providing feedback")
 		console.log("  • Use Ctrl+C to interrupt a running task")
+		console.log("  • Use plan mode for complex/risky changes")
 		console.log("─".repeat(80))
 	}
 
@@ -366,6 +523,13 @@ class MarieCli {
 	 */
 	cleanup(): void {
 		this.taskMonitor.stopMonitoring()
+		if (this.mcpManager) {
+			this.mcpManager.cleanup().catch((error: unknown) => {
+				if (this.options.verbose) {
+					console.warn("Error during MCP cleanup:", error)
+				}
+			})
+		}
 		this.rl.close()
 		this.context.dispose()
 	}
@@ -605,6 +769,7 @@ async function main() {
 
 		// Handle --setup (run setup wizard)
 		if (runSetup) {
+			const { CliSetupWizard } = await import("./cli_setup_wizard")
 			const wizard = new CliSetupWizard()
 			const config = await wizard.runSetupWizard()
 			wizard.close()
@@ -663,6 +828,7 @@ async function main() {
 			})
 
 			if (shouldRunSetup) {
+				const { CliSetupWizard } = await import("./cli_setup_wizard")
 				const wizard = new CliSetupWizard()
 				const config = await wizard.runSetupWizard()
 				wizard.close()

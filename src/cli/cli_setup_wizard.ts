@@ -16,6 +16,13 @@ export interface SetupConfig {
 	temperature?: number
 	maxTokens?: number
 	hasCompletedSetup: boolean
+	// Plan/Act mode configuration
+	mode?: "plan" | "act"
+	planActSeparateModelsSetting?: boolean
+	planModeApiProvider?: string
+	planModeApiModelId?: string
+	actModeApiProvider?: string
+	actModeApiModelId?: string
 }
 
 export class CliSetupWizard {
@@ -302,23 +309,47 @@ export class CliSetupWizard {
 	}
 
 	/**
-	 * Step 3: Configure optional extras (combined: rules, advanced settings)
+	 * Step 3: Configure optional extras (combined: rules, advanced settings, plan/act mode)
 	 */
 	private async configureOptionalExtras(): Promise<{
 		temperature?: number
 		maxTokens?: number
+		mode?: "plan" | "act"
+		planActSeparateModelsSetting?: boolean
+		planModeApiProvider?: string
+		planModeApiModelId?: string
+		actModeApiProvider?: string
+		actModeApiModelId?: string
 	}> {
 		console.log("⚙️  Step 3: Optional Configuration")
 		console.log("─".repeat(80))
 
 		const wantsExtras = await this.interactionHandler.askApproval(
-			"Configure optional features? (rules, advanced settings)",
+			"Configure optional features? (plan/act mode, rules, advanced settings)",
 			false,
 		)
 
 		if (!wantsExtras) {
 			console.log("✓ Using defaults (you can configure these later)\n")
-			return {}
+			return { mode: "act" }
+		}
+
+		// Plan/Act Mode Configuration
+		console.log("\nPlan/Act Mode:")
+		console.log("  • Plan Mode: AI proposes changes for your review (safer)")
+		console.log("  • Act Mode: AI executes changes directly (faster)")
+
+		const wantsPlanActSetup = await this.interactionHandler.askApproval(
+			"  Configure separate models for plan and act modes?",
+			false,
+		)
+
+		let planActConfig = {}
+		if (wantsPlanActSetup) {
+			planActConfig = await this.configurePlanActMode()
+		} else {
+			const defaultMode = await this.interactionHandler.askApproval("  Start in plan mode (safer)?", false)
+			planActConfig = { mode: defaultMode ? "plan" : "act" }
 		}
 
 		// Offer .clinerules setup
@@ -329,7 +360,7 @@ export class CliSetupWizard {
 		const wantsAdvanced = await this.interactionHandler.askApproval("  Configure temperature/tokens?", false)
 
 		if (!wantsAdvanced) {
-			return {}
+			return { ...planActConfig }
 		}
 
 		const temperature = await this.interactionHandler.askInput("  Temperature (0.0-1.0)", "0.0")
@@ -338,8 +369,65 @@ export class CliSetupWizard {
 		console.log("✓ Settings configured\n")
 
 		return {
+			...planActConfig,
 			temperature: temperature ? Number.parseFloat(temperature) : undefined,
 			maxTokens: maxTokens ? Number.parseInt(maxTokens, 10) : undefined,
+		}
+	}
+
+	/**
+	 * Configure plan/act mode with separate models
+	 */
+	private async configurePlanActMode(): Promise<{
+		mode: "plan" | "act"
+		planActSeparateModelsSetting: boolean
+		planModeApiProvider?: string
+		planModeApiModelId?: string
+		actModeApiProvider?: string
+		actModeApiModelId?: string
+	}> {
+		console.log("\n⚙️  Plan/Act Mode Setup")
+		console.log("─".repeat(80))
+
+		// Select plan mode configuration
+		console.log("\nPlan Mode Configuration:")
+		console.log("  (Use a cheaper/faster model for planning)")
+		const planProvider = await this.interactionHandler.askChoice("Plan mode provider:", [
+			"anthropic",
+			"openrouter",
+			"lmstudio",
+		])
+		const planDefaultModel = this.getDefaultModel(planProvider || "anthropic")
+		const usePlanDefault = await this.interactionHandler.askApproval(`Use ${planDefaultModel} for plan mode?`, true)
+		const planModel = usePlanDefault
+			? planDefaultModel
+			: await this.interactionHandler.askInput("Plan mode model:", planDefaultModel)
+
+		// Select act mode configuration
+		console.log("\nAct Mode Configuration:")
+		console.log("  (Use a powerful model for execution)")
+		const actProvider = await this.interactionHandler.askChoice("Act mode provider:", ["anthropic", "openrouter", "lmstudio"])
+		const actDefaultModel = this.getDefaultModel(actProvider || "anthropic")
+		const useActDefault = await this.interactionHandler.askApproval(`Use ${actDefaultModel} for act mode?`, true)
+		const actModel = useActDefault
+			? actDefaultModel
+			: await this.interactionHandler.askInput("Act mode model:", actDefaultModel)
+
+		// Default mode
+		const startInPlanMode = await this.interactionHandler.askApproval("Start in plan mode (safer)?", true)
+
+		console.log("\n✓ Plan/Act mode configured:")
+		console.log(`  Plan: ${planProvider} / ${planModel}`)
+		console.log(`  Act: ${actProvider} / ${actModel}`)
+		console.log(`  Default: ${startInPlanMode ? "plan" : "act"} mode\n`)
+
+		return {
+			mode: startInPlanMode ? "plan" : "act",
+			planActSeparateModelsSetting: true,
+			planModeApiProvider: planProvider || undefined,
+			planModeApiModelId: planModel,
+			actModeApiProvider: actProvider || undefined,
+			actModeApiModelId: actModel,
 		}
 	}
 
@@ -402,6 +490,13 @@ Customize this file to match your project's standards.
 		if (config.maxTokens !== undefined) {
 			console.log(`  Max Tokens: ${config.maxTokens}`)
 		}
+		if (config.planActSeparateModelsSetting) {
+			console.log(`  Mode: ${config.mode || "act"} (Plan/Act configured separately)`)
+			console.log(`  Plan Mode: ${config.planModeApiProvider} / ${config.planModeApiModelId}`)
+			console.log(`  Act Mode: ${config.actModeApiProvider} / ${config.actModeApiModelId}`)
+		} else {
+			console.log(`  Mode: ${config.mode || "act"}`)
+		}
 		console.log(`  Config saved to: ${this.configDir}/config.json`)
 		console.log("═".repeat(80))
 	}
@@ -421,6 +516,12 @@ Customize this file to match your project's standards.
 			temperature: config.temperature,
 			maxTokens: config.maxTokens,
 			hasCompletedSetup: config.hasCompletedSetup,
+			mode: config.mode || "act",
+			planActSeparateModelsSetting: config.planActSeparateModelsSetting || false,
+			planModeApiProvider: config.planModeApiProvider,
+			planModeApiModelId: config.planModeApiModelId,
+			actModeApiProvider: config.actModeApiProvider,
+			actModeApiModelId: config.actModeApiModelId,
 		}
 		fs.writeFileSync(configPath, JSON.stringify(configToSave, null, 2))
 

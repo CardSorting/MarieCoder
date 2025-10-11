@@ -17,6 +17,13 @@ export interface CliConfiguration {
 	workspace?: string
 	verbose?: boolean
 	autoApprove?: boolean
+	// Plan/Act mode configuration
+	mode?: "plan" | "act"
+	planActSeparateModelsSetting?: boolean
+	planModeApiProvider?: string
+	planModeApiModelId?: string
+	actModeApiProvider?: string
+	actModeApiModelId?: string
 }
 
 export class CliConfigManager {
@@ -212,6 +219,24 @@ export class CliConfigManager {
 		if (options.autoApprove !== undefined) {
 			config.autoApprove = options.autoApprove
 		}
+		if (options.mode) {
+			config.mode = options.mode
+		}
+		if (options.planActSeparateModelsSetting !== undefined) {
+			config.planActSeparateModelsSetting = options.planActSeparateModelsSetting
+		}
+		if (options.planModeApiProvider) {
+			config.planModeApiProvider = options.planModeApiProvider
+		}
+		if (options.planModeApiModelId) {
+			config.planModeApiModelId = options.planModeApiModelId
+		}
+		if (options.actModeApiProvider) {
+			config.actModeApiProvider = options.actModeApiProvider
+		}
+		if (options.actModeApiModelId) {
+			config.actModeApiModelId = options.actModeApiModelId
+		}
 
 		return config
 	}
@@ -321,8 +346,27 @@ export class CliConfigManager {
 		if (currentConfig.maxTokens !== undefined) {
 			console.log(`  Max Tokens: ${currentConfig.maxTokens}`)
 		}
+
+		// Plan/Act Mode Configuration
+		if (currentConfig.planActSeparateModelsSetting) {
+			console.log(`\n  Plan/Act Mode: Separate Models Enabled`)
+			console.log(`  Current Mode: ${currentConfig.mode || "act"} mode`)
+			if (currentConfig.planModeApiProvider || currentConfig.planModeApiModelId) {
+				console.log(
+					`  Plan Mode: ${currentConfig.planModeApiProvider || "not set"} / ${currentConfig.planModeApiModelId || "not set"}`,
+				)
+			}
+			if (currentConfig.actModeApiProvider || currentConfig.actModeApiModelId) {
+				console.log(
+					`  Act Mode: ${currentConfig.actModeApiProvider || "not set"} / ${currentConfig.actModeApiModelId || "not set"}`,
+				)
+			}
+		} else {
+			console.log(`  Mode: ${currentConfig.mode || "act"}`)
+		}
+
 		if (currentConfig.workspace) {
-			console.log(`  Workspace: ${currentConfig.workspace}`)
+			console.log(`\n  Workspace: ${currentConfig.workspace}`)
 		}
 		if (currentConfig.verbose) {
 			console.log(`  Verbose: ${currentConfig.verbose}`)
