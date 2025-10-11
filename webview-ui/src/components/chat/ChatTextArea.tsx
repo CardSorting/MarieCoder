@@ -44,7 +44,6 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			mode,
 			apiConfiguration,
 			openRouterModels,
-			platform,
 			localWorkflowToggles,
 			globalWorkflowToggles,
 			showChatModelSelector: showModelSelector,
@@ -342,7 +341,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					thumbnailsHeight={thumbnailsHeight}
 				/>
 
-				<div className="flex justify-between items-center -mt-1 px-3 pb-2">
+				<div className="flex items-center gap-2 -mt-1 px-3 pb-2">
 					<InputToolbar
 						arrowPosition={modelSelector.arrowPosition}
 						buttonRef={modelSelector.buttonRef}

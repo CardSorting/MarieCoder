@@ -1,18 +1,7 @@
-import { EmptyRequest } from "@shared/proto/cline/common"
 import MarieCoderLogo from "@/assets/MarieCoderLogo"
 import HeroTooltip from "@/components/common/HeroTooltip"
-import { UiServiceClient } from "@/services/grpc-client"
-import { debug } from "@/utils/debug_logger"
 
 const HomeHeader = () => {
-	const handleTakeATour = async () => {
-		try {
-			await UiServiceClient.openWalkthrough(EmptyRequest.create())
-		} catch (error) {
-			debug.error("Error opening walkthrough:", error)
-		}
-	}
-
 	return (
 		<div className="flex flex-col items-center mb-5">
 			<div className="my-5 relative">
@@ -39,15 +28,6 @@ const HomeHeader = () => {
 					placement="bottom">
 					<span className="codicon codicon-info ml-2 cursor-pointer text-brand-purple text-sm hover:opacity-80 transition-opacity" />
 				</HeroTooltip>
-			</div>
-			<div className="mt-4">
-				<button
-					className="flex items-center gap-2 px-4 py-2 rounded-full border border-border-panel bg-white/[0.02] hover:bg-list-background-hover transition-colors duration-150 ease-in-out text-code-foreground text-sm font-medium cursor-pointer"
-					onClick={handleTakeATour}
-					type="button">
-					Take a Tour
-					<span className="codicon codicon-play scale-90"></span>
-				</button>
 			</div>
 		</div>
 	)

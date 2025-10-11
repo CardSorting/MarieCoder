@@ -22,9 +22,12 @@ export const ModelSelectorTooltip = ({
 	...props
 }: ModelSelectorTooltipProps & { children: React.ReactNode; [key: string]: any }) => (
 	<div
-		className="fixed left-[20px] right-[20px] border-2 border-[var(--vscode-focusBorder)] p-5 rounded-xl z-[1000] max-h-[calc(100vh-140px)] overflow-y-auto overscroll-contain"
+		className="fixed left-[20px] right-[20px] border-2 border-[var(--vscode-focusBorder)] p-5 rounded-xl z-[1000] overscroll-contain"
 		style={{
 			bottom: "calc(100% + 16px)",
+			minHeight: "400px",
+			maxHeight: "calc(100vh - 140px)",
+			overflowY: "auto",
 			background: "var(--vscode-editor-background)",
 			boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)",
 		}}
@@ -58,7 +61,7 @@ export const ModelSelectorTooltip = ({
 
 export const ModelContainer = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ children }, ref) => (
 	<div
-		className="relative flex flex-1 min-w-0 px-2.5 py-1.5 rounded-md bg-[var(--vscode-editor-background)] border border-[var(--vscode-panel-border)]"
+		className="relative flex flex-1 min-w-0 max-w-[300px] px-2.5 py-1.5 rounded-md bg-[var(--vscode-editor-background)] border border-[var(--vscode-panel-border)]"
 		ref={ref}
 		style={{
 			boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",

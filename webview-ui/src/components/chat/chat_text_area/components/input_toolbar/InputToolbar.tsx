@@ -40,8 +40,8 @@ export const InputToolbar: React.FC<InputToolbarProps> = ({
 	onModelButtonClick,
 }) => {
 	return (
-		<div className="relative flex-1 min-w-0 h-5">
-			<ButtonGroup className="absolute top-0 left-0 right-0 ease-in-out w-full h-5 z-10 flex items-center">
+		<div className="flex-1 min-w-0 mr-2">
+			<ButtonGroup className="flex items-center h-5">
 				<HeroTooltip content="Add Context" placement="top">
 					<VSCodeButton
 						appearance="icon"
