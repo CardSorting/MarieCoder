@@ -13,7 +13,6 @@ import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import HeroTooltip from "@/components/common/HeroTooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { FileServiceClient } from "@/services/grpc-client"
-import { useModalFocus } from "@/utils/accessibility/focus_management"
 import { debug } from "@/utils/debug_logger"
 import { useClickAway, useWindowSize } from "@/utils/hooks"
 import RulesToggleList from "./RulesToggleList"
@@ -177,15 +176,8 @@ const ClineRulesToggleModal: React.FC = () => {
 			})
 	}
 
-	// Use modal focus management with focus trap
-	const { restoreFocus } = useModalFocus(modalRef, isVisible, {
-		enableFocusTrap: true,
-		focusFirstElement: false,
-	})
-
 	const handleClose = () => {
 		setIsVisible(false)
-		restoreFocus()
 	}
 
 	// Close modal when clicking outside

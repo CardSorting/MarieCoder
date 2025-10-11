@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { CheckpointsServiceClient } from "@/services/grpc-client"
-import { useFocusManagement } from "@/utils/accessibility/focus_management"
 import { debug } from "@/utils/debug_logger"
 import { useClickAway } from "@/utils/hooks"
 
@@ -24,13 +23,9 @@ export const CheckpointOverlay = ({ messageTs }: CheckpointOverlayProps) => {
 	const tooltipRef = useRef<HTMLDivElement>(null)
 	const { onRelinquishControl } = useExtensionState()
 
-	// Use focus management for restore confirmation
-	const { restoreFocus } = useFocusManagement(showRestoreConfirm)
-
 	const handleCloseConfirm = () => {
 		setShowRestoreConfirm(false)
 		setHasMouseEntered(false)
-		restoreFocus()
 	}
 
 	useClickAway(containerRef, () => {

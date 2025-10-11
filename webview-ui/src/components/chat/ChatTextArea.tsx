@@ -4,8 +4,6 @@
 
 import { forwardRef, useCallback, useEffect, useMemo, useState } from "react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { usePlatform } from "@/context/PlatformContext"
-import { useMetaKeyDetection, useShortcut } from "@/hooks"
 import { InputToolbar } from "./chat_text_area/components/input_toolbar/InputToolbar"
 import { ModeSwitch } from "./chat_text_area/components/mode_switch/ModeSwitch"
 import { TextInputArea } from "./chat_text_area/components/TextInputArea"
@@ -252,15 +250,6 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			[inputValue, setInputValue],
 		)
 
-		// Keyboard shortcut for mode toggle
-		useShortcut(usePlatform().togglePlanActKeys, onModeToggle, { disableTextInputs: false })
-
-		// Format toggle keys display
-		const [, metaKeyChar] = useMetaKeyDetection(platform)
-		const togglePlanActKeys = usePlatform()
-			.togglePlanActKeys.replace("Meta", metaKeyChar)
-			.replace(/.$/, (match) => match.toUpperCase())
-
 		// Query items for context menu (empty for now, git commits will be used)
 		const queryItems = useMemo(() => contextMenu.gitCommits, [contextMenu.gitCommits])
 
@@ -368,7 +357,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						showModelSelector={showModelSelector}
 					/>
 
-					<ModeSwitch mode={mode} onModeToggle={onModeToggle} togglePlanActKeys={togglePlanActKeys} />
+					<ModeSwitch mode={mode} onModeToggle={onModeToggle} />
 				</div>
 			</div>
 		)

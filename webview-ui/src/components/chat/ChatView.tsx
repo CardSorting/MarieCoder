@@ -11,7 +11,6 @@ import { useShowNavbar } from "@/context/PlatformContext"
 import { FileServiceClient, UiServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { useMount } from "@/utils/hooks"
-import SkipNavigation from "../common/SkipNavigation"
 import { Navbar } from "../menu/Navbar"
 // Import utilities and hooks from the new structure
 import {
@@ -323,10 +322,9 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 
 	return (
 		<ChatLayout isHidden={isHidden}>
-			<SkipNavigation />
 			<div className="flex flex-col flex-1 overflow-hidden">
 				{showNavbar && <Navbar />}
-				<main className="flex flex-col flex-1 overflow-hidden" id="main-content" tabIndex={-1}>
+				<main className="flex flex-col flex-1 overflow-hidden">
 					{task ? (
 						<TaskSection
 							apiMetrics={apiMetrics}

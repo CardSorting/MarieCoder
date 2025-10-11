@@ -6,7 +6,6 @@ import { cn } from "@/utils/classnames"
 import { debug } from "@/utils/debug_logger"
 import { formatSeconds } from "@/utils/format"
 import HeroTooltip from "../common/HeroTooltip"
-import { ErrorAnnouncement, LoadingAnnouncement } from "../common/LiveRegion"
 
 interface VoiceRecorderProps {
 	onTranscription: (text: string) => void
@@ -227,10 +226,6 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 	const iconAnimation = isProcessing || isStarting ? "animate-spin" : ""
 	const iconAdjustment = isProcessing || isStarting ? "mt-0" : error ? "mt-1" : "mt-0.5"
 
-	// Determine announcement messages
-	const loadingMessage = isProcessing ? "Transcribing audio" : isStarting ? "Starting recording" : ""
-	const errorMessage = error ? `Voice recording error: ${error}` : ""
-
 	// When not recording, show single mic button
 	if (!isRecording) {
 		const iconClass = isProcessing
@@ -250,18 +245,14 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 					: null
 
 		return (
-			<>
-				<LoadingAnnouncement isLoading={isProcessing || isStarting} message={loadingMessage} />
-				{error && <ErrorAnnouncement message={errorMessage} />}
-				<HeroTooltip content={tooltipContent} placement="top">
-					<div
-						className={`input-icon-button mr-1.5 text-base ${iconAdjustment} ${iconAnimation} ${disabled || isProcessing || isStarting ? "disabled" : ""}`}
-						onClick={handleStartClick}
-						style={{ color: iconColor }}>
-						<span className={`codicon ${iconClass}`} />
-					</div>
-				</HeroTooltip>
-			</>
+			<HeroTooltip content={tooltipContent} placement="top">
+				<div
+					className={`input-icon-button mr-1.5 text-base ${iconAdjustment} ${iconAnimation} ${disabled || isProcessing || isStarting ? "disabled" : ""}`}
+					onClick={handleStartClick}
+					style={{ color: iconColor }}>
+					<span className={`codicon ${iconClass}`} />
+				</div>
+			</HeroTooltip>
 		)
 	}
 

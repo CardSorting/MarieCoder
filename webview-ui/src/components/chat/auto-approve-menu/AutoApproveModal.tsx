@@ -4,7 +4,6 @@ import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import HeroTooltip from "@/components/common/HeroTooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useAutoApproveActions } from "@/hooks/useAutoApproveActions"
-import { useModalFocus } from "@/utils/accessibility/focus_management"
 import { useClickAway, useWindowSize } from "@/utils/hooks"
 import { getAsVar, VSC_TITLEBAR_INACTIVE_FOREGROUND } from "@/utils/vscStyles"
 import AutoApproveMenuItem from "./AutoApproveMenuItem"
@@ -37,15 +36,8 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({
 	const [menuPosition, setMenuPosition] = useState(0)
 	const [containerWidth, setContainerWidth] = useState(0)
 
-	// Use modal focus management with focus trap
-	const { restoreFocus } = useModalFocus(modalRef, isVisible, {
-		enableFocusTrap: true,
-		focusFirstElement: false, // Don't auto-focus, let user navigate naturally
-	})
-
 	const handleClose = () => {
 		setIsVisible(false)
-		restoreFocus()
 	}
 
 	useClickAway(modalRef, (e) => {

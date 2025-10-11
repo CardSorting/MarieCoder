@@ -16,7 +16,6 @@ import { DEFAULT_AUTO_APPROVAL_SETTINGS } from "@shared/AutoApprovalSettings"
 import { DEFAULT_BROWSER_SETTINGS } from "@shared/BrowserSettings"
 import { DEFAULT_DICTATION_SETTINGS, type DictationSettings } from "@shared/DictationSettings"
 import { DEFAULT_PLATFORM, type ExtensionState } from "@shared/ExtensionMessage"
-import { DEFAULT_FOCUS_CHAIN_SETTINGS } from "@shared/FocusChainSettings"
 import { DEFAULT_MCP_DISPLAY_MODE } from "@shared/McpDisplayMode"
 import type { UserInfo } from "@shared/proto/cline/account"
 import { EmptyRequest } from "@shared/proto/cline/common"
@@ -57,7 +56,7 @@ export const SettingsContextProvider: React.FC<{
 		autoApprovalSettings: DEFAULT_AUTO_APPROVAL_SETTINGS,
 		browserSettings: DEFAULT_BROWSER_SETTINGS,
 		dictationSettings: DEFAULT_DICTATION_SETTINGS,
-		focusChainSettings: DEFAULT_FOCUS_CHAIN_SETTINGS,
+		focusChainSettings: { enabled: false, remindClineInterval: 0 },
 		preferredLanguage: "English",
 		openaiReasoningEffort: "medium",
 		mode: "act",

@@ -1,6 +1,5 @@
 import { ClineMessage } from "@shared/ExtensionMessage"
 import { memo } from "react"
-import { ErrorAnnouncement } from "@/components/common/LiveRegion"
 import { ClineError, ClineErrorType } from "../../../../src/services/error/ClineError"
 
 const _errorColor = "var(--vscode-errorForeground)"
@@ -109,13 +108,8 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 		return <>{renderErrorContent()}</>
 	}
 
-	// For other error types, show header + content with ARIA announcement
-	return (
-		<>
-			{errorMessage && <ErrorAnnouncement message={`Error: ${errorMessage}`} />}
-			{renderErrorContent()}
-		</>
-	)
+	// For other error types, show header + content
+	return renderErrorContent()
 })
 
 export default ErrorRow

@@ -16,7 +16,6 @@ export {
 	usePerformanceTracking,
 } from "./use_context_selector"
 export { useDebounceEffect } from "./use_debounce_effect"
-export { useMetaKeyDetection, useShortcut } from "./use_keyboard"
 // Optimistic UI update hooks
 export { useOptimisticToggle, useOptimisticUpdate } from "./use_optimistic_update"
 export { useAutoApproveActions } from "./useAutoApproveActions"

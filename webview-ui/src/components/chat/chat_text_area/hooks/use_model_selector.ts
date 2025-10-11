@@ -10,7 +10,6 @@ import type { Mode } from "@shared/storage/types"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { ModelsServiceClient, StateServiceClient } from "@/services/grpc-client"
-import { useFocusManagement } from "@/utils/accessibility/focus_management"
 import { debug } from "@/utils/debug_logger"
 import { useClickAway, useWindowSize } from "@/utils/hooks"
 import { validateApiConfiguration, validateModelId } from "@/utils/validate"
@@ -76,13 +75,9 @@ export const useModelSelector = ({
 		setShowModelSelector(!showModelSelector)
 	}, [showModelSelector, setShowModelSelector])
 
-	// Use focus management for model selector
-	const { restoreFocus } = useFocusManagement(showModelSelector)
-
 	const handleCloseModelSelector = useCallback(() => {
 		setShowModelSelector(false)
-		restoreFocus()
-	}, [setShowModelSelector, restoreFocus])
+	}, [setShowModelSelector])
 
 	// Update click away handler to just close menu
 	useClickAway(modelSelectorRef, handleCloseModelSelector)

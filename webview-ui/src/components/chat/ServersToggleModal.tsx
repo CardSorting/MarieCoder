@@ -8,7 +8,6 @@ import HeroTooltip from "@/components/common/HeroTooltip"
 import ServersToggleList from "@/components/mcp/configuration/tabs/installed/ServersToggleList"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
-import { useModalFocus } from "@/utils/accessibility/focus_management"
 import { debug } from "@/utils/debug_logger"
 import { useClickAway, useWindowSize } from "@/utils/hooks"
 
@@ -21,15 +20,8 @@ const ServersToggleModal: React.FC = () => {
 	const [arrowPosition, setArrowPosition] = useState(0)
 	const [menuPosition, setMenuPosition] = useState(0)
 
-	// Use modal focus management with focus trap
-	const { restoreFocus } = useModalFocus(modalRef, isVisible, {
-		enableFocusTrap: true,
-		focusFirstElement: false,
-	})
-
 	const handleClose = () => {
 		setIsVisible(false)
-		restoreFocus()
 	}
 
 	// Close modal when clicking outside

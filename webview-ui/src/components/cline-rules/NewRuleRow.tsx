@@ -2,7 +2,6 @@ import { RuleFileRequest } from "@shared/proto/index.cline"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useRef, useState } from "react"
 import { FileServiceClient } from "@/services/grpc-client"
-import { useFocusManagement } from "@/utils/accessibility/focus_management"
 import { debug } from "@/utils/debug_logger"
 import { useClickAway } from "@/utils/hooks"
 
@@ -26,14 +25,10 @@ const NewRuleRow: React.FC<NewRuleRowProps> = ({ isGlobal, ruleType }) => {
 		}
 	}, [isExpanded])
 
-	// Use focus management for expanded state
-	const { restoreFocus } = useFocusManagement(isExpanded)
-
 	const handleClose = () => {
 		setIsExpanded(false)
 		setFilename("")
 		setError(null)
-		restoreFocus()
 	}
 
 	useClickAway(componentRef, () => {

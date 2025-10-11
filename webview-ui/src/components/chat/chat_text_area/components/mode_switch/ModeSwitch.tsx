@@ -10,11 +10,10 @@ import { Slider, SwitchContainer, SwitchOption } from "./mode_switch_components"
 
 interface ModeSwitchProps {
 	mode: Mode
-	togglePlanActKeys: string
 	onModeToggle: () => void
 }
 
-export const ModeSwitch: React.FC<ModeSwitchProps> = ({ mode, togglePlanActKeys, onModeToggle }) => {
+export const ModeSwitch: React.FC<ModeSwitchProps> = ({ mode, onModeToggle }) => {
 	const [shownTooltipMode, setShownTooltipMode] = useState<Mode | null>(null)
 
 	return (
@@ -24,7 +23,6 @@ export const ModeSwitch: React.FC<ModeSwitchProps> = ({ mode, togglePlanActKeys,
 					<div>
 						{`In ${shownTooltipMode === "act" ? "Act" : "Plan"} mode, Cline will ${shownTooltipMode === "act" ? "complete the task immediately" : "gather information to architect a plan"}`}
 					</div>
-					<div className="text-xs opacity-70 mt-1">{`Toggle w/ ${togglePlanActKeys}`}</div>
 				</div>
 			}
 			disabled={shownTooltipMode === null}

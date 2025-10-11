@@ -38,7 +38,6 @@ import { useEffect, useRef } from "react"
 import { EmptyStateDisplay } from "./displays/EmptyStateDisplay"
 import { ErrorDisplay } from "./displays/ErrorDisplay"
 import { LoadingDisplay } from "./displays/LoadingDisplay"
-import { ErrorAnnouncement, LoadingAnnouncement } from "./LiveRegion"
 
 // ============================================================================
 // Types
@@ -150,7 +149,6 @@ export function StateDisplay({
 	if (isLoading) {
 		return (
 			<div data-testid={testId ? `${testId}-loading` : undefined} style={containerStyle}>
-				<LoadingAnnouncement isLoading={isLoading} message={loadingMessage} />
 				{showSkeleton && skeleton ? skeleton : <LoadingDisplay message={loadingMessage} showSkeleton={showSkeleton} />}
 			</div>
 		)
@@ -160,7 +158,6 @@ export function StateDisplay({
 	if (errorMessage) {
 		return (
 			<div data-testid={testId ? `${testId}-error` : undefined} style={containerStyle}>
-				<ErrorAnnouncement message={`Error: ${errorMessage}`} />
 				<ErrorDisplay message={errorMessage} onRetry={onRetry} title={errorTitle} />
 			</div>
 		)

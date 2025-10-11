@@ -14,7 +14,6 @@ import NewTaskButton from "./buttons/NewTaskButton"
 import OpenDiskConversationHistoryButton from "./buttons/OpenDiskConversationHistoryButton"
 import { CheckpointError } from "./CheckpointError"
 import ContextWindow from "./ContextWindow"
-import { FocusChain } from "./FocusChain"
 import { highlightText } from "./Highlights"
 import TaskTimeline from "./TaskTimeline"
 
@@ -182,9 +181,6 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 					</div>
 				)}
 			</div>
-
-			{/* Display Focus Chain To-Do List */}
-			<FocusChain currentTaskItemId={currentTaskItem?.id} lastProgressMessageText={lastProgressMessageText} />
 		</div>
 	)
 }
