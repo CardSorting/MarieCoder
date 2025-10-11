@@ -212,6 +212,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 				gap: 5,
 				marginBottom: isPopup ? -10 : 0,
 				minHeight: isPopup ? "350px" : "auto",
+				overflowY: isPopup ? "auto" : "visible",
 			}}>
 			<style>
 				{`

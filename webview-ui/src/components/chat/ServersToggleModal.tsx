@@ -3,8 +3,8 @@ import { McpServers } from "@shared/proto/cline/mcp"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useRef, useState } from "react"
+import { IconButton } from "@/components/chat/chat_text_area/components/input_toolbar/toolbar_components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-import HeroTooltip from "@/components/common/HeroTooltip"
 import ServersToggleList from "@/components/mcp/configuration/tabs/installed/ServersToggleList"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
@@ -67,22 +67,15 @@ const ServersToggleModal: React.FC = () => {
 
 	return (
 		<div ref={modalRef}>
-			<div className="inline-flex min-w-0 max-w-full" ref={buttonRef}>
-				<HeroTooltip content="Manage MCP Servers" disabled={isVisible}>
-					<VSCodeButton
-						appearance="icon"
-						aria-label={isVisible ? "Hide MCP Servers" : "Show MCP Servers"}
-						onClick={() => setIsVisible(!isVisible)}
-						style={{ padding: "0px 0px", height: "20px" }}>
-						<div className="flex items-center gap-1 text-xs whitespace-nowrap min-w-0 w-full">
-							<span
-								className="codicon codicon-server flex items-center"
-								style={{ fontSize: "12.5px", marginBottom: 1 }}
-							/>
-						</div>
-					</VSCodeButton>
-				</HeroTooltip>
-			</div>
+			<IconButton
+				aria-label={isVisible ? "Hide MCP Servers" : "Show MCP Servers"}
+				iconClass="codicon codicon-server"
+				isActive={isVisible}
+				onClick={() => setIsVisible(!isVisible)}
+				ref={buttonRef}
+				tooltip="Manage MCP Servers"
+				tooltipDisabled={isVisible}
+			/>
 
 			{isVisible && (
 				<div

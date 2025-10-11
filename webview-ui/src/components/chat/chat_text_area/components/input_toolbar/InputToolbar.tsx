@@ -3,14 +3,12 @@
  */
 
 import type { Mode } from "@shared/storage/types"
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import type React from "react"
 import ServersToggleModal from "@/components/chat/ServersToggleModal"
 import ClineRulesToggleModal from "@/components/cline-rules/ClineRulesToggleModal"
-import HeroTooltip from "@/components/common/HeroTooltip"
 import { AtSignIcon, PlusIcon } from "@/components/icons"
 import { ModelSelector } from "../model_selector/ModelSelector"
-import { ButtonContainer, ButtonGroup } from "../model_selector/model_selector_components"
+import { ToolbarButton, ToolbarContainer, ToolbarDivider, ToolbarGroup } from "./toolbar_components"
 
 interface InputToolbarProps {
 	shouldDisableFilesAndImages: boolean
@@ -40,53 +38,47 @@ export const InputToolbar: React.FC<InputToolbarProps> = ({
 	onModelButtonClick,
 }) => {
 	return (
-		<div className="flex-1 min-w-0 mr-2">
-			<ButtonGroup className="flex items-center h-5">
-				<HeroTooltip content="Add Context" placement="top">
-					<VSCodeButton
-						appearance="icon"
-						aria-label="Add Context"
-						className="p-0 m-0 flex items-center"
-						data-testid="context-button"
-						onClick={onContextButtonClick}>
-						<ButtonContainer>
-							<AtSignIcon size={12} />
-						</ButtonContainer>
-					</VSCodeButton>
-				</HeroTooltip>
+		<ToolbarContainer>
+			{/* Primary action buttons */}
+			<ToolbarGroup>
+				<ToolbarButton
+					aria-label="Add Context"
+					data-testid="context-button"
+					icon={<AtSignIcon size={12} />}
+					onClick={onContextButtonClick}
+					tooltip="Add Context"
+				/>
+				<ToolbarButton
+					aria-label="Add Files & Images"
+					data-testid="files-button"
+					disabled={shouldDisableFilesAndImages}
+					icon={<PlusIcon size={12} />}
+					onClick={onSelectFilesAndImages}
+					tooltip="Add Files & Images"
+				/>
+			</ToolbarGroup>
 
-				<HeroTooltip content="Add Files & Images" placement="top">
-					<VSCodeButton
-						appearance="icon"
-						aria-label="Add Files & Images"
-						className="p-0 m-0 flex items-center"
-						data-testid="files-button"
-						disabled={shouldDisableFilesAndImages}
-						onClick={() => {
-							if (!shouldDisableFilesAndImages) {
-								onSelectFilesAndImages()
-							}
-						}}>
-						<ButtonContainer>
-							<PlusIcon size={13} />
-						</ButtonContainer>
-					</VSCodeButton>
-				</HeroTooltip>
+			<ToolbarDivider />
 
+			{/* Toggle buttons */}
+			<ToolbarGroup>
 				<ServersToggleModal />
 				<ClineRulesToggleModal />
+			</ToolbarGroup>
 
-				<ModelSelector
-					arrowPosition={arrowPosition}
-					buttonRef={buttonRef}
-					menuPosition={menuPosition}
-					mode={mode}
-					modelDisplayName={modelDisplayName}
-					modelSelectorRef={modelSelectorRef}
-					onModelButtonClick={onModelButtonClick}
-					showModelSelector={showModelSelector}
-				/>
-			</ButtonGroup>
-		</div>
+			<ToolbarDivider />
+
+			{/* Model selector */}
+			<ModelSelector
+				arrowPosition={arrowPosition}
+				buttonRef={buttonRef}
+				menuPosition={menuPosition}
+				mode={mode}
+				modelDisplayName={modelDisplayName}
+				modelSelectorRef={modelSelectorRef}
+				onModelButtonClick={onModelButtonClick}
+				showModelSelector={showModelSelector}
+			/>
+		</ToolbarContainer>
 	)
 }

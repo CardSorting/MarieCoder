@@ -7,10 +7,10 @@ import {
 	ToggleWindsurfRuleRequest,
 	ToggleWorkflowRequest,
 } from "@shared/proto/cline/file"
-import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useRef, useState } from "react"
+import { IconButton } from "@/components/chat/chat_text_area/components/input_toolbar/toolbar_components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-import HeroTooltip from "@/components/common/HeroTooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { FileServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
@@ -208,22 +208,15 @@ const ClineRulesToggleModal: React.FC = () => {
 
 	return (
 		<div ref={modalRef}>
-			<div className="inline-flex min-w-0 max-w-full" ref={buttonRef}>
-				<HeroTooltip content="Manage Cline Rules & Workflows" disabled={isVisible}>
-					<VSCodeButton
-						appearance="icon"
-						aria-label={isVisible ? "Hide Cline Rules & Workflows" : "Show Cline Rules & Workflows"}
-						onClick={() => setIsVisible(!isVisible)}
-						style={{ padding: "0px 0px", height: "20px" }}>
-						<div className="flex items-center gap-1 text-xs whitespace-nowrap min-w-0 w-full">
-							<span
-								className="codicon codicon-law flex items-center"
-								style={{ fontSize: "12.5px", marginBottom: 1 }}
-							/>
-						</div>
-					</VSCodeButton>
-				</HeroTooltip>
-			</div>
+			<IconButton
+				aria-label={isVisible ? "Hide Cline Rules & Workflows" : "Show Cline Rules & Workflows"}
+				iconClass="codicon codicon-law"
+				isActive={isVisible}
+				onClick={() => setIsVisible(!isVisible)}
+				ref={buttonRef}
+				tooltip="Manage Cline Rules & Workflows"
+				tooltipDisabled={isVisible}
+			/>
 
 			{isVisible && (
 				<div
