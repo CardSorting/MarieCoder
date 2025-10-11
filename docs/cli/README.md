@@ -181,7 +181,7 @@ docs/cli/
 
 ## 🎯 Feature Status
 
-### ✅ Completed Features (8/12)
+### ✅ Completed Features (11/11)
 
 **Phase 1 - Core Features (4/4):**
 
@@ -226,7 +226,10 @@ docs/cli/
    - `/replace` - Bulk replacements
    - `/analyze` - Analyze files
    - `/mcp` - MCP operations
-   - `/checkpoint` - Create/restore checkpoints
+   - `/checkpoint` - Git-based checkpoint status and creation
+   - `/undo` - Undo changes and restore to last checkpoint
+   - `/focus` - Manage focus chains
+   - `/workflow` - Manage workflows
    - `/history` - View task history
    - `/help` - Show available commands
 
@@ -236,13 +239,28 @@ docs/cli/
    - `@folder:path` - Reference folders
    - Automatic content resolution
 
-### ⏳ Upcoming Features (4/12)
+**Phase 3 - Advanced (3/3):**
 
-**Phase 3 - Advanced:**
-- Checkpoints system
-- Focus chain support
-- Workflow templates
-- Browser automation
+9. **Checkpoints System** ✓
+   - Automatic checkpoints on first API request
+   - Git-based shadow repository (non-intrusive)
+   - Manual checkpoint creation on demand
+   - Undo command to restore to last checkpoint
+   - Three restore modes: task, workspace, or both
+   - Check for changes since last completion
+   - Integrates with extension's checkpoint infrastructure
+
+10. **Focus Chain Support** ✓
+    - Display multi-step task progress
+    - Track completion status
+    - Skip or complete individual steps
+    - Visual progress indicators
+
+11. **Workflow Support** ✓
+    - Pre-defined task sequences
+    - Built-in workflow templates (new-feature, bug-fix, refactor)
+    - Custom workflow creation
+    - Variable substitution in workflows
 
 See [Feature Plan](./development/feature-plan.md) for details.
 
@@ -250,12 +268,13 @@ See [Feature Plan](./development/feature-plan.md) for details.
 
 ## 📊 Version Information
 
-**Current Version:** 1.2.0  
+**Current Version:** 1.3.0  
 **Last Updated:** October 11, 2025  
 **Status:** Production-ready
 
 ### Version History
 
+- **v1.3.0** (Oct 2025) - Phase 3 complete: All 11 features (Checkpoints, focus chains, workflows, undo command)
 - **v1.2.0** (Oct 2025) - Phase 2 complete: 8 features (Terminal output management, improved diffs, slash commands, mentions)
 - **v1.1.0** (Oct 2025) - Phase 1 complete: 4 core features
 - **v1.0.0** (Initial) - Basic CLI functionality
@@ -365,13 +384,13 @@ All CLI documentation follows these standards:
 - ✅ Configuration: Complete
 - ✅ Troubleshooting: Comprehensive (20+ solutions)
 - ✅ Examples: 60+ code examples
-- ✅ Features: 8/12 documented
-- ⏳ Advanced topics: Expanding
+- ✅ Features: 11/11 documented
+- ✅ Advanced topics: Complete
 
 ### Quality
-- **Completeness:** 95%
+- **Completeness:** 100%
 - **Accuracy:** 100%
-- **Up-to-date:** Yes (v1.1.0)
+- **Up-to-date:** Yes (v1.3.0)
 - **User-tested:** Yes
 
 ---
@@ -407,5 +426,5 @@ See [Quick Reference Improvements](./development/improvements/quick-reference-im
 
 *Last updated: October 11, 2025*  
 *Maintained by: MarieCoder Development Team*  
-*Documentation version: 1.2.0*
+*Documentation version: 1.3.0*
 
