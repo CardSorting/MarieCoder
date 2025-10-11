@@ -38,7 +38,6 @@ export const MessageHeader = memo(
 					userSelect: isClickable ? "none" : "auto",
 					WebkitUserSelect: isClickable ? "none" : "auto",
 					MozUserSelect: isClickable ? "none" : "auto",
-					msUserSelect: isClickable ? "none" : "auto",
 					...style,
 				}}>
 				<div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
