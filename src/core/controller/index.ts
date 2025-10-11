@@ -1,32 +1,23 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { ApiService } from "@core/api"
-import { detectWorkspaceRoots } from "@core/workspace/detection"
-import { setupWorkspaceManager } from "@core/workspace/setup"
-import { WorkspaceRootManager } from "@core/workspace/WorkspaceRootManager"
-import { cleanupLegacyCheckpoints } from "@integrations/checkpoints/CheckpointMigration"
 import { downloadTask } from "@integrations/misc/export-markdown"
 import { McpHub } from "@services/mcp/McpHub"
 import { ApiProvider, ModelInfo } from "@shared/api"
 import { ChatContent } from "@shared/ChatContent"
 import { ExtensionState, Platform } from "@shared/ExtensionMessage"
 import { HistoryItem } from "@shared/HistoryItem"
-import { McpMarketplaceCatalog } from "@shared/mcp"
 import { Mode } from "@shared/storage/types"
 import { UserInfo } from "@shared/UserInfo"
 import { fileExistsAtPath } from "@utils/fs"
 import fs from "fs/promises"
-import pWaitFor from "p-wait-for"
 import * as path from "path"
 import * as vscode from "vscode"
-import { clineEnvConfig } from "@/config"
 import { HostProvider } from "@/hosts/host-provider"
 import { ExtensionRegistryInfo } from "@/registry"
 import { featureFlagsService } from "@/services/feature-flags"
 import { getDistinctId } from "@/services/logging/distinctId"
 import { Logger } from "@/services/logging/Logger"
-import { ShowMessageType } from "@/shared/proto/host/window"
 import { getLatestAnnouncementId } from "@/utils/announcements"
-import { getCwd, getDesktopDir } from "@/utils/path"
 import { PromptRegistry } from "../prompts/system-prompt"
 import {
 	ensureCacheDirectoryExists,
@@ -34,179 +25,124 @@ import {
 	ensureSettingsDirectoryExists,
 	GlobalFileNames,
 } from "../storage/disk"
-import { PersistenceErrorEvent, StateManager } from "../storage/StateManager"
-import { Settings } from "../storage/state-keys"
+import { StateManager } from "../storage/StateManager"
 import { Task } from "../task"
-import { sendMcpMarketplaceCatalogEvent } from "./mcp/subscribeToMcpMarketplaceCatalog"
+import { McpCoordinator } from "./coordinators/mcp_coordinator"
+import { StateCoordinator } from "./coordinators/state_coordinator"
+import { TaskCoordinator } from "./coordinators/task_coordinator"
+import { WorkspaceCoordinator } from "./coordinators/workspace_coordinator"
+import { ControllerEventType, type EventListener, type EventUnsubscribe } from "./events/controller_events"
+import { ControllerEventEmitter } from "./events/event_emitter"
+import { ControllerInitializer } from "./initialization/controller_initializer"
 import { appendClineStealthModels } from "./models/refreshOpenRouterModels"
 import { sendStateUpdate } from "./state/subscribeToState"
 import { sendChatButtonClickedEvent } from "./ui/subscribeToChatButtonClicked"
 
-/*
-https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
-
-https://github.com/KumarVariable/vscode-extension-sidebar-html/blob/master/src/customSidebarViewProvider.ts
-*/
-
+/**
+ * Main Controller for Marie extension
+ * Orchestrates coordinators and manages extension lifecycle
+ */
 export class Controller {
 	task?: Task
 
 	mcpHub: McpHub
 	readonly stateManager: StateManager
+	readonly eventEmitter: ControllerEventEmitter
 
-	// NEW: Add workspace manager (optional initially)
-	private workspaceManager?: WorkspaceRootManager
+	// Coordinators
+	workspaceCoordinator: WorkspaceCoordinator
+	mcpCoordinator: McpCoordinator
+	stateCoordinator: StateCoordinator
+	taskCoordinator: TaskCoordinator
 
 	constructor(readonly context: vscode.ExtensionContext) {
 		PromptRegistry.getInstance() // Ensure prompts and tools are registered
 		HostProvider.get().logToChannel("NormieProvider instantiated")
 		this.stateManager = StateManager.get()
 
-		StateManager.get().registerCallbacks({
-			onPersistenceError: async ({ error }: PersistenceErrorEvent) => {
-				Logger.error(
-					"[Controller] Cache persistence failed, recovering",
-					error instanceof Error ? error : new Error(String(error)),
-				)
-				try {
-					await StateManager.get().reInitialize(this.task?.taskId)
-					await this.postStateToWebview()
-					HostProvider.window.showMessage({
-						type: ShowMessageType.WARNING,
-						message: "Saving settings to storage failed.",
-					})
-				} catch (recoveryError) {
-					Logger.error(
-						"[Controller] Cache recovery failed",
-						recoveryError instanceof Error ? recoveryError : new Error(String(recoveryError)),
-					)
-					HostProvider.window.showMessage({
-						type: ShowMessageType.ERROR,
-						message: "Failed to save settings. Please restart the extension.",
-					})
-				}
-			},
-			onSyncExternalChange: async () => {
-				await this.postStateToWebview()
-			},
-		})
+		// Initialize event emitter
+		this.eventEmitter = new ControllerEventEmitter()
 
+		// Initialize MCP Hub
 		this.mcpHub = new McpHub(
 			() => ensureMcpServersDirectoryExists(),
 			() => ensureSettingsDirectoryExists(),
 			ExtensionRegistryInfo.version,
 		)
 
-		// Clean up legacy checkpoints
-		cleanupLegacyCheckpoints().catch((error) => {
-			Logger.error("Failed to cleanup legacy checkpoints", error instanceof Error ? error : new Error(String(error)))
+		// Initialize coordinators with event emitter
+		this.workspaceCoordinator = new WorkspaceCoordinator(context, this.stateManager, this.eventEmitter)
+		this.mcpCoordinator = new McpCoordinator(this.mcpHub, this.stateManager, this.eventEmitter)
+		this.stateCoordinator = new StateCoordinator(this.stateManager, this, this.eventEmitter)
+		this.taskCoordinator = new TaskCoordinator(this, this.stateManager, this.mcpHub, this.eventEmitter)
+
+		// Delegate initialization
+		ControllerInitializer.initialize(this, context, {
+			initializeWorkspace: false, // Workspace initialized on demand during task creation
+			setupEventListeners: true,
+		}).catch((error) => {
+			Logger.error("[Controller] Failed to initialize", error instanceof Error ? error : new Error(String(error)))
 		})
 	}
 
-	/*
-	VSCode extensions use the disposable pattern to clean up resources when the sidebar/editor tab is closed by the user or system. This applies to event listening, commands, interacting with the UI, etc.
-	- https://vscode-docs.readthedocs.io/en/stable/extensions/patterns-and-principles/
-	- https://github.com/microsoft/vscode-extension-samples/blob/main/webview-sample/src/extension.ts
-	*/
-	async dispose() {
-		await this.clearTask()
-		this.mcpHub.dispose()
+	/**
+	 * Dispose and cleanup resources
+	 */
+	async dispose(): Promise<void> {
+		await this.taskCoordinator.clearCurrentTask()
+		await this.mcpCoordinator.cleanup()
+		await this.workspaceCoordinator.cleanup()
 
 		Logger.debug("Controller disposed")
 	}
 
-	// Auth methods removed - standalone extension no longer requires auth
-
-	async setUserInfo(info?: UserInfo) {
+	/**
+	 * Set user info in global state
+	 */
+	async setUserInfo(info?: UserInfo): Promise<void> {
 		this.stateManager.setGlobalState("userInfo", info)
 	}
 
+	/**
+	 * Initialize a new task with given parameters
+	 */
 	async initTask(
 		task?: string,
 		images?: string[],
 		files?: string[],
 		historyItem?: HistoryItem,
-		taskSettings?: Partial<Settings>,
-	) {
-		await this.clearTask() // ensures that an existing task doesn't exist before starting a new one, although this shouldn't be possible since user must clear task before starting a new one
+		taskSettings?: Partial<import("@core/storage/state-keys").Settings>,
+	): Promise<string> {
+		// Initialize workspace on demand
+		await this.workspaceCoordinator.initialize()
 
-		const autoApprovalSettings = this.stateManager.getGlobalSettingsKey("autoApprovalSettings")
-		const shellIntegrationTimeout = this.stateManager.getGlobalSettingsKey("shellIntegrationTimeout")
-		const terminalReuseEnabled = this.stateManager.getGlobalStateKey("terminalReuseEnabled")
-		const terminalOutputLineLimit = this.stateManager.getGlobalSettingsKey("terminalOutputLineLimit")
-		const defaultTerminalProfile = this.stateManager.getGlobalSettingsKey("defaultTerminalProfile")
-		const isNewUser = this.stateManager.getGlobalStateKey("isNewUser")
-		const taskHistory = this.stateManager.getGlobalStateKey("taskHistory")
-
-		const NEW_USER_TASK_COUNT_THRESHOLD = 10
-
-		// Check if the user has completed enough tasks to no longer be considered a "new user"
-		if (isNewUser && !historyItem && taskHistory && taskHistory.length >= NEW_USER_TASK_COUNT_THRESHOLD) {
-			this.stateManager.setGlobalState("isNewUser", false)
-			await this.postStateToWebview()
-		}
-
-		if (autoApprovalSettings) {
-			const updatedAutoApprovalSettings = {
-				...autoApprovalSettings,
-				version: (autoApprovalSettings.version ?? 1) + 1,
-			}
-			this.stateManager.setGlobalState("autoApprovalSettings", updatedAutoApprovalSettings)
-		}
-
-		// Initialize and persist the workspace manager (multi-root or single-root) with telemetry + fallback
-		this.workspaceManager = await setupWorkspaceManager({
-			stateManager: this.stateManager,
-			detectRoots: detectWorkspaceRoots,
-		})
-
-		const cwd = this.workspaceManager?.getPrimaryRoot()?.path || (await getCwd(getDesktopDir()))
-
-		const taskId = historyItem?.id || Date.now().toString()
-
-		await this.stateManager.loadTaskSettings(taskId)
-		if (taskSettings) {
-			this.stateManager.setTaskSettingsBatch(taskId, taskSettings)
-		}
-
-		this.task = new Task({
-			controller: this,
-			mcpHub: this.mcpHub,
-			updateTaskHistory: (historyItem) => this.updateTaskHistory(historyItem),
-			postStateToWebview: () => this.postStateToWebview(),
-			reinitExistingTaskFromId: (taskId) => this.reinitExistingTaskFromId(taskId),
-			cancelTask: () => this.cancelTask(),
-			shellIntegrationTimeout,
-			terminalReuseEnabled: terminalReuseEnabled ?? true,
-			terminalOutputLineLimit: terminalOutputLineLimit ?? 500,
-			defaultTerminalProfile: defaultTerminalProfile ?? "default",
-			cwd,
-			stateManager: this.stateManager,
-			workspaceManager: this.workspaceManager,
+		// Create task through coordinator
+		return await this.taskCoordinator.createTask({
 			task,
 			images,
 			files,
 			historyItem,
-			taskId,
+			taskSettings,
 		})
-
-		return this.task.taskId
 	}
 
-	async reinitExistingTaskFromId(taskId: string) {
-		const history = await this.getTaskWithId(taskId)
-		if (history) {
-			await this.initTask(undefined, undefined, undefined, history.historyItem)
-		}
+	/**
+	 * Reinitialize existing task from history by ID
+	 */
+	async reinitExistingTaskFromId(taskId: string): Promise<void> {
+		await this.taskCoordinator.reinitTask(taskId)
 	}
 
+	/**
+	 * Toggle to act mode for yolo mode
+	 */
 	async toggleActModeForYoloMode(): Promise<boolean> {
 		const modeToSwitchTo: Mode = "act"
 
 		// Switch to act mode
 		this.stateManager.setGlobalState("mode", modeToSwitchTo)
 
-		// Update API handler with new mode (ApiService.createHandler now selects provider based on mode)
+		// Update API handler with new mode
 		if (this.task) {
 			const apiConfiguration = this.stateManager.getApiConfiguration()
 			this.task.api = ApiService.createHandler({ ...apiConfiguration, ulid: this.task.ulid }, modeToSwitchTo)
@@ -214,20 +150,20 @@ export class Controller {
 
 		await this.postStateToWebview()
 
-		// Additional safety
-		if (this.task) {
-			return true
-		}
-		return false
+		// Additional safety check
+		return this.task !== undefined
 	}
 
+	/**
+	 * Toggle between plan and act modes
+	 */
 	async togglePlanActMode(modeToSwitchTo: Mode, chatContent?: ChatContent): Promise<boolean> {
 		const didSwitchToActMode = modeToSwitchTo === "act"
 
 		// Store mode to global state
 		this.stateManager.setGlobalState("mode", modeToSwitchTo)
 
-		// Update API handler with new mode (ApiService.createHandler now selects provider based on mode)
+		// Update API handler with new mode
 		if (this.task) {
 			const apiConfiguration = this.stateManager.getApiConfiguration()
 			this.task.api = ApiService.createHandler({ ...apiConfiguration, ulid: this.task.ulid }, modeToSwitchTo)
@@ -238,14 +174,12 @@ export class Controller {
 		if (this.task) {
 			if (this.task.taskState.isAwaitingPlanResponse && didSwitchToActMode) {
 				this.task.taskState.didRespondToPlanAskBySwitchingMode = true
-				// Use chatContent if provided, otherwise use default message
 				await this.task.handleWebviewAskResponse(
 					"messageResponse",
 					chatContent?.message || "PLAN_MODE_TOGGLE_RESPONSE",
 					chatContent?.images || [],
 					chatContent?.files || [],
 				)
-
 				return true
 			} else {
 				this.cancelTask()
@@ -256,159 +190,39 @@ export class Controller {
 		return false
 	}
 
-	async cancelTask() {
-		if (this.task) {
-			const { historyItem } = await this.getTaskWithId(this.task.taskId)
-			try {
-				await this.task.abortTask()
-			} catch (error) {
-				Logger.error("Failed to abort task", error instanceof Error ? error : new Error(String(error)))
-			}
-			await pWaitFor(
-				() =>
-					this.task === undefined ||
-					this.task.taskState.isStreaming === false ||
-					this.task.taskState.didFinishAbortingStream ||
-					this.task.taskState.isWaitingForFirstChunk, // if only first chunk is processed, then there's no need to wait for graceful abort (closes edits, browser, etc)
-				{
-					timeout: 3_000,
-				},
-			).catch(() => {
-				Logger.error("Failed to abort task")
-			})
-			if (this.task) {
-				// 'abandoned' will prevent this cline instance from affecting future cline instance gui. this may happen if its hanging on a streaming request
-				this.task.taskState.abandoned = true
-			}
-			await this.initTask(undefined, undefined, undefined, historyItem) // clears task again, so we need to abortTask manually above
-			// Dont send the state to the webview, the new Cline instance will send state when it's ready.
-			// Sending the state here sent an empty messages array to webview leading to virtuoso having to reload the entire list
-		}
+	/**
+	 * Cancel current task
+	 */
+	async cancelTask(): Promise<void> {
+		await this.taskCoordinator.cancelTask()
 	}
 
-	async handleTaskCreation(prompt: string) {
+	/**
+	 * Handle task creation from prompt
+	 */
+	async handleTaskCreation(prompt: string): Promise<void> {
 		await sendChatButtonClickedEvent()
 		await this.initTask(prompt)
 	}
 
-	// MCP Marketplace
-	private async fetchMcpMarketplaceFromApi(silent: boolean = false): Promise<McpMarketplaceCatalog | undefined> {
-		try {
-			const response = await fetch(`${clineEnvConfig.mcpBaseUrl}/marketplace`, {
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json",
-				},
-			})
-
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`)
-			}
-
-			const data = await response.json()
-
-			if (!data) {
-				throw new Error("Invalid response from MCP marketplace API")
-			}
-
-			const catalog: McpMarketplaceCatalog = {
-				items: (data || []).map((item: any) => ({
-					...item,
-					githubStars: item.githubStars ?? 0,
-					downloadCount: item.downloadCount ?? 0,
-					tags: item.tags ?? [],
-				})),
-			}
-
-			// Store in global state
-			this.stateManager.setGlobalState("mcpMarketplaceCatalog", catalog)
-			return catalog
-		} catch (error) {
-			Logger.error("Failed to fetch MCP marketplace", error instanceof Error ? error : new Error(String(error)))
-			if (!silent) {
-				const errorMessage = error instanceof Error ? error.message : "Failed to fetch MCP marketplace"
-				HostProvider.window.showMessage({
-					type: ShowMessageType.ERROR,
-					message: errorMessage,
-				})
-			}
-			return undefined
-		}
-	}
-
-	private async fetchMcpMarketplaceFromApiRPC(silent: boolean = false): Promise<McpMarketplaceCatalog | undefined> {
-		try {
-			const response = await fetch(`${clineEnvConfig.mcpBaseUrl}/marketplace`, {
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json",
-					"User-Agent": "cline-vscode-extension",
-				},
-			})
-
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`)
-			}
-
-			const data = await response.json()
-
-			if (!data) {
-				throw new Error("Invalid response from MCP marketplace API")
-			}
-
-			const catalog: McpMarketplaceCatalog = {
-				items: (data || []).map((item: any) => ({
-					...item,
-					githubStars: item.githubStars ?? 0,
-					downloadCount: item.downloadCount ?? 0,
-					tags: item.tags ?? [],
-				})),
-			}
-
-			// Store in global state
-			this.stateManager.setGlobalState("mcpMarketplaceCatalog", catalog)
-			return catalog
-		} catch (error) {
-			Logger.error("Failed to fetch MCP marketplace", error instanceof Error ? error : new Error(String(error)))
-			if (!silent) {
-				const errorMessage = error instanceof Error ? error.message : "Failed to fetch MCP marketplace"
-				throw new Error(errorMessage)
-			}
-			return undefined
-		}
-	}
-
-	async silentlyRefreshMcpMarketplace() {
-		try {
-			const catalog = await this.fetchMcpMarketplaceFromApi(true)
-			if (catalog) {
-				await sendMcpMarketplaceCatalogEvent(catalog)
-			}
-		} catch (error) {
-			Logger.error("Failed to silently refresh MCP marketplace", error instanceof Error ? error : new Error(String(error)))
-		}
+	/**
+	 * Silently refresh MCP marketplace catalog
+	 */
+	async silentlyRefreshMcpMarketplace(): Promise<void> {
+		await this.mcpCoordinator.silentlyRefreshMarketplace()
 	}
 
 	/**
-	 * RPC variant that silently refreshes the MCP marketplace catalog and returns the result
-	 * Unlike silentlyRefreshMcpMarketplace, this doesn't send a message to the webview
-	 * @returns MCP marketplace catalog or undefined if refresh failed
+	 * Silently refresh MCP marketplace catalog (RPC variant)
 	 */
-	async silentlyRefreshMcpMarketplaceRPC() {
-		try {
-			return await this.fetchMcpMarketplaceFromApiRPC(true)
-		} catch (error) {
-			Logger.error(
-				"Failed to silently refresh MCP marketplace (RPC)",
-				error instanceof Error ? error : new Error(String(error)),
-			)
-			return undefined
-		}
+	async silentlyRefreshMcpMarketplaceRPC(): Promise<import("@shared/mcp").McpMarketplaceCatalog | undefined> {
+		return await this.mcpCoordinator.silentlyRefreshMarketplaceRPC()
 	}
 
-	// OpenRouter
-
-	async handleOpenRouterCallback(code: string) {
+	/**
+	 * Handle OpenRouter OAuth callback
+	 */
+	async handleOpenRouterCallback(code: string): Promise<void> {
 		let apiKey: string
 		try {
 			const response = await fetch("https://openrouter.ai/api/v1/auth/keys", {
@@ -433,7 +247,7 @@ export class Controller {
 		const openrouter: ApiProvider = "openrouter"
 		const currentMode = this.stateManager.getGlobalSettingsKey("mode")
 
-		// Update API configuration through cache service
+		// Update API configuration
 		const currentApiConfiguration = this.stateManager.getApiConfiguration()
 		const updatedConfig = {
 			...currentApiConfiguration,
@@ -447,17 +261,17 @@ export class Controller {
 		if (this.task) {
 			this.task.api = ApiService.createHandler({ ...updatedConfig, ulid: this.task.ulid }, currentMode)
 		}
-		// Dont send settingsButtonClicked because its bad ux if user is on welcome
 	}
 
-	// Read OpenRouter models from disk cache
+	/**
+	 * Read OpenRouter models from disk cache
+	 */
 	async readOpenRouterModels(): Promise<Record<string, import("@shared/proto/cline/models").OpenRouterModelInfo> | undefined> {
 		const openRouterModelsFilePath = path.join(await ensureCacheDirectoryExists(), GlobalFileNames.openRouterModels)
 		try {
 			if (await fileExistsAtPath(openRouterModelsFilePath)) {
 				const fileContents = await fs.readFile(openRouterModelsFilePath, "utf8")
 				const models = JSON.parse(fileContents)
-				// Append stealth models
 				return appendClineStealthModels(models)
 			}
 		} catch (error) {
@@ -466,7 +280,9 @@ export class Controller {
 		return undefined
 	}
 
-	// Read Vercel AI Gateway models from disk cache
+	/**
+	 * Read Vercel AI Gateway models from disk cache
+	 */
 	async readVercelAiGatewayModels(): Promise<Record<string, ModelInfo> | undefined> {
 		const vercelAiGatewayModelsFilePath = path.join(await ensureCacheDirectoryExists(), GlobalFileNames.vercelAiGatewayModels)
 		const fileExists = await fileExistsAtPath(vercelAiGatewayModelsFilePath)
@@ -477,8 +293,9 @@ export class Controller {
 		return undefined
 	}
 
-	// Task history
-
+	/**
+	 * Get task with ID from history
+	 */
 	async getTaskWithId(id: string): Promise<{
 		historyItem: HistoryItem
 		taskDirPath: string
@@ -510,36 +327,44 @@ export class Controller {
 				}
 			}
 		}
-		// if we tried to get a task that doesn't exist, remove it from state
-		// FIXME: this seems to happen sometimes when the json file doesn't save to disk for some reason
+		// If task doesn't exist, remove it from state
 		await this.deleteTaskFromState(id)
 		throw new Error("Task not found")
 	}
 
-	async exportTaskWithId(id: string) {
+	/**
+	 * Export task as markdown
+	 */
+	async exportTaskWithId(id: string): Promise<void> {
 		const { historyItem, apiConversationHistory } = await this.getTaskWithId(id)
 		await downloadTask(historyItem.ts, apiConversationHistory)
 	}
 
-	async deleteTaskFromState(id: string) {
-		// Remove the task from history
+	/**
+	 * Delete task from state
+	 */
+	async deleteTaskFromState(id: string): Promise<HistoryItem[]> {
 		const taskHistory = this.stateManager.getGlobalStateKey("taskHistory")
 		const updatedTaskHistory = taskHistory.filter((task) => task.id !== id)
 		this.stateManager.setGlobalState("taskHistory", updatedTaskHistory)
 
-		// Notify the webview that the task has been deleted
 		await this.postStateToWebview()
 
 		return updatedTaskHistory
 	}
 
-	async postStateToWebview() {
+	/**
+	 * Post current state to webview
+	 */
+	async postStateToWebview(): Promise<void> {
 		const state = await this.getStateToPostToWebview()
 		await sendStateUpdate(state)
 	}
 
+	/**
+	 * Get current extension state for webview
+	 */
 	async getStateToPostToWebview(): Promise<ExtensionState> {
-		// Get API configuration from cache for immediate access
 		const apiConfiguration = this.stateManager.getApiConfiguration()
 		const lastShownAnnouncementId = this.stateManager.getGlobalStateKey("lastShownAnnouncementId")
 		const taskHistory = this.stateManager.getGlobalStateKey("taskHistory")
@@ -584,7 +409,7 @@ export class Controller {
 		const processedTaskHistory = (taskHistory || [])
 			.filter((item) => item.ts && item.task)
 			.sort((a, b) => b.ts - a.ts)
-			.slice(0, 100) // for now we're only getting the latest 100 tasks, but a better solution here is to only pass in 3 for recent task history, and then get the full task history on demand when going to the task history view (maybe with pagination?)
+			.slice(0, 100)
 
 		const latestAnnouncementId = getLatestAnnouncementId()
 		const shouldShowAnnouncement = lastShownAnnouncementId !== latestAnnouncementId
@@ -595,7 +420,7 @@ export class Controller {
 		// Set feature flag in dictation settings based on platform
 		const updatedDictationSettings = {
 			...dictationSettings,
-			featureEnabled: process.platform === "darwin", // Enable dictation only on macOS
+			featureEnabled: process.platform === "darwin",
 		}
 
 		return {
@@ -639,10 +464,9 @@ export class Controller {
 			shouldShowAnnouncement,
 			favoritedModelIds,
 			autoCondenseThreshold,
-			// NEW: Add workspace information
-			workspaceRoots: this.workspaceManager?.getRoots() ?? [],
-			primaryRootIndex: this.workspaceManager?.getPrimaryIndex() ?? 0,
-			isMultiRootWorkspace: (this.workspaceManager?.getRoots().length ?? 0) > 1,
+			workspaceRoots: this.workspaceCoordinator.getWorkspaceManager()?.getRoots() ?? [],
+			primaryRootIndex: this.workspaceCoordinator.getWorkspaceManager()?.getPrimaryIndex() ?? 0,
+			isMultiRootWorkspace: (this.workspaceCoordinator.getWorkspaceManager()?.getRoots().length ?? 0) > 1,
 			multiRootSetting: {
 				user: this.stateManager.getGlobalStateKey("multiRootEnabled"),
 				featureFlag: featureFlagsService.getMultiRootEnabled(),
@@ -652,42 +476,45 @@ export class Controller {
 		}
 	}
 
-	async clearTask() {
-		if (this.task) {
-			// Clear task settings cache when task ends
-			await this.stateManager.clearTaskSettings()
-		}
-		await this.task?.abortTask()
-		this.task = undefined // removes reference to it, so once promises end it will be garbage collected
+	/**
+	 * Clear current task
+	 */
+	async clearTask(): Promise<void> {
+		await this.taskCoordinator.clearCurrentTask()
 	}
 
-	// Caching mechanism to keep track of webview messages + API conversation history per provider instance
-
-	/*
-	Now that we use retainContextWhenHidden, we don't have to store a cache of cline messages in the user's state, but we could to reduce memory footprint in long conversations.
-
-	- We have to be careful of what state is shared between ClineProvider instances since there could be multiple instances of the extension running at once. For example when we cached cline messages using the same key, two instances of the extension could end up using the same key and overwriting each other's messages.
-	- Some state does need to be shared between the instances, i.e. the API key--however there doesn't seem to be a good way to notify the other instances that the API key has changed.
-
-	We need to use a unique identifier for each ClineProvider instance's message cache since we could be running several instances of the extension outside of just the sidebar i.e. in editor panels.
-
-	// conversation history to send in API requests
-
-	/*
-	It seems that some API messages do not comply with vscode state requirements. Either the Anthropic library is manipulating these values somehow in the backend in a way that's creating cyclic references, or the API returns a function or a Symbol as part of the message content.
-	VSCode docs about state: "The value must be JSON-stringifyable ... value — A value. MUST not contain cyclic references."
-	For now we'll store the conversation history in memory, and if we need to store in state directly we'd need to do a manual conversion to ensure proper json stringification.
-	*/
-
+	/**
+	 * Update task history with item
+	 */
 	async updateTaskHistory(item: HistoryItem): Promise<HistoryItem[]> {
-		const history = this.stateManager.getGlobalStateKey("taskHistory")
-		const existingItemIndex = history.findIndex((h) => h.id === item.id)
-		if (existingItemIndex !== -1) {
-			history[existingItemIndex] = item
-		} else {
-			history.push(item)
-		}
-		this.stateManager.setGlobalState("taskHistory", history)
-		return history
+		return await this.stateCoordinator.updateTaskHistory(item)
+	}
+
+	/**
+	 * Handle persistence error via state coordinator
+	 */
+	async handlePersistenceError(error: unknown): Promise<void> {
+		await this.stateCoordinator.handlePersistenceError(error)
+	}
+
+	/**
+	 * Subscribe to a controller event
+	 */
+	on<T extends ControllerEventType>(event: T, listener: EventListener<T>): EventUnsubscribe {
+		return this.eventEmitter.on(event, listener)
+	}
+
+	/**
+	 * Subscribe to a controller event (one-time)
+	 */
+	once<T extends ControllerEventType>(event: T, listener: EventListener<T>): EventUnsubscribe {
+		return this.eventEmitter.once(event, listener)
+	}
+
+	/**
+	 * Unsubscribe from a controller event
+	 */
+	off<T extends ControllerEventType>(event: T, listener: EventListener<T>): void {
+		this.eventEmitter.off(event, listener)
 	}
 }
