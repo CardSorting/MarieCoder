@@ -15,7 +15,7 @@ export const SwitchOption = ({
 	[key: string]: any
 }) => (
 	<div
-		className={`p-[2px_8px] z-[1] transition-colors duration-200 text-xs w-1/2 text-center select-none ${isActive ? "text-white" : "text-[var(--vscode-input-foreground)]"} ${!isActive ? "hover:bg-[var(--vscode-toolbar-hoverBackground)]" : ""}`}
+		className={`p-[2px_8px] z-[1] transition-colors duration-200 text-xs w-1/2 text-center select-none ${isActive ? "text-[var(--vscode-button-foreground)]" : "text-[var(--vscode-input-foreground)]"} ${!isActive ? "hover:bg-[var(--vscode-toolbar-hoverBackground)]" : ""}`}
 		{...props}>
 		{children}
 	</div>

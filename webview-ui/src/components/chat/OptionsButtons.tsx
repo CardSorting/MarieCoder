@@ -38,8 +38,8 @@ export const OptionsButtons = ({
 				return (
 					<button
 						className={`options-button py-2 px-3 border border-[var(--vscode-editorGroup-border)] rounded-[2px] text-left text-xs
-							${isSelected ? "bg-[var(--vscode-focusBorder)] text-white" : "text-[var(--vscode-input-foreground)]"}
-							${isNotSelectable ? "cursor-default" : "cursor-pointer hover:bg-[var(--vscode-focusBorder)] hover:text-white"}`}
+							${isSelected ? "bg-[var(--vscode-focusBorder)] text-[var(--vscode-button-foreground)]" : "text-[var(--vscode-input-foreground)]"}
+							${isNotSelectable ? "cursor-default" : "cursor-pointer hover:bg-[var(--vscode-focusBorder)] hover:text-[var(--vscode-button-foreground)]"}`}
 						id={`options-button-${index}`}
 						key={option}
 						onClick={async () => {

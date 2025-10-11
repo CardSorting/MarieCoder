@@ -106,7 +106,7 @@
 				{
 					"id": "marie-coder-ActivityBar",
 					"title": "Marie Coder",
-					"icon": "assets/icons/Marie-icon.svg"
+					"icon": "assets/icons/Marie-dev-icon.svg"
 				}
 			]
 		},
@@ -116,7 +116,7 @@
 					"type": "webview",
 					"id": "marie-coder.SidebarProvider",
 					"name": "",
-					"icon": "assets/icons/Marie-icon.svg"
+					"icon": "assets/icons/Marie-dev-icon.svg"
 				}
 			]
 		},
@@ -172,8 +172,8 @@
 				"title": "Generate Commit Message with Marie Coder",
 				"category": "Marie Coder",
 				"icon": {
-					"light": "assets/icons/Marie-icon.svg",
-					"dark": "assets/icons/Marie-icon.svg"
+					"light": "assets/icons/Marie-dev-icon-light.svg",
+					"dark": "assets/icons/Marie-dev-icon-dark.svg"
 				}
 			},
 			{

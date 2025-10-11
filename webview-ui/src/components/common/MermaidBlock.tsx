@@ -6,34 +6,41 @@ import { FileServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { loadMermaid } from "@/utils/mermaid_loader"
 
-const MERMAID_THEME_FOR_EXPORT = {
-	background: "#1e1e1e", // VS Code dark theme background
-	textColor: "#ffffff", // Main text color
-	mainBkg: "#2d2d2d", // Background for nodes
-	nodeBorder: "#888888", // Border color for nodes
-	lineColor: "#cccccc", // Lines connecting nodes
-	primaryColor: "#3c3c3c", // Primary color for highlights
-	primaryTextColor: "#ffffff", // Text in primary colored elements
-	primaryBorderColor: "#888888",
-	secondaryColor: "#2d2d2d", // Secondary color for alternate elements
-	tertiaryColor: "#454545", // Third color for special elements
+/**
+ * Gets computed theme colors from CSS custom properties
+ * This ensures Mermaid diagrams adapt to both light and dark themes
+ */
+const getMermaidThemeColors = () => {
+	const computedStyle = getComputedStyle(document.body)
+	const bgColor = computedStyle.getPropertyValue("--vscode-editor-background").trim() || "#1e1e1e"
+	const fgColor = computedStyle.getPropertyValue("--vscode-editor-foreground").trim() || "#cccccc"
+	const borderColor = computedStyle.getPropertyValue("--vscode-panel-border").trim() || "#888888"
 
-	// Class diagram specific
-	classText: "#ffffff",
-
-	// State diagram specific
-	labelColor: "#ffffff",
-
-	// Sequence diagram specific
-	actorLineColor: "#cccccc",
-	actorBkg: "#2d2d2d",
-	actorBorder: "#888888",
-	actorTextColor: "#ffffff",
-
-	// Flow diagram specific
-	fillType0: "#2d2d2d",
-	fillType1: "#3c3c3c",
-	fillType2: "#454545",
+	return {
+		background: bgColor,
+		textColor: fgColor,
+		mainBkg: bgColor,
+		nodeBorder: borderColor,
+		lineColor: fgColor,
+		primaryColor: bgColor,
+		primaryTextColor: fgColor,
+		primaryBorderColor: borderColor,
+		secondaryColor: bgColor,
+		tertiaryColor: bgColor,
+		// Class diagram specific
+		classText: fgColor,
+		// State diagram specific
+		labelColor: fgColor,
+		// Sequence diagram specific
+		actorLineColor: fgColor,
+		actorBkg: bgColor,
+		actorBorder: borderColor,
+		actorTextColor: fgColor,
+		// Flow diagram specific
+		fillType0: bgColor,
+		fillType1: bgColor,
+		fillType2: bgColor,
+	}
 }
 
 interface MermaidBlockProps {
@@ -211,8 +218,9 @@ async function svgToPng(svgEl: SVGElement): Promise<string> {
 				return reject("Canvas context not available")
 			}
 
-			// Fill background with Mermaid's dark theme background color
-			ctx.fillStyle = MERMAID_THEME_FOR_EXPORT.background
+			// Fill background with current theme background color
+			const themeColors = getMermaidThemeColors()
+			ctx.fillStyle = themeColors.background
 			ctx.fillRect(0, 0, canvas.width, canvas.height)
 
 			ctx.imageSmoothingEnabled = true
