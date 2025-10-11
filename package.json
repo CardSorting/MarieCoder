@@ -48,6 +48,9 @@
 		"workspaceContains:evals.env"
 	],
 	"main": "./dist/extension.js",
+	"bin": {
+		"mariecoder": "./dist-cli/mariecoder.js"
+	},
 	"contributes": {
 		"walkthroughs": [
 			{
@@ -301,7 +304,11 @@
 		"watch:esbuild": "node esbuild.mjs --watch",
 		"watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
 		"package": "npm run check-types && npm run build:webview && npm run lint && node esbuild.mjs --production",
-		"clean:build": "rimraf dist dist-standalone webview-ui/build src/generated out/",
+		"cli:build": "node esbuild.cli.mjs --production",
+		"cli:dev": "node esbuild.cli.mjs",
+		"cli:watch": "node esbuild.cli.mjs --watch",
+		"cli": "node dist-cli/mariecoder.js",
+		"clean:build": "rimraf dist dist-cli dist-standalone webview-ui/build src/generated out/",
 		"clean:deps": "rimraf node_modules webview-ui/node_modules",
 		"clean:all": "npm run clean:build && npm run clean:deps",
 		"compile-tests": "node ./scripts/build-tests.js",

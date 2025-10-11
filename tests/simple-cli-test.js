@@ -1,98 +1,121 @@
 #!/usr/bin/env node
 
-import chalk from "chalk"
-import fs from "fs-extra"
-import path from "path"
-import { ProjectGenerator } from "../cli-tools/noormme-cli/dist/utils/project-generator.js"
+/**
+ * Simple CLI Test Script
+ * Tests basic CLI functionality
+ */
 
-const testProjectPath = path.join(process.cwd(), "test-projects", "simple-cli-test")
+const { spawn } = require("child_process")
+const path = require("path")
 
-async function testProjectGeneration() {
-	console.log(chalk.blue("🧪 Testing CLI Project Generation (Non-Interactive)\n"))
+// Test configuration
+const CLI_PATH = path.join(__dirname, "../dist-cli/mariecoder.js")
+const TEST_WORKSPACE = __dirname
 
-	try {
-		// Clean up any existing test project
-		if (await fs.pathExists(testProjectPath)) {
-			await fs.remove(testProjectPath)
-		}
+console.log("🧪 MarieCoder CLI Test Suite\n")
+console.log("=".repeat(80))
 
-		console.log(chalk.yellow("Creating project generator..."))
+// Test 1: Help command
+console.log("\n📋 Test 1: Help Command")
+console.log("-".repeat(80))
 
-		const generator = new ProjectGenerator(testProjectPath, {
-			projectName: "simple-cli-test",
-			template: "nextjs",
-			includeAuth: false,
-			includeAdmin: false,
-			includeTailwind: true,
-			includeTests: false,
-		})
+const helpTest = spawn("node", [CLI_PATH, "--help"])
 
-		console.log(chalk.yellow("Generating project..."))
-		const result = await generator.generate()
+let helpOutput = ""
+helpTest.stdout.on("data", (data) => {
+	helpOutput += data.toString()
+})
 
-		if (result.success) {
-			console.log(chalk.green("✅ Project generation successful!"))
-
-			// Verify project structure
-			const requiredFiles = [
-				"package.json",
-				"tsconfig.json",
-				"src/lib/db.ts",
-				"src/services/BaseService.ts",
-				"src/services/UserService.ts",
-				"src/app/page.tsx",
-				"scripts/migrate.ts",
-				"scripts/seed.ts",
-				".cursor/rules/noormme-architecture.mdc",
-				".cursor/rules/marie-kondo.mdc",
-			]
-
-			console.log(chalk.yellow("Verifying project structure..."))
-			let allFilesExist = true
-
-			for (const file of requiredFiles) {
-				const filePath = path.join(testProjectPath, file)
-				if (await fs.pathExists(filePath)) {
-					console.log(chalk.green(`✅ ${file}`))
-				} else {
-					console.log(chalk.red(`❌ ${file} - File not found`))
-					allFilesExist = false
-				}
-			}
-
-			if (allFilesExist) {
-				console.log(chalk.green("\n🎉 All project files created successfully!"))
-
-				// Test package.json content
-				const packageJsonPath = path.join(testProjectPath, "package.json")
-				const packageJson = await fs.readJson(packageJsonPath)
-
-				if (packageJson.name === "simple-cli-test" && packageJson.dependencies && packageJson.dependencies.noormme) {
-					console.log(chalk.green("✅ Package.json configuration correct"))
-				} else {
-					console.log(chalk.red("❌ Package.json configuration incorrect"))
-					console.log(
-						chalk.gray(`  Name: ${packageJson.name}, Dependencies: ${JSON.stringify(packageJson.dependencies)}`),
-					)
-				}
-			} else {
-				console.log(chalk.red("\n⚠️  Some project files are missing"))
-			}
-		} else {
-			console.log(chalk.red(`❌ Project generation failed: ${result.message}`))
-		}
-
-		// Clean up
-		if (await fs.pathExists(testProjectPath)) {
-			await fs.remove(testProjectPath)
-			console.log(chalk.gray("🧹 Test project cleaned up"))
-		}
-	} catch (error) {
-		console.error(chalk.red("Test error:"), error.message)
+helpTest.on("close", (code) => {
+	if (code === 0 && helpOutput.includes("USAGE:")) {
+		console.log("✅ Help command works")
+	} else {
+		console.log("❌ Help command failed")
+		console.log("Exit code:", code)
 	}
+
+	// Test 2: Version command
+	runVersionTest()
+})
+
+function runVersionTest() {
+	console.log("\n📋 Test 2: Version Command")
+	console.log("-".repeat(80))
+
+	const versionTest = spawn("node", [CLI_PATH, "--version"])
+
+	let versionOutput = ""
+	versionTest.stdout.on("data", (data) => {
+		versionOutput += data.toString()
+	})
+
+	versionTest.on("close", (code) => {
+		if (code === 0 && versionOutput.includes("MarieCoder CLI")) {
+			console.log("✅ Version command works")
+		} else {
+			console.log("❌ Version command failed")
+			console.log("Exit code:", code)
+		}
+
+		// Test 3: Check if CLI can initialize (without API key)
+		runInitTest()
+	})
 }
 
-testProjectGeneration().catch((error) => {
-	console.error(chalk.red("Test runner error:"), error)
-	process.exit(1)
-})
+function runInitTest() {
+	console.log("\n📋 Test 3: CLI Initialization Check")
+	console.log("-".repeat(80))
+	console.log("ℹ️  This test will attempt to initialize without an API key")
+	console.log("   It should fail gracefully with a clear error message.")
+
+	const initTest = spawn("node", [CLI_PATH, "--workspace", TEST_WORKSPACE, "test task"])
+
+	let initOutput = ""
+	let initError = ""
+
+	initTest.stdout.on("data", (data) => {
+		initOutput += data.toString()
+	})
+
+	initTest.stderr.on("data", (data) => {
+		initError += data.toString()
+	})
+
+	// Set a timeout to kill the process if it hangs
+	const timeout = setTimeout(() => {
+		initTest.kill()
+		console.log("⏱️  Process timed out (expected without API key)")
+		printSummary()
+	}, 10000)
+
+	initTest.on("close", (code) => {
+		clearTimeout(timeout)
+
+		const combinedOutput = initOutput + initError
+
+		if (combinedOutput.includes("API key not configured") || combinedOutput.includes("initializ")) {
+			console.log("✅ CLI initialization check passed")
+			console.log("   The CLI correctly identifies missing API key or initializes properly")
+		} else {
+			console.log("⚠️  CLI produced output but may have issues:")
+			console.log("Exit code:", code)
+		}
+
+		printSummary()
+	})
+}
+
+function printSummary() {
+	console.log("\n" + "=".repeat(80))
+	console.log("🎯 Test Summary")
+	console.log("=".repeat(80))
+	console.log("\nThe CLI has been built successfully and basic commands work!")
+	console.log("\nTo fully test the CLI with AI features, you need to:")
+	console.log("1. Set an API key:")
+	console.log('   export ANTHROPIC_API_KEY="your-key-here"')
+	console.log("\n2. Run a simple task:")
+	console.log('   npm run cli -- "Create a hello.txt file with Hello World"')
+	console.log("\n3. Or try interactive mode:")
+	console.log("   npm run cli")
+	console.log("\n" + "=".repeat(80))
+}

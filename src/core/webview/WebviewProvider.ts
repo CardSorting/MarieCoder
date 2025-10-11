@@ -1,7 +1,7 @@
 import path from "node:path"
 import { Controller } from "@core/controller/index"
 import { readFile } from "fs/promises"
-import * as vscode from "vscode"
+import type * as vscode from "vscode"
 import { HostProvider } from "@/hosts/host-provider"
 import { ShowMessageType } from "@/shared/proto/host/window"
 import { getNonce } from "./getNonce"

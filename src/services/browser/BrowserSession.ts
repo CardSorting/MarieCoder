@@ -10,7 +10,6 @@ import * as path from "path"
 // @ts-ignore
 import type { ConsoleMessage, ScreenshotOptions } from "puppeteer-core"
 import { Browser, connect, launch, Page, TimeoutError } from "puppeteer-core"
-import * as vscode from "vscode"
 import { StateManager } from "@/core/storage/StateManager"
 import { Logger } from "@/services/logging/Logger"
 import { discoverChromeInstances, isPortOpen, testBrowserConnection } from "./BrowserDiscovery"

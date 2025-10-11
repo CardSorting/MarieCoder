@@ -19,7 +19,6 @@ import { ClineDefaultTool } from "@shared/tools"
 import { ClineAskResponse } from "@shared/WebviewMessage"
 import pWaitFor from "p-wait-for"
 import { ulid } from "ulid"
-import * as vscode from "vscode"
 import { Controller } from "../controller"
 import { StateManager } from "../storage/StateManager"
 // Coordinators
@@ -569,14 +568,25 @@ export class Task {
 	 * Migrates the disableBrowserTool setting from VSCode configuration to browserSettings
 	 */
 	private async migrateDisableBrowserToolSetting(): Promise<void> {
-		const config = vscode.workspace.getConfiguration("cline")
-		const disableBrowserTool = config.get<boolean>("disableBrowserTool")
+		// This migration only works in VSCode environment, skip in CLI mode
+		try {
+			// Dynamically import vscode only if available
+			const vscodeModule = await import("vscode").catch(() => null)
+			if (!vscodeModule) {
+				return
+			}
 
-		if (disableBrowserTool !== undefined) {
-			const browserSettings = this.stateManager.getGlobalSettingsKey("browserSettings")
-			browserSettings.disableToolUse = disableBrowserTool
-			// Remove from VSCode configuration
-			await config.update("disableBrowserTool", undefined, true)
+			const config = vscodeModule.workspace.getConfiguration("cline")
+			const disableBrowserTool = config.get<boolean>("disableBrowserTool")
+
+			if (disableBrowserTool !== undefined) {
+				const browserSettings = this.stateManager.getGlobalSettingsKey("browserSettings")
+				browserSettings.disableToolUse = disableBrowserTool
+				// Remove from VSCode configuration
+				await config.update("disableBrowserTool", undefined, true)
+			}
+		} catch (_error) {
+			// Silently ignore in CLI mode or if vscode is not available
 		}
 	}
 

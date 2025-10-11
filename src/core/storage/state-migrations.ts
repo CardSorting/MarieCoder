@@ -1,6 +1,6 @@
 import fs from "fs/promises"
 import path from "path"
-import * as vscode from "vscode"
+import type * as vscode from "vscode"
 import { Logger } from "@/services/logging/Logger"
 import { HistoryItem } from "@/shared/HistoryItem"
 import { ensureRulesDirectoryExists, readTaskHistoryFromState, writeTaskHistoryToState } from "./disk"
@@ -125,24 +125,44 @@ export async function migrateTaskHistoryToFile(context: vscode.ExtensionContext)
 }
 
 export async function migrateMcpMarketplaceEnableSetting(mcpMarketplaceEnabledRaw: boolean | undefined): Promise<boolean> {
-	const config = vscode.workspace.getConfiguration("cline")
-	const mcpMarketplaceEnabled = config.get<boolean>("mcpMarketplace.enabled")
-	if (mcpMarketplaceEnabled !== undefined) {
-		// Remove from VSCode configuration
-		await config.update("mcpMarketplace.enabled", undefined, true)
+	try {
+		// Dynamically import vscode only if available
+		const vscodeModule = await import("vscode").catch(() => null)
+		if (!vscodeModule) {
+			return mcpMarketplaceEnabledRaw ?? true
+		}
 
-		return !mcpMarketplaceEnabled
+		const config = vscodeModule.workspace.getConfiguration("cline")
+		const mcpMarketplaceEnabled = config.get<boolean>("mcpMarketplace.enabled")
+		if (mcpMarketplaceEnabled !== undefined) {
+			// Remove from VSCode configuration
+			await config.update("mcpMarketplace.enabled", undefined, true)
+
+			return !mcpMarketplaceEnabled
+		}
+	} catch (_error) {
+		// Silently ignore in CLI mode
 	}
 	return mcpMarketplaceEnabledRaw ?? true
 }
 
 export async function migrateEnableCheckpointsSetting(enableCheckpointsSettingRaw: boolean | undefined): Promise<boolean> {
-	const config = vscode.workspace.getConfiguration("cline")
-	const enableCheckpoints = config.get<boolean>("enableCheckpoints")
-	if (enableCheckpoints !== undefined) {
-		// Remove from VSCode configuration
-		await config.update("enableCheckpoints", undefined, true)
-		return enableCheckpoints
+	try {
+		// Dynamically import vscode only if available
+		const vscodeModule = await import("vscode").catch(() => null)
+		if (!vscodeModule) {
+			return enableCheckpointsSettingRaw ?? true
+		}
+
+		const config = vscodeModule.workspace.getConfiguration("cline")
+		const enableCheckpoints = config.get<boolean>("enableCheckpoints")
+		if (enableCheckpoints !== undefined) {
+			// Remove from VSCode configuration
+			await config.update("enableCheckpoints", undefined, true)
+			return enableCheckpoints
+		}
+	} catch (_error) {
+		// Silently ignore in CLI mode
 	}
 	return enableCheckpointsSettingRaw ?? true
 }

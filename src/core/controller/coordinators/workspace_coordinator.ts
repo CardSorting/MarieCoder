@@ -3,7 +3,7 @@ import { detectWorkspaceRoots } from "@core/workspace/detection"
 import { setupWorkspaceManager } from "@core/workspace/setup"
 import { WorkspaceRootManager } from "@core/workspace/WorkspaceRootManager"
 import { Logger } from "@services/logging/Logger"
-import * as vscode from "vscode"
+import type * as vscode from "vscode"
 import { ControllerEventType } from "../events/controller_events"
 import { ControllerEventEmitter } from "../events/event_emitter"
 
