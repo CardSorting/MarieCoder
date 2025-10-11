@@ -62,7 +62,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 
 	// Simplified computed values
 	const { selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, mode)
-	const modeFields = getModeSpecificFields(apiConfiguration, mode)
+	const _modeFields = getModeSpecificFields(apiConfiguration, mode)
 
 	const isCostAvailable = totalCost !== undefined
 

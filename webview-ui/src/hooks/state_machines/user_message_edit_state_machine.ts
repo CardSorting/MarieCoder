@@ -77,27 +77,13 @@ const canPerformRestore = (context: UserMessageEditContext): boolean => {
 }
 
 /**
- * Check if user can restore with workspace changes
- */
-const canRestoreWorkspace = (context: UserMessageEditContext): boolean => {
-	return canPerformRestore(context) && !hasCheckpointError(context)
-}
-
-/**
- * Check if there's a checkpoint error
- */
-const hasCheckpointError = (context: UserMessageEditContext): boolean => {
-	// This would check the extension state for checkpoint errors
-	// For now, we assume no errors
-	return false
-}
-
-/**
  * Check if blur event should cancel edit
  * (i.e., focus is not moving to a restore button)
  */
-const shouldCancelOnBlur = (context: UserMessageEditContext, event: UserMessageEditEvent): boolean => {
-	if (event.type !== "BLUR") return false
+const shouldCancelOnBlur = (_context: UserMessageEditContext, event: UserMessageEditEvent): boolean => {
+	if (event.type !== "BLUR") {
+		return false
+	}
 
 	// If blur is moving to a button, don't cancel
 	if (event.payload?.relatedTarget) {
@@ -129,7 +115,9 @@ const startEditing = (context: UserMessageEditContext): Partial<UserMessageEditC
  * Update edited text
  */
 const updateText = (context: UserMessageEditContext, event: UserMessageEditEvent): Partial<UserMessageEditContext> => {
-	if (event.type !== "TEXT_CHANGED") return {}
+	if (event.type !== "TEXT_CHANGED") {
+		return {}
+	}
 
 	return {
 		editedText: event.payload.text,
@@ -140,8 +128,10 @@ const updateText = (context: UserMessageEditContext, event: UserMessageEditEvent
 /**
  * Set restore type
  */
-const setRestoreType = (context: UserMessageEditContext, event: UserMessageEditEvent): Partial<UserMessageEditContext> => {
-	if (event.type !== "CONFIRM_RESTORE") return {}
+const setRestoreType = (_context: UserMessageEditContext, event: UserMessageEditEvent): Partial<UserMessageEditContext> => {
+	if (event.type !== "CONFIRM_RESTORE") {
+		return {}
+	}
 
 	return {
 		restoreType: event.payload.restoreType,
@@ -151,8 +141,10 @@ const setRestoreType = (context: UserMessageEditContext, event: UserMessageEditE
 /**
  * Store error message
  */
-const storeError = (context: UserMessageEditContext, event: UserMessageEditEvent): Partial<UserMessageEditContext> => {
-	if (event.type !== "RESTORE_ERROR") return {}
+const storeError = (_context: UserMessageEditContext, event: UserMessageEditEvent): Partial<UserMessageEditContext> => {
+	if (event.type !== "RESTORE_ERROR") {
+		return {}
+	}
 
 	return {
 		errorMessage: event.payload.error,
@@ -205,6 +197,7 @@ export const createUserMessageEditStateMachine = (
 			},
 			onEnter: () => {
 				// Normal viewing mode
+				return undefined
 			},
 		},
 
@@ -252,6 +245,7 @@ export const createUserMessageEditStateMachine = (
 			},
 			onEnter: () => {
 				// Show restore options to user
+				return undefined
 			},
 		},
 
@@ -266,6 +260,7 @@ export const createUserMessageEditStateMachine = (
 			onEnter: () => {
 				// Perform checkpoint restore
 				// This is handled by the component via CheckpointsServiceClient
+				return undefined
 			},
 		},
 
@@ -276,6 +271,7 @@ export const createUserMessageEditStateMachine = (
 			onEnter: () => {
 				// Restore complete, message will be resent
 				// Component handles sending the edited message
+				return undefined
 			},
 		},
 
@@ -298,6 +294,7 @@ export const createUserMessageEditStateMachine = (
 			onEnter: () => {
 				// Handle error state
 				// Show error message to user
+				return undefined
 			},
 		},
 	},

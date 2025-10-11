@@ -1,6 +1,4 @@
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import React from "react"
-import styled from "styled-components"
 import HeroTooltip from "@/components/common/HeroTooltip"
 import { ActionMetadata } from "./types"
 
@@ -14,61 +12,6 @@ interface AutoApproveMenuItemProps {
 	showIcon?: boolean
 }
 
-const CheckboxContainer = styled.div.withConfig({
-	shouldForwardProp: (prop) => !["isFavorited"].includes(prop),
-})<{ isFavorited?: boolean; onClick?: (e: MouseEvent) => void; onMouseDown?: (e: React.MouseEvent) => void }>`
-	display: flex;
-	align-items: center;
-	justify-content: space-between; /* Push content to edges */
-	padding-left: 4px;
-	padding-right: 1px;
-	border-radius: 4px;
-	cursor: pointer;
-	transition: all 0.2s ease;
-
-	&:hover {
-		background-color: var(--vscode-textBlockQuote-background);
-	}
-
-	.left-content {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-
-	.icon {
-		color: var(--vscode-foreground);
-		font-size: 14px;
-	}
-
-	.label {
-		color: var(--vscode-foreground);
-		font-size: 12px;
-		font-weight: 500;
-	}
-
-	.star {
-		color: ${(props) => (props.isFavorited ? "var(--vscode-terminal-ansiYellow)" : "var(--vscode-descriptionForeground)")};
-		opacity: ${(props) => (props.isFavorited ? 1 : 0.6)};
-		font-size: 14px;
-	}
-`
-
-const SubOptionAnimateIn = styled.div<{ show: boolean }>`
-	position: relative;
-	transform: ${(props) => (props.show ? "scaleY(1)" : "scaleY(0)")};
-	transform-origin: top;
-	padding-left: 24px;
-	opacity: ${(props) => (props.show ? "1" : "0")};
-	height: ${(props) => (props.show ? "auto" : "0")}; /* Manage height for layout */
-	overflow: visible; /* Allow tooltips to escape */
-	transition: transform 0.2s ease-in-out;
-`
-
-const ActionButtonContainer = styled.div`
-	padding: 2px;
-`
-
 const AutoApproveMenuItem = ({
 	action,
 	isChecked,
@@ -81,23 +24,25 @@ const AutoApproveMenuItem = ({
 	const checked = isChecked(action)
 	const favorited = isFavorited?.(action)
 
-	const onChange = async (e: Event) => {
+	const onChange = async (e: React.MouseEvent<HTMLDivElement>) => {
 		e.stopPropagation()
 		await onToggle(action, !checked)
 	}
 
 	const content = (
 		<>
-			<ActionButtonContainer>
+			<div className="p-0.5">
 				<HeroTooltip content={action.description} delay={500}>
-					<CheckboxContainer isFavorited={favorited} onClick={onChange}>
-						<div className="left-content">
+					<div
+						className="flex items-center justify-between pl-1 pr-px rounded cursor-pointer transition-all duration-200 hover:bg-[var(--vscode-textBlockQuote-background)]"
+						onClick={onChange}>
+						<div className="flex items-center gap-2">
 							{onToggleFavorite && !condensed && (
 								<HeroTooltip
 									content={favorited ? "Remove from quick-access menu" : "Add to quick-access menu"}
 									delay={500}>
 									<span
-										className={`p-0.5 codicon codicon-${favorited ? "star-full" : "star-empty"} star`}
+										className={`p-0.5 codicon codicon-${favorited ? "star-full" : "star-empty"} text-sm cursor-pointer ${favorited ? "text-[var(--vscode-terminal-ansiYellow)] opacity-100" : "text-[var(--vscode-descriptionForeground)] opacity-60"}`}
 										onClick={async (e) => {
 											e.stopPropagation()
 											if (action.id === "enableAll") {
@@ -105,21 +50,23 @@ const AutoApproveMenuItem = ({
 											}
 											await onToggleFavorite?.(action.id)
 										}}
-										style={{
-											cursor: "pointer",
-										}}
 									/>
 								</HeroTooltip>
 							)}
 							<VSCodeCheckbox checked={checked} />
-							{showIcon && <span className={`codicon ${action.icon} icon`}></span>}
-							<span className="label">{condensed ? action.shortName : action.label}</span>
+							{showIcon && (
+								<span className={`codicon ${action.icon} text-[var(--vscode-foreground)] text-sm`}></span>
+							)}
+							<span className="text-[var(--vscode-foreground)] text-xs font-medium">
+								{condensed ? action.shortName : action.label}
+							</span>
 						</div>
-					</CheckboxContainer>
+					</div>
 				</HeroTooltip>
-			</ActionButtonContainer>
+			</div>
 			{action.subAction && !condensed && (
-				<SubOptionAnimateIn show={checked}>
+				<div
+					className={`relative pl-6 overflow-visible transition-transform duration-200 ease-in-out origin-top ${checked ? "scale-y-100 opacity-100 h-auto" : "scale-y-0 opacity-0 h-0"}`}>
 					<AutoApproveMenuItem
 						action={action.subAction}
 						isChecked={isChecked}
@@ -127,7 +74,7 @@ const AutoApproveMenuItem = ({
 						onToggle={onToggle}
 						onToggleFavorite={onToggleFavorite}
 					/>
-				</SubOptionAnimateIn>
+				</div>
 			)}
 		</>
 	)

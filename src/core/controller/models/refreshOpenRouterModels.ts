@@ -1,8 +1,6 @@
 import { ensureCacheDirectoryExists, GlobalFileNames } from "@core/storage/disk"
 import { EmptyRequest } from "@shared/proto/cline/common"
 import { OpenRouterCompatibleModelInfo, OpenRouterModelInfo } from "@shared/proto/cline/models"
-import axios from "axios"
-import cloneDeep from "clone-deep"
 import fs from "fs/promises"
 import path from "path"
 import {
@@ -85,10 +83,16 @@ export async function refreshOpenRouterModels(
 
 	const models: Record<string, OpenRouterModelInfo> = {}
 	try {
-		const response = await axios.get("https://openrouter.ai/api/v1/models")
+		const response = await fetch("https://openrouter.ai/api/v1/models")
 
-		if (response.data?.data) {
-			const rawModels = response.data.data
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`)
+		}
+
+		const jsonData = await response.json()
+
+		if (jsonData?.data) {
+			const rawModels = jsonData.data
 			const parsePrice = (price: any) => {
 				if (price) {
 					return parseFloat(price) * 1_000_000
@@ -221,7 +225,7 @@ export async function refreshOpenRouterModels(
 
 				// add custom :1m model variant
 				if (rawModel.id === "anthropic/claude-sonnet-4" || rawModel.id === "anthropic/claude-sonnet-4.5") {
-					const claudeSonnet1mModelInfo = cloneDeep(modelInfo)
+					const claudeSonnet1mModelInfo = structuredClone(modelInfo)
 					claudeSonnet1mModelInfo.contextWindow = 1_000_000 // limiting providers to those that support 1m context window
 					claudeSonnet1mModelInfo.tiers = CLAUDE_SONNET_1M_TIERS
 					// sonnet 4

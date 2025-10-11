@@ -1,7 +1,6 @@
 import { McpDisplayMode } from "@shared/McpDisplayMode"
 import { VSCodeProgressRing } from "@vscode/webview-ui-toolkit/react"
 import React, { useCallback, useEffect, useState } from "react"
-import styled from "styled-components"
 import ChatErrorBoundary from "@/components/chat/ChatErrorBoundary"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import MarkdownBlock from "@/components/common/MarkdownBlock"
@@ -16,59 +15,6 @@ import { buildDisplaySegments, DisplaySegment, processResponseUrls, UrlMatch } f
 
 // Maximum number of URLs to process in total, per response
 export const MAX_URLS = 50
-
-const ResponseHeader = styled.div`
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 9px 10px;
-	color: var(--vscode-descriptionForeground);
-	cursor: pointer;
-	user-select: none;
-	border-bottom: 1px dashed var(--vscode-editorGroup-border);
-	margin-bottom: 8px;
-
-	.header-title {
-		display: flex;
-		align-items: center;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		margin-right: 8px;
-	}
-
-	.header-icon {
-		margin-right: 6px;
-	}
-`
-
-const ResponseContainer = styled.div`
-	position: relative;
-	font-family: var(--vscode-editor-font-family, monospace);
-	font-size: var(--vscode-editor-font-size, 12px);
-	background-color: ${CODE_BLOCK_BG_COLOR};
-	color: var(--vscode-editor-foreground, #d4d4d4);
-	border-radius: 3px;
-	border: 1px solid var(--vscode-editorGroup-border);
-	overflow: hidden;
-	z-index: 0;
-
-	.response-content {
-		overflow-x: auto;
-		overflow-y: hidden;
-		max-width: 100%;
-		padding: 10px;
-	}
-`
-
-// Style for URL text to ensure proper wrapping
-const UrlText = styled.div`
-	white-space: pre-wrap;
-	word-break: break-all;
-	overflow-wrap: break-word;
-	font-family: var(--vscode-editor-font-family, monospace);
-	font-size: var(--vscode-editor-font-size, 12px);
-`
 
 interface McpResponseDisplayProps {
 	responseText: string
@@ -135,7 +81,13 @@ const McpResponseDisplay: React.FC<McpResponseDisplayProps> = ({ responseText })
 		switch (segment.type) {
 			case "text":
 			case "url":
-				return <UrlText key={segment.key}>{segment.content}</UrlText>
+				return (
+					<div
+						className="whitespace-pre-wrap break-all overflow-wrap-break-word font-[var(--vscode-editor-font-family,monospace)] text-[var(--vscode-editor-font-size,12px)]"
+						key={segment.key}>
+						{segment.content}
+					</div>
+				)
 
 			case "image":
 				return (
@@ -188,7 +140,11 @@ const McpResponseDisplay: React.FC<McpResponseDisplayProps> = ({ responseText })
 		}
 
 		if (mcpDisplayMode === "plain") {
-			return <UrlText>{responseText}</UrlText>
+			return (
+				<div className="whitespace-pre-wrap break-all overflow-wrap-break-word font-[var(--vscode-editor-font-family,monospace)] text-[var(--vscode-editor-font-size,12px)]">
+					{responseText}
+				</div>
+			)
 		}
 
 		if (mcpDisplayMode === "markdown") {
@@ -199,7 +155,9 @@ const McpResponseDisplay: React.FC<McpResponseDisplayProps> = ({ responseText })
 			return (
 				<>
 					<div style={{ color: "var(--vscode-errorForeground)", marginBottom: "10px" }}>{error}</div>
-					<UrlText>{responseText}</UrlText>
+					<div className="whitespace-pre-wrap break-all overflow-wrap-break-word font-[var(--vscode-editor-font-family,monospace)] text-[var(--vscode-editor-font-size,12px)]">
+						{responseText}
+					</div>
 				</>
 			)
 		}
@@ -214,15 +172,23 @@ const McpResponseDisplay: React.FC<McpResponseDisplayProps> = ({ responseText })
 
 	try {
 		return (
-			<ResponseContainer>
-				<ResponseHeader
+			<div
+				className="relative rounded-[3px] border border-[var(--vscode-editorGroup-border)] overflow-hidden z-0"
+				style={{
+					fontFamily: "var(--vscode-editor-font-family, monospace)",
+					fontSize: "var(--vscode-editor-font-size, 12px)",
+					backgroundColor: CODE_BLOCK_BG_COLOR,
+					color: "var(--vscode-editor-foreground, #d4d4d4)",
+				}}>
+				<div
+					className="flex justify-between items-center p-[9px_10px] text-[var(--vscode-descriptionForeground)] cursor-pointer select-none border-b border-dashed border-[var(--vscode-editorGroup-border)]"
 					onClick={toggleExpand}
 					style={{
 						borderBottom: isExpanded ? "1px dashed var(--vscode-editorGroup-border)" : "none",
 						marginBottom: isExpanded ? "8px" : "0px",
 					}}>
-					<div className="header-title">
-						<span className={`codicon codicon-chevron-${isExpanded ? "down" : "right"} header-icon`}></span>
+					<div className="flex items-center whitespace-nowrap overflow-hidden text-ellipsis mr-2">
+						<span className={`codicon codicon-chevron-${isExpanded ? "down" : "right"} mr-1.5`}></span>
 						Response
 					</div>
 					<DropdownContainer
@@ -234,29 +200,40 @@ const McpResponseDisplay: React.FC<McpResponseDisplayProps> = ({ responseText })
 							value={mcpDisplayMode}
 						/>
 					</DropdownContainer>
-				</ResponseHeader>
+				</div>
 
-				{isExpanded && <div className="response-content">{renderContent()}</div>}
-			</ResponseContainer>
+				{isExpanded && <div className="overflow-x-auto overflow-y-hidden max-w-full p-2.5">{renderContent()}</div>}
+			</div>
 		)
 	} catch (_error) {
 		debug.log("Error rendering MCP response - falling back to plain text") // Restored comment
 		// Fallback for critical rendering errors
 		return (
-			<ResponseContainer>
-				<ResponseHeader onClick={toggleExpand}>
-					<div className="header-title">
-						<span className={`codicon codicon-chevron-${isExpanded ? "down" : "right"} header-icon`}></span>
+			<div
+				className="relative rounded-[3px] border border-[var(--vscode-editorGroup-border)] overflow-hidden z-0"
+				style={{
+					fontFamily: "var(--vscode-editor-font-family, monospace)",
+					fontSize: "var(--vscode-editor-font-size, 12px)",
+					backgroundColor: CODE_BLOCK_BG_COLOR,
+					color: "var(--vscode-editor-foreground, #d4d4d4)",
+				}}>
+				<div
+					className="flex justify-between items-center p-[9px_10px] text-[var(--vscode-descriptionForeground)] cursor-pointer select-none border-b border-dashed border-[var(--vscode-editorGroup-border)]"
+					onClick={toggleExpand}>
+					<div className="flex items-center whitespace-nowrap overflow-hidden text-ellipsis mr-2">
+						<span className={`codicon codicon-chevron-${isExpanded ? "down" : "right"} mr-1.5`}></span>
 						Response (Error)
 					</div>
-				</ResponseHeader>
+				</div>
 				{isExpanded && (
-					<div className="response-content">
+					<div className="overflow-x-auto overflow-y-hidden max-w-full p-2.5">
 						<div style={{ color: "var(--vscode-errorForeground)" }}>Error parsing response:</div>
-						<UrlText>{responseText}</UrlText>
+						<div className="whitespace-pre-wrap break-all overflow-wrap-break-word font-[var(--vscode-editor-font-family,monospace)] text-[var(--vscode-editor-font-size,12px)]">
+							{responseText}
+						</div>
 					</div>
 				)}
-			</ResponseContainer>
+			</div>
 		)
 	}
 }

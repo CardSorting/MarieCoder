@@ -2,7 +2,6 @@ import { setTimeout as setTimeoutPromise } from "node:timers/promises"
 import { Controller } from "@core/controller"
 import { BrowserActionResult } from "@shared/ExtensionMessage"
 import { fileExistsAtPath } from "@utils/fs"
-import axios from "axios"
 import { spawn } from "child_process"
 import * as chromeLauncher from "chrome-launcher"
 import os from "os"
@@ -284,8 +283,12 @@ export class BrowserSession {
 				// Fetch the WebSocket endpoint from the Chrome DevTools Protocol
 				const versionUrl = `${remoteBrowserHost.replace(/\/$/, "")}/json/version`
 
-				const response = await axios.get(versionUrl)
-				browserWSEndpoint = response.data.webSocketDebuggerUrl
+				const response = await fetch(versionUrl)
+				if (!response.ok) {
+					throw new Error(`Failed to fetch WebSocket endpoint: ${response.status}`)
+				}
+				const data = await response.json()
+				browserWSEndpoint = data.webSocketDebuggerUrl
 
 				if (!browserWSEndpoint) {
 					throw new Error("Could not find webSocketDebuggerUrl in the response")

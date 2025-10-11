@@ -16,10 +16,9 @@ const DeleteTaskButton: React.FC<{
 			aria-label="Delete Task"
 			className={cn("flex items-center border-0 text-sm font-bold bg-transparent hover:opacity-100 p-0", className)}
 			isIconOnly={true}
-			onPress={() => {
+			onClick={() => {
 				taskId && TaskServiceClient.deleteTasksWithIds(StringArrayRequest.create({ value: [taskId] }))
 			}}
-			radius="sm"
 			size="sm">
 			<TrashIcon size="13" />
 		</Button>

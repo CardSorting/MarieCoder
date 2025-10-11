@@ -327,7 +327,7 @@ ${listInstrunctionsReminder}\n`
 			}
 
 			return null
-		} catch (error) {
+		} catch (_error) {
 			// File doesn't exist or can't be read, return null
 			// Could not load from markdown file - silently continue
 			return null
@@ -374,7 +374,7 @@ ${listInstrunctionsReminder}\n`
 
 			// If model provides task_progress update, write it to the markdown file
 			if (taskProgress && taskProgress.trim()) {
-				const previousList = this.taskState.currentFocusChainChecklist
+				const _previousList = this.taskState.currentFocusChainChecklist
 				this.taskState.currentFocusChainChecklist = taskProgress.trim()
 
 				// Parse focus chain list counts for telemetry

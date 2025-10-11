@@ -7,12 +7,21 @@ import { cn } from "@/utils/classnames"
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 	children: ReactNode
-	variant?: "primary" | "secondary" | "ghost"
+	variant?: "primary" | "secondary" | "ghost" | "danger" | "success"
 	size?: "sm" | "md" | "lg"
 	isIconOnly?: boolean
+	icon?: ReactNode
 }
 
-export function Button({ children, variant = "primary", size = "md", isIconOnly = false, className, ...props }: ButtonProps) {
+export function Button({
+	children,
+	variant = "primary",
+	size = "md",
+	isIconOnly = false,
+	icon,
+	className,
+	...props
+}: ButtonProps) {
 	const baseStyles =
 		"inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50 disabled:pointer-events-none"
 
@@ -22,6 +31,8 @@ export function Button({ children, variant = "primary", size = "md", isIconOnly 
 		secondary:
 			"bg-[var(--vscode-button-secondaryBackground)] text-[var(--vscode-button-secondaryForeground)] hover:bg-[var(--vscode-button-secondaryHoverBackground)]",
 		ghost: "hover:bg-[var(--vscode-toolbar-hoverBackground)] text-[var(--vscode-foreground)]",
+		danger: "bg-[#c42b2b] text-white hover:bg-[#a82424] active:bg-[#8f1f1f]",
+		success: "bg-[#176f2c] text-white hover:bg-[#197f31] active:bg-[#156528]",
 	}
 
 	const sizeStyles = {
@@ -34,6 +45,7 @@ export function Button({ children, variant = "primary", size = "md", isIconOnly 
 		<button
 			className={cn(baseStyles, variantStyles[variant], sizeStyles[size], isIconOnly ? "rounded" : "rounded-sm", className)}
 			{...props}>
+			{icon && <span className="inline-flex items-center mr-1.5">{icon}</span>}
 			{children}
 		</button>
 	)

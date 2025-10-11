@@ -27,8 +27,7 @@ const CopyTaskButton: React.FC<{
 				aria-label="Copy"
 				className={cn("bg-transparent hover:opacity-100", className)}
 				isIconOnly={true}
-				onPress={() => handleCopy()}
-				radius="sm"
+				onClick={() => handleCopy()}
 				size="sm">
 				{copied ? <CheckIcon size="13" /> : <CopyIcon size="13" />}
 			</Button>

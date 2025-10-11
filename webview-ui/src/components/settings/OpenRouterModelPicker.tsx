@@ -3,13 +3,13 @@ import { StringRequest } from "@shared/proto/cline/common"
 import { Mode } from "@shared/storage/types"
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import type Fuse from "fuse.js"
-import React, { KeyboardEvent, memo, useEffect, useMemo, useRef, useState } from "react"
-import styled from "styled-components"
+import React, { forwardRef, KeyboardEvent, memo, type ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { useMount } from "@/utils/hooks"
+import { renderMarkdownSync } from "@/utils/markdown_renderer"
 import { highlight } from "../history/HistoryView"
 import { ContextWindowSwitcher } from "./common/ContextWindowSwitcher"
 import { ModelInfoView } from "./common/ModelInfoView"
@@ -321,7 +321,9 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, 
 											setIsDropdownVisible(false)
 										}}
 										onMouseEnter={() => setSelectedIndex(index)}
-										ref={(el) => (itemRefs.current[index] = el)}>
+										ref={(el: HTMLDivElement | null) => {
+											itemRefs.current[index] = el
+										}}>
 										<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
 											<span dangerouslySetInnerHTML={{ __html: item.html }} />
 											<StarIcon
@@ -392,86 +394,107 @@ export default OpenRouterModelPicker
 
 // Dropdown
 
-const DropdownWrapper = styled.div`
-	position: relative;
-	width: 100%;
-`
+const DropdownWrapper = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => (
+	<div className="relative w-full" ref={ref}>
+		{children}
+	</div>
+))
+DropdownWrapper.displayName = "DropdownWrapper"
 
 export const OPENROUTER_MODEL_PICKER_Z_INDEX = 1_000
 
-const DropdownList = styled.div`
-	position: absolute;
-	top: calc(100% - 3px);
-	left: 0;
-	width: calc(100% - 2px);
-	max-height: 200px;
-	overflow-y: auto;
-	background-color: var(--vscode-dropdown-background);
-	border: 1px solid var(--vscode-list-activeSelectionBackground);
-	z-index: ${OPENROUTER_MODEL_PICKER_Z_INDEX - 1};
-	border-bottom-left-radius: 3px;
-	border-bottom-right-radius: 3px;
-`
+const DropdownList = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => (
+	<div
+		className="absolute left-0 w-[calc(100%-2px)] max-h-[200px] overflow-y-auto bg-[var(--vscode-dropdown-background)] border border-[var(--vscode-list-activeSelectionBackground)] rounded-b-[3px]"
+		ref={ref}
+		style={{
+			top: "calc(100% - 3px)",
+			zIndex: OPENROUTER_MODEL_PICKER_Z_INDEX - 1,
+		}}>
+		{children}
+	</div>
+))
+DropdownList.displayName = "DropdownList"
 
-const DropdownItem = styled.div<{ isSelected: boolean }>`
-	padding: 5px 10px;
-	cursor: pointer;
-	word-break: break-all;
-	white-space: normal;
-
-	background-color: ${({ isSelected }) => (isSelected ? "var(--vscode-list-activeSelectionBackground)" : "inherit")};
-
-	&:hover {
-		background-color: var(--vscode-list-activeSelectionBackground);
-	}
-`
+const DropdownItem = ({
+	isSelected,
+	children,
+	...props
+}: {
+	isSelected: boolean
+	children: React.ReactNode
+	[key: string]: any
+}) => (
+	<div
+		className={`p-[5px_10px] cursor-pointer break-all whitespace-normal hover:bg-[var(--vscode-list-activeSelectionBackground)] ${isSelected ? "bg-[var(--vscode-list-activeSelectionBackground)]" : ""}`}
+		{...props}>
+		{children}
+	</div>
+)
 
 // Markdown
 
-const StyledMarkdown = styled.div`
-	font-family:
-		var(--vscode-font-family),
-		system-ui,
-		-apple-system,
-		BlinkMacSystemFont,
-		"Segoe UI",
-		Roboto,
-		Oxygen,
-		Ubuntu,
-		Cantarell,
-		"Open Sans",
-		"Helvetica Neue",
-		sans-serif;
-	font-size: 12px;
-	color: var(--vscode-descriptionForeground);
+const StyledMarkdown = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => (
+	<div
+		className="styled-markdown text-xs text-[var(--vscode-descriptionForeground)]"
+		style={{
+			fontFamily:
+				"var(--vscode-font-family), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+		}}
+		{...props}>
+		<style>{`
+			.styled-markdown p,
+			.styled-markdown li,
+			.styled-markdown ol,
+			.styled-markdown ul {
+				line-height: 1.25;
+				margin: 0;
+			}
 
-	p,
-	li,
-	ol,
-	ul {
-		line-height: 1.25;
-		margin: 0;
-	}
+			.styled-markdown ol,
+			.styled-markdown ul {
+				padding-left: 1.5em;
+				margin-left: 0;
+			}
 
-	ol,
-	ul {
-		padding-left: 1.5em;
-		margin-left: 0;
-	}
+			.styled-markdown p {
+				white-space: pre-wrap;
+			}
 
-	p {
-		white-space: pre-wrap;
-	}
+			.styled-markdown ol li {
+				list-style: decimal;
+			}
 
-	a {
-		text-decoration: none;
-	}
-	a {
-		&:hover {
-			text-decoration: underline;
-		}
-	}
-`
+			.styled-markdown ul li {
+				list-style: disc;
+			}
+
+			.styled-markdown li {
+				margin-left: 1em;
+			}
+
+			.styled-markdown a {
+				color: var(--vscode-textLink-foreground);
+				text-decoration: none;
+			}
+
+			.styled-markdown a:hover {
+				text-decoration: underline;
+			}
+
+			.styled-markdown h1,
+			.styled-markdown h2,
+			.styled-markdown h3,
+			.styled-markdown h4,
+			.styled-markdown h5,
+			.styled-markdown h6 {
+				margin: 0;
+				font-weight: 600;
+			}
+		`}</style>
+		{children}
+	</div>
+)
 
 export const ModelDescriptionMarkdown = memo(
 	({

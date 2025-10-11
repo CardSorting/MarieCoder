@@ -1,5 +1,5 @@
 import { BrowserSettings, DEFAULT_BROWSER_SETTINGS } from "@shared/BrowserSettings" // Import the interface and defaults
-import * as cheerio from "cheerio"
+import { parseHTML } from "linkedom"
 // @ts-ignore
 import { Browser, Page } from "puppeteer-core"
 import TurndownService from "turndown"
@@ -57,13 +57,13 @@ export class UrlContentFetcher {
 		})
 		const content = await this.page.content()
 
-		// use cheerio to parse and clean up the HTML
-		const $ = cheerio.load(content)
-		$("script, style, nav, footer, header").remove()
+		// use linkedom to parse and clean up the HTML (lightweight alternative to cheerio)
+		const { document } = parseHTML(content)
+		document.querySelectorAll("script, style, nav, footer, header").forEach((el) => el.remove())
 
 		// convert cleaned HTML to markdown
 		const turndownService = new TurndownService()
-		const markdown = turndownService.turndown($.html())
+		const markdown = turndownService.turndown(document.documentElement.outerHTML)
 
 		return markdown
 	}

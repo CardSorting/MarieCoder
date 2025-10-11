@@ -12,6 +12,8 @@ service ModelsService {
   rpc refreshOpenRouterModels(EmptyRequest) returns (OpenRouterCompatibleModelInfo);
   // Subscribe to OpenRouter models updates
   rpc subscribeToOpenRouterModels(EmptyRequest) returns (stream OpenRouterCompatibleModelInfo);
+  // Fetches available models from LM Studio
+  rpc getLmStudioModels(StringRequest) returns (StringArray);
   // Updates API configuration
   rpc updateApiConfigurationProto(UpdateApiConfigurationRequest) returns (Empty);
 }

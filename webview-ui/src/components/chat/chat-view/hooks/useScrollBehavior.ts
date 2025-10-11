@@ -2,7 +2,6 @@ import { ClineMessage } from "@shared/ExtensionMessage"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { VirtuosoHandle } from "react-virtuoso"
 import { debounce } from "@/utils/debounce"
-import { useEvent } from "@/utils/hooks"
 import { ScrollBehavior } from "../types/chatTypes"
 
 /**
@@ -34,16 +33,12 @@ export function useScrollBehavior(
 	const [pendingScrollToMessage, setPendingScrollToMessage] = useState<number | null>(null)
 	const scrollToBottomSmooth = useMemo(
 		() =>
-			debounce(
-				() => {
-					virtuosoRef.current?.scrollTo({
-						top: Number.MAX_SAFE_INTEGER,
-						behavior: "smooth",
-					})
-				},
-				10,
-				{ immediate: true },
-			),
+			debounce(() => {
+				virtuosoRef.current?.scrollTo({
+					top: Number.MAX_SAFE_INTEGER,
+					behavior: "smooth",
+				})
+			}, 10),
 		[],
 	)
 
@@ -197,16 +192,19 @@ export function useScrollBehavior(
 		}
 	}, [messages.length])
 
-	const handleWheel = useCallback((event: Event) => {
-		const wheelEvent = event as WheelEvent
-		if (wheelEvent.deltaY && wheelEvent.deltaY < 0) {
-			if (scrollContainerRef.current?.contains(wheelEvent.target as Node)) {
+	const handleWheel = useCallback((event: WheelEvent) => {
+		if (event.deltaY && event.deltaY < 0) {
+			if (scrollContainerRef.current?.contains(event.target as Node)) {
 				// user scrolled up
 				disableAutoScrollRef.current = true
 			}
 		}
 	}, [])
-	useEvent("wheel", handleWheel, window, { passive: true }) // passive improves scrolling performance
+
+	useEffect(() => {
+		window.addEventListener("wheel", handleWheel, { passive: true })
+		return () => window.removeEventListener("wheel", handleWheel)
+	}, [handleWheel])
 
 	return {
 		virtuosoRef,

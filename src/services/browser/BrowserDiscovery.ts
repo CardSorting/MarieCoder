@@ -1,4 +1,3 @@
-import axios from "axios"
 import * as net from "net"
 
 /**
@@ -43,8 +42,17 @@ export async function isPortOpen(host: string, port: number, timeout = 1000): Pr
  */
 export async function tryConnect(ipAddress: string): Promise<{ endpoint: string; ip: string } | null> {
 	try {
-		const response = await axios.get(`http://${ipAddress}:9222/json/version`, { timeout: 1000 })
-		const data = response.data
+		const controller = new AbortController()
+		const timeoutId = setTimeout(() => controller.abort(), 1000)
+
+		const response = await fetch(`http://${ipAddress}:9222/json/version`, { signal: controller.signal })
+		clearTimeout(timeoutId)
+
+		if (!response.ok) {
+			return null
+		}
+
+		const data = await response.json()
 		return { endpoint: data.webSocketDebuggerUrl, ip: ipAddress }
 	} catch (_error) {
 		return null
@@ -77,8 +85,21 @@ export async function testBrowserConnection(host: string): Promise<{ success: bo
 		// Fetch the WebSocket endpoint from the Chrome DevTools Protocol
 		const versionUrl = `${host.replace(/\/$/, "")}/json/version`
 
-		const response = await axios.get(versionUrl, { timeout: 3000 })
-		const browserWSEndpoint = response.data.webSocketDebuggerUrl
+		const controller = new AbortController()
+		const timeoutId = setTimeout(() => controller.abort(), 3000)
+
+		const response = await fetch(versionUrl, { signal: controller.signal })
+		clearTimeout(timeoutId)
+
+		if (!response.ok) {
+			return {
+				success: false,
+				message: `HTTP error! status: ${response.status}`,
+			}
+		}
+
+		const data = await response.json()
+		const browserWSEndpoint = data.webSocketDebuggerUrl
 
 		if (!browserWSEndpoint) {
 			return {

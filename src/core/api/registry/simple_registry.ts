@@ -4,12 +4,12 @@ import type { ApiHandler, ApiHandlerOptions } from "../index"
 
 /**
  * Simple Provider Registry
- * Only supports Anthropic and OpenRouter
- * Follows NORMIE DEV methodology: ruthlessly simple
+ * Supports Anthropic, OpenRouter, and LMStudio
+ * Follows MarieCoder standards: clean, intentional additions
  */
 
 export interface ProviderConfig {
-	providerId: "anthropic" | "openrouter"
+	providerId: "anthropic" | "openrouter" | "lmstudio"
 	handlerClass: new (options: any) => ApiHandler
 	requiredFields: string[]
 }
@@ -32,14 +32,14 @@ class SimpleProviderRegistry {
 	 * Get all supported provider IDs
 	 */
 	getSupportedProviders(): string[] {
-		return ["anthropic", "openrouter"]
+		return ["anthropic", "openrouter", "lmstudio"]
 	}
 
 	/**
 	 * Check if provider is supported
 	 */
 	isSupported(providerId: string): boolean {
-		return providerId === "anthropic" || providerId === "openrouter"
+		return providerId === "anthropic" || providerId === "openrouter" || providerId === "lmstudio"
 	}
 
 	/**
@@ -47,7 +47,7 @@ class SimpleProviderRegistry {
 	 */
 	createHandler(providerId: string, configuration: ApiConfiguration, mode: Mode, options: ApiHandlerOptions): ApiHandler {
 		if (!this.isSupported(providerId)) {
-			throw new Error(`Unsupported provider: ${providerId}. Only 'anthropic' and 'openrouter' are supported.`)
+			throw new Error(`Unsupported provider: ${providerId}. Only 'anthropic', 'openrouter', and 'lmstudio' are supported.`)
 		}
 
 		const config = this.providers.get(providerId)
@@ -116,6 +116,12 @@ class SimpleProviderRegistry {
 			options.openRouterProviderSorting = configuration.openRouterProviderSorting
 			options.reasoningEffort = getModeValue("reasoningEffort")
 			options.thinkingBudgetTokens = getModeValue("thinkingBudgetTokens")
+		} else if (providerId === "lmstudio") {
+			options.lmStudioBaseUrl = configuration.lmStudioBaseUrl
+			options.lmStudioModelId = getModeValue("lmStudioModelId")
+			options.lmStudioMaxTokens = configuration.lmStudioMaxTokens
+			options.planModeLmStudioModelId = configuration.planModeLmStudioModelId
+			options.actModeLmStudioModelId = configuration.actModeLmStudioModelId
 		}
 
 		return options

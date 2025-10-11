@@ -9,8 +9,7 @@
  * - Fully customizable
  */
 
-import { memo } from "react"
-import styled, { keyframes } from "styled-components"
+import { memo, useMemo } from "react"
 
 interface PulsingBorderProps {
 	/** Array of colors to cycle through */
@@ -41,61 +40,6 @@ interface PulsingBorderProps {
 	thickness?: number
 }
 
-// Create gradient animation with color cycling
-const createGradientAnimation = (colors: string[]) => keyframes`
-	0% {
-		background: linear-gradient(90deg, ${colors[0]}, ${colors[1]});
-	}
-	33% {
-		background: linear-gradient(90deg, ${colors[1]}, ${colors[2]});
-	}
-	66% {
-		background: linear-gradient(90deg, ${colors[2]}, ${colors[0]});
-	}
-	100% {
-		background: linear-gradient(90deg, ${colors[0]}, ${colors[1]});
-	}
-`
-
-const PulsingBorderContainer = styled.div<{
-	$colors: string[]
-	$roundness: number
-	$intensity: number
-	$bloom: number
-	$smoke: number
-}>`
-	position: relative;
-	width: 100%;
-	height: 100%;
-	border-radius: ${(props) => props.$roundness * 8}px;
-	overflow: hidden;
-
-	&::before {
-		content: "";
-		position: absolute;
-		inset: 0;
-		padding: 2px; /* Border width */
-		background: linear-gradient(90deg, ${(props) => props.$colors.join(", ")});
-		-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-		-webkit-mask-composite: xor;
-		mask-composite: exclude;
-		animation: ${(props) => createGradientAnimation(props.$colors)} 4s ease-in-out infinite;
-		opacity: ${(props) => 0.4 + props.$smoke * 0.3};
-		filter: blur(${(props) => props.$intensity * 2}px);
-	}
-
-	&::after {
-		content: "";
-		position: absolute;
-		inset: -10px;
-		background: linear-gradient(90deg, ${(props) => props.$colors.join(", ")});
-		animation: ${(props) => createGradientAnimation(props.$colors)} 4s ease-in-out infinite;
-		opacity: ${(props) => props.$bloom * 0.3};
-		filter: blur(${(props) => (props.$bloom + props.$intensity) * 8}px);
-		z-index: -1;
-	}
-`
-
 /**
  * PulsingBorder - Animated gradient border effect
  *
@@ -121,15 +65,70 @@ export const PulsingBorder = memo(
 		spots: _spots = 4,
 		thickness: _thickness = 0.1,
 	}: PulsingBorderProps) => {
+		// Create unique animation name to avoid conflicts
+		const animationId = useMemo(() => `gradient-anim-${Math.random().toString(36).substr(2, 9)}`, [])
+
+		// Create CSS for keyframes
+		const keyframesCSS = useMemo(
+			() => `
+			@keyframes ${animationId} {
+				0% {
+					background: linear-gradient(90deg, ${colors[0]}, ${colors[1]});
+				}
+				33% {
+					background: linear-gradient(90deg, ${colors[1]}, ${colors[2]});
+				}
+				66% {
+					background: linear-gradient(90deg, ${colors[2]}, ${colors[0]});
+				}
+				100% {
+					background: linear-gradient(90deg, ${colors[0]}, ${colors[1]});
+				}
+			}
+		`,
+			[animationId, colors],
+		)
+
+		// Calculate values
+		const borderRadius = roundness * 8
+		const beforeOpacity = 0.4 + smoke * 0.3
+		const beforeBlur = intensity * 2
+		const afterOpacity = bloom * 0.3
+		const afterBlur = (bloom + intensity) * 8
+		const colorGradient = colors.join(", ")
+
 		return (
-			<PulsingBorderContainer
-				$bloom={bloom}
-				$colors={colors}
-				$intensity={intensity}
-				$roundness={roundness}
-				$smoke={smoke}
-				className={className}
-			/>
+			<>
+				<style>{keyframesCSS}</style>
+				<div
+					className={`relative w-full h-full overflow-hidden ${className}`}
+					style={{ borderRadius: `${borderRadius}px` }}>
+					{/* Border gradient */}
+					<div
+						className="absolute inset-0"
+						style={{
+							padding: "2px",
+							background: `linear-gradient(90deg, ${colorGradient})`,
+							WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+							WebkitMaskComposite: "xor",
+							maskComposite: "exclude",
+							animation: `${animationId} 4s ease-in-out infinite`,
+							opacity: beforeOpacity,
+							filter: `blur(${beforeBlur}px)`,
+						}}
+					/>
+					{/* Glow effect */}
+					<div
+						className="absolute -inset-[10px] -z-[1]"
+						style={{
+							background: `linear-gradient(90deg, ${colorGradient})`,
+							animation: `${animationId} 4s ease-in-out infinite`,
+							opacity: afterOpacity,
+							filter: `blur(${afterBlur}px)`,
+						}}
+					/>
+				</div>
+			</>
 		)
 	},
 )

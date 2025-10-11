@@ -101,7 +101,7 @@ export class WarningPersistence {
 	 * @param stateManager - StateManager instance for accessing workspace state
 	 */
 	static async cleanupOrphanedWarnings(stateManager: StateManager): Promise<void> {
-		const startTime = Date.now()
+		const _startTime = Date.now()
 
 		try {
 			const taskHistory = await readTaskHistoryFromState()

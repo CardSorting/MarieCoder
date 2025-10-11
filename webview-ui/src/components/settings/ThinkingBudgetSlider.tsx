@@ -2,64 +2,9 @@ import { ANTHROPIC_MAX_THINKING_BUDGET, ANTHROPIC_MIN_THINKING_BUDGET } from "@s
 import { Mode } from "@shared/storage/types"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { memo, useCallback, useEffect, useState } from "react"
-import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { getModeSpecificFields } from "./utils/providerUtils"
 import { useApiConfigurationHandlers } from "./utils/useApiConfigurationHandlers"
-
-const THUMB_SIZE = 16
-
-const Container = styled.div`
-	display: flex;
-	flex-direction: column;
-	margin-top: 5px;
-	margin-bottom: 10px;
-`
-
-const RangeInput = styled.input<{ $value: number; $min: number; $max: number }>`
-	width: 100%;
-	height: 8px;
-	appearance: none;
-	border-radius: 4px;
-	outline: none;
-	cursor: pointer;
-	margin: 5px 0 0;
-	padding: 0;
-	background: ${(props) => {
-		const percentage = ((props.$value - props.$min) / (props.$max - props.$min)) * 100
-		return `linear-gradient(to right, 
-			var(--vscode-progressBar-background) 0%,
-			var(--vscode-progressBar-background) ${percentage}%,
-			var(--vscode-scrollbarSlider-background) ${percentage}%,
-			var(--vscode-scrollbarSlider-background) 100%)`
-	}};
-
-	&::-webkit-slider-thumb {
-		appearance: none;
-		width: ${THUMB_SIZE}px;
-		height: ${THUMB_SIZE}px;
-		border-radius: 50%;
-		background: var(--vscode-foreground);
-		cursor: pointer;
-		border: 0px solid var(--vscode-progressBar-background);
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-	}
-
-	&:focus {
-		outline: none;
-	}
-
-	&:focus::-webkit-slider-thumb,
-	&:hover::-webkit-slider-thumb {
-		border-color: var(--vscode-progressBar-background);
-		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-	}
-
-	&:active::-webkit-slider-thumb {
-		outline: none;
-		border-color: var(--vscode-progressBar-background);
-	}
-`
 
 interface ThinkingBudgetSliderProps {
 	maxBudget?: number
@@ -117,6 +62,10 @@ const ThinkingBudgetSlider = ({ currentMode }: ThinkingBudgetSliderProps) => {
 		)
 	}
 
+	// Calculate gradient for slider background
+	const percentage = ((localValue - 0) / (ANTHROPIC_MAX_THINKING_BUDGET - 0)) * 100
+	const sliderBackground = `linear-gradient(to right, var(--vscode-progressBar-background) 0%, var(--vscode-progressBar-background) ${percentage}%, var(--vscode-scrollbarSlider-background) ${percentage}%, var(--vscode-scrollbarSlider-background) 100%)`
+
 	return (
 		<>
 			<VSCodeCheckbox checked={isEnabled} onClick={handleToggleChange}>
@@ -124,16 +73,21 @@ const ThinkingBudgetSlider = ({ currentMode }: ThinkingBudgetSliderProps) => {
 			</VSCodeCheckbox>
 
 			{isEnabled && (
-				<Container>
-					<RangeInput
-						$max={ANTHROPIC_MAX_THINKING_BUDGET}
-						$min={0}
-						$value={localValue}
+				<div className="flex flex-col mt-[5px] mb-[10px]">
+					<input
 						aria-describedby="thinking-budget-description"
 						aria-label={`Thinking budget: ${localValue.toLocaleString()} tokens`}
 						aria-valuemax={ANTHROPIC_MAX_THINKING_BUDGET}
 						aria-valuemin={ANTHROPIC_MIN_THINKING_BUDGET}
 						aria-valuenow={localValue}
+						className="w-full h-2 appearance-none rounded cursor-pointer mt-[5px] p-0 outline-none
+							[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 
+							[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--vscode-foreground)] 
+							[&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-0 
+							[&::-webkit-slider-thumb]:shadow-[0_2px_4px_rgba(0,0,0,0.2)]
+							hover:[&::-webkit-slider-thumb]:shadow-[0_2px_6px_rgba(0,0,0,0.3)]
+							focus:[&::-webkit-slider-thumb]:shadow-[0_2px_6px_rgba(0,0,0,0.3)]
+							focus:outline-none"
 						id="thinking-budget-slider"
 						max={ANTHROPIC_MAX_THINKING_BUDGET}
 						min={0}
@@ -141,10 +95,11 @@ const ThinkingBudgetSlider = ({ currentMode }: ThinkingBudgetSliderProps) => {
 						onMouseUp={handleSliderComplete}
 						onTouchEnd={handleSliderComplete}
 						step={1}
+						style={{ background: sliderBackground }}
 						type="range"
 						value={localValue}
 					/>
-				</Container>
+				</div>
 			)}
 		</>
 	)

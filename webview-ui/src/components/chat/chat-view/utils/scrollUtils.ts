@@ -9,16 +9,12 @@ import { debounce } from "@/utils/debounce"
  * Create a debounced smooth scroll function
  */
 export function createSmoothScrollToBottom(virtuosoRef: React.RefObject<VirtuosoHandle>) {
-	return debounce(
-		() => {
-			virtuosoRef.current?.scrollTo({
-				top: Number.MAX_SAFE_INTEGER,
-				behavior: "smooth",
-			})
-		},
-		10,
-		{ immediate: true },
-	)
+	return debounce(() => {
+		virtuosoRef.current?.scrollTo({
+			top: Number.MAX_SAFE_INTEGER,
+			behavior: "smooth",
+		})
+	}, 10)
 }
 
 /**

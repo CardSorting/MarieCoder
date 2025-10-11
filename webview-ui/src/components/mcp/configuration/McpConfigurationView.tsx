@@ -4,7 +4,6 @@ import { McpServers } from "@shared/proto/cline/mcp"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useState } from "react"
-import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
@@ -113,26 +112,6 @@ const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
 	)
 }
 
-const StyledTabButton = styled.button.withConfig({
-	shouldForwardProp: (prop) => !["isActive"].includes(prop),
-})<{ isActive: boolean; disabled?: boolean }>`
-	background: none;
-	border: none;
-	border-bottom: 2px solid ${(props) => (props.isActive ? "var(--vscode-foreground)" : "transparent")};
-	color: ${(props) => (props.isActive ? "var(--vscode-foreground)" : "var(--vscode-descriptionForeground)")};
-	padding: 8px 16px;
-	cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
-	font-size: 13px;
-	margin-bottom: -1px;
-	font-family: inherit;
-	opacity: ${(props) => (props.disabled ? 0.6 : 1)};
-	pointer-events: ${(props) => (props.disabled ? "none" : "auto")};
-
-	&:hover {
-		color: ${(props) => (props.disabled ? "var(--vscode-descriptionForeground)" : "var(--vscode-foreground)")};
-	}
-`
-
 export const TabButton = ({
 	children,
 	isActive,
@@ -146,9 +125,18 @@ export const TabButton = ({
 	disabled?: boolean
 	style?: React.CSSProperties
 }) => (
-	<StyledTabButton disabled={disabled} isActive={isActive} onClick={onClick} style={style}>
+	<button
+		className={`
+			bg-transparent border-none border-b-2 px-4 py-2 text-[13px] -mb-px font-[inherit]
+			${disabled ? "cursor-not-allowed opacity-60 pointer-events-none" : "cursor-pointer"}
+			${isActive ? "border-b-[var(--vscode-foreground)] text-[var(--vscode-foreground)]" : "border-b-transparent text-[var(--vscode-descriptionForeground)]"}
+			hover:text-[${disabled ? "var(--vscode-descriptionForeground)" : "var(--vscode-foreground)"}]
+		`}
+		disabled={disabled}
+		onClick={onClick}
+		style={style}>
 		{children}
-	</StyledTabButton>
+	</button>
 )
 
 export default McpConfigurationView

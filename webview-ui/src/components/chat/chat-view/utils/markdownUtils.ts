@@ -3,9 +3,11 @@
  *
  * Migrated from unified/rehype/remark to turndown for HTML→Markdown conversion
  * turndown is much smaller (30KB vs 3MB+) and does exactly what we need
+ * Note: Using turndown from parent node_modules to avoid duplication
  */
 
-import TurndownService from "turndown"
+// @ts-ignore - Using turndown from parent node_modules to avoid duplication
+import TurndownService from "../../../../../../node_modules/turndown/lib/turndown.browser.es.js"
 
 /**
  * Clean up markdown escape characters

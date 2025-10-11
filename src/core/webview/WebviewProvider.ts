@@ -1,6 +1,5 @@
 import path from "node:path"
 import { Controller } from "@core/controller/index"
-import axios from "axios"
 import { readFile } from "fs/promises"
 import * as vscode from "vscode"
 import { HostProvider } from "@/hosts/host-provider"
@@ -164,7 +163,7 @@ export abstract class WebviewProvider {
 
 		// Check if local dev server is running.
 		try {
-			await axios.get(`http://${localServerUrl}`)
+			await fetch(`http://${localServerUrl}`)
 		} catch (_error) {
 			// Only show the error message when in development mode.
 			if (process.env.IS_DEV) {

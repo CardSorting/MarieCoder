@@ -32,7 +32,7 @@ export class ContextHistoryStorage {
 					]),
 				)
 			}
-		} catch (error) {
+		} catch (_error) {
 			// Failed to load context history
 		}
 		return new Map()
@@ -54,7 +54,7 @@ export class ContextHistoryStorage {
 				JSON.stringify(serializedUpdates),
 				"utf8",
 			)
-		} catch (error) {
+		} catch (_error) {
 			// Failed to save context history
 		}
 	}

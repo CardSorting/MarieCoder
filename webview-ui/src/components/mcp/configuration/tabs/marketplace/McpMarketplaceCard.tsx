@@ -1,7 +1,6 @@
 import { McpMarketplaceItem, McpServer } from "@shared/mcp"
 import { StringRequest } from "@shared/proto/cline/common"
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import styled from "styled-components"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
@@ -128,9 +127,13 @@ const McpMarketplaceCardComponent = ({ item, installedServers, setError }: McpMa
 									}
 								}}
 								style={{}}>
-								<StyledInstallButton $isInstalled={isInstalled} disabled={isInstalled || isDownloading}>
+								<button
+									className={`text-xs font-medium py-0.5 px-1.5 rounded-[2px] border-none cursor-pointer text-[var(--vscode-button-foreground)]
+										${isInstalled ? "bg-[var(--vscode-button-secondaryBackground)] hover:enabled:bg-[var(--vscode-button-secondaryHoverBackground)]" : "bg-[var(--vscode-button-background)] hover:enabled:bg-[var(--vscode-button-hoverBackground)]"}
+										active:enabled:opacity-70 disabled:opacity-50 disabled:cursor-default`}
+									disabled={isInstalled || isDownloading}>
 									{isInstalled ? "Installed" : isDownloading ? "Installing..." : "Install"}
-								</StyledInstallButton>
+								</button>
 							</div>
 						</div>
 
@@ -288,34 +291,6 @@ const McpMarketplaceCardComponent = ({ item, installedServers, setError }: McpMa
 		</>
 	)
 }
-
-const StyledInstallButton = styled.button<{ $isInstalled?: boolean }>`
-	font-size: 12px;
-	font-weight: 500;
-	padding: 2px 6px;
-	border-radius: 2px;
-	border: none;
-	cursor: pointer;
-	background: ${(props) =>
-		props.$isInstalled ? "var(--vscode-button-secondaryBackground)" : "var(--vscode-button-background)"};
-	color: var(--vscode-button-foreground);
-
-	&:hover:not(:disabled) {
-		background: ${(props) =>
-			props.$isInstalled ? "var(--vscode-button-secondaryHoverBackground)" : "var(--vscode-button-hoverBackground)"};
-	}
-
-	&:active:not(:disabled) {
-		background: ${(props) =>
-			props.$isInstalled ? "var(--vscode-button-secondaryBackground)" : "var(--vscode-button-background)"};
-		opacity: 0.7;
-	}
-
-	&:disabled {
-		opacity: 0.5;
-		cursor: default;
-	}
-`
 
 // Memoize to prevent re-renders in marketplace list
 const McpMarketplaceCard = React.memo(McpMarketplaceCardComponent, (prevProps, nextProps) => {

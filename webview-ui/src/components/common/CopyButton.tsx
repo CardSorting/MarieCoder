@@ -1,6 +1,5 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { forwardRef, useState } from "react"
-import styled from "styled-components"
 import { debug } from "@/utils/debug_logger"
 
 // ======== Interfaces ========
@@ -22,38 +21,6 @@ interface WithCopyButtonProps {
 	onMouseUp?: (event: React.MouseEvent<HTMLDivElement>) => void
 	ariaLabel?: string
 }
-
-// ======== Styled Components ========
-
-const StyledButton = styled(VSCodeButton)`
-	z-index: 1;
-	transform: scale(0.9);
-`
-
-// Unified container component
-const ContentContainer = styled.div`
-	position: relative;
-`
-
-// Unified button container with flexible positioning
-const ButtonContainer = styled.div<{ $position?: "top-right" | "bottom-right" }>`
-	position: absolute;
-	${(props) => {
-		switch (props.$position) {
-			case "bottom-right":
-				return "bottom: 2px; right: 2px;"
-			case "top-right":
-			default:
-				return "top: 5px; right: 5px;"
-		}
-	}}
-	z-index: 1;
-	opacity: 0;
-
-	${ContentContainer}:hover & {
-		opacity: 0.5;
-	}
-`
 
 // ======== Component Implementations ========
 
@@ -89,13 +56,13 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ textToCopy, onCopy, clas
 	}
 
 	return (
-		<StyledButton
+		<VSCodeButton
 			appearance="icon"
 			aria-label={copied ? "Copied" : ariaLabel || "Copy"}
-			className={className}
+			className={`z-[1] scale-90 ${className}`}
 			onClick={handleCopy}>
 			<span className={`codicon codicon-${copied ? "check" : "copy"}`}></span>
-		</StyledButton>
+		</VSCodeButton>
 	)
 }
 
@@ -117,19 +84,22 @@ export const WithCopyButton = forwardRef<HTMLDivElement, WithCopyButtonProps>(
 		},
 		ref,
 	) => {
+		// Determine position classes
+		const positionClasses = position === "bottom-right" ? "bottom-0.5 right-0.5" : "top-[5px] right-[5px]"
+
 		return (
-			<ContentContainer className={className} onMouseUp={onMouseUp} ref={ref} style={style} {...props}>
+			<div className={`relative group ${className || ""}`} onMouseUp={onMouseUp} ref={ref} style={style} {...props}>
 				{children}
 				{(textToCopy || onCopy) && (
-					<ButtonContainer $position={position}>
+					<div className={`absolute ${positionClasses} z-[1] opacity-0 group-hover:opacity-50`}>
 						<CopyButton
 							ariaLabel={ariaLabel}
 							onCopy={onCopy}
 							textToCopy={textToCopy} // Pass through the ariaLabel prop directly
 						/>
-					</ButtonContainer>
+					</div>
 				)}
-			</ContentContainer>
+			</div>
 		)
 	},
 )

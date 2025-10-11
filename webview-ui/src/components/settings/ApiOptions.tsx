@@ -1,13 +1,13 @@
 import { Mode } from "@shared/storage/types"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import type Fuse from "fuse.js"
-import { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
-import styled from "styled-components"
+import { forwardRef, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
 import { normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { highlight } from "../history/HistoryView"
 import { OPENROUTER_MODEL_PICKER_Z_INDEX } from "./OpenRouterModelPicker"
 import { AnthropicProvider } from "./providers/AnthropicProvider"
+import { LMStudioProvider } from "./providers/LMStudioProvider"
 import { OpenRouterProvider } from "./providers/OpenRouterProvider"
 import { useApiConfigurationHandlers } from "./utils/useApiConfigurationHandlers"
 
@@ -22,17 +22,34 @@ interface ApiOptionsProps {
 // This is necessary to ensure dropdown opens downward, important for when this is used in popup
 export const DROPDOWN_Z_INDEX = OPENROUTER_MODEL_PICKER_Z_INDEX + 2 // Higher than the OpenRouterModelPicker's and ModelSelectorTooltip's z-index
 
-export const DropdownContainer = styled.div<{ zIndex?: number }>`
-	position: relative;
-	z-index: ${(props) => props.zIndex || DROPDOWN_Z_INDEX};
-
-	// Force dropdowns to open downward
-	& vscode-dropdown::part(listbox) {
-		position: absolute !important;
-		top: 100% !important;
-		bottom: auto !important;
-	}
-`
+export const DropdownContainer = ({
+	zIndex,
+	style,
+	children,
+	...props
+}: {
+	zIndex?: number
+	style?: React.CSSProperties
+	children?: React.ReactNode
+	[key: string]: any
+}) => (
+	<div
+		className="relative"
+		style={{
+			zIndex: zIndex || DROPDOWN_Z_INDEX,
+			...style,
+		}}
+		{...props}>
+		<style>{`
+			.relative vscode-dropdown::part(listbox) {
+				position: absolute !important;
+				top: 100% !important;
+				bottom: auto !important;
+			}
+		`}</style>
+		{children}
+	</div>
+)
 
 const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, isPopup, currentMode }: ApiOptionsProps) => {
 	// Use full context state for immediate save payload
@@ -54,6 +71,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 		const providers = [
 			{ value: "anthropic", label: "Anthropic" },
 			{ value: "openrouter", label: "OpenRouter" },
+			{ value: "lmstudio", label: "LM Studio" },
 		]
 
 		return providers
@@ -248,7 +266,10 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 									key={item.value}
 									onClick={() => handleProviderChange(item.value)}
 									onMouseEnter={() => setSelectedIndex(index)}
-									ref={(el) => (itemRefs.current[index] = el)}>
+									ref={(el: HTMLDivElement | null) => {
+										itemRefs.current[index] = el
+									}}>
+									{/* Search highlighting requires HTML rendering */}
 									<span dangerouslySetInnerHTML={{ __html: item.html }} />
 								</ProviderDropdownItem>
 							))}
@@ -263,6 +284,10 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 
 			{apiConfiguration && selectedProvider === "openrouter" && (
 				<OpenRouterProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
+			)}
+
+			{apiConfiguration && selectedProvider === "lmstudio" && (
+				<LMStudioProvider currentMode={currentMode} isPopup={isPopup} showModelOptions={showModelOptions} />
 			)}
 
 			{apiErrorMessage && (
@@ -291,34 +316,38 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 
 export default ApiOptions
 
-const ProviderDropdownWrapper = styled.div`
-	position: relative;
-	width: 100%;
-`
+const ProviderDropdownWrapper = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ children }, ref) => (
+	<div className="relative w-full" ref={ref}>
+		{children}
+	</div>
+))
+ProviderDropdownWrapper.displayName = "ProviderDropdownWrapper"
 
-const ProviderDropdownList = styled.div`
-	position: absolute;
-	top: calc(100% - 3px);
-	left: 0;
-	width: calc(100% - 2px);
-	max-height: 200px;
-	overflow-y: auto;
-	background-color: var(--vscode-dropdown-background);
-	border: 1px solid var(--vscode-list-activeSelectionBackground);
-	z-index: ${DROPDOWN_Z_INDEX - 1};
-	border-bottom-left-radius: 3px;
-	border-bottom-right-radius: 3px;
-`
+const ProviderDropdownList = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ children }, ref) => (
+	<div
+		className="absolute left-0 w-[calc(100%-2px)] max-h-[200px] overflow-y-auto bg-[var(--vscode-dropdown-background)] border border-[var(--vscode-list-activeSelectionBackground)] rounded-b-[3px]"
+		ref={ref}
+		style={{
+			top: "calc(100% - 3px)",
+			zIndex: DROPDOWN_Z_INDEX - 1,
+		}}>
+		{children}
+	</div>
+))
+ProviderDropdownList.displayName = "ProviderDropdownList"
 
-const ProviderDropdownItem = styled.div<{ isSelected: boolean }>`
-	padding: 5px 10px;
-	cursor: pointer;
-	word-break: break-all;
-	white-space: normal;
-
-	background-color: ${({ isSelected }) => (isSelected ? "var(--vscode-list-activeSelectionBackground)" : "inherit")};
-
-	&:hover {
-		background-color: var(--vscode-list-activeSelectionBackground);
-	}
-`
+const ProviderDropdownItem = ({
+	isSelected,
+	children,
+	...props
+}: {
+	isSelected: boolean
+	children: React.ReactNode
+	[key: string]: any
+}) => (
+	<div
+		className={`p-[5px_10px] cursor-pointer break-all whitespace-normal hover:bg-[var(--vscode-list-activeSelectionBackground)] ${isSelected ? "bg-[var(--vscode-list-activeSelectionBackground)]" : ""}`}
+		{...props}>
+		{children}
+	</div>
+)

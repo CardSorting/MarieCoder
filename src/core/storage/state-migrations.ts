@@ -60,7 +60,7 @@ export async function migrateWorkspaceToGlobalStorage(context: vscode.ExtensionC
 			await context.globalState.update(key, workspaceValue)
 			// Remove from workspace storage
 			await context.workspaceState.update(key, undefined)
-			const newWorkspaceValue = await context.workspaceState.get(key)
+			const _newWorkspaceValue = await context.workspaceState.get(key)
 
 			// Migrated key to global storage
 		}
@@ -82,18 +82,18 @@ export async function migrateTaskHistoryToFile(context: vscode.ExtensionContext)
 		}
 
 		let finalData: HistoryItem[]
-		let migrationAction: string
+		let _migrationAction: string
 
 		const newLocationData = await readTaskHistoryFromState()
 
 		if (newLocationData.length === 0) {
 			// Move old data to new location
 			finalData = oldLocationData
-			migrationAction = "Migrated task history from old location to new location"
+			_migrationAction = "Migrated task history from old location to new location"
 		} else {
 			// Merge old data (more recent) with new data
 			finalData = [...newLocationData, ...oldLocationData]
-			migrationAction = "Merged task history from old and new locations"
+			_migrationAction = "Merged task history from old and new locations"
 		}
 
 		// Perform migration operations sequentially - only clear old data if write succeeds

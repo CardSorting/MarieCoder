@@ -19,10 +19,22 @@ interface TooltipProps {
 	placement?: Placement
 	delay?: number
 	className?: string
+	isOpen?: boolean
+	offset?: number
 }
 
-export function Tooltip({ content, children, placement = "top", delay = 200, className }: TooltipProps) {
-	const [isOpen, setIsOpen] = useState(false)
+export function Tooltip({
+	content,
+	children,
+	placement = "top",
+	delay = 200,
+	className,
+	isOpen: controlledIsOpen,
+	offset = 8,
+}: TooltipProps) {
+	const [uncontrolledIsOpen, setUncontrolledIsOpen] = useState(false)
+	const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : uncontrolledIsOpen
+	const setIsOpen = controlledIsOpen !== undefined ? () => {} : setUncontrolledIsOpen
 	const [position, setPosition] = useState({ x: 0, y: 0, placement })
 	const referenceRef = useRef<HTMLElement>(null)
 	const floatingRef = useRef<HTMLDivElement>(null)
@@ -54,14 +66,14 @@ export function Tooltip({ content, children, placement = "top", delay = 200, cla
 		if (isOpen && referenceRef.current && floatingRef.current) {
 			const pos = calculatePosition(referenceRef.current, floatingRef.current, {
 				placement,
-				offset: 8,
+				offset,
 				flip: true,
 				shift: true,
 				padding: 8,
 			})
 			setPosition(pos)
 		}
-	}, [isOpen, placement])
+	}, [isOpen, placement, offset])
 
 	// Cleanup timeout on unmount
 	useEffect(() => {

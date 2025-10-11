@@ -3,10 +3,8 @@ import { BrowserAction, BrowserActionResult, ClineMessage, ClineSayBrowserAction
 import { StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { CSSProperties, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import styled from "styled-components"
 import { BrowserSettingsMenu } from "@/components/browser/BrowserSettingsMenu"
 import { ChatRowContent, ProgressIndicator } from "@/components/chat/ChatRow"
-import { CheckpointControls } from "@/components/common/CheckpointControls"
 import CodeBlock, { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { FileServiceClient } from "@/services/grpc-client"
@@ -290,8 +288,12 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 				screenshot: currentPage?.currentState.screenshot,
 			}
 
-	const [actionContent, { height: actionHeight }] = useSize(
-		<div>
+	const actionContentRef = useRef<HTMLDivElement>(null)
+	const actionSize = useSize(actionContentRef)
+	const actionHeight = actionSize.height
+
+	const actionContent = (
+		<div ref={actionContentRef}>
 			{currentPage?.nextAction?.messages.map((message) => (
 				<BrowserSessionRowContent
 					expandedRows={props.expandedRows}
@@ -307,7 +309,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 			{!isBrowsing && messages.some((m) => m.say === "browser_action_result") && currentPageIndex === 0 && (
 				<BrowserActionBox action={"launch"} text={initialUrl} />
 			)}
-		</div>,
+		</div>
 	)
 
 	useEffect(() => {
@@ -355,10 +357,12 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 	// Calculate maxWidth
 	const maxWidth = browserSettings.viewport.width < BROWSER_VIEWPORT_PRESETS["Small Desktop (900x600)"].width ? 200 : undefined
 
-	const [browserSessionRow, { height }] = useSize(
-		// We don't declare a constant for the inline style here because `useSize` will try to modify the style object
-		// Which will cause `Uncaught TypeError: Cannot assign to read only property 'position' of object '#<Object>'`
-		<BrowserSessionRowContainer style={{ marginBottom: -10 }}>
+	const browserSessionRowRef = useRef<HTMLDivElement>(null)
+	const browserSessionRowSize = useSize(browserSessionRowRef)
+	const height = browserSessionRowSize.height
+
+	const browserSessionRow = (
+		<div className="group relative" ref={browserSessionRowRef} style={{ padding: "10px 6px 10px 15px", marginBottom: -10 }}>
 			<div style={browserSessionRowContainerInnerStyle}>
 				{isBrowsing && !isLastMessageResume ? (
 					<ProgressIndicator />
@@ -495,7 +499,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 			)}
 
 			{/* {shouldShowCheckpoints && <CheckpointOverlay messageTs={lastCheckpointMessageTs} />} */}
-		</BrowserSessionRowContainer>,
+		</div>
 	)
 
 	// Height change effect
@@ -641,14 +645,5 @@ const BrowserCursor: React.FC<{ style?: CSSProperties }> = ({ style }) => {
 		/>
 	)
 }
-
-const BrowserSessionRowContainer = styled.div`
-	padding: 10px 6px 10px 15px;
-	position: relative;
-
-	&:hover ${CheckpointControls} {
-		opacity: 1;
-	}
-`
 
 export default BrowserSessionRow

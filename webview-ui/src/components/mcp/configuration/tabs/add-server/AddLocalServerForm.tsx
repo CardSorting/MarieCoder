@@ -1,6 +1,5 @@
 import { EmptyRequest } from "@shared/proto/cline/common"
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import styled from "styled-components"
 import { LINKS } from "@/constants"
 import { McpServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
@@ -11,7 +10,7 @@ type AddLocalServerFormProps = {
 
 const AddLocalServerForm = (_props: AddLocalServerFormProps) => {
 	return (
-		<FormContainer>
+		<div className="p-4 flex flex-col gap-2">
 			<div className="text-[var(--vscode-foreground)]">
 				Add a local MCP server by configuring it in <code>cline_mcp_settings.json</code>. You'll need to specify the
 				server name, command, arguments, and any required environment variables in the JSON configuration. Learn more
@@ -30,15 +29,8 @@ const AddLocalServerForm = (_props: AddLocalServerFormProps) => {
 				style={{ width: "100%", marginBottom: "5px", marginTop: 8 }}>
 				Open cline_mcp_settings.json
 			</VSCodeButton>
-		</FormContainer>
+		</div>
 	)
 }
-
-const FormContainer = styled.div`
-	padding: 16px 20px;
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-`
 
 export default AddLocalServerForm

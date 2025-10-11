@@ -9,7 +9,6 @@ import {
 } from "@shared/proto/cline/file"
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useRef, useState } from "react"
-import styled from "styled-components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import HeroTooltip from "@/components/common/HeroTooltip"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -392,22 +391,6 @@ const ClineRulesToggleModal: React.FC = () => {
 	)
 }
 
-const StyledTabButton = styled.button<{ isActive: boolean }>`
-	background: none;
-	border: none;
-	border-bottom: 2px solid ${(props) => (props.isActive ? "var(--vscode-foreground)" : "transparent")};
-	color: ${(props) => (props.isActive ? "var(--vscode-foreground)" : "var(--vscode-descriptionForeground)")};
-	padding: 8px 16px;
-	cursor: pointer;
-	font-size: 13px;
-	margin-bottom: -1px;
-	font-family: inherit;
-
-	&:hover {
-		color: var(--vscode-foreground);
-	}
-`
-
 export const TabButton = ({
 	children,
 	isActive,
@@ -417,9 +400,16 @@ export const TabButton = ({
 	isActive: boolean
 	onClick: () => void
 }) => (
-	<StyledTabButton aria-pressed={isActive} isActive={isActive} onClick={onClick}>
+	<button
+		aria-pressed={isActive}
+		className={`
+			bg-transparent border-none border-b-2 px-4 py-2 cursor-pointer text-[13px] -mb-px font-[inherit]
+			hover:text-[var(--vscode-foreground)]
+			${isActive ? "border-b-[var(--vscode-foreground)] text-[var(--vscode-foreground)]" : "border-b-transparent text-[var(--vscode-descriptionForeground)]"}
+		`}
+		onClick={onClick}>
 		{children}
-	</StyledTabButton>
+	</button>
 )
 
 export default ClineRulesToggleModal

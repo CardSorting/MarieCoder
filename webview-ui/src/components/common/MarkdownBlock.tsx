@@ -6,7 +6,6 @@
 import { StringRequest } from "@shared/proto/cline/common"
 import { PlanActMode, TogglePlanActModeRequest } from "@shared/proto/cline/state"
 import { memo, useEffect, useRef, useState } from "react"
-import styled from "styled-components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import MermaidBlock from "@/components/common/MermaidBlock"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -17,115 +16,6 @@ interface MarkdownBlockProps {
 	markdown?: string
 	compact?: boolean
 }
-
-const StyledMarkdown = styled.div<{ compact?: boolean }>`
-	pre {
-		background-color: ${CODE_BLOCK_BG_COLOR};
-		border-radius: 3px;
-		margin: 13px 0;
-		padding: 10px 10px;
-		max-width: calc(100vw - 20px);
-		overflow-x: auto;
-		overflow-y: hidden;
-		padding-right: 70px;
-		position: relative;
-	}
-
-	pre > code {
-		.hljs-deletion {
-			background-color: var(--vscode-diffEditor-removedTextBackground);
-			display: inline-block;
-			width: 100%;
-		}
-		.hljs-addition {
-			background-color: var(--vscode-diffEditor-insertedTextBackground);
-			display: inline-block;
-			width: 100%;
-		}
-	}
-
-	code {
-		span.line:empty {
-			display: none;
-		}
-		word-wrap: break-word;
-		border-radius: 3px;
-		background-color: ${CODE_BLOCK_BG_COLOR};
-		font-size: var(--vscode-editor-font-size, var(--vscode-font-size, 12px));
-		font-family: var(--vscode-editor-font-family);
-	}
-
-	code:not(pre > code) {
-		font-family: var(--vscode-editor-font-family, monospace);
-		color: var(--vscode-textPreformat-foreground, #f78383);
-		background-color: var(--vscode-textCodeBlock-background, #1e1e1e);
-		padding: 0px 2px;
-		border-radius: 3px;
-		border: 1px solid var(--vscode-textSeparator-foreground, #424242);
-		white-space: pre-line;
-		word-break: break-word;
-		overflow-wrap: anywhere;
-	}
-
-	font-family:
-		var(--vscode-font-family),
-		system-ui,
-		-apple-system,
-		BlinkMacSystemFont,
-		"Segoe UI",
-		Roboto,
-		Oxygen,
-		Ubuntu,
-		Cantarell,
-		"Open Sans",
-		"Helvetica Neue",
-		sans-serif;
-	font-size: var(--vscode-font-size, 13px);
-
-	p,
-	li,
-	ol,
-	ul {
-		line-height: 1.25;
-	}
-
-	ol,
-	ul {
-		padding-left: 2.5em;
-		margin-left: 0;
-	}
-
-	p {
-		white-space: pre-wrap;
-		${(props) => props.compact && "margin: 0;"}
-	}
-
-	a {
-		text-decoration: none;
-		color: var(--vscode-textLink-foreground);
-	}
-	a:hover {
-		text-decoration: underline;
-	}
-
-	[data-act-mode="true"] {
-		color: var(--vscode-textLink-foreground);
-		cursor: pointer;
-	}
-
-	[data-act-mode="true"]:hover {
-		opacity: 0.9;
-	}
-
-	.copy-button {
-		opacity: 0.6;
-		transition: opacity 0.2s;
-	}
-
-	pre:hover .copy-button {
-		opacity: 1;
-	}
-`
 
 const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 	const [htmlContent, setHtmlContent] = useState("")
@@ -231,7 +121,91 @@ const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 
 	return (
 		<div>
-			<StyledMarkdown className="ph-no-capture" compact={compact} ref={containerRef}>
+			<style>{`
+				.markdown-block-styled {
+					font-family: var(--vscode-font-family), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+					font-size: var(--vscode-font-size, 13px);
+				}
+				.markdown-block-styled pre {
+					background-color: ${CODE_BLOCK_BG_COLOR};
+					border-radius: 3px;
+					margin: 13px 0;
+					padding: 10px 10px;
+					max-width: calc(100vw - 20px);
+					overflow-x: auto;
+					overflow-y: hidden;
+					padding-right: 70px;
+					position: relative;
+				}
+				.markdown-block-styled pre > code .hljs-deletion {
+					background-color: var(--vscode-diffEditor-removedTextBackground);
+					display: inline-block;
+					width: 100%;
+				}
+				.markdown-block-styled pre > code .hljs-addition {
+					background-color: var(--vscode-diffEditor-insertedTextBackground);
+					display: inline-block;
+					width: 100%;
+				}
+				.markdown-block-styled code {
+					word-wrap: break-word;
+					border-radius: 3px;
+					background-color: ${CODE_BLOCK_BG_COLOR};
+					font-size: var(--vscode-editor-font-size, var(--vscode-font-size, 12px));
+					font-family: var(--vscode-editor-font-family);
+				}
+				.markdown-block-styled code span.line:empty {
+					display: none;
+				}
+				.markdown-block-styled code:not(pre > code) {
+					font-family: var(--vscode-editor-font-family, monospace);
+					color: var(--vscode-textPreformat-foreground, #f78383);
+					background-color: var(--vscode-textCodeBlock-background, #1e1e1e);
+					padding: 0px 2px;
+					border-radius: 3px;
+					border: 1px solid var(--vscode-textSeparator-foreground, #424242);
+					white-space: pre-line;
+					word-break: break-word;
+					overflow-wrap: anywhere;
+				}
+				.markdown-block-styled p,
+				.markdown-block-styled li,
+				.markdown-block-styled ol,
+				.markdown-block-styled ul {
+					line-height: 1.25;
+				}
+				.markdown-block-styled ol,
+				.markdown-block-styled ul {
+					padding-left: 2.5em;
+					margin-left: 0;
+				}
+				.markdown-block-styled p {
+					white-space: pre-wrap;
+					${compact ? "margin: 0;" : ""}
+				}
+				.markdown-block-styled a {
+					text-decoration: none;
+					color: var(--vscode-textLink-foreground);
+				}
+				.markdown-block-styled a:hover {
+					text-decoration: underline;
+				}
+				.markdown-block-styled [data-act-mode="true"] {
+					color: var(--vscode-textLink-foreground);
+					cursor: pointer;
+				}
+				.markdown-block-styled [data-act-mode="true"]:hover {
+					opacity: 0.9;
+				}
+				.markdown-block-styled .copy-button {
+					opacity: 0.6;
+					transition: opacity 0.2s;
+				}
+				.markdown-block-styled pre:hover .copy-button {
+					opacity: 1;
+				}
+		`}</style>
+			<div className="markdown-block-styled ph-no-capture" ref={containerRef}>
 				<div dangerouslySetInnerHTML={{ __html: htmlContent }} />
 				{/* Render mermaid blocks */}
 				{mermaidBlocks.map((block) => (
@@ -239,7 +213,7 @@ const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 						<MermaidBlock code={block.code} />
 					</div>
 				))}
-			</StyledMarkdown>
+			</div>
 		</div>
 	)
 })

@@ -82,7 +82,7 @@ export abstract class ProtoBusClient {
 		decodeResponse: (_: { [key: string]: any }) => TResponse,
 		callbacks: Callbacks<TResponse>,
 	): () => void {
-		const requestId = uuidv4()
+		const requestId = crypto.randomUUID()
 		// Set up listener for streaming responses
 		const handleResponse = (event: MessageEvent) => {
 			const message = event.data

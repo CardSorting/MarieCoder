@@ -1,11 +1,12 @@
 import { AnthropicProvider } from "../../providers/core/anthropic"
+import { LmStudioProvider } from "../../providers/core/lmstudio"
 import { OpenRouterProvider } from "../../providers/core/openrouter"
 import { simpleRegistry } from "../simple_registry"
 
 /**
  * Register Supported Providers
- * Only Anthropic and OpenRouter
- * Follows NORMIE DEV methodology: ruthlessly simple
+ * Anthropic, OpenRouter, and LMStudio
+ * Follows MarieCoder standards: clean, intentional additions
  */
 
 // Register Anthropic
@@ -20,6 +21,13 @@ simpleRegistry.register({
 	providerId: "openrouter",
 	handlerClass: OpenRouterProvider,
 	requiredFields: ["openRouterApiKey"],
+})
+
+// Register LMStudio
+simpleRegistry.register({
+	providerId: "lmstudio",
+	handlerClass: LmStudioProvider,
+	requiredFields: [], // No API key required for local server
 })
 
 // Export for use

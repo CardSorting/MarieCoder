@@ -1,7 +1,6 @@
 import { StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useRef, useState } from "react"
-import styled from "styled-components"
 import { useDebounceEffect } from "@/hooks"
 import { FileServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
@@ -120,15 +119,53 @@ export default function MermaidBlock({ code }: MermaidBlockProps) {
 	}
 
 	return (
-		<MermaidBlockContainer>
-			{isLoading && <LoadingMessage>Generating mermaid diagram...</LoadingMessage>}
-			<ButtonContainer>
-				<StyledVSCodeButton aria-label="Copy Code" onClick={handleCopyCode} title="Copy Code">
+		<div className="relative my-2">
+			{isLoading && (
+				<div className="py-2 text-[var(--vscode-descriptionForeground)] italic text-sm">
+					Generating mermaid diagram...
+				</div>
+			)}
+			<div className="absolute top-2 right-2 z-[1] opacity-60 transition-opacity duration-200 hover:opacity-100">
+				<style>{`
+					.mermaid-copy-button {
+						padding: 4px;
+						height: 24px;
+						width: 24px;
+						min-width: unset;
+						background-color: var(--vscode-button-secondaryBackground);
+						color: var(--vscode-button-secondaryForeground);
+						border: 1px solid var(--vscode-button-border);
+						border-radius: 3px;
+						display: flex;
+						align-items: center;
+						justify-content: center;
+						transition: all 0.2s ease;
+					}
+					.mermaid-copy-button .codicon {
+						font-size: 14px;
+					}
+					.mermaid-copy-button:hover {
+						background-color: var(--vscode-button-secondaryHoverBackground);
+						border-color: var(--vscode-button-border);
+						transform: translateY(-1px);
+						box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+					}
+					.mermaid-copy-button:active {
+						transform: translateY(0);
+						box-shadow: none;
+					}
+				`}</style>
+				<VSCodeButton aria-label="Copy Code" className="mermaid-copy-button" onClick={handleCopyCode} title="Copy Code">
 					<span className="codicon codicon-copy"></span>
-				</StyledVSCodeButton>
-			</ButtonContainer>
-			<SvgContainer $isLoading={isLoading} onClick={handleClick} ref={containerRef} />
-		</MermaidBlockContainer>
+				</VSCodeButton>
+			</div>
+			<div
+				className="min-h-[20px] transition-opacity duration-200 cursor-pointer flex justify-center"
+				onClick={handleClick}
+				ref={containerRef}
+				style={{ opacity: isLoading ? 0.3 : 1 }}
+			/>
+		</div>
 	)
 }
 
@@ -188,72 +225,3 @@ async function svgToPng(svgEl: SVGElement): Promise<string> {
 		img.src = svgDataUrl
 	})
 }
-
-const MermaidBlockContainer = styled.div`
-	position: relative;
-	margin: 8px 0;
-`
-
-const ButtonContainer = styled.div`
-	position: absolute;
-	top: 8px;
-	right: 8px;
-	z-index: 1;
-	opacity: 0.6;
-	transition: opacity 0.2s ease;
-
-	&:hover {
-		opacity: 1;
-	}
-`
-
-const LoadingMessage = styled.div`
-	padding: 8px 0;
-	color: var(--vscode-descriptionForeground);
-	font-style: italic;
-	font-size: 0.9em;
-`
-
-interface SvgContainerProps {
-	$isLoading: boolean
-}
-
-const SvgContainer = styled.div<SvgContainerProps>`
-	opacity: ${(props) => (props.$isLoading ? 0.3 : 1)};
-	min-height: 20px;
-	transition: opacity 0.2s ease;
-	cursor: pointer;
-	display: flex;
-	justify-content: center;
-`
-
-const StyledVSCodeButton = styled(VSCodeButton)`
-	padding: 4px;
-	height: 24px;
-	width: 24px;
-	min-width: unset;
-	background-color: var(--vscode-button-secondaryBackground);
-	color: var(--vscode-button-secondaryForeground);
-	border: 1px solid var(--vscode-button-border);
-	border-radius: 3px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: all 0.2s ease;
-
-	.codicon {
-		font-size: 14px;
-	}
-
-	&:hover {
-		background-color: var(--vscode-button-secondaryHoverBackground);
-		border-color: var(--vscode-button-border);
-		transform: translateY(-1px);
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
-	&:active {
-		transform: translateY(0);
-		box-shadow: none;
-	}
-`

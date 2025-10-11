@@ -111,7 +111,7 @@ export class FileContextTracker {
 
 			// Set up file watcher for this file
 			await this.setupFileWatcher(filePath)
-		} catch (error) {
+		} catch (_error) {
 			// Failed to track file operation
 		}
 	}

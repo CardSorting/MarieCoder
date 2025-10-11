@@ -14,7 +14,6 @@ import { McpMarketplaceCatalog } from "@shared/mcp"
 import { Mode } from "@shared/storage/types"
 import { UserInfo } from "@shared/UserInfo"
 import { fileExistsAtPath } from "@utils/fs"
-import axios from "axios"
 import fs from "fs/promises"
 import pWaitFor from "p-wait-for"
 import * as path from "path"
@@ -295,18 +294,25 @@ export class Controller {
 	// MCP Marketplace
 	private async fetchMcpMarketplaceFromApi(silent: boolean = false): Promise<McpMarketplaceCatalog | undefined> {
 		try {
-			const response = await axios.get(`${clineEnvConfig.mcpBaseUrl}/marketplace`, {
+			const response = await fetch(`${clineEnvConfig.mcpBaseUrl}/marketplace`, {
+				method: "GET",
 				headers: {
 					"Content-Type": "application/json",
 				},
 			})
 
-			if (!response.data) {
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`)
+			}
+
+			const data = await response.json()
+
+			if (!data) {
 				throw new Error("Invalid response from MCP marketplace API")
 			}
 
 			const catalog: McpMarketplaceCatalog = {
-				items: (response.data || []).map((item: any) => ({
+				items: (data || []).map((item: any) => ({
 					...item,
 					githubStars: item.githubStars ?? 0,
 					downloadCount: item.downloadCount ?? 0,
@@ -332,19 +338,26 @@ export class Controller {
 
 	private async fetchMcpMarketplaceFromApiRPC(silent: boolean = false): Promise<McpMarketplaceCatalog | undefined> {
 		try {
-			const response = await axios.get(`${clineEnvConfig.mcpBaseUrl}/marketplace`, {
+			const response = await fetch(`${clineEnvConfig.mcpBaseUrl}/marketplace`, {
+				method: "GET",
 				headers: {
 					"Content-Type": "application/json",
 					"User-Agent": "cline-vscode-extension",
 				},
 			})
 
-			if (!response.data) {
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`)
+			}
+
+			const data = await response.json()
+
+			if (!data) {
 				throw new Error("Invalid response from MCP marketplace API")
 			}
 
 			const catalog: McpMarketplaceCatalog = {
-				items: (response.data || []).map((item: any) => ({
+				items: (data || []).map((item: any) => ({
 					...item,
 					githubStars: item.githubStars ?? 0,
 					downloadCount: item.downloadCount ?? 0,
@@ -398,9 +411,17 @@ export class Controller {
 	async handleOpenRouterCallback(code: string) {
 		let apiKey: string
 		try {
-			const response = await axios.post("https://openrouter.ai/api/v1/auth/keys", { code })
-			if (response.data && response.data.key) {
-				apiKey = response.data.key
+			const response = await fetch("https://openrouter.ai/api/v1/auth/keys", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ code }),
+			})
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`)
+			}
+			const data = await response.json()
+			if (data && data.key) {
+				apiKey = data.key
 			} else {
 				throw new Error("Invalid response from OpenRouter API")
 			}

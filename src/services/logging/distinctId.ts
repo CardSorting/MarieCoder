@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from "uuid"
+import { ulid } from "ulid"
 import { ExtensionContext } from "vscode"
 import { HostProvider } from "@/hosts/host-provider"
 import { EmptyRequest } from "@/shared/proto/cline/common"
@@ -14,7 +14,7 @@ let _distinctId: string = ""
  */
 export const _GENERATED_MACHINE_ID_KEY = "cline.generatedMachineId"
 
-export async function initializeDistinctId(context: ExtensionContext, uuid: () => string = uuidv4) {
+export async function initializeDistinctId(context: ExtensionContext, generateId: () => string = ulid) {
 	// Try to read the ID from storage.
 	let distinctId = context.globalState.get<string>(_GENERATED_MACHINE_ID_KEY)
 
@@ -24,8 +24,8 @@ export async function initializeDistinctId(context: ExtensionContext, uuid: () =
 	}
 	if (!distinctId) {
 		// Fallback to generating a unique ID and keeping in global storage.
-		// Add a prefix to the UUID so we can see in the telemetry how many clients are don't have a machine ID.
-		distinctId = "cl-" + uuid()
+		// Add a prefix to the ULID so we can see in the telemetry how many clients are don't have a machine ID.
+		distinctId = "cl-" + generateId()
 		context.globalState.update(_GENERATED_MACHINE_ID_KEY, distinctId)
 	}
 

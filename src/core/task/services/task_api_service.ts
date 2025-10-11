@@ -31,7 +31,6 @@ import { findLastIndex } from "@shared/array"
 import type { ClineApiReqCancelReason, ClineApiReqInfo } from "@shared/ExtensionMessage"
 import { DEFAULT_LANGUAGE_SETTINGS, getLanguageKey, type LanguageDisplay } from "@shared/Languages"
 import { isLocalModel, isNextGenModelFamily } from "@utils/model-utils"
-import cloneDeep from "clone-deep"
 import pWaitFor from "p-wait-for"
 import * as path from "path"
 import type { ApiHandler } from "@/core/api"
@@ -386,7 +385,7 @@ export class TaskApiService {
 			//throw new Error("No more content blocks to stream! This shouldn't happen...") // remove and just return after testing
 		}
 
-		const block = cloneDeep(this.taskState.assistantMessageContent[this.taskState.currentStreamingContentIndex]) // need to create copy bc while stream is updating the array, it could be updating the reference block properties too
+		const block = structuredClone(this.taskState.assistantMessageContent[this.taskState.currentStreamingContentIndex]) // need to create copy bc while stream is updating the array, it could be updating the reference block properties too
 		switch (block.type) {
 			case "text": {
 				if (this.taskState.didRejectTool || this.taskState.didAlreadyUseTool) {

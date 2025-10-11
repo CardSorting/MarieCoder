@@ -80,6 +80,37 @@ export function useEvent<T extends (...args: any[]) => any>(handler: T): T {
 }
 
 /**
+ * Attaches an event listener to a target element or window
+ * Replaces event listener functionality from react-use
+ */
+export function useEventListener<K extends keyof WindowEventMap>(
+	eventName: K,
+	handler: (event: WindowEventMap[K]) => void,
+	element?: Window | HTMLElement | null,
+	options?: boolean | AddEventListenerOptions,
+) {
+	const savedHandler = useRef(handler)
+
+	useEffect(() => {
+		savedHandler.current = handler
+	}, [handler])
+
+	useEffect(() => {
+		const targetElement = element ?? window
+		if (!targetElement?.addEventListener) {
+			return
+		}
+
+		const eventListener = (event: Event) => savedHandler.current(event as WindowEventMap[K])
+		targetElement.addEventListener(eventName, eventListener, options)
+
+		return () => {
+			targetElement.removeEventListener(eventName, eventListener, options)
+		}
+	}, [eventName, element, options])
+}
+
+/**
  * Tracks element size using ResizeObserver
  * Replaces: useSize from react-use
  */

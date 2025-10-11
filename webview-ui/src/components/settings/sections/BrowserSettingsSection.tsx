@@ -1,7 +1,6 @@
 import { EmptyRequest, StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton, VSCodeCheckbox, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import React, { useCallback, useEffect, useState } from "react"
-import styled from "styled-components"
 import { debug } from "@/utils/debug_logger"
 import { BROWSER_VIEWPORT_PRESETS } from "../../../../../src/shared/BrowserSettings"
 import { useExtensionState } from "../../../context/ExtensionStateContext"
@@ -29,21 +28,21 @@ const ConnectionStatusIndicator = ({
 	}
 
 	return (
-		<StatusContainer>
+		<div className="flex items-center ml-3 h-5">
 			{isChecking ? (
 				<>
-					<Spinner />
-					<StatusText>Checking connection...</StatusText>
+					<div className="w-3.5 h-3.5 border-2 border-[rgba(255,255,255,0.3)] rounded-full border-t-[var(--vscode-progressBar-background)] animate-spin" />
+					<span className="text-xs ml-1">Checking connection...</span>
 				</>
 			) : isConnected === true ? (
 				<>
-					<CheckIcon className="codicon codicon-check" />
-					<StatusText style={{ color: "var(--vscode-terminal-ansiGreen)" }}>Connected</StatusText>
+					<i className="codicon codicon-check text-[var(--vscode-terminal-ansiGreen)] text-sm" />
+					<span className="text-xs ml-1 text-[var(--vscode-terminal-ansiGreen)]">Connected</span>
 				</>
 			) : isConnected === false ? (
-				<StatusText style={{ color: "var(--vscode-errorForeground)" }}>Not connected</StatusText>
+				<span className="text-xs ml-1 text-[var(--vscode-errorForeground)]">Not connected</span>
 			) : null}
-		</StatusContainer>
+		</div>
 	)
 }
 
@@ -369,37 +368,5 @@ export const BrowserSettingsSection: React.FC<BrowserSettingsSectionProps> = ({ 
 		</div>
 	)
 }
-
-const StatusContainer = styled.div`
-	display: flex;
-	align-items: center;
-	margin-left: 12px;
-	height: 20px;
-`
-
-const StatusText = styled.span`
-	font-size: 12px;
-	margin-left: 4px;
-`
-
-const CheckIcon = styled.i`
-	color: var(--vscode-terminal-ansiGreen);
-	font-size: 14px;
-`
-
-const Spinner = styled.div`
-	width: 14px;
-	height: 14px;
-	border: 2px solid rgba(255, 255, 255, 0.3);
-	border-radius: 50%;
-	border-top-color: var(--vscode-progressBar-background);
-	animation: spin 1s ease-in-out infinite;
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
-	}
-`
 
 export default BrowserSettingsSection

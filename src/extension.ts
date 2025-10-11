@@ -172,7 +172,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				await focusChatInput()
 
 				await sendAddToInputEvent(`Terminal output:\n\`\`\`\n${terminalContents}\n\`\`\``)
-			} catch (error) {
+			} catch (_error) {
 				// Ensure clipboard is restored even if an error occurs
 				await writeTextToClipboard(tempCopyBuffer)
 				HostProvider.window.showMessage({

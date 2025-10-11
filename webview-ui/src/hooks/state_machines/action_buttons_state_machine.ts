@@ -17,7 +17,7 @@
  */
 
 import type { ClineAsk } from "@shared/ExtensionMessage"
-import type { ButtonActionType } from "../../../components/chat/chat-view/shared/buttonConfig"
+import type { ButtonActionType } from "../../components/chat/chat-view/shared/buttonConfig"
 import type { StateMachineConfig } from "../use_state_machine"
 
 // ============================================================================
@@ -97,27 +97,13 @@ const hasSecondaryButton = (context: ActionButtonsContext): boolean => {
 // ============================================================================
 
 /**
- * Start processing action
- */
-const startProcessing = (context: ActionButtonsContext, event: ActionButtonsEvent): Partial<ActionButtonsContext> => {
-	if (event.type !== "PROCESSING_STARTED") return {}
-
-	return {
-		currentAction: event.payload.action,
-		actionStartTime: Date.now(),
-		errorMessage: undefined,
-		successMessage: undefined,
-	}
-}
-
-/**
  * Set action from button click
  */
-const setActionFromClick = (context: ActionButtonsContext, event: ActionButtonsEvent): Partial<ActionButtonsContext> => {
+const setActionFromClick = (_context: ActionButtonsContext, event: ActionButtonsEvent): Partial<ActionButtonsContext> => {
 	let action: ButtonActionType | undefined
 
 	if (event.type === "CLICK_PRIMARY") {
-		action = "messageResponse" // Default primary action
+		action = "proceed" // Default primary action (was messageResponse)
 	} else if (event.type === "CLICK_SECONDARY") {
 		action = "reject" // Default secondary action
 	} else if (event.type === "CLICK_ACTION") {
@@ -133,8 +119,10 @@ const setActionFromClick = (context: ActionButtonsContext, event: ActionButtonsE
 /**
  * Store success message
  */
-const storeSuccess = (context: ActionButtonsContext, event: ActionButtonsEvent): Partial<ActionButtonsContext> => {
-	if (event.type !== "SUCCESS") return {}
+const storeSuccess = (_context: ActionButtonsContext, event: ActionButtonsEvent): Partial<ActionButtonsContext> => {
+	if (event.type !== "SUCCESS") {
+		return {}
+	}
 
 	return {
 		successMessage: event.payload?.message,
@@ -145,8 +133,10 @@ const storeSuccess = (context: ActionButtonsContext, event: ActionButtonsEvent):
 /**
  * Store error message
  */
-const storeError = (context: ActionButtonsContext, event: ActionButtonsEvent): Partial<ActionButtonsContext> => {
-	if (event.type !== "ERROR") return {}
+const storeError = (_context: ActionButtonsContext, event: ActionButtonsEvent): Partial<ActionButtonsContext> => {
+	if (event.type !== "ERROR") {
+		return {}
+	}
 
 	return {
 		errorMessage: event.payload.error,
@@ -157,8 +147,10 @@ const storeError = (context: ActionButtonsContext, event: ActionButtonsEvent): P
 /**
  * Update button configuration
  */
-const updateConfig = (context: ActionButtonsContext, event: ActionButtonsEvent): Partial<ActionButtonsContext> => {
-	if (event.type !== "UPDATE_CONFIG") return {}
+const updateConfig = (_context: ActionButtonsContext, event: ActionButtonsEvent): Partial<ActionButtonsContext> => {
+	if (event.type !== "UPDATE_CONFIG") {
+		return {}
+	}
 
 	const updates: Partial<ActionButtonsContext> = {}
 
@@ -184,24 +176,6 @@ const resetState = (): Partial<ActionButtonsContext> => {
 		actionStartTime: undefined,
 		errorMessage: undefined,
 		successMessage: undefined,
-	}
-}
-
-/**
- * Enable buttons
- */
-const enableButtons = (): Partial<ActionButtonsContext> => {
-	return {
-		isEnabled: true,
-	}
-}
-
-/**
- * Disable buttons
- */
-const disableButtons = (): Partial<ActionButtonsContext> => {
-	return {
-		isEnabled: false,
 	}
 }
 
@@ -263,6 +237,7 @@ export const createActionButtonsStateMachine = (
 			onEnter: () => {
 				// Action is being processed
 				// Component handles the actual API call
+				return undefined
 			},
 		},
 
@@ -275,6 +250,7 @@ export const createActionButtonsStateMachine = (
 			onEnter: () => {
 				// Action completed successfully
 				// Auto-reset after timeout
+				return undefined
 			},
 		},
 
@@ -300,6 +276,7 @@ export const createActionButtonsStateMachine = (
 			onEnter: () => {
 				// Handle error state
 				// Show error message to user
+				return undefined
 			},
 		},
 
@@ -314,6 +291,7 @@ export const createActionButtonsStateMachine = (
 			onEnter: () => {
 				// Buttons are disabled
 				// Usually when waiting for AI response
+				return undefined
 			},
 		},
 	},
@@ -348,15 +326,17 @@ export function getButtonStatus(state: string, context: ActionButtonsContext): s
  */
 export function getActionIcon(action?: ButtonActionType): string {
 	switch (action) {
-		case "messageResponse":
-		case "followup":
+		case "proceed":
+		case "approve":
 			return "✓"
 		case "reject":
 			return "✕"
-		case "primary":
+		case "new_task":
 			return "→"
-		case "secondary":
-			return "←"
+		case "retry":
+			return "↻"
+		case "cancel":
+			return "⏸"
 		default:
 			return "•"
 	}
@@ -379,7 +359,7 @@ export function isProcessing(state: string): boolean {
 /**
  * Check if can click buttons
  */
-export function canClickButtons(state: string, context: ActionButtonsContext): boolean {
+export function canClickButtons(state: string, _context: ActionButtonsContext): boolean {
 	return state === "idle" || state === "error"
 }
 
@@ -422,7 +402,9 @@ export function shouldAutoReset(state: string, context: ActionButtonsContext): b
 export function getButtonText(buttonType: "primary" | "secondary", state: string, context: ActionButtonsContext): string {
 	const baseText = buttonType === "primary" ? context.primaryButtonText : context.secondaryButtonText
 
-	if (!baseText) return ""
+	if (!baseText) {
+		return ""
+	}
 
 	switch (state) {
 		case "processing":

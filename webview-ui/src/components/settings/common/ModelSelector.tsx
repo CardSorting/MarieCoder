@@ -1,25 +1,29 @@
 import { ModelInfo } from "@shared/api"
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
-import styled from "styled-components"
+import React from "react"
 
 /**
  * Container for dropdowns that ensures proper z-index handling
  * This is necessary to ensure dropdown opens downward
  */
-export const DropdownContainer = styled.div.attrs<{ zIndex?: number }>(({ zIndex }) => ({
-	style: {
-		zIndex: zIndex || 1000,
-	},
-}))`
-	position: relative;
-
-	// Force dropdowns to open downward
-	& vscode-dropdown::part(listbox) {
-		position: absolute !important;
-		top: 100% !important;
-		bottom: auto !important;
-	}
-`
+export const DropdownContainer: React.FC<{ zIndex?: number; className?: string; children: React.ReactNode }> = ({
+	zIndex = 1000,
+	className = "",
+	children,
+}) => {
+	return (
+		<div className={`relative ${className}`} style={{ zIndex }}>
+			<style>{`
+				.dropdown-container vscode-dropdown::part(listbox) {
+					position: absolute !important;
+					top: 100% !important;
+					bottom: auto !important;
+				}
+			`}</style>
+			{children}
+		</div>
+	)
+}
 
 /**
  * Props for the ModelSelector component

@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from "uuid"
+import { ulid } from "ulid"
 import { StreamingCallbacks } from "@/hosts/host-provider-types"
 import { GrpcHandler } from "@/hosts/vscode/hostbridge-grpc-handler"
 
@@ -44,7 +44,7 @@ export function createGrpcClient<T extends ProtoService>(service: T): GrpcClient
 				options: StreamingCallbacks<InstanceType<typeof method.responseType>>,
 			) => {
 				// Use handleRequest with streaming callbacks
-				const requestId = uuidv4()
+				const requestId = ulid()
 
 				// We need to await the promise and then return the cancel function
 				return (async () => {
@@ -78,7 +78,7 @@ export function createGrpcClient<T extends ProtoService>(service: T): GrpcClient
 			// Unary method implementation
 			client[methodKey as keyof GrpcClientType<T>] = ((request: any) => {
 				return new Promise(async (resolve, reject) => {
-					const requestId = uuidv4()
+					const requestId = ulid()
 					try {
 						const response = await grpcHandler.handleRequest(service.fullName, methodKey, request, requestId)
 

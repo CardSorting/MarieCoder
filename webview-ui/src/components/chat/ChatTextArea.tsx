@@ -8,7 +8,6 @@ import { Mode } from "@shared/storage/types"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import type React from "react"
 import { forwardRef, lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import styled from "styled-components"
 import ContextMenu from "@/components/chat/ContextMenu"
 import { CHAT_CONSTANTS } from "@/components/chat/chat-view/constants"
 import SlashCommandMenu from "@/components/chat/SlashCommandMenu"
@@ -103,160 +102,129 @@ interface GitCommit {
 const PLAN_MODE_COLOR = "var(--vscode-activityWarningBadge-background)"
 const ACT_MODE_COLOR = "var(--vscode-focusBorder)"
 
-const SwitchOption = styled.div.withConfig({
-	shouldForwardProp: (prop) => !["isActive"].includes(prop),
-})<{ isActive: boolean }>`
-	padding: 2px 8px;
-	color: ${(props) => (props.isActive ? "white" : "var(--vscode-input-foreground)")};
-	z-index: 1;
-	transition: color 0.2s ease;
-	font-size: 12px;
-	width: 50%;
-	text-align: center;
+interface ModelSelectorTooltipProps {
+	menuPosition: number
+	arrowPosition: number
+}
 
-	&:hover {
-		background-color: ${(props) => (!props.isActive ? "var(--vscode-toolbar-hoverBackground)" : "transparent")};
-	}
-`
+const SwitchOption = ({ isActive, children, ...props }: { isActive: boolean; children: React.ReactNode; [key: string]: any }) => (
+	<div
+		className={`p-[2px_8px] z-[1] transition-colors duration-200 text-xs w-1/2 text-center select-none ${isActive ? "text-white" : "text-[var(--vscode-input-foreground)]"} ${!isActive ? "hover:bg-[var(--vscode-toolbar-hoverBackground)]" : ""}`}
+		{...props}>
+		{children}
+	</div>
+)
 
-const SwitchContainer = styled.div<{ disabled: boolean }>`
-	display: flex;
-	align-items: center;
-	background-color: var(--vscode-editor-background);
-	border: 1px solid var(--vscode-input-border);
-	border-radius: 12px;
-	overflow: hidden;
-	cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
-	opacity: ${(props) => (props.disabled ? 0.5 : 1)};
-	transform: scale(0.85);
-	transform-origin: right center;
-	margin-left: -10px; // compensate for the transform so flex spacing works
-	user-select: none; // Prevent text selection
-`
+const SwitchContainer = ({
+	disabled,
+	children,
+	...props
+}: {
+	disabled: boolean
+	children: React.ReactNode
+	[key: string]: any
+}) => (
+	<div
+		className={`flex items-center bg-[var(--vscode-editor-background)] border border-[var(--vscode-input-border)] rounded-xl overflow-hidden scale-85 origin-right -ml-2.5 select-none ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+		{...props}>
+		{children}
+	</div>
+)
 
-const Slider = styled.div.withConfig({
-	shouldForwardProp: (prop) => !["isAct", "isPlan"].includes(prop),
-})<{ isAct: boolean; isPlan?: boolean }>`
-	position: absolute;
-	height: 100%;
-	width: 50%;
-	background-color: ${(props) => (props.isPlan ? PLAN_MODE_COLOR : ACT_MODE_COLOR)};
-	transition: transform 0.2s ease;
-	transform: translateX(${(props) => (props.isAct ? "100%" : "0%")});
-`
+const Slider = ({ isAct, isPlan, ...props }: { isAct: boolean; isPlan?: boolean; [key: string]: any }) => (
+	<div
+		className="absolute h-full w-1/2 transition-transform duration-200"
+		style={{
+			backgroundColor: isPlan ? PLAN_MODE_COLOR : ACT_MODE_COLOR,
+			transform: `translateX(${isAct ? "100%" : "0%"})`,
+		}}
+		{...props}
+	/>
+)
 
-const ButtonGroup = styled.div`
-	display: flex;
-	align-items: center;
-	gap: 4px;
-	flex: 1;
-	min-width: 0;
-`
+const ButtonGroup = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+	<div className={cn("flex items-center gap-1 flex-1 min-w-0", className)}>{children}</div>
+)
 
-const ButtonContainer = styled.div`
-	display: flex;
-	align-items: center;
-	gap: 3px;
-	font-size: 10px;
-	white-space: nowrap;
-	min-width: 0;
-	width: 100%;
-`
+const ButtonContainer = ({ children }: { children: React.ReactNode }) => (
+	<div className="flex items-center gap-[3px] text-[10px] whitespace-nowrap min-w-0 w-full">{children}</div>
+)
 
-const ModelSelectorTooltip = styled.div<ModelSelectorTooltipProps>`
-	position: fixed;
-	bottom: calc(100% + 9px);
-	left: 15px;
-	right: 15px;
-	background: ${CODE_BLOCK_BG_COLOR};
-	border: 1px solid var(--vscode-editorGroup-border);
-	padding: 12px;
-	border-radius: 3px;
-	z-index: 1000;
-	max-height: calc(100vh - 100px);
-	overflow-y: auto;
-	overscroll-behavior: contain;
+const ModelSelectorTooltip = ({
+	menuPosition,
+	arrowPosition,
+	children,
+	...props
+}: ModelSelectorTooltipProps & { children: React.ReactNode; [key: string]: any }) => (
+	<div
+		className="fixed left-[15px] right-[15px] border border-[var(--vscode-editorGroup-border)] p-3 rounded-[3px] z-[1000] max-h-[calc(100vh-100px)] overflow-y-auto overscroll-contain"
+		style={{
+			bottom: "calc(100% + 9px)",
+			background: CODE_BLOCK_BG_COLOR,
+		}}
+		{...props}>
+		<style>{`
+			.model-selector-tooltip::before {
+				content: "";
+				position: fixed;
+				bottom: calc(100vh - ${menuPosition}px - 2px);
+				left: 0;
+				right: 0;
+				height: 8px;
+			}
+			.model-selector-tooltip::after {
+				content: "";
+				position: fixed;
+				bottom: calc(100vh - ${menuPosition}px);
+				right: ${arrowPosition}px;
+				width: 10px;
+				height: 10px;
+				background: ${CODE_BLOCK_BG_COLOR};
+				border-right: 1px solid var(--vscode-editorGroup-border);
+				border-bottom: 1px solid var(--vscode-editorGroup-border);
+				transform: rotate(45deg);
+				z-index: -1;
+			}
+		`}</style>
+		{children}
+	</div>
+)
 
-	// Add invisible padding for hover zone
-	&::before {
-		content: "";
-		position: fixed;
-		bottom: ${(props) => `calc(100vh - ${props.menuPosition}px - 2px)`};
-		left: 0;
-		right: 0;
-		height: 8px;
-	}
+const ModelContainer = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ children }, ref) => (
+	<div className="relative flex flex-1 min-w-0" ref={ref}>
+		{children}
+	</div>
+))
+ModelContainer.displayName = "ModelContainer"
 
-	// Arrow pointing down
-	&::after {
-		content: "";
-		position: fixed;
-		bottom: ${(props) => `calc(100vh - ${props.menuPosition}px)`};
-		right: ${(props) => props.arrowPosition}px;
-		width: 10px;
-		height: 10px;
-		background: ${CODE_BLOCK_BG_COLOR};
-		border-right: 1px solid var(--vscode-editorGroup-border);
-		border-bottom: 1px solid var(--vscode-editorGroup-border);
-		transform: rotate(45deg);
-		z-index: -1;
-	}
-`
+const ModelButtonWrapper = forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ children }, ref) => (
+	<div className="inline-flex min-w-0 max-w-full" ref={ref}>
+		{children}
+	</div>
+))
+ModelButtonWrapper.displayName = "ModelButtonWrapper"
 
-const ModelContainer = styled.div`
-	position: relative;
-	display: flex;
-	flex: 1;
-	min-width: 0;
-`
+const ModelDisplayButton = ({
+	isActive,
+	disabled,
+	children,
+	...props
+}: {
+	isActive?: boolean
+	disabled?: boolean
+	children: React.ReactNode
+	[key: string]: any
+}) => (
+	<a
+		className={`p-0 h-5 w-full min-w-0 flex items-center text-[10px] outline-none select-none ${disabled ? "cursor-not-allowed opacity-50 pointer-events-none" : "cursor-pointer"} ${isActive ? "underline text-[var(--vscode-foreground)]" : "no-underline text-[var(--vscode-descriptionForeground)]"} ${!disabled ? "hover:text-[var(--vscode-foreground)] hover:underline focus:text-[var(--vscode-foreground)] focus:underline active:text-[var(--vscode-foreground)] active:underline focus:outline-none focus-visible:outline-none" : "hover:text-[var(--vscode-descriptionForeground)] hover:no-underline focus:text-[var(--vscode-descriptionForeground)] focus:no-underline active:text-[var(--vscode-descriptionForeground)] active:no-underline"}`}
+		{...props}>
+		{children}
+	</a>
+)
 
-const ModelButtonWrapper = styled.div`
-	display: inline-flex; // Make it shrink to content
-	min-width: 0; // Allow shrinking
-	max-width: 100%; // Don't overflow parent
-`
-
-const ModelDisplayButton = styled.a<{ isActive?: boolean; disabled?: boolean }>`
-	padding: 0px 0px;
-	height: 20px;
-	width: 100%;
-	min-width: 0;
-	cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
-	text-decoration: ${(props) => (props.isActive ? "underline" : "none")};
-	color: ${(props) => (props.isActive ? "var(--vscode-foreground)" : "var(--vscode-descriptionForeground)")};
-	display: flex;
-	align-items: center;
-	font-size: 10px;
-	outline: none;
-	user-select: none;
-	opacity: ${(props) => (props.disabled ? 0.5 : 1)};
-	pointer-events: ${(props) => (props.disabled ? "none" : "auto")};
-
-	&:hover,
-	&:focus {
-		color: ${(props) => (props.disabled ? "var(--vscode-descriptionForeground)" : "var(--vscode-foreground)")};
-		text-decoration: ${(props) => (props.disabled ? "none" : "underline")};
-		outline: none;
-	}
-
-	&:active {
-		color: ${(props) => (props.disabled ? "var(--vscode-descriptionForeground)" : "var(--vscode-foreground)")};
-		text-decoration: ${(props) => (props.disabled ? "none" : "underline")};
-		outline: none;
-	}
-
-	&:focus-visible {
-		outline: none;
-	}
-`
-
-const ModelButtonContent = styled.div`
-	width: 100%;
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-`
+const ModelButtonContent = ({ children }: { children: React.ReactNode }) => (
+	<div className="w-full min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{children}</div>
+)
 
 const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 	(
@@ -1800,11 +1768,5 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		)
 	},
 )
-
-// Update TypeScript interface for styled-component props
-interface ModelSelectorTooltipProps {
-	arrowPosition: number
-	menuPosition: number
-}
 
 export default ChatTextArea

@@ -11,10 +11,9 @@ import {
 import { Int64Request, StringRequest } from "@shared/proto/cline/common"
 import { VSCodeBadge, VSCodeProgressRing } from "@vscode/webview-ui-toolkit/react"
 import React, { MouseEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import styled from "styled-components"
 import { OptionsButtons } from "@/components/chat/OptionsButtons"
 import TaskFeedbackButtons from "@/components/chat/TaskFeedbackButtons"
-import { Button } from "@/components/common/button"
+import { Button } from "@/components/common/Button"
 import { CheckmarkControl } from "@/components/common/CheckmarkControl"
 import CodeBlock, { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import { WithCopyButton } from "@/components/common/CopyButton"
@@ -28,7 +27,6 @@ import { debug } from "@/utils/debug_logger"
 import deepEqual from "@/utils/deep_equal"
 import { useSize } from "@/utils/hooks"
 import { findMatchingResourceOrTemplate, getMcpServerDisplayName } from "@/utils/mcp"
-import { CheckpointControls } from "../common/CheckpointControls"
 import CodeAccordian, { cleanPathPrefix } from "../common/CodeAccordian"
 import { ErrorBlockTitle } from "./ErrorBlockTitle"
 import ErrorRow from "./ErrorRow"
@@ -42,15 +40,6 @@ const normalColor = "var(--vscode-foreground)"
 const errorColor = "var(--vscode-errorForeground)"
 const successColor = "var(--vscode-charts-green)"
 const _cancelledColor = "var(--vscode-descriptionForeground)"
-
-const ChatRowContainer = styled.div`
-	padding: 10px 6px 10px 15px;
-	position: relative;
-
-	&:hover ${CheckpointControls} {
-		opacity: 1;
-	}
-`
 
 interface ChatRowProps {
 	message: ClineMessage
@@ -110,10 +99,14 @@ const ChatRow = memo(
 		// This allows us to detect changes without causing re-renders
 		const prevHeightRef = useRef(0)
 
-		const [chatrow, { height }] = useSize(
-			<ChatRowContainer>
+		const chatrowRef = useRef<HTMLDivElement>(null)
+		const chatrowSize = useSize(chatrowRef)
+		const height = chatrowSize.height
+
+		const chatrow = (
+			<div className="group py-2.5 pr-1.5 pl-[15px] relative [&:hover_.checkpoint-controls]:opacity-100" ref={chatrowRef}>
 				<ChatRowContent {...props} />
-			</ChatRowContainer>,
+			</div>
 		)
 
 		useEffect(() => {

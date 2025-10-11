@@ -17,7 +17,7 @@ import {
 	VSCodePanelView,
 } from "@vscode/webview-ui-toolkit/react"
 import { useCallback, useState } from "react"
-import { Button } from "@/components/common/button"
+import { Button } from "@/components/common/Button"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"

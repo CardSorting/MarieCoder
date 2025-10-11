@@ -19,7 +19,8 @@ The correct order is:
 
 /* External imports must come first, before Tailwind imports */
 @import url("../../node_modules/@vscode/codicons/dist/codicon.css");
-@import url("../node_modules/@fontsource/azeret-mono/index.css");
+/* Font import removed - @fontsource/azeret-mono not in dependencies */
+/* @import url("../node_modules/@fontsource/azeret-mono/index.css"); */
 
 /* Tailwind imports come after external imports */
 @import "tailwindcss/theme.css" layer(theme);

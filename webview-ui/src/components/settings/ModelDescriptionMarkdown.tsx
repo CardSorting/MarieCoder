@@ -1,52 +1,7 @@
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { memo, useEffect, useRef, useState } from "react"
-import styled from "styled-components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-
-const StyledMarkdown = styled.div`
-	font-family:
-		var(--vscode-font-family),
-		system-ui,
-		-apple-system,
-		BlinkMacSystemFont,
-		"Segoe UI",
-		Roboto,
-		Oxygen,
-		Ubuntu,
-		Cantarell,
-		"Open Sans",
-		"Helvetica Neue",
-		sans-serif;
-	font-size: 12px;
-	color: var(--vscode-descriptionForeground);
-
-	p,
-	li,
-	ol,
-	ul {
-		line-height: 1.25;
-		margin: 0;
-	}
-
-	ol,
-	ul {
-		padding-left: 1.5em;
-		margin-left: 0;
-	}
-
-	p {
-		white-space: pre-wrap;
-	}
-
-	a {
-		text-decoration: none;
-	}
-	a {
-		&:hover {
-			text-decoration: underline;
-		}
-	}
-`
+import { renderMarkdownSync } from "@/utils/markdown_renderer"
 
 export const ModelDescriptionMarkdown = memo(
 	({
@@ -82,8 +37,37 @@ export const ModelDescriptionMarkdown = memo(
 		}, [htmlContent, setIsExpanded])
 
 		return (
-			<StyledMarkdown key={key} style={{ display: "inline-block", marginBottom: 0 }}>
+			<div key={key} style={{ display: "inline-block", marginBottom: 0 }}>
+				<style>{`
+					.model-description-markdown {
+						font-family: var(--vscode-font-family), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+						font-size: 12px;
+						color: var(--vscode-descriptionForeground);
+					}
+					.model-description-markdown p,
+					.model-description-markdown li,
+					.model-description-markdown ol,
+					.model-description-markdown ul {
+						line-height: 1.25;
+						margin: 0;
+					}
+					.model-description-markdown ol,
+					.model-description-markdown ul {
+						padding-left: 1.5em;
+						margin-left: 0;
+					}
+					.model-description-markdown p {
+						white-space: pre-wrap;
+					}
+					.model-description-markdown a {
+						text-decoration: none;
+					}
+					.model-description-markdown a:hover {
+						text-decoration: underline;
+					}
+				`}</style>
 				<div
+					className="model-description-markdown"
 					ref={textContainerRef}
 					style={{
 						overflowY: isExpanded ? "auto" : "hidden",
@@ -130,7 +114,7 @@ export const ModelDescriptionMarkdown = memo(
 						</div>
 					)}
 				</div>
-			</StyledMarkdown>
+			</div>
 		)
 	},
 )

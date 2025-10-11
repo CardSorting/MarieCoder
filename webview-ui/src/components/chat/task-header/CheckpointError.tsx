@@ -29,8 +29,9 @@ export const CheckpointError: React.FC<CheckpointErrorProps> = ({
 		<div className="flex items-center justify-center w-full">
 			<Alert
 				className="rounded-sm border-0 bg-[var(--vscode-inputValidation-errorBackground)] text-[var(--vscode-inputValidation-errorForeground)] pl-1 pr-1.5 py-1"
-				color="warning"
-				description={
+				title={messages.message}
+				variant="warning">
+				<div className="flex items-center justify-between gap-2">
 					<div className="flex gap-2">
 						{messages.showDisableButton && (
 							<button
@@ -47,8 +48,6 @@ export const CheckpointError: React.FC<CheckpointErrorProps> = ({
 							</a>
 						)}
 					</div>
-				}
-				endContent={
 					<VSCodeButton
 						appearance="icon"
 						aria-label="Dismiss"
@@ -57,12 +56,8 @@ export const CheckpointError: React.FC<CheckpointErrorProps> = ({
 						title="Dismiss Checkpoint Error">
 						<XIcon size={12} />
 					</VSCodeButton>
-				}
-				hideIconWrapper={true}
-				isVisible={!dismissed}
-				title={messages.message}
-				variant="faded"
-			/>
+				</div>
+			</Alert>
 		</div>
 	)
 }

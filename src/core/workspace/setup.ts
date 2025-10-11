@@ -58,7 +58,7 @@ export async function setupWorkspaceManager({
 		stateManager.setGlobalState("workspaceRoots", roots)
 		stateManager.setGlobalState("primaryRootIndex", manager.getPrimaryIndex())
 		return manager
-	} catch (error) {
+	} catch (_error) {
 		// Telemetry + graceful fallback to single-root from cwd
 		const _workspaceCount = (await HostProvider.workspace.getWorkspacePaths({})).paths?.length
 

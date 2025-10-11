@@ -17,7 +17,6 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
 import { debounce } from "@/utils/debounce"
 import { debug } from "@/utils/debug_logger"
-import { useEvent } from "@/utils/hooks"
 import { Tab, TabContent, TabHeader, TabList, TabTrigger } from "../common/Tab"
 import SectionHeader from "./SectionHeader"
 import AboutSection from "./sections/AboutSection"
@@ -189,7 +188,10 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 		})
 	}, [])
 
-	useEvent("message", handleMessage)
+	useEffect(() => {
+		window.addEventListener("message", handleMessage)
+		return () => window.removeEventListener("message", handleMessage)
+	}, [handleMessage])
 
 	// Memoized reset state handler
 	const handleResetState = useCallback(async (resetGlobalState?: boolean) => {

@@ -5,7 +5,7 @@ import { getColor } from "./util"
 
 interface TaskTimelineTooltipProps {
 	message: ClineMessage
-	children: React.ReactNode
+	children: React.ReactElement
 }
 
 const TaskTimelineTooltip = ({ message, children }: TaskTimelineTooltipProps) => {
@@ -153,10 +153,7 @@ const TaskTimelineTooltip = ({ message, children }: TaskTimelineTooltipProps) =>
 
 	return (
 		<Tooltip
-			classNames={{
-				base: "bg-[var(--vscode-editor-background)] text-[var(--vscode-editor-foreground)] border-[var(--vscode-widget-border)] py-1 rounded-[3px] max-w-[calc(100dvw-2rem)] text-xs",
-			}}
-			closeDelay={100}
+			className="bg-[var(--vscode-editor-background)] text-[var(--vscode-editor-foreground)] border-[var(--vscode-widget-border)] py-1 rounded-[3px] max-w-[calc(100dvw-2rem)] text-xs"
 			content={
 				<div className="flex flex-col">
 					<div className="flex flex-wrap items-center font-bold mb-1">
@@ -201,10 +198,8 @@ const TaskTimelineTooltip = ({ message, children }: TaskTimelineTooltipProps) =>
 					)}
 				</div>
 			}
-			disableAnimation
-			isKeyboardDismissDisabled={true}
-			placement="bottom"
-			shadow="sm">
+			delay={100}
+			placement="bottom">
 			{children}
 		</Tooltip>
 	)

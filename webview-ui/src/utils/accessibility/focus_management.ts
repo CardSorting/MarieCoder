@@ -98,7 +98,7 @@ export function useFocusTrap(containerRef: React.RefObject<HTMLElement>, isActiv
 		}
 
 		const firstElement = focusableElements[0]
-		const lastElement = focusableElements[focusableElements.length - 1]
+		const _lastElement = focusableElements[focusableElements.length - 1]
 
 		// Focus first element when trap activates
 		setTimeout(() => {

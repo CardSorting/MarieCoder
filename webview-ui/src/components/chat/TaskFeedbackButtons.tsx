@@ -2,7 +2,6 @@ import { StringRequest } from "@shared/proto/cline/common"
 import { TaskFeedbackType } from "@shared/WebviewMessage"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useState } from "react"
-import styled from "styled-components"
 import { TaskServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 
@@ -11,14 +10,6 @@ interface TaskFeedbackButtonsProps {
 	isFromHistory?: boolean
 	style?: React.CSSProperties
 }
-
-const IconWrapper = styled.span`
-	color: var(--vscode-descriptionForeground);
-`
-
-const ButtonWrapper = styled.div`
-	transform: scale(0.85);
-`
 
 const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, isFromHistory = false, style }) => {
 	const [feedback, setFeedback] = useState<TaskFeedbackType | null>(null)
@@ -72,36 +63,32 @@ const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, is
 	}
 
 	return (
-		<Container style={style}>
-			<ButtonsContainer>
-				<ButtonWrapper>
+		<div className="flex items-center justify-end" style={style}>
+			<div className="flex gap-0 opacity-50 hover:opacity-100">
+				<div className="scale-85">
 					<VSCodeButton
 						appearance="icon"
 						aria-label="This was helpful"
 						disabled={feedback !== null}
 						onClick={() => handleFeedback("thumbs_up")}
 						title="This was helpful">
-						<IconWrapper>
-							<span
-								className={`codicon ${feedback === "thumbs_up" ? "codicon-thumbsup-filled" : "codicon-thumbsup"}`}
-							/>
-						</IconWrapper>
+						<span
+							className={`codicon ${feedback === "thumbs_up" ? "codicon-thumbsup-filled" : "codicon-thumbsup"} text-[var(--vscode-descriptionForeground)]`}
+						/>
 					</VSCodeButton>
-				</ButtonWrapper>
-				<ButtonWrapper>
+				</div>
+				<div className="scale-85">
 					<VSCodeButton
 						appearance="icon"
 						aria-label="This wasn't helpful"
 						disabled={feedback !== null && feedback !== "thumbs_down"}
 						onClick={() => handleFeedback("thumbs_down")}
 						title="This wasn't helpful">
-						<IconWrapper>
-							<span
-								className={`codicon ${feedback === "thumbs_down" ? "codicon-thumbsdown-filled" : "codicon-thumbsdown"}`}
-							/>
-						</IconWrapper>
+						<span
+							className={`codicon ${feedback === "thumbs_down" ? "codicon-thumbsdown-filled" : "codicon-thumbsdown"} text-[var(--vscode-descriptionForeground)]`}
+						/>
 					</VSCodeButton>
-				</ButtonWrapper>
+				</div>
 				{/* <VSCodeButtonLink
 					href="https://github.com/cline/cline/issues/new?template=bug_report.yml"
 					appearance="icon"
@@ -109,25 +96,9 @@ const TaskFeedbackButtons: React.FC<TaskFeedbackButtonsProps> = ({ messageTs, is
 					aria-label="Report a bug">
 					<span className="codicon codicon-bug" />
 				</VSCodeButtonLink> */}
-			</ButtonsContainer>
-		</Container>
+			</div>
+		</div>
 	)
 }
-
-const Container = styled.div`
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-`
-
-const ButtonsContainer = styled.div`
-	display: flex;
-	gap: 0px;
-	opacity: 0.5;
-
-	&:hover {
-		opacity: 1;
-	}
-`
 
 export default TaskFeedbackButtons

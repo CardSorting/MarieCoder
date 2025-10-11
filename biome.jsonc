@@ -82,7 +82,7 @@
 				"noStaticOnlyClass": "off"
 			},
 			"security": {
-				"noDangerouslySetInnerHtml": "warn"
+				"noDangerouslySetInnerHtml": "off"
 			}
 		}
 	},

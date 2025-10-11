@@ -115,8 +115,10 @@ const resetRecording = (): Partial<VoiceRecorderContext> => {
 /**
  * Record recording start time
  */
-const recordStartTime = (context: VoiceRecorderContext, event: VoiceRecorderEvent): Partial<VoiceRecorderContext> => {
-	if (event.type !== "RECORDING_STARTED") return {}
+const recordStartTime = (_context: VoiceRecorderContext, event: VoiceRecorderEvent): Partial<VoiceRecorderContext> => {
+	if (event.type !== "RECORDING_STARTED") {
+		return {}
+	}
 
 	return {
 		startTime: event.payload.startTime,
@@ -127,8 +129,10 @@ const recordStartTime = (context: VoiceRecorderContext, event: VoiceRecorderEven
 /**
  * Update recording duration
  */
-const updateDuration = (context: VoiceRecorderContext, event: VoiceRecorderEvent): Partial<VoiceRecorderContext> => {
-	if (event.type !== "TICK") return {}
+const updateDuration = (_context: VoiceRecorderContext, event: VoiceRecorderEvent): Partial<VoiceRecorderContext> => {
+	if (event.type !== "TICK") {
+		return {}
+	}
 
 	return {
 		duration: event.payload.duration,
@@ -138,8 +142,10 @@ const updateDuration = (context: VoiceRecorderContext, event: VoiceRecorderEvent
 /**
  * Store audio blob
  */
-const storeAudioBlob = (context: VoiceRecorderContext, event: VoiceRecorderEvent): Partial<VoiceRecorderContext> => {
-	if (event.type !== "RECORDING_STOPPED") return {}
+const storeAudioBlob = (_context: VoiceRecorderContext, event: VoiceRecorderEvent): Partial<VoiceRecorderContext> => {
+	if (event.type !== "RECORDING_STOPPED") {
+		return {}
+	}
 
 	return {
 		audioBlob: event.payload.audioBlob,
@@ -149,8 +155,10 @@ const storeAudioBlob = (context: VoiceRecorderContext, event: VoiceRecorderEvent
 /**
  * Update processing progress
  */
-const updateProgress = (context: VoiceRecorderContext, event: VoiceRecorderEvent): Partial<VoiceRecorderContext> => {
-	if (event.type !== "PROCESSING_PROGRESS") return {}
+const updateProgress = (_context: VoiceRecorderContext, event: VoiceRecorderEvent): Partial<VoiceRecorderContext> => {
+	if (event.type !== "PROCESSING_PROGRESS") {
+		return {}
+	}
 
 	return {
 		processingProgress: event.payload.progress,
@@ -160,8 +168,10 @@ const updateProgress = (context: VoiceRecorderContext, event: VoiceRecorderEvent
 /**
  * Store transcription result
  */
-const storeTranscription = (context: VoiceRecorderContext, event: VoiceRecorderEvent): Partial<VoiceRecorderContext> => {
-	if (event.type !== "TRANSCRIPTION_COMPLETE") return {}
+const storeTranscription = (_context: VoiceRecorderContext, event: VoiceRecorderEvent): Partial<VoiceRecorderContext> => {
+	if (event.type !== "TRANSCRIPTION_COMPLETE") {
+		return {}
+	}
 
 	return {
 		transcription: event.payload.transcription,
@@ -172,8 +182,10 @@ const storeTranscription = (context: VoiceRecorderContext, event: VoiceRecorderE
 /**
  * Store error message
  */
-const storeError = (context: VoiceRecorderContext, event: VoiceRecorderEvent): Partial<VoiceRecorderContext> => {
-	if (event.type !== "RECORDING_FAILED" && event.type !== "TRANSCRIPTION_FAILED") return {}
+const storeError = (_context: VoiceRecorderContext, event: VoiceRecorderEvent): Partial<VoiceRecorderContext> => {
+	if (event.type !== "RECORDING_FAILED" && event.type !== "TRANSCRIPTION_FAILED") {
+		return {}
+	}
 
 	return {
 		errorMessage: event.payload.error,
@@ -227,6 +239,7 @@ export const createVoiceRecorderStateMachine = (
 			},
 			onEnter: () => {
 				// Ready to start recording
+				return undefined
 			},
 		},
 
@@ -248,6 +261,7 @@ export const createVoiceRecorderStateMachine = (
 			onEnter: () => {
 				// Initialize audio recording
 				// This is handled by the component via DictationServiceClient
+				return undefined
 			},
 		},
 
@@ -274,6 +288,7 @@ export const createVoiceRecorderStateMachine = (
 			onEnter: () => {
 				// Actively recording
 				// Component manages timer and duration updates
+				return undefined
 			},
 		},
 
@@ -291,6 +306,7 @@ export const createVoiceRecorderStateMachine = (
 			},
 			onEnter: () => {
 				// Stop recording and prepare audio blob
+				return undefined
 			},
 		},
 
@@ -316,6 +332,7 @@ export const createVoiceRecorderStateMachine = (
 			onEnter: () => {
 				// Transcribe audio
 				// Component handles transcription via DictationServiceClient
+				return undefined
 			},
 		},
 
@@ -333,6 +350,7 @@ export const createVoiceRecorderStateMachine = (
 			onEnter: () => {
 				// Transcription complete
 				// Component delivers transcription to parent
+				return undefined
 			},
 		},
 
@@ -354,6 +372,7 @@ export const createVoiceRecorderStateMachine = (
 			onEnter: () => {
 				// Handle error state
 				// Show error message to user
+				return undefined
 			},
 		},
 	},

@@ -1,5 +1,4 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import cloneDeep from "clone-deep"
 import { ContextHistoryMap } from "./context_types"
 
 /**
@@ -83,7 +82,7 @@ export class ContextUpdateApplicator {
 			}
 
 			// Deep copy since we're modifying the message
-			messagesToUpdate[arrayIndex] = cloneDeep(messagesToUpdate[arrayIndex])
+			messagesToUpdate[arrayIndex] = structuredClone(messagesToUpdate[arrayIndex])
 
 			const [_editType, innerMap] = contextUpdate
 			for (const [blockIndex, changes] of innerMap) {

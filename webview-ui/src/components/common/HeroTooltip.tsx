@@ -1,10 +1,10 @@
-import React, { useMemo } from "react"
+import React, { type ReactElement, useMemo } from "react"
 import { Tooltip } from "@/components/common/Tooltip"
 import { cn } from "@/utils/classnames"
 
 interface HeroTooltipProps {
 	content: React.ReactNode
-	children: React.ReactNode
+	children: ReactElement
 	className?: string
 	delay?: number
 	closeDelay?: number
@@ -14,16 +14,13 @@ interface HeroTooltipProps {
 }
 
 /**
- * HeroTooltip component that wraps the HeroUI tooltip with styling
- * similar to TaskTimelineTooltip
+ * HeroTooltip component that wraps the lightweight Tooltip with styled content
  */
 const HeroTooltip: React.FC<HeroTooltipProps> = ({
 	content,
 	children,
 	className,
-	showArrow = false,
 	delay = 0,
-	closeDelay = 500,
 	placement = "top",
 	disabled = false,
 }) => {
@@ -44,18 +41,12 @@ const HeroTooltip: React.FC<HeroTooltipProps> = ({
 		)
 	}, [content, className])
 
+	if (disabled) {
+		return children
+	}
+
 	return (
-		<Tooltip
-			classNames={{
-				content: "hero-tooltip-content pointer-events-none", // Prevent hovering over tooltip
-			}}
-			closeDelay={closeDelay}
-			content={formattedContent} // Immediate close when cursor moves away
-			delay={delay}
-			disableAnimation={true}
-			isDisabled={disabled}
-			placement={placement} // Disable animation for immediate appearance/disappearance
-			showArrow={showArrow}>
+		<Tooltip content={formattedContent} delay={delay} placement={placement}>
 			{children}
 		</Tooltip>
 	)

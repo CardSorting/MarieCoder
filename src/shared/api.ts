@@ -1,4 +1,4 @@
-export type ApiProvider = "anthropic" | "openrouter"
+export type ApiProvider = "anthropic" | "openrouter" | "lmstudio"
 
 export interface ApiHandlerSecrets {
 	apiKey?: string // anthropic
@@ -10,6 +10,8 @@ export interface ApiHandlerOptions {
 	ulid?: string // Used to identify the task in API requests
 	anthropicBaseUrl?: string
 	openRouterProviderSorting?: string
+	lmStudioBaseUrl?: string
+	lmStudioMaxTokens?: string
 	requestTimeoutMs?: number
 	onRetryAttempt?: (attempt: number, maxRetries: number, delay: number, error: any) => void
 
@@ -19,6 +21,7 @@ export interface ApiHandlerOptions {
 	planModeReasoningEffort?: string
 	planModeOpenRouterModelId?: string
 	planModeOpenRouterModelInfo?: ModelInfo
+	planModeLmStudioModelId?: string
 
 	// Act mode configurations
 	actModeApiModelId?: string
@@ -26,6 +29,7 @@ export interface ApiHandlerOptions {
 	actModeReasoningEffort?: string
 	actModeOpenRouterModelId?: string
 	actModeOpenRouterModelInfo?: ModelInfo
+	actModeLmStudioModelId?: string
 }
 
 export type ApiConfiguration = ApiHandlerOptions &
@@ -64,6 +68,11 @@ export interface ModelInfo {
 		cacheWritesPrice?: number
 		cacheReadsPrice?: number
 	}[]
+}
+
+export interface OpenAiCompatibleModelInfo extends ModelInfo {
+	temperature?: number
+	isR1FormatRequired?: boolean
 }
 
 export const CLAUDE_SONNET_1M_SUFFIX = ":1m"
@@ -235,6 +244,18 @@ export const clineCodeSupernovaModelInfo: ModelInfo = {
 	cacheReadsPrice: 0,
 	cacheWritesPrice: 0,
 	description: "A versatile agentic coding stealth model that supports image inputs.",
+}
+
+// LMStudio (OpenAI-compatible local server)
+export const openAiModelInfoSaneDefaults: OpenAiCompatibleModelInfo = {
+	maxTokens: -1,
+	contextWindow: 128_000,
+	supportsImages: true,
+	supportsPromptCache: false,
+	isR1FormatRequired: false,
+	inputPrice: 0,
+	outputPrice: 0,
+	temperature: 0,
 }
 
 // Gemini

@@ -77,13 +77,6 @@ const canRetry = (context: ChatMessageContext): boolean => {
 	return context.retryCount < 3
 }
 
-/**
- * Check if this is the first message (new task)
- */
-const isFirstMessage = (context: ChatMessageContext): boolean => {
-	return context.isNewTask
-}
-
 // ============================================================================
 // Actions
 // ============================================================================
@@ -91,8 +84,10 @@ const isFirstMessage = (context: ChatMessageContext): boolean => {
 /**
  * Prepare message for sending
  */
-const prepareMessage = (context: ChatMessageContext, event: ChatMessageEvent): Partial<ChatMessageContext> => {
-	if (event.type !== "SEND") return {}
+const prepareMessage = (_context: ChatMessageContext, event: ChatMessageEvent): Partial<ChatMessageContext> => {
+	if (event.type !== "SEND") {
+		return {}
+	}
 
 	return {
 		messageText: event.payload.text,
@@ -106,7 +101,7 @@ const prepareMessage = (context: ChatMessageContext, event: ChatMessageEvent): P
 /**
  * Record streaming start time
  */
-const recordStreamingStart = (context: ChatMessageContext): Partial<ChatMessageContext> => {
+const recordStreamingStart = (_context: ChatMessageContext): Partial<ChatMessageContext> => {
 	return {
 		streamingStartedAt: Date.now(),
 	}
@@ -115,7 +110,7 @@ const recordStreamingStart = (context: ChatMessageContext): Partial<ChatMessageC
 /**
  * Store error message
  */
-const storeError = (context: ChatMessageContext, event: ChatMessageEvent): Partial<ChatMessageContext> => {
+const storeError = (_context: ChatMessageContext, event: ChatMessageEvent): Partial<ChatMessageContext> => {
 	if (event.type !== "ERROR" && event.type !== "SENT_FAILED" && event.type !== "VALIDATION_FAILED") {
 		return {}
 	}
@@ -176,6 +171,7 @@ export const createChatMessageStateMachine = (
 			},
 			onEnter: () => {
 				// Ready to send a new message
+				return undefined
 			},
 		},
 
@@ -193,6 +189,7 @@ export const createChatMessageStateMachine = (
 			onEnter: () => {
 				// Validate message content
 				// This is typically handled by the component
+				return undefined
 			},
 		},
 
@@ -207,6 +204,7 @@ export const createChatMessageStateMachine = (
 			onEnter: () => {
 				// Send message to server
 				// This is handled by the component via TaskServiceClient
+				return undefined
 			},
 		},
 
@@ -221,6 +219,7 @@ export const createChatMessageStateMachine = (
 			},
 			onEnter: () => {
 				// Waiting for AI response to start
+				return undefined
 			},
 		},
 
@@ -250,6 +249,7 @@ export const createChatMessageStateMachine = (
 			onEnter: () => {
 				// Message flow complete
 				// Can now send another message
+				return undefined
 			},
 		},
 
@@ -272,6 +272,7 @@ export const createChatMessageStateMachine = (
 			onEnter: () => {
 				// Handle error state
 				// Show error message to user
+				return undefined
 			},
 		},
 	},

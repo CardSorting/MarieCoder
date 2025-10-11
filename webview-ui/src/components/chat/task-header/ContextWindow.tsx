@@ -213,7 +213,6 @@ const ContextWindow: React.FC<ContextWindowProgressProps> = ({
 					</span>
 					<div className="flex relative items-center gap-1 flex-1 w-full h-full" onMouseEnter={() => setIsOpened(true)}>
 						<Tooltip
-							closeDelay={0}
 							content={
 								<ContextWindowSummary
 									autoCompactThreshold={useAutoCondense ? threshold : undefined}
@@ -226,13 +225,9 @@ const ContextWindow: React.FC<ContextWindowProgressProps> = ({
 									tokenUsed={tokenData.used}
 								/>
 							}
-							disableAnimation={true}
 							isOpen={isOpened}
 							offset={-2}
-							placement="bottom"
-							shouldCloseOnBlur={false}
-							shouldCloseOnInteractOutside={() => false}
-							showArrow={true}>
+							placement="bottom">
 							<div
 								aria-label="Auto condense threshold"
 								aria-valuemax={100}
@@ -245,21 +240,15 @@ const ContextWindow: React.FC<ContextWindowProgressProps> = ({
 								ref={progressBarRef}
 								role="slider"
 								tabIndex={useAutoCondense ? 0 : -1}>
-								<Progress
-									aria-label="Context window usage progress"
-									classNames={{
-										base: "drop-shadow-md w-full cursor-pointer",
-										track: cn("rounded max-h-2 h-3 bg-foreground/10"),
-										indicator: "bg-foreground rounded-r",
-										label: "tracking-wider font-medium text-foreground/80",
-										value: "text-description",
-									}}
-									color="success"
-									disableAnimation={true}
-									onClick={handleContextWindowBarClick}
-									size="md"
-									value={tokenData.percentage}
-								/>
+								<div className="drop-shadow-md w-full cursor-pointer" onClick={handleContextWindowBarClick}>
+									<Progress
+										aria-label="Context window usage progress"
+										className={cn("rounded max-h-2 h-3")}
+										color="success"
+										size="md"
+										value={tokenData.percentage}
+									/>
+								</div>
 								{useAutoCondense && (
 									<AutoCondenseMarker
 										isContextWindowHoverOpen={isOpened}

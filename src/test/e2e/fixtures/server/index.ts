@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http"
 import type { Socket } from "node:net"
 import { parse } from "node:url"
-import { v4 as uuidv4 } from "uuid"
+import { ulid } from "ulid"
 import { E2E_MOCK_API_RESPONSES, E2E_REGISTERED_MOCK_ENDPOINTS } from "./api"
 import { ClineDataMock } from "./data"
 
@@ -420,9 +420,9 @@ export class ClineApiServerMock {
 								Connection: "keep-alive",
 							})
 
-							const randomUUID = uuidv4()
+							const randomULID = ulid()
 
-							responseText += `\n\nGenerated UUID: ${randomUUID}`
+							responseText += `\n\nGenerated ULID: ${randomULID}`
 
 							const chunks = responseText.split(" ")
 							let chunkIndex = 0

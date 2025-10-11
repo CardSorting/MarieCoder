@@ -1,12 +1,8 @@
-import ExcelJS from "exceljs"
 import fs from "fs/promises"
 import * as iconv from "iconv-lite"
 import { isBinaryFile } from "isbinaryfile"
 import * as chardet from "jschardet"
-import mammoth from "mammoth"
 import * as path from "path"
-// @ts-ignore-next-line
-import pdf from "pdf-parse/lib/pdf-parse"
 
 export async function detectEncoding(fileBuffer: Buffer, fileExtension?: string): Promise<string> {
 	const detected = chardet.detect(fileBuffer)
@@ -62,12 +58,17 @@ export async function callTextExtractionFunctions(filePath: string): Promise<str
 }
 
 async function extractTextFromPDF(filePath: string): Promise<string> {
+	// Lazy load pdf-parse only when needed
+	// @ts-ignore-next-line
+	const pdf = (await import("pdf-parse/lib/pdf-parse")).default
 	const dataBuffer = await fs.readFile(filePath)
 	const data = await pdf(dataBuffer)
 	return data.text
 }
 
 async function extractTextFromDOCX(filePath: string): Promise<string> {
+	// Lazy load mammoth only when needed
+	const mammoth = (await import("mammoth")).default
 	const result = await mammoth.extractRawText({ path: filePath })
 	return result.value
 }
@@ -91,7 +92,7 @@ async function extractTextFromIPYNB(filePath: string): Promise<string> {
 /**
  * Format the data inside Excel cells
  */
-function formatCellValue(cell: ExcelJS.Cell): string {
+function formatCellValue(cell: any): string {
 	const value = cell.value
 	if (value === null || value === undefined) {
 		return ""
@@ -109,7 +110,7 @@ function formatCellValue(cell: ExcelJS.Cell): string {
 
 	// Handle rich text
 	if (typeof value === "object" && "richText" in value) {
-		return value.richText.map((rt) => rt.text).join("")
+		return value.richText.map((rt: any) => rt.text).join("")
 	}
 
 	// Handle hyperlinks
@@ -133,6 +134,8 @@ function formatCellValue(cell: ExcelJS.Cell): string {
  * Extract and format text from xlsx files
  */
 async function extractTextFromExcel(filePath: string): Promise<string> {
+	// Lazy load exceljs only when needed
+	const ExcelJS = (await import("exceljs")).default
 	const workbook = new ExcelJS.Workbook()
 	let excelText = ""
 

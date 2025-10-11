@@ -1,7 +1,6 @@
 import { McpServer } from "@shared/mcp"
 import { StringRequest } from "@shared/proto/cline/common"
 import { McpDownloadResponse } from "@shared/proto/cline/mcp"
-import axios from "axios"
 import { clineEnvConfig } from "@/config"
 import { Controller } from ".."
 import { sendChatButtonClickedEvent } from "../ui/subscribeToChatButtonClicked"
@@ -30,22 +29,37 @@ export async function downloadMcp(controller: Controller, request: StringRequest
 		}
 
 		// Fetch server details from marketplace
-		const response = await axios.post<McpDownloadResponse>(
-			`${clineEnvConfig.mcpBaseUrl}/download`,
-			{ mcpId },
-			{
+		const abortController = new AbortController()
+		const timeoutId = setTimeout(() => abortController.abort(), 10000)
+
+		let mcpDetails: any
+		try {
+			const response = await fetch(`${clineEnvConfig.mcpBaseUrl}/download`, {
+				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				timeout: 10000,
-			},
-		)
+				body: JSON.stringify({ mcpId }),
+				signal: abortController.signal,
+			})
+			clearTimeout(timeoutId)
 
-		if (!response.data) {
-			throw new Error("Invalid response from MCP marketplace API")
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`)
+			}
+
+			mcpDetails = await response.json()
+
+			if (!mcpDetails) {
+				throw new Error("Invalid response from MCP marketplace API")
+			}
+
+			console.log("[downloadMcp] Response from download API", { mcpDetails })
+		} catch (error: any) {
+			clearTimeout(timeoutId)
+			if (error.name === "AbortError") {
+				throw new Error("Request timeout: MCP marketplace API did not respond")
+			}
+			throw error
 		}
-
-		console.log("[downloadMcp] Response from download API", { response })
-
-		const mcpDetails = response.data
 
 		// Validate required fields
 		if (!mcpDetails.githubUrl) {
@@ -90,18 +104,23 @@ Here is the project's README to help you get started:\n\n${mcpDetails.readmeCont
 		console.error("Failed to download MCP:", error)
 		let errorMessage = "Failed to download MCP"
 
-		if (axios.isAxiosError(error)) {
-			if (error.code === "ECONNABORTED") {
+		if (error instanceof Error) {
+			// Check for timeout error
+			if (error.name === "AbortError" || error.message.includes("timeout")) {
 				errorMessage = "Request timed out. Please try again."
-			} else if (error.response?.status === 404) {
-				errorMessage = "MCP server not found in marketplace."
-			} else if (error.response?.status === 500) {
-				errorMessage = "Internal server error. Please try again later."
-			} else if (!error.response && error.request) {
-				errorMessage = "Network error. Please check your internet connection."
 			}
-		} else if (error instanceof Error) {
-			errorMessage = error.message
+			// Check for HTTP errors
+			else if (error.message.includes("404")) {
+				errorMessage = "MCP server not found in marketplace."
+			} else if (error.message.includes("500")) {
+				errorMessage = "Internal server error. Please try again later."
+			}
+			// Check for network errors
+			else if (error.message.includes("fetch") || error.message.includes("network")) {
+				errorMessage = "Network error. Please check your internet connection."
+			} else {
+				errorMessage = error.message
+			}
 		}
 
 		// Return error in the response instead of throwing
