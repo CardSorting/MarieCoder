@@ -16,6 +16,7 @@ import {
 interface ModelSelectorProps {
 	showModelSelector: boolean
 	modelDisplayName: string
+	modelFullName: string
 	arrowPosition: number
 	menuPosition: number
 	mode: Mode
@@ -27,6 +28,7 @@ interface ModelSelectorProps {
 export const ModelSelector: React.FC<ModelSelectorProps> = ({
 	showModelSelector,
 	modelDisplayName,
+	modelFullName,
 	arrowPosition,
 	menuPosition,
 	mode,
@@ -43,7 +45,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
 					onClick={onModelButtonClick}
 					role="button"
 					tabIndex={0}
-					title={`${modelDisplayName}\n\nClick to select a different model or API provider`}>
+					title={`${modelFullName}\n\nClick to select a different model or API provider`}>
 					<ModelButtonContent>{modelDisplayName}</ModelButtonContent>
 				</ModelDisplayButton>
 			</ModelButtonWrapper>

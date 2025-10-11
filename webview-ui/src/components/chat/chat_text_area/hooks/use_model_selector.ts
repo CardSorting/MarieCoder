@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { ModelsServiceClient, StateServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
+import { formatModelName } from "@/utils/format_model_name"
 import { useClickAway, useWindowSize } from "@/utils/hooks"
 import { validateApiConfiguration, validateModelId } from "@/utils/validate"
 
@@ -93,14 +94,16 @@ export const useModelSelector = ({
 		return () => window.removeEventListener("keydown", handleKeyDown)
 	}, [showModelSelector, handleCloseModelSelector])
 
-	// Get model display name
-	const modelDisplayName = useMemo(() => {
+	// Get model display names (both full and formatted short version)
+	const { modelDisplayName, modelFullName } = useMemo(() => {
 		const { selectedProvider, selectedModelId } = normalizeApiConfiguration(apiConfiguration, mode)
 		const unknownModel = "unknown"
 		if (!apiConfiguration) {
-			return unknownModel
+			return { modelDisplayName: unknownModel, modelFullName: unknownModel }
 		}
-		return `${selectedProvider}:${selectedModelId}`
+		const fullName = `${selectedProvider}:${selectedModelId}`
+		const { short } = formatModelName(fullName)
+		return { modelDisplayName: short, modelFullName: fullName }
 	}, [apiConfiguration, mode])
 
 	// Calculate arrow position and menu position based on button location
@@ -133,6 +136,7 @@ export const useModelSelector = ({
 		arrowPosition,
 		menuPosition,
 		modelDisplayName,
+		modelFullName,
 		submitApiConfig,
 		handleModelButtonClick,
 	}

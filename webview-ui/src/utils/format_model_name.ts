@@ -1,0 +1,140 @@
+/**
+ * Utility functions for formatting model names in a compact, identifiable way
+ */
+
+/**
+ * Formats a full model name (provider:model-id) into a compact, identifiable version
+ * that shows the most important information for quick recognition
+ *
+ * @param fullModelName - The full model name in format "provider:model-id"
+ * @returns An object with full name and formatted short name
+ *
+ * @example
+ * formatModelName("anthropic:claude-sonnet-4-20250514")
+ * // returns { full: "anthropic:claude-sonnet-4-20250514", short: "anthropic:sonnet-4" }
+ *
+ * formatModelName("openai:gpt-4-turbo-2024-04-09")
+ * // returns { full: "openai:gpt-4-turbo-2024-04-09", short: "openai:gpt-4-turbo" }
+ */
+export function formatModelName(fullModelName: string): { full: string; short: string } {
+	if (!fullModelName || fullModelName === "unknown") {
+		return { full: fullModelName, short: fullModelName }
+	}
+
+	const [provider, ...modelParts] = fullModelName.split(":")
+	const modelId = modelParts.join(":") // Handle edge case of colons in model ID
+
+	if (!modelId) {
+		return { full: fullModelName, short: fullModelName }
+	}
+
+	let shortName = ""
+
+	// Anthropic models: Extract tier and version
+	if (provider === "anthropic") {
+		// claude-3-5-sonnet-20241022 -> sonnet-3.5
+		// claude-sonnet-4-20250514 -> sonnet-4
+		// claude-opus-4-20250514 -> opus-4
+		const tierMatch = modelId.match(/(opus|sonnet|haiku)/)
+		const versionMatch = modelId.match(/claude-(\d+)-(\d+)/) || modelId.match(/-([\d]+)/)
+
+		if (tierMatch) {
+			const tier = tierMatch[1]
+			if (versionMatch) {
+				const majorVersion = versionMatch[1]
+				const minorVersion = versionMatch[2]
+				shortName = minorVersion
+					? `${provider}:${tier}-${majorVersion}.${minorVersion}`
+					: `${provider}:${tier}-${majorVersion}`
+			} else {
+				shortName = `${provider}:${tier}`
+			}
+		}
+	}
+
+	// OpenAI models: Remove date suffixes, keep version info
+	else if (provider === "openai" || provider === "azure-openai") {
+		// gpt-4-turbo-2024-04-09 -> gpt-4-turbo
+		// gpt-4o-2024-05-13 -> gpt-4o
+		// o1-preview-2024-09-12 -> o1-preview
+		const modelWithoutDate = modelId.replace(/-\d{4}-\d{2}-\d{2}$/, "")
+		shortName = `${provider}:${modelWithoutDate}`
+	}
+
+	// OpenRouter models: Show provider and base model name
+	else if (provider === "openrouter") {
+		// openrouter/anthropic/claude-3.5-sonnet -> anthropic/sonnet-3.5
+		// openrouter/meta-llama/llama-3.1-70b-instruct -> meta-llama/llama-3.1
+		const parts = modelId.split("/")
+		if (parts.length >= 2) {
+			const modelProvider = parts[0]
+			const model = parts[parts.length - 1]
+
+			// Try to extract key version/tier info
+			const simplifiedModel = model
+				.replace(/-instruct$/, "")
+				.replace(/-\d+b$/, "") // Remove parameter count like -70b
+				.replace(/-\d{4}-\d{2}-\d{2}$/, "") // Remove dates
+
+			shortName = `${provider}:${modelProvider}/${simplifiedModel}`
+		}
+	}
+
+	// Google models: Extract version and variant
+	else if (provider === "google" || provider === "vertex") {
+		// gemini-1.5-pro-002 -> gemini-1.5-pro
+		// gemini-2.0-flash-exp -> gemini-2.0-flash
+		const modelWithoutSuffix = modelId
+			.replace(/-\d{3}$/, "") // Remove version suffixes like -002
+			.replace(/-exp$/, "") // Remove experimental suffix
+			.replace(/-preview$/, "") // Remove preview suffix
+		shortName = `${provider}:${modelWithoutSuffix}`
+	}
+
+	// Bedrock models: Show the core model identifier
+	else if (provider === "bedrock") {
+		// Extract meaningful parts from ARN or model ID
+		const modelName = modelId.split("/").pop() || modelId
+		const coreModel = modelName
+			.replace(/-\d{8}$/, "") // Remove date suffix
+			.replace(/:\d+:\d+$/, "") // Remove version numbers from ARN
+		shortName = `${provider}:${coreModel}`
+	}
+
+	// Ollama and local models: Keep as is, usually short already
+	else if (provider === "ollama" || provider === "lmstudio" || provider === "vscode-lm") {
+		shortName = fullModelName
+	}
+
+	// Generic fallback: Remove date patterns and version suffixes
+	else {
+		const cleanedModel = modelId
+			.replace(/-\d{4}-\d{2}-\d{2}$/, "") // Remove YYYY-MM-DD dates
+			.replace(/-\d{8}$/, "") // Remove YYYYMMDD dates
+			.replace(/-v\d+$/, "") // Remove version suffixes like -v1
+		shortName = `${provider}:${cleanedModel}`
+	}
+
+	// Final fallback: if shortName is still empty or same length, use original
+	if (!shortName || shortName.length >= fullModelName.length - 5) {
+		shortName = fullModelName
+	}
+
+	return {
+		full: fullModelName,
+		short: shortName,
+	}
+}
+
+/**
+ * Extracts the most identifiable part of a model name for display in very constrained spaces
+ * This focuses on showing the model tier/type without the provider
+ *
+ * @param fullModelName - The full model name in format "provider:model-id"
+ * @returns Just the key identifier (e.g., "sonnet-4", "gpt-4o")
+ */
+export function getModelIdentifier(fullModelName: string): string {
+	const { short } = formatModelName(fullModelName)
+	const parts = short.split(":")
+	return parts[parts.length - 1] || short
+}

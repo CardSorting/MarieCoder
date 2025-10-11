@@ -348,6 +348,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						menuPosition={modelSelector.menuPosition}
 						mode={mode}
 						modelDisplayName={modelSelector.modelDisplayName}
+						modelFullName={modelSelector.modelFullName}
 						modelSelectorRef={modelSelector.modelSelectorRef}
 						onContextButtonClick={handleContextButtonClick}
 						onModelButtonClick={modelSelector.handleModelButtonClick}

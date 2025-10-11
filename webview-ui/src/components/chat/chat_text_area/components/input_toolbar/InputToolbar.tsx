@@ -14,6 +14,7 @@ interface InputToolbarProps {
 	shouldDisableFilesAndImages: boolean
 	showModelSelector: boolean
 	modelDisplayName: string
+	modelFullName: string
 	arrowPosition: number
 	menuPosition: number
 	mode: Mode
@@ -28,6 +29,7 @@ export const InputToolbar: React.FC<InputToolbarProps> = ({
 	shouldDisableFilesAndImages,
 	showModelSelector,
 	modelDisplayName,
+	modelFullName,
 	arrowPosition,
 	menuPosition,
 	mode,
@@ -75,6 +77,7 @@ export const InputToolbar: React.FC<InputToolbarProps> = ({
 				menuPosition={menuPosition}
 				mode={mode}
 				modelDisplayName={modelDisplayName}
+				modelFullName={modelFullName}
 				modelSelectorRef={modelSelectorRef}
 				onModelButtonClick={onModelButtonClick}
 				showModelSelector={showModelSelector}

@@ -1,0 +1,78 @@
+---
+title: Smart Model Name Formatting
+description: How model names are displayed in the unified toolbar for better identification
+---
+
+# Smart Model Name Formatting
+
+The model selector button in the unified toolbar now uses intelligent formatting to display model names in a compact, easily identifiable way.
+
+## Problem
+
+Long model names like `anthropic:claude-sonnet-4-20250514` or `openai:gpt-4-turbo-2024-04-09` get truncated with ellipsis, making it difficult to identify which model you're using at a glance.
+
+## Solution
+
+Model names are now intelligently shortened to show the most relevant information:
+
+### Anthropic Models
+
+| Full Name | Display Name |
+|-----------|--------------|
+| `anthropic:claude-sonnet-4-20250514` | `anthropic:sonnet-4` |
+| `anthropic:claude-3-5-sonnet-20241022` | `anthropic:sonnet-3.5` |
+| `anthropic:claude-opus-4-20250514` | `anthropic:opus-4` |
+| `anthropic:claude-haiku-3-20240307` | `anthropic:haiku-3` |
+
+### OpenAI Models
+
+| Full Name | Display Name |
+|-----------|--------------|
+| `openai:gpt-4-turbo-2024-04-09` | `openai:gpt-4-turbo` |
+| `openai:gpt-4o-2024-05-13` | `openai:gpt-4o` |
+| `openai:o1-preview-2024-09-12` | `openai:o1-preview` |
+
+### Google Models
+
+| Full Name | Display Name |
+|-----------|--------------|
+| `google:gemini-1.5-pro-002` | `google:gemini-1.5-pro` |
+| `google:gemini-2.0-flash-exp` | `google:gemini-2.0-flash` |
+| `vertex:gemini-1.5-pro-preview` | `vertex:gemini-1.5-pro` |
+
+### OpenRouter Models
+
+| Full Name | Display Name |
+|-----------|--------------|
+| `openrouter:anthropic/claude-3.5-sonnet` | `openrouter:anthropic/claude-3.5-sonnet` |
+| `openrouter:meta-llama/llama-3.1-70b-instruct` | `openrouter:meta-llama/llama-3.1` |
+
+### Other Providers
+
+- **Bedrock**: Removes date suffixes (e.g., `bedrock:anthropic.claude-v2-20231122` → `bedrock:anthropic.claude-v2`)
+- **Ollama**: Kept as-is (usually already short)
+- **LMStudio**: Kept as-is
+- **VSCode LM**: Kept as-is
+
+## How It Works
+
+1. **Display**: The button shows the shortened, formatted name for easy identification
+2. **Tooltip**: Hovering over the button reveals the full model name
+3. **Smart Formatting**: The algorithm extracts the most meaningful parts:
+   - Model tier/family (sonnet, opus, haiku, gpt-4, gemini, etc.)
+   - Version numbers (major.minor when available)
+   - Provider name (always preserved)
+   - Removes: Date suffixes, version codes, experimental tags, parameter counts
+
+## Benefits
+
+- **Quick Identification**: Instantly recognize which model you're using
+- **Compact Display**: Fits in the toolbar without truncation
+- **Full Information**: Complete name available on hover
+- **Cross-Provider**: Works consistently across all API providers
+- **Accessibility**: Better screen reader support with meaningful short names
+
+## Implementation
+
+The formatting logic is implemented in `webview-ui/src/utils/format_model_name.ts` and includes comprehensive test coverage to ensure accurate formatting across all providers.
+
