@@ -24,6 +24,12 @@ export interface CliConfiguration {
 	planModeApiModelId?: string
 	actModeApiProvider?: string
 	actModeApiModelId?: string
+	// Terminal output management
+	terminalOutputLineLimit?: number
+	shellIntegrationTimeout?: number
+	terminalReuseEnabled?: boolean
+	// Task history configuration
+	taskHistoryLimit?: number
 }
 
 export class CliConfigManager {
@@ -236,6 +242,20 @@ export class CliConfigManager {
 		}
 		if (options.actModeApiModelId) {
 			config.actModeApiModelId = options.actModeApiModelId
+		}
+		// Terminal output management
+		if (options.terminalOutputLineLimit !== undefined) {
+			config.terminalOutputLineLimit = options.terminalOutputLineLimit
+		}
+		if (options.shellIntegrationTimeout !== undefined) {
+			config.shellIntegrationTimeout = options.shellIntegrationTimeout
+		}
+		if (options.terminalReuseEnabled !== undefined) {
+			config.terminalReuseEnabled = options.terminalReuseEnabled
+		}
+		// Task history
+		if (options.taskHistoryLimit !== undefined) {
+			config.taskHistoryLimit = options.taskHistoryLimit
 		}
 
 		return config

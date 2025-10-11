@@ -34,6 +34,9 @@ interface CliOptions {
 	temperature?: number
 	autoApprove?: boolean
 	verbose?: boolean
+	terminalOutputLineLimit?: number
+	shellIntegrationTimeout?: number
+	terminalReuseEnabled?: boolean
 }
 
 class MarieCli {
@@ -43,13 +46,19 @@ class MarieCli {
 	private taskMonitor!: CliTaskMonitor
 	private mcpManager!: import("./cli_mcp_manager").CliMcpManager
 	private taskHistoryManager!: import("./cli_task_history_manager").CliTaskHistoryManager
+	private slashCommandsHandler!: import("./cli_slash_commands").CliSlashCommandsHandler
+	private mentionsParser!: import("./cli_mentions_parser").CliMentionsParser
 
 	constructor(private options: CliOptions) {
 		this.rl = readline.createInterface({
 			input: process.stdin,
 			output: process.stdout,
 		})
-		this.taskMonitor = new CliTaskMonitor(this.options.autoApprove || false)
+		this.taskMonitor = new CliTaskMonitor(this.options.autoApprove || false, {
+			lineLimit: this.options.terminalOutputLineLimit,
+			shellIntegrationTimeout: this.options.shellIntegrationTimeout,
+			terminalReuseEnabled: this.options.terminalReuseEnabled,
+		})
 	}
 
 	/**
@@ -109,6 +118,14 @@ class MarieCli {
 		// Initialize task history manager
 		const { CliTaskHistoryManager: HistoryManager } = await import("./cli_task_history_manager")
 		this.taskHistoryManager = new HistoryManager(this.webviewProvider.controller, this.options.verbose || false)
+
+		// Initialize slash commands handler
+		const { CliSlashCommandsHandler: SlashCommandsHandler } = await import("./cli_slash_commands")
+		this.slashCommandsHandler = new SlashCommandsHandler()
+
+		// Initialize mentions parser
+		const { CliMentionsParser: MentionsParser } = await import("./cli_mentions_parser")
+		this.mentionsParser = new MentionsParser(this.options.workspace)
 
 		console.log("✅ MarieCoder CLI initialized")
 		console.log("─".repeat(80) + "\n")
@@ -170,6 +187,23 @@ class MarieCli {
 				return
 			}
 
+			// Parse and resolve mentions
+			const { text: processedPrompt, mentions } = await this.mentionsParser.resolveAllMentions(prompt)
+
+			// Display resolved mentions if any
+			if (mentions.length > 0) {
+				const formatted = this.mentionsParser.formatResolvedMentions(mentions)
+				console.log(formatted)
+			}
+
+			// Enhance prompt with mention content
+			let enhancedPrompt = processedPrompt
+			for (const mention of mentions) {
+				if (mention.content && !mention.error) {
+					enhancedPrompt += `\n\nReferenced ${mention.type} (${mention.path}):\n${mention.content}`
+				}
+			}
+
 			// Start a new task
 			await controller.clearTask()
 
@@ -177,7 +211,7 @@ class MarieCli {
 			console.log("🤖 Starting task execution...\n")
 
 			// Initialize and execute the task
-			const taskId = await controller.initTask(prompt)
+			const taskId = await controller.initTask(enhancedPrompt)
 			console.log(`✓ Task initialized with ID: ${taskId}\n`)
 
 			// Start monitoring the task for approvals
@@ -319,11 +353,13 @@ class MarieCli {
 		console.log("\nEnter your coding tasks and I'll help you accomplish them.")
 		console.log("Commands:")
 		console.log("  • Type your task and press Enter to start")
+		console.log("  • Use @mentions to reference files (@file:path), URLs (@url:...), folders (@folder:path)")
 		console.log("  • Type 'exit' or 'quit' to end the session")
 		console.log("  • Type 'config' to show current configuration")
 		console.log("  • Type 'mode' or 'toggle' to switch between plan/act modes")
 		console.log("  • Type 'mcp' to show MCP server status")
 		console.log("  • Type 'history' to view task history")
+		console.log("  • Type '/help' to see slash commands (e.g., /search, /analyze)")
 		console.log("  • Type 'help' for more options")
 		console.log("─".repeat(80))
 
@@ -334,6 +370,18 @@ class MarieCli {
 				if (!trimmed) {
 					await prompt()
 					return
+				}
+
+				// Check for slash commands first
+				if (this.slashCommandsHandler.isSlashCommand(trimmed)) {
+					const handled = await this.slashCommandsHandler.execute(trimmed, {
+						webviewProvider: this.webviewProvider,
+						verbose: this.options.verbose,
+					})
+					if (handled) {
+						await prompt()
+						return
+					}
 				}
 
 				const command = trimmed.toLowerCase()
@@ -611,6 +659,9 @@ function parseArgs(args: string[]): {
 				options.model = options.model || config.apiModelId
 				options.temperature = options.temperature ?? config.temperature
 				options.maxTokens = options.maxTokens ?? config.maxTokens
+				options.terminalOutputLineLimit = options.terminalOutputLineLimit ?? config.terminalOutputLineLimit
+				options.shellIntegrationTimeout = options.shellIntegrationTimeout ?? config.shellIntegrationTimeout
+				options.terminalReuseEnabled = options.terminalReuseEnabled ?? config.terminalReuseEnabled
 			}
 		} catch {
 			// Ignore config loading errors during argument parsing

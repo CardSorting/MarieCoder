@@ -181,7 +181,9 @@ docs/cli/
 
 ## 🎯 Feature Status
 
-### ✅ Completed Features (4/12)
+### ✅ Completed Features (8/12)
+
+**Phase 1 - Core Features (4/4):**
 
 1. **Plan/Act Mode Switching** ✓
    - Toggle between review and execute modes
@@ -205,18 +207,41 @@ docs/cli/
    - Smart condensing
    - [Documentation](./quick-reference.md#4-advanced-context-management-)
 
-### ⏳ Upcoming Features (8/12)
+**Phase 2 - Enhanced UX (4/4):**
 
-**Phase 2 - Enhanced UX:**
-- Terminal output management
-- Improved diff viewing
-- Slash commands
-- Mentions system
+5. **Terminal Output Management** ✓
+   - Configurable line limits
+   - Output truncation for long outputs
+   - Session reuse support
+   - Smart output formatting
+
+6. **Improved Diff Viewing** ✓
+   - Syntax-highlighted diffs with ANSI colors
+   - Better CLI formatting
+   - Diff statistics (additions/deletions)
+   - Line-by-line display
+
+7. **Slash Commands** ✓
+   - `/search` - Search codebase
+   - `/replace` - Bulk replacements
+   - `/analyze` - Analyze files
+   - `/mcp` - MCP operations
+   - `/checkpoint` - Create/restore checkpoints
+   - `/history` - View task history
+   - `/help` - Show available commands
+
+8. **Mentions System** ✓
+   - `@file:path` - Reference files
+   - `@url:https://...` - Include URL content
+   - `@folder:path` - Reference folders
+   - Automatic content resolution
+
+### ⏳ Upcoming Features (4/12)
 
 **Phase 3 - Advanced:**
-- Checkpoints
-- Focus chain
-- Workflows
+- Checkpoints system
+- Focus chain support
+- Workflow templates
 - Browser automation
 
 See [Feature Plan](./development/feature-plan.md) for details.
@@ -225,13 +250,14 @@ See [Feature Plan](./development/feature-plan.md) for details.
 
 ## 📊 Version Information
 
-**Current Version:** 1.1.0  
+**Current Version:** 1.2.0  
 **Last Updated:** October 11, 2025  
 **Status:** Production-ready
 
 ### Version History
 
-- **v1.1.0** (Oct 2025) - Enhanced with 4 core features
+- **v1.2.0** (Oct 2025) - Phase 2 complete: 8 features (Terminal output management, improved diffs, slash commands, mentions)
+- **v1.1.0** (Oct 2025) - Phase 1 complete: 4 core features
 - **v1.0.0** (Initial) - Basic CLI functionality
 
 ---
@@ -339,7 +365,7 @@ All CLI documentation follows these standards:
 - ✅ Configuration: Complete
 - ✅ Troubleshooting: Comprehensive (20+ solutions)
 - ✅ Examples: 60+ code examples
-- ✅ Features: 4/4 documented
+- ✅ Features: 8/12 documented
 - ⏳ Advanced topics: Expanding
 
 ### Quality
@@ -381,5 +407,5 @@ See [Quick Reference Improvements](./development/improvements/quick-reference-im
 
 *Last updated: October 11, 2025*  
 *Maintained by: MarieCoder Development Team*  
-*Documentation version: 1.1.0*
+*Documentation version: 1.2.0*
 

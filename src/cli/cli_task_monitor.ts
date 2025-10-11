@@ -7,13 +7,78 @@ import type { Task } from "@/core/task"
 import type { ClineMessage } from "@/shared/ExtensionMessage"
 import { getInteractionHandler } from "./cli_interaction_handler"
 
+export interface TerminalOutputConfig {
+	lineLimit?: number // Maximum lines to display per output
+	shellIntegrationTimeout?: number // Timeout for shell commands (ms)
+	terminalReuseEnabled?: boolean // Whether to reuse terminal sessions
+}
+
 export class CliTaskMonitor {
 	private task: Task | null = null
 	private lastProcessedMessageIndex = -1
 	private monitorInterval: NodeJS.Timeout | null = null
 	private isProcessingApproval = false
+	private terminalOutputConfig: TerminalOutputConfig
+	private commandOutputBuffer: Map<string, string[]> = new Map()
 
-	constructor(private autoApprove: boolean = false) {}
+	constructor(
+		private autoApprove: boolean = false,
+		terminalConfig?: TerminalOutputConfig,
+	) {
+		this.terminalOutputConfig = {
+			lineLimit: terminalConfig?.lineLimit || 500,
+			shellIntegrationTimeout: terminalConfig?.shellIntegrationTimeout || 30000,
+			terminalReuseEnabled: terminalConfig?.terminalReuseEnabled || true,
+		}
+	}
+
+	/**
+	 * Truncate output to line limit with summary
+	 */
+	private truncateOutput(output: string, maxLines?: number): string {
+		if (!output) {
+			return ""
+		}
+
+		const lines = output.split("\n")
+		const limit = maxLines || this.terminalOutputConfig.lineLimit || 500
+
+		if (lines.length <= limit) {
+			return output
+		}
+
+		const keepLines = Math.floor(limit / 2)
+		const topLines = lines.slice(0, keepLines)
+		const bottomLines = lines.slice(-keepLines)
+		const truncatedCount = lines.length - limit
+
+		return [
+			...topLines,
+			"",
+			`... ${truncatedCount} lines truncated (total: ${lines.length} lines) ...`,
+			"",
+			...bottomLines,
+		].join("\n")
+	}
+
+	/**
+	 * Format terminal output with prefix and line limiting
+	 */
+	private formatTerminalOutput(output: string, prefix: string = ""): string {
+		if (!output) {
+			return ""
+		}
+
+		const truncated = this.truncateOutput(output)
+		if (!prefix) {
+			return truncated
+		}
+
+		return truncated
+			.split("\n")
+			.map((line) => `${prefix}${line}`)
+			.join("\n")
+	}
 
 	/**
 	 * Start monitoring a task
@@ -22,6 +87,7 @@ export class CliTaskMonitor {
 		this.task = task
 		this.lastProcessedMessageIndex = -1
 		this.isProcessingApproval = false
+		this.commandOutputBuffer.clear()
 
 		// Start monitoring loop
 		this.monitorInterval = setInterval(() => {
@@ -212,7 +278,17 @@ export class CliTaskMonitor {
 
 			case "command_output": {
 				if (text) {
-					console.log(text)
+					// Apply line limiting for command output
+					const formattedOutput = this.formatTerminalOutput(text)
+					console.log(formattedOutput)
+
+					// Track output statistics
+					const lineCount = text.split("\n").length
+					if (lineCount > (this.terminalOutputConfig.lineLimit || 500)) {
+						console.log(
+							`\n💡 Output was truncated. Total lines: ${lineCount}, Limit: ${this.terminalOutputConfig.lineLimit}`,
+						)
+					}
 				}
 				break
 			}
