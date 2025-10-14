@@ -30,6 +30,17 @@ export async function subscribeToAddToInput(
 	if (requestId) {
 		getRequestRegistry().registerRequest(requestId, cleanup, { type: "addToInput_subscription" }, responseStream)
 	}
+
+	// Send initial empty response to prevent timeout (subscription is ready)
+	try {
+		await responseStream(
+			{ value: "" },
+			false, // Not the last message
+		)
+	} catch (error) {
+		console.error("Error sending initial addToInput response:", error)
+		activeAddToInputSubscriptions.delete(responseStream)
+	}
 }
 
 /**

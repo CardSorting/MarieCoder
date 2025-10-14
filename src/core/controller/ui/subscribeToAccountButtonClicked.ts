@@ -32,6 +32,17 @@ export async function subscribeToAccountButtonClicked(
 	if (requestId) {
 		getRequestRegistry().registerRequest(requestId, cleanup, { type: "accountButtonClicked_subscription" }, responseStream)
 	}
+
+	// Send initial empty response to prevent timeout (subscription is ready)
+	try {
+		await responseStream(
+			Empty.create({}),
+			false, // Not the last message
+		)
+	} catch (error) {
+		console.error("Error sending initial accountButtonClicked response:", error)
+		activeAccountButtonClickedSubscriptions.delete(responseStream)
+	}
 }
 
 /**

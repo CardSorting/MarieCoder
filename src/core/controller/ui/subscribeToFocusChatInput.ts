@@ -30,6 +30,17 @@ export async function subscribeToFocusChatInput(
 	if (requestId) {
 		getRequestRegistry().registerRequest(requestId, cleanup, { type: "focus_chat_input_subscription" }, responseStream)
 	}
+
+	// Send initial empty response to prevent timeout (subscription is ready)
+	try {
+		await responseStream(
+			Empty.create({}),
+			false, // Not the last message
+		)
+	} catch (error) {
+		console.error("Error sending initial focusChatInput response:", error)
+		focusChatInputSubscriptions.delete(responseStream)
+	}
 }
 
 /**

@@ -30,6 +30,17 @@ export async function subscribeToHistoryButtonClicked(
 	if (requestId) {
 		getRequestRegistry().registerRequest(requestId, cleanup, { type: "history_button_clicked_subscription" }, responseStream)
 	}
+
+	// Send initial empty response to prevent timeout (subscription is ready)
+	try {
+		await responseStream(
+			Empty.create({}),
+			false, // Not the last message
+		)
+	} catch (error) {
+		console.error("Error sending initial historyButtonClicked response:", error)
+		activeHistoryButtonClickedSubscriptions.delete(responseStream)
+	}
 }
 
 /**

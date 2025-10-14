@@ -33,23 +33,19 @@ export async function subscribeToMcpServers(
 		getRequestRegistry().registerRequest(requestId, cleanup, { type: "mcpServers_subscription" }, responseStream)
 	}
 
-	// Send initial state if available
-	if (controller.mcpHub) {
-		const mcpServers = controller.mcpHub.getServers()
-		if (mcpServers.length > 0) {
-			try {
-				const protoServers = McpServers.create({
-					mcpServers: convertMcpServersToProtoMcpServers(mcpServers),
-				})
-				await responseStream(
-					protoServers,
-					false, // Not the last message
-				)
-			} catch (error) {
-				console.error("Error sending initial MCP servers:", error)
-				activeMcpServersSubscriptions.delete(responseStream)
-			}
-		}
+	// Send initial state (always send a response to prevent timeout)
+	try {
+		const mcpServers = controller.mcpHub?.getServers() || []
+		const protoServers = McpServers.create({
+			mcpServers: convertMcpServersToProtoMcpServers(mcpServers),
+		})
+		await responseStream(
+			protoServers,
+			false, // Not the last message
+		)
+	} catch (error) {
+		console.error("Error sending initial MCP servers:", error)
+		activeMcpServersSubscriptions.delete(responseStream)
 	}
 }
 

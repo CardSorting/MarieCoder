@@ -32,6 +32,17 @@ export async function subscribeToDidBecomeVisible(
 	if (requestId) {
 		getRequestRegistry().registerRequest(requestId, cleanup, { type: "didBecomeVisible_subscription" }, responseStream)
 	}
+
+	// Send initial empty response to prevent timeout (subscription is ready)
+	try {
+		await responseStream(
+			Empty.create({}),
+			false, // Not the last message
+		)
+	} catch (error) {
+		console.error("Error sending initial didBecomeVisible response:", error)
+		activeDidBecomeVisibleSubscriptions.delete(responseStream)
+	}
 }
 
 /**

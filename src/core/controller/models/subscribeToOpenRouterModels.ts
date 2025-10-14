@@ -31,6 +31,17 @@ export async function subscribeToOpenRouterModels(
 	if (requestId) {
 		getRequestRegistry().registerRequest(requestId, cleanup, { type: "openRouterModels_subscription" }, responseStream)
 	}
+
+	// Send initial empty models map to prevent timeout
+	try {
+		await responseStream(
+			OpenRouterCompatibleModelInfo.create({ models: {} }),
+			false, // Not the last message
+		)
+	} catch (error) {
+		console.error("Error sending initial OpenRouter models response:", error)
+		activeOpenRouterModelsSubscriptions.delete(responseStream)
+	}
 }
 
 /**

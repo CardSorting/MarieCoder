@@ -31,6 +31,17 @@ export async function subscribeToMcpMarketplaceCatalog(
 	if (requestId) {
 		getRequestRegistry().registerRequest(requestId, cleanup, { type: "mcp_marketplace_subscription" }, responseStream)
 	}
+
+	// Send initial empty catalog to prevent timeout
+	try {
+		await responseStream(
+			McpMarketplaceCatalog.create({ items: [] }),
+			false, // Not the last message
+		)
+	} catch (error) {
+		console.error("Error sending initial MCP marketplace catalog:", error)
+		activeMcpMarketplaceSubscriptions.delete(responseStream)
+	}
 }
 
 /**

@@ -31,6 +31,18 @@ export async function subscribeToPartialMessage(
 	if (requestId) {
 		getRequestRegistry().registerRequest(requestId, cleanup, { type: "partial_message_subscription" }, responseStream)
 	}
+
+	// Send initial empty message to prevent timeout (subscription is ready)
+	// The actual partial messages will be sent when they occur
+	try {
+		await responseStream(
+			ClineMessage.create({}),
+			false, // Not the last message
+		)
+	} catch (error) {
+		console.error("Error sending initial partial message response:", error)
+		activePartialMessageSubscriptions.delete(responseStream)
+	}
 }
 
 /**
