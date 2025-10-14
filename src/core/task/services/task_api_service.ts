@@ -109,7 +109,15 @@ export class TaskApiService {
 		// Initialize specialized service delegates
 		this.retryService = new ApiRetryService(taskState, messageService, messageStateHandler, contextManager, taskId)
 
-		this.streamManager = new ApiStreamManager(taskState, messageService, messageStateHandler, diffViewProvider, api, ulid)
+		this.streamManager = new ApiStreamManager(
+			taskState,
+			messageService,
+			messageStateHandler,
+			diffViewProvider,
+			api,
+			ulid,
+			this.presentAssistantMessage.bind(this),
+		)
 
 		this.checkpointCoordinator = new TaskCheckpointCoordinator(
 			taskState,

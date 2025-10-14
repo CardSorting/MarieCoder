@@ -1,5 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import type { ApiStream } from "@core/api/transform/stream"
+import { parseAssistantMessageV2 } from "@core/assistant-message/parse-assistant-message"
 import type { DiffViewProvider } from "@integrations/editor/DiffViewProvider"
 import { telemetryService } from "@services/telemetry"
 import type { ClineApiReqCancelReason } from "@shared/ExtensionMessage"
@@ -50,6 +51,7 @@ export class ApiStreamManager {
 		private readonly diffViewProvider: DiffViewProvider,
 		private readonly api: ApiHandler,
 		private readonly ulid: string,
+		private readonly presentAssistantMessage?: () => Promise<void>,
 	) {}
 
 	/**
@@ -150,7 +152,11 @@ export class ApiStreamManager {
 							await this.messageService.say("reasoning", reasoningMessage, undefined, undefined, false)
 						}
 						assistantMessage += chunk.text
-						// Note: Parsing and presenting assistant message happens in the caller
+
+						// Parse and present accumulated text incrementally for real-time streaming
+						if (!this.taskState.abort) {
+							await this.parseAndPresentStreamingText(assistantMessage)
+						}
 						break
 				}
 
@@ -197,6 +203,43 @@ export class ApiStreamManager {
 			reasoningMessage,
 			antThinkingContent,
 			didReceiveUsageChunk,
+		}
+	}
+
+	/**
+	 * Parse and present streaming text incrementally
+	 *
+	 * Parses the accumulated assistant message and updates the task state's
+	 * assistantMessageContent array. If presentAssistantMessage is provided,
+	 * it triggers UI updates to show content as it streams.
+	 *
+	 * @param assistantMessage - The accumulated assistant message text
+	 * @private
+	 */
+	private async parseAndPresentStreamingText(assistantMessage: string): Promise<void> {
+		try {
+			// Parse the accumulated text to extract content blocks (text + tool_use)
+			const parsedContent = parseAssistantMessageV2(assistantMessage)
+
+			// Calculate previous content length to detect new blocks
+			const previousContentLength = this.taskState.assistantMessageContent.length
+
+			// Update the task state with parsed content
+			this.taskState.assistantMessageContent = parsedContent
+
+			// If we have a presentation callback and new content was added, trigger it
+			if (this.presentAssistantMessage && parsedContent.length > previousContentLength) {
+				// Reset userMessageContentReady when new content arrives
+				this.taskState.userMessageContentReady = false
+				// Trigger presentation of new content (non-blocking)
+				this.presentAssistantMessage().catch((error) => {
+					// Silently catch presentation errors to avoid interrupting the stream
+					console.error("Error presenting streaming content:", error)
+				})
+			}
+		} catch (error) {
+			// Parsing errors shouldn't interrupt the stream
+			console.error("Error parsing streaming text:", error)
 		}
 	}
 
