@@ -44,6 +44,11 @@ export interface TokenUsage {
  * ```
  */
 export class ApiStreamManager {
+	// Throttling for incremental updates
+	private lastThinkingUpdateTime = 0
+	private lastTextUpdateTime = 0
+	private readonly UPDATE_THROTTLE_MS = 50 // Update UI at most every 50ms
+
 	constructor(
 		private readonly taskState: TaskState,
 		private readonly messageService: TaskMessageService,
@@ -92,6 +97,7 @@ export class ApiStreamManager {
 
 		let assistantMessage = ""
 		let reasoningMessage = ""
+		let accumulatedThinkingText = "" // For displaying extended thinking to user
 		const reasoningDetails: any[] = []
 		const antThinkingContent: (Anthropic.Messages.RedactedThinkingBlock | Anthropic.Messages.ThinkingBlock)[] = []
 
@@ -121,7 +127,8 @@ export class ApiStreamManager {
 						// middle of streaming reasoning > say function throws error before we
 						// get a chance to properly clean up and cancel the task
 						if (!this.taskState.abort) {
-							await this.messageService.say("reasoning", reasoningMessage, undefined, undefined, true)
+							// Throttle reasoning updates for better performance
+							await this.throttledThinkingUpdate(reasoningMessage)
 						}
 						break
 
@@ -131,12 +138,19 @@ export class ApiStreamManager {
 						break
 
 					case "ant_thinking":
-						// For anthropic providers
+						// For anthropic providers - accumulate for API history
 						antThinkingContent.push({
 							type: "thinking",
 							thinking: chunk.thinking,
 							signature: chunk.signature,
 						})
+
+						// Also display to user incrementally
+						accumulatedThinkingText += chunk.thinking
+						if (!this.taskState.abort) {
+							// Throttle thinking updates for better performance
+							await this.throttledThinkingUpdate(accumulatedThinkingText)
+						}
 						break
 
 					case "ant_redacted_thinking":
@@ -144,18 +158,27 @@ export class ApiStreamManager {
 							type: "redacted_thinking",
 							data: chunk.data,
 						})
+
+						// Display redacted thinking indication to user
+						if (!this.taskState.abort && accumulatedThinkingText.length === 0) {
+							accumulatedThinkingText = "[Extended thinking in progress...]"
+							await this.throttledThinkingUpdate(accumulatedThinkingText)
+						}
 						break
 
 					case "text":
 						if (reasoningMessage && assistantMessage.length === 0) {
 							// Complete reasoning message
 							await this.messageService.say("reasoning", reasoningMessage, undefined, undefined, false)
+						} else if (accumulatedThinkingText && assistantMessage.length === 0) {
+							// Complete extended thinking message
+							await this.messageService.say("reasoning", accumulatedThinkingText, undefined, undefined, false)
 						}
 						assistantMessage += chunk.text
 
-						// Parse and present accumulated text incrementally for real-time streaming
+						// Parse and present accumulated text incrementally with throttling
 						if (!this.taskState.abort) {
-							await this.parseAndPresentStreamingText(assistantMessage)
+							await this.throttledTextUpdate(assistantMessage)
 						}
 						break
 				}
@@ -195,6 +218,9 @@ export class ApiStreamManager {
 			}
 		} finally {
 			this.taskState.isStreaming = false
+
+			// Flush any pending throttled updates
+			await this.flushPendingUpdates(reasoningMessage, accumulatedThinkingText, assistantMessage)
 		}
 
 		return {
@@ -203,6 +229,71 @@ export class ApiStreamManager {
 			reasoningMessage,
 			antThinkingContent,
 			didReceiveUsageChunk,
+		}
+	}
+
+	/**
+	 * Flush any pending throttled updates at the end of streaming
+	 *
+	 * Ensures the final state is presented even if the last update was throttled.
+	 *
+	 * @param reasoningMessage - Final reasoning message
+	 * @param thinkingMessage - Final extended thinking message
+	 * @param assistantMessage - Final assistant message
+	 * @private
+	 */
+	private async flushPendingUpdates(
+		reasoningMessage: string,
+		thinkingMessage: string,
+		assistantMessage: string,
+	): Promise<void> {
+		try {
+			// Flush thinking/reasoning if present
+			if (reasoningMessage || thinkingMessage) {
+				const finalThinking = reasoningMessage || thinkingMessage
+				await this.messageService.say("reasoning", finalThinking, undefined, undefined, false)
+			}
+
+			// Flush final text content
+			if (assistantMessage) {
+				await this.parseAndPresentStreamingText(assistantMessage)
+			}
+		} catch (error) {
+			console.error("Error flushing pending updates:", error)
+		}
+	}
+
+	/**
+	 * Throttled update for thinking/reasoning streams
+	 *
+	 * Reduces UI update frequency to improve performance during heavy streaming.
+	 * Updates at most once every UPDATE_THROTTLE_MS milliseconds.
+	 *
+	 * @param thinkingText - The accumulated thinking/reasoning text
+	 * @private
+	 */
+	private async throttledThinkingUpdate(thinkingText: string): Promise<void> {
+		const now = Date.now()
+		if (now - this.lastThinkingUpdateTime >= this.UPDATE_THROTTLE_MS) {
+			this.lastThinkingUpdateTime = now
+			await this.messageService.say("reasoning", thinkingText, undefined, undefined, true)
+		}
+	}
+
+	/**
+	 * Throttled update for text streams
+	 *
+	 * Reduces parsing and UI update frequency to improve performance during heavy streaming.
+	 * Updates at most once every UPDATE_THROTTLE_MS milliseconds.
+	 *
+	 * @param assistantMessage - The accumulated assistant message text
+	 * @private
+	 */
+	private async throttledTextUpdate(assistantMessage: string): Promise<void> {
+		const now = Date.now()
+		if (now - this.lastTextUpdateTime >= this.UPDATE_THROTTLE_MS) {
+			this.lastTextUpdateTime = now
+			await this.parseAndPresentStreamingText(assistantMessage)
 		}
 	}
 
