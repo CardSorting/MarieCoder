@@ -19,15 +19,49 @@ interface LoadingSkeletonProps {
 export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ type = "text", lines = 3, progressive = true }) => {
 	if (type === "thinking") {
 		return (
-			<div className={`space-y-2 py-2 ${progressive ? "content-reveal" : "message-streaming"}`}>
-				<div className="flex items-center space-x-2">
-					<div className="font-bold text-sm" style={{ color: "var(--vscode-descriptionForeground)" }}>
-						Thinking...
-					</div>
+			<div
+				className={progressive ? "content-reveal" : "message-streaming"}
+				style={{
+					background:
+						"linear-gradient(135deg, color-mix(in srgb, var(--vscode-charts-purple, #c678dd) 8%, var(--vscode-textBlockQuote-background)) 0%, var(--vscode-textBlockQuote-background) 100%)",
+					border: "1.5px solid color-mix(in srgb, var(--vscode-charts-purple, #c678dd) 30%, var(--vscode-textSeparator-foreground, rgba(255, 255, 255, 0.1)))",
+					borderLeft: "4px solid var(--vscode-charts-purple, #c678dd)",
+					borderRadius: "6px",
+					padding: "12px 16px",
+					margin: "8px 0",
+					boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.03)",
+				}}>
+				<div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
 					<div
-						className="skeleton-pulse h-3 w-20 rounded"
-						style={{ backgroundColor: "var(--vscode-input-background)" }}
-					/>
+						style={{
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							width: "24px",
+							height: "24px",
+							borderRadius: "4px",
+							backgroundColor: "color-mix(in srgb, var(--vscode-charts-purple, #c678dd) 15%, transparent)",
+							marginRight: "8px",
+							flexShrink: 0,
+						}}>
+						<span
+							className="codicon codicon-lightbulb skeleton-pulse"
+							style={{
+								fontSize: "14px",
+								color: "var(--vscode-charts-purple, #c678dd)",
+							}}
+						/>
+					</div>
+					<span
+						style={{
+							fontWeight: "700",
+							fontSize: "11px",
+							color: "var(--vscode-foreground)",
+							letterSpacing: "0.5px",
+							textTransform: "uppercase" as const,
+						}}>
+						Thinking...
+					</span>
 				</div>
 				<div className="space-y-1.5">
 					{Array.from({ length: lines }).map((_, i) => {
@@ -36,7 +70,10 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ type = "text",
 							<div
 								className={`skeleton-shimmer h-3 ${widths[i % widths.length]} rounded stagger-item`}
 								key={i}
-								style={{ animationDelay: `${i * 50}ms` }}
+								style={{
+									animationDelay: `${i * 50}ms`,
+									backgroundColor: "var(--vscode-input-background)",
+								}}
 							/>
 						)
 					})}

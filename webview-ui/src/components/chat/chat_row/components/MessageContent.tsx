@@ -15,6 +15,7 @@ import { CompletionResult } from "./CompletionResult"
 import { ErrorMessage } from "./ErrorMessage"
 import { Markdown } from "./Markdown"
 import { MessageHeader } from "./MessageHeader"
+import { ThinkingBlock } from "./ThinkingBlock"
 
 /**
  * Props for MessageContent component
@@ -142,57 +143,7 @@ export const MessageContent = memo(
 					)
 
 				case "reasoning":
-					return (
-						<>
-							{message.text && (
-								<div
-									onClick={onToggle}
-									style={{
-										cursor: "pointer",
-										color: "var(--vscode-descriptionForeground)",
-										fontStyle: "italic",
-										overflow: "hidden",
-									}}>
-									{isExpanded ? (
-										<div style={{ marginTop: -3 }}>
-											<span style={{ fontWeight: "bold", display: "block", marginBottom: "4px" }}>
-												Thinking
-												<span
-													className="codicon codicon-chevron-down"
-													style={{
-														display: "inline-block",
-														transform: "translateY(3px)",
-														marginLeft: "1.5px",
-													}}
-												/>
-											</span>
-											<span className="ph-no-capture">{message.text}</span>
-										</div>
-									) : (
-										<div style={{ display: "flex", alignItems: "center" }}>
-											<span style={{ fontWeight: "bold", marginRight: "4px" }}>Thinking:</span>
-											<span
-												className="ph-no-capture"
-												style={{
-													whiteSpace: "nowrap",
-													overflow: "hidden",
-													textOverflow: "ellipsis",
-													direction: "rtl",
-													textAlign: "left",
-													flex: 1,
-												}}>
-												{message.text + "\u200E"}
-											</span>
-											<span
-												className="codicon codicon-chevron-right"
-												style={{ marginLeft: "4px", flexShrink: 0 }}
-											/>
-										</div>
-									)}
-								</div>
-							)}
-						</>
-					)
+					return message.text ? <ThinkingBlock isExpanded={isExpanded} onToggle={onToggle} text={message.text} /> : null
 
 				case "user_feedback":
 					return (

@@ -934,6 +934,72 @@ vscode-dropdown::part(listbox) {
 }
 
 /* ==========================================================================
+   Thinking/Reasoning Block Styles
+   ========================================================================== */
+
+/**
+ * Hover effect for thinking/reasoning blocks
+ * Provides strong visual feedback for collapsible sections with enhanced separation
+ */
+.thinking-block-hover:hover {
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--vscode-charts-purple, #c678dd) 12%, var(--vscode-textBlockQuote-background)) 0%,
+		var(--vscode-textBlockQuote-background) 100%
+	) !important;
+	border-color: color-mix(in srgb, var(--vscode-charts-purple, #c678dd) 50%, var(--vscode-textSeparator-foreground)) !important;
+	border-left-width: 5px !important;
+	transform: translateY(-2px) scale(1.005);
+	box-shadow:
+		0 4px 12px rgba(0, 0, 0, 0.2),
+		0 0 0 1px color-mix(in srgb, var(--vscode-charts-purple, #c678dd) 20%, transparent),
+		inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/**
+ * Active state for thinking blocks with tactile feedback
+ */
+.thinking-block-hover:active {
+	transform: translateY(0) scale(1);
+	box-shadow:
+		0 2px 4px rgba(0, 0, 0, 0.15),
+		inset 0 1px 2px rgba(0, 0, 0, 0.1);
+	border-left-width: 6px !important;
+}
+
+/**
+ * Optional pulse animation for thinking blocks (can be applied on appear)
+ */
+@keyframes thinkingPulse {
+	0%,
+	100% {
+		border-left-color: var(--vscode-charts-purple, #c678dd);
+		box-shadow:
+			0 2px 6px rgba(0, 0, 0, 0.1),
+			inset 0 1px 0 rgba(255, 255, 255, 0.03);
+	}
+	50% {
+		border-left-color: color-mix(in srgb, var(--vscode-charts-purple, #c678dd) 70%, white);
+		box-shadow:
+			0 2px 8px rgba(198, 120, 221, 0.3),
+			inset 0 1px 0 rgba(255, 255, 255, 0.05);
+	}
+}
+
+/**
+ * Separator line enhancement for expanded thinking blocks
+ */
+.thinking-separator {
+	background: linear-gradient(
+		90deg,
+		var(--vscode-charts-purple, #c678dd) 0%,
+		color-mix(in srgb, var(--vscode-charts-purple, #c678dd) 30%, var(--vscode-textSeparator-foreground)) 50%,
+		transparent 100%
+	);
+	height: 2px;
+}
+
+/* ==========================================================================
    Paint Holding - Flash Prevention
    ========================================================================== */
 
