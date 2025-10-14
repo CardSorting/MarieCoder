@@ -186,13 +186,14 @@ export class ConnectionPool {
 		// Wait for rate limiter
 		await this.rateLimiter.waitForSlot(token)
 
-		// Wait for available connection
+		// Wait for available connection slot
 		if (this.activeConnections >= this.maxConnections) {
 			await this.waitForConnection(token)
+		} else {
+			// Immediately claim the connection slot
+			this.activeConnections++
+			logger.debug(`Connection pool: ${this.activeConnections}/${this.maxConnections} active`)
 		}
-
-		this.activeConnections++
-		logger.debug(`Connection pool: ${this.activeConnections}/${this.maxConnections} active`)
 
 		try {
 			const result = await fn()
@@ -205,6 +206,7 @@ export class ConnectionPool {
 
 	/**
 	 * Wait for a connection to become available
+	 * When a slot becomes available, this promise resolves AND the connection is already claimed
 	 */
 	private async waitForConnection(token?: CancellationToken): Promise<void> {
 		return new Promise((resolve, reject) => {
@@ -226,7 +228,13 @@ export class ConnectionPool {
 			})
 
 			this.queue.push({
-				execute: async () => resolve(),
+				execute: async () => {
+					// Claim the connection slot BEFORE resolving the promise
+					// This prevents race conditions where multiple queued items try to start simultaneously
+					this.activeConnections++
+					logger.debug(`Connection pool: ${this.activeConnections}/${this.maxConnections} active (from queue)`)
+					resolve()
+				},
 				resolve,
 				reject,
 				timeout: timeoutId,
@@ -236,6 +244,7 @@ export class ConnectionPool {
 
 	/**
 	 * Process queued requests
+	 * Only dequeue items when there are actually available connection slots
 	 */
 	private processQueue(): void {
 		while (this.queue.length > 0 && this.activeConnections < this.maxConnections) {
@@ -244,6 +253,7 @@ export class ConnectionPool {
 				if (item.timeout) {
 					clearTimeout(item.timeout)
 				}
+				// Execute will increment activeConnections before resolving
 				item.execute().catch((error) => item.reject(error))
 			}
 		}
