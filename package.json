@@ -49,6 +49,7 @@
 	],
 	"main": "./dist/extension.js",
 	"bin": {
+		"marie": "./dist-cli/mariecoder.js",
 		"mariecoder": "./dist-cli/mariecoder.js"
 	},
 	"contributes": {
