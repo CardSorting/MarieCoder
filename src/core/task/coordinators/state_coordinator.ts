@@ -17,7 +17,7 @@ export class StateCoordinator {
 	constructor(
 		private taskState: TaskState,
 		private stateManager: StateManager,
-		private updateTaskHistory: (item: HistoryItem) => Promise<HistoryItem[]>,
+		_updateTaskHistory: (item: HistoryItem) => Promise<HistoryItem[]>,
 		private postStateToWebview: () => Promise<void>,
 	) {}
 

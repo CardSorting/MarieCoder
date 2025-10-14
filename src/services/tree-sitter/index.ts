@@ -22,7 +22,7 @@ export async function parseSourceCodeForDefinitionsTopLevel(
 	let result = ""
 
 	// Separate files to parse and remaining files
-	const { filesToParse, remainingFiles } = separateFiles(allFiles)
+	const { filesToParse, remainingFiles: _remainingFiles } = separateFiles(allFiles)
 
 	const languageParsers = await loadRequiredLanguageParsers(filesToParse)
 

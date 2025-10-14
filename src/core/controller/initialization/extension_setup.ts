@@ -12,7 +12,7 @@ export class ExtensionSetup {
 	 * Initialize extension environment
 	 * Creates required directories and performs cleanup
 	 */
-	static async initialize(context: vscode.ExtensionContext): Promise<void> {
+	static async initialize(_context: vscode.ExtensionContext): Promise<void> {
 		await ExtensionSetup.createDirectories()
 		await ExtensionSetup.cleanupLegacyData()
 	}

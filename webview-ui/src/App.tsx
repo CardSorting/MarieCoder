@@ -20,7 +20,7 @@ const AppContent = () => {
 		navigateToHistory,
 		hideSettings,
 		hideHistory,
-		currentTaskItem,
+		currentTaskItem: _currentTaskItem,
 	} = useExtensionState()
 
 	// Debug logging

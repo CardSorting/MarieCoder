@@ -16,7 +16,7 @@ export const useContextButton = ({ inputValue, textAreaRef, handleInputChange, u
 		textAreaRef.current?.focus()
 
 		if (!inputValue.trim()) {
-			const event = {
+			const _event = {
 				target: { value: "@", selectionStart: 1 },
 			} as React.ChangeEvent<HTMLTextAreaElement>
 			handleInputChange("@", 1)

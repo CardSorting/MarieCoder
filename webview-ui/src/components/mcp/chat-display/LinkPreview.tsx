@@ -173,7 +173,7 @@ class LinkPreview extends React.Component<LinkPreviewProps, LinkPreviewState> {
 
 		// Fallback display while loading
 		if (loading) {
-			const loadingMessage = `Loading preview for ${getSafeHostname(url)}`
+			const _loadingMessage = `Loading preview for ${getSafeHostname(url)}`
 			return (
 				<div
 					className="link-preview-loading"
@@ -231,7 +231,7 @@ class LinkPreview extends React.Component<LinkPreviewProps, LinkPreviewState> {
 				errorDisplay = "Network error loading preview"
 			}
 
-			const fullErrorMessage = errorMessage ? `${errorDisplay}: ${errorMessage}` : errorDisplay
+			const _fullErrorMessage = errorMessage ? `${errorDisplay}: ${errorMessage}` : errorDisplay
 
 			return (
 				<div

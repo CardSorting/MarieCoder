@@ -378,7 +378,7 @@ ${listInstrunctionsReminder}\n`
 				this.taskState.currentFocusChainChecklist = taskProgress.trim()
 
 				// Parse focus chain list counts for telemetry
-				const { totalItems, completedItems } = parseFocusChainListCounts(taskProgress.trim())
+				const { totalItems, completedItems: _completedItems } = parseFocusChainListCounts(taskProgress.trim())
 
 				// Track first progress creation
 				if (!this.hasTrackedFirstProgress && totalItems > 0) {

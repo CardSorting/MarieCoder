@@ -40,6 +40,21 @@ export function useMessageHandlers(messages: ClineMessage[], chatState: ChatStat
 
 			if (hasContent) {
 				debug.log("[ChatView] handleSendMessage - Sending message:", messageToSend)
+
+				// Optimistic UI update: Clear input immediately for better perceived responsiveness
+				setInputValue("")
+				setActiveQuote(null)
+				setSendingDisabled(true)
+				setSelectedImages([])
+				setSelectedFiles([])
+				setEnableButtons(false)
+
+				// Reset auto-scroll
+				if ("disableAutoScrollRef" in chatState) {
+					;(chatState as any).disableAutoScrollRef.current = false
+				}
+
+				// Send message asynchronously (already feels sent to user)
 				if (messages.length === 0) {
 					await TaskServiceClient.newTask(
 						NewTaskRequest.create({
@@ -76,17 +91,6 @@ export function useMessageHandlers(messages: ClineMessage[], chatState: ChatStat
 							)
 							break
 					}
-				}
-				setInputValue("")
-				setActiveQuote(null)
-				setSendingDisabled(true)
-				setSelectedImages([])
-				setSelectedFiles([])
-				setEnableButtons(false)
-
-				// Reset auto-scroll
-				if ("disableAutoScrollRef" in chatState) {
-					;(chatState as any).disableAutoScrollRef.current = false
 				}
 			}
 		},

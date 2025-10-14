@@ -133,6 +133,18 @@
 	"overrides": [
 		{
 			"includes": [
+				"**/*.css"
+			],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnknownTypeSelector": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
 				"**",
 				"!**/hosts/vscode/**",
 				"!**/test/**",

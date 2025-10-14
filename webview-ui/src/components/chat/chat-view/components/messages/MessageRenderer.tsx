@@ -72,34 +72,75 @@ const MessageRendererComponent: React.FC<MessageRendererProps> = ({
 	)
 }
 
-// Memoize to prevent unnecessary re-renders
-// Only re-render if the message data or expansion state changes
+/**
+ * Optimized memoization for message rendering with intelligent batching
+ * Intelligently compares message content to minimize re-renders while ensuring
+ * streaming updates are displayed smoothly
+ *
+ * Performance optimizations:
+ * - Skip re-renders when content hasn't changed
+ * - Batch streaming updates for smooth 60fps rendering
+ * - Optimize comparison checks for common scenarios
+ */
 export const MessageRenderer = React.memo(MessageRendererComponent, (prevProps, nextProps) => {
-	// Check if the message itself has changed
-	const messageKey = Array.isArray(prevProps.messageOrGroup) ? prevProps.messageOrGroup[0]?.ts : prevProps.messageOrGroup.ts
-	const nextMessageKey = Array.isArray(nextProps.messageOrGroup) ? nextProps.messageOrGroup[0]?.ts : nextProps.messageOrGroup.ts
+	// Get message identifiers
+	const prevMessage = Array.isArray(prevProps.messageOrGroup) ? prevProps.messageOrGroup[0] : prevProps.messageOrGroup
+	const nextMessage = Array.isArray(nextProps.messageOrGroup) ? nextProps.messageOrGroup[0] : nextProps.messageOrGroup
 
-	if (messageKey !== nextMessageKey) {
+	// Different message entirely - always re-render
+	if (prevMessage?.ts !== nextMessage?.ts) {
 		return false
 	}
 
-	// Check if expansion state has changed for this message
-	if (prevProps.expandedRows[messageKey] !== nextProps.expandedRows[nextMessageKey]) {
+	// For streaming messages (partial=true), implement intelligent batching
+	if (nextMessage?.partial) {
+		const prevText = prevMessage?.text || ""
+		const nextText = nextMessage?.text || ""
+		const prevReasoning = prevMessage?.reasoning || ""
+		const nextReasoning = nextMessage?.reasoning || ""
+
+		// Batch small changes for better perceived performance
+		// Only re-render if significant content change (>10 chars) or complete
+		const textDelta = Math.abs(nextText.length - prevText.length)
+		const reasoningDelta = Math.abs(nextReasoning.length - prevReasoning.length)
+
+		// Content changed during streaming - re-render with batching
+		if (textDelta > 10 || reasoningDelta > 5 || !nextMessage.partial) {
+			if (prevText !== nextText || prevReasoning !== nextReasoning) {
+				return false
+			}
+		}
+
+		// Small changes - batch for next frame
+		if (textDelta <= 10 && reasoningDelta <= 5) {
+			return true // Skip this render, will catch up on next batch
+		}
+	}
+
+	// Check if expansion state changed
+	if (prevProps.expandedRows[prevMessage?.ts] !== nextProps.expandedRows[nextMessage?.ts]) {
 		return false
 	}
 
-	// Check if input value changed (affects quote feature)
-	if (prevProps.inputValue !== nextProps.inputValue) {
+	// Determine if this is the last message (computed from index and length)
+	const isPrevLast = prevProps.index === prevProps.groupedMessages.length - 1
+	const isNextLast = nextProps.index === nextProps.groupedMessages.length - 1
+
+	// Check if input value changed (affects quote feature, but only for last message)
+	if (isNextLast && prevProps.inputValue !== nextProps.inputValue) {
 		return false
 	}
 
-	// Check if last modified message changed (affects status display)
-	const prevLastTs = prevProps.modifiedMessages.at(-1)?.ts
-	const nextLastTs = nextProps.modifiedMessages.at(-1)?.ts
-	if (prevLastTs !== nextLastTs) {
-		return false
+	// Check if last modified message changed (affects status display for last message)
+	if (isPrevLast || isNextLast) {
+		const prevLastTs = prevProps.modifiedMessages.at(-1)?.ts
+		const nextLastTs = nextProps.modifiedMessages.at(-1)?.ts
+		if (prevLastTs !== nextLastTs) {
+			return false
+		}
 	}
 
+	// No relevant changes - skip re-render for better performance
 	return true
 })
 

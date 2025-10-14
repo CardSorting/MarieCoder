@@ -121,7 +121,7 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 				return "" // can only happen if the sharedLogic adds an error to userMessages
 			}
 
-			const { relPath, absolutePath, fileExists, diff, content, newContent, workspaceContext } = result
+			const { relPath, absolutePath, fileExists, diff, content, newContent, workspaceContext: _workspaceContext } = result
 
 			// Handle approval flow
 			const sharedMessageProps: ClineSayTool = {

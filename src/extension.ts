@@ -435,7 +435,7 @@ if (IS_DEV && IS_DEV !== "false") {
 	assert(DEV_WORKSPACE_FOLDER, "DEV_WORKSPACE_FOLDER must be set in development")
 	const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(DEV_WORKSPACE_FOLDER, "src/**/*"))
 
-	watcher.onDidChange(({ scheme, path }) => {
+	watcher.onDidChange(() => {
 		vscode.commands.executeCommand("workbench.action.reloadWindow")
 	})
 }

@@ -13,12 +13,12 @@ interface ErrorRowProps {
 
 const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStreamingFailedMessage }: ErrorRowProps) => {
 	// Determine error message for announcement
-	let errorMessage = ""
+	let _errorMessage = ""
 	if (apiRequestFailedMessage || apiReqStreamingFailedMessage) {
 		const clineError = ClineError.parse(apiRequestFailedMessage || apiReqStreamingFailedMessage)
-		errorMessage = clineError?.message || ""
+		_errorMessage = clineError?.message || ""
 	} else if (message.text) {
-		errorMessage = message.text
+		_errorMessage = message.text
 	}
 
 	const renderErrorContent = () => {

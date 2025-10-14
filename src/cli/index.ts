@@ -35,7 +35,7 @@ const logger = getLogger()
 const progressManager = getProgressManager()
 const cancellationManager = getCancellationManager()
 const apiConnectionPoolManager = getApiConnectionPoolManager()
-const deduplicationManager = getDeduplicationManager()
+const _deduplicationManager = getDeduplicationManager()
 
 interface CliOptions {
 	workspace: string

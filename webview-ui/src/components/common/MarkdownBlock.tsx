@@ -11,6 +11,8 @@ import MermaidBlock from "@/components/common/MermaidBlock"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { FileServiceClient, StateServiceClient } from "@/services/grpc-client"
 import { renderMarkdown } from "@/utils/markdown_renderer"
+import { useWebWorker, WorkerTasks } from "@/utils/web_worker_manager"
+import { getMarkdownWorkerScript } from "@/workers"
 
 interface MarkdownBlockProps {
 	markdown?: string
@@ -23,7 +25,13 @@ const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 	const containerRef = useRef<HTMLDivElement>(null)
 	const { mode } = useExtensionState()
 
-	// Render markdown to HTML
+	// Initialize web worker for heavy markdown parsing with bundled dependencies
+	const { executeTask } = useWebWorker({
+		workerScript: getMarkdownWorkerScript(),
+		debug: false,
+	})
+
+	// Render markdown to HTML with smart worker delegation
 	useEffect(() => {
 		if (!markdown) {
 			setHtmlContent("")
@@ -31,17 +39,74 @@ const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 			return
 		}
 
-		renderMarkdown(markdown, {
-			inline: false,
-			processFilePaths: true,
-		})
-			.then((html) => {
+		const processMarkdown = async () => {
+			try {
+				let html: string
+
+				// Use worker for large markdown (>5KB) to keep UI responsive
+				if (markdown.length > 5000) {
+					try {
+						// Step 1: Parse markdown in worker (CPU-intensive)
+						html = await executeTask(
+							WorkerTasks.parseMarkdown(
+								`markdown-${Date.now()}`,
+								markdown,
+								{ inline: false, processFilePaths: false },
+								"high",
+							),
+						)
+
+						// Step 2: Process file paths on main thread (requires gRPC)
+						// This is lighter weight and needs access to FileServiceClient
+						const filePathRegex = /<code data-potential-filepath="([^"]+)">([^<]+)<\/code>/g
+						const matches = Array.from(html.matchAll(filePathRegex))
+
+						if (matches.length > 0) {
+							const checks = await Promise.all(
+								matches.map(async (match) => {
+									const filePath = match[1]
+									try {
+										const exists = await FileServiceClient.ifFileExistsRelativePath(
+											StringRequest.create({ value: filePath }),
+										)
+										return { match: match[0], filePath, exists: exists.value }
+									} catch {
+										return { match: match[0], filePath, exists: false }
+									}
+								}),
+							)
+
+							// Replace file paths that exist with enhanced version
+							for (const check of checks) {
+								if (check.exists) {
+									const enhanced = `<code data-is-file-path="true">${check.filePath}</code><button class="codicon codicon-link-external bg-transparent border-0 appearance-none p-0 ml-0.5 leading-none align-middle opacity-70 hover:opacity-100 transition-opacity text-[1em] relative top-[1px] text-[var(--vscode-textPreformat-foreground)] translate-y-[-2px]" onclick="window.postMessage({type:'openFileRelativePath',value:'${check.filePath}'},'*')" title="Open ${check.filePath} in editor" type="button"></button>`
+									html = html.replace(check.match, enhanced)
+								} else {
+									html = html.replace(check.match, `<code>${check.filePath}</code>`)
+								}
+							}
+						}
+					} catch (workerError) {
+						// Fallback to main thread if worker fails
+						console.warn("[MarkdownBlock] Worker failed, falling back to main thread:", workerError)
+						html = await renderMarkdown(markdown, {
+							inline: false,
+							processFilePaths: true,
+						})
+					}
+				} else {
+					// Small markdown stays on main thread (faster, no worker overhead)
+					html = await renderMarkdown(markdown, {
+						inline: false,
+						processFilePaths: true,
+					})
+				}
+
 				// Extract and replace mermaid blocks with placeholders
 				const blocks: Array<{ id: string; code: string }> = []
 				const mermaidRegex = /<code class="language-mermaid">([^<]+)<\/code>/g
 				let processedHtml = html
 
-				// Extract all mermaid blocks
 				const matches = Array.from(html.matchAll(mermaidRegex))
 				matches.forEach((m, index) => {
 					const id = `mermaid-${Date.now()}-${index}`
@@ -52,14 +117,16 @@ const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 
 				setMermaidBlocks(blocks)
 				setHtmlContent(processedHtml)
-			})
-			.catch((error) => {
+			} catch (error) {
 				console.error("Failed to render markdown:", error)
 				setHtmlContent(
-					`<pre style="color: var(--vscode-errorForeground); padding: 8px;">Error rendering markdown: ${error.message}</pre>`,
+					`<pre style="color: var(--vscode-errorForeground); padding: 8px;">Error rendering markdown: ${error instanceof Error ? error.message : String(error)}</pre>`,
 				)
-			})
-	}, [markdown])
+			}
+		}
+
+		processMarkdown()
+	}, [markdown, executeTask])
 
 	// Add event listeners for interactive elements
 	useEffect(() => {

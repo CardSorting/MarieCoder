@@ -52,7 +52,7 @@ export class ApiRetryService {
 	 * @param previousApiReqIndex - Index of the previous API request message
 	 * @returns Promise<boolean> - True if should retry, false otherwise
 	 */
-	async handleFirstChunkError(error: unknown, previousApiReqIndex: number): Promise<boolean> {
+	async handleFirstChunkError(error: unknown, _previousApiReqIndex: number): Promise<boolean> {
 		const isContextWindowExceededError = checkContextWindowExceededError(error)
 		const clineError = ErrorService.toClineError(error)
 

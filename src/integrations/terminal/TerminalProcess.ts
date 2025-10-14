@@ -239,8 +239,8 @@ export class TerminalProcess extends EventEmitter<TerminalProcessEvents> {
 	// Inspired by https://github.com/sindresorhus/execa/blob/main/lib/transform/split.js
 	private emitIfEol(chunk: string) {
 		this.buffer += chunk
-		let lineEndIndex: number
-		while ((lineEndIndex = this.buffer.indexOf("\n")) !== -1) {
+		let lineEndIndex = this.buffer.indexOf("\n")
+		while (lineEndIndex !== -1) {
 			const line = this.buffer.slice(0, lineEndIndex).trimEnd() // removes trailing \r
 			// Remove \r if present (for Windows-style line endings)
 			// if (line.endsWith("\r")) {
@@ -248,6 +248,7 @@ export class TerminalProcess extends EventEmitter<TerminalProcessEvents> {
 			// }
 			this.emit("line", line)
 			this.buffer = this.buffer.slice(lineEndIndex + 1)
+			lineEndIndex = this.buffer.indexOf("\n")
 		}
 	}
 

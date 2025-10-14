@@ -5,7 +5,7 @@
 
 import { getLogger } from "./cli_logger"
 
-const logger = getLogger()
+const _logger = getLogger()
 
 export interface ProgressBarOptions {
 	total: number

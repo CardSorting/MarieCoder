@@ -11,7 +11,7 @@ export class CliMcpManager {
 	private mcpHub: McpHub
 
 	constructor(
-		private readonly controller: Controller,
+		readonly controller: Controller,
 		private readonly verbose: boolean = false,
 	) {
 		this.mcpHub = controller.mcpHub

@@ -44,7 +44,7 @@ export class ToolCoordinator {
 	 * Pre-execution hook
 	 * Called before tool execution for validation and state updates
 	 */
-	private async beforeToolExecution(toolName: string, toolInput: any): Promise<void> {
+	private async beforeToolExecution(toolName: string, _toolInput: any): Promise<void> {
 		Logger.debug(`[ToolCoordinator] Preparing to execute tool: ${toolName}`)
 
 		// Additional pre-execution logic can be added here:
@@ -82,7 +82,7 @@ export class ToolCoordinator {
 	 * @param toolName - Name of the tool to check
 	 * @returns true if tool is available
 	 */
-	isToolAvailable(toolName: ClineDefaultTool): boolean {
+	isToolAvailable(_toolName: ClineDefaultTool): boolean {
 		// Tools are always available through the executor
 		// This method exists for future filtering/capability checking
 		return true

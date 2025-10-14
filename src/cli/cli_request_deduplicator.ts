@@ -172,7 +172,7 @@ export class RequestDeduplicator {
 	static generateKey(...args: any[]): string {
 		try {
 			return JSON.stringify(args)
-		} catch (error) {
+		} catch (_error) {
 			// Fallback to simple string concatenation if JSON.stringify fails
 			return args.map(String).join(":")
 		}

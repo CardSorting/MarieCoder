@@ -43,7 +43,8 @@ export class CliMentionsParser {
 
 		for (const { type, regex } of patterns) {
 			let match: RegExpExecArray | null
-			while ((match = regex.exec(input)) !== null) {
+			match = regex.exec(input)
+			while (match !== null) {
 				mentions.push({
 					type,
 					path: match[1],
@@ -51,6 +52,7 @@ export class CliMentionsParser {
 					endIndex: match.index + match[0].length,
 					raw: match[0],
 				})
+				match = regex.exec(input)
 			}
 		}
 

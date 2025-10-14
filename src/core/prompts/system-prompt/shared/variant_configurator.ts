@@ -23,7 +23,7 @@ export class VariantConfigService {
 		config: Omit<PromptVariant, "id">,
 		options: { strict?: boolean; logSummary?: boolean } = {},
 	): Promise<PromptVariant> {
-		const { strict = true, logSummary = false } = options
+		const { strict = true, logSummary: _logSummary = false } = options
 
 		// Create the complete variant
 		const variant: PromptVariant = { ...config, id }
@@ -120,7 +120,7 @@ export function createValidatedVariantConfig(
 	config: Omit<PromptVariant, "id">,
 	options: { strict?: boolean; logSummary?: boolean } = {},
 ): PromptVariant {
-	const { strict = true, logSummary = false } = options
+	const { strict = true, logSummary: _logSummary = false } = options
 
 	// Create the complete variant
 	const variant: PromptVariant = { ...config, id }

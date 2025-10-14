@@ -57,7 +57,7 @@ export const createMockConversationHistory = (length = 3): ClineMessage[] => {
 /**
  * Create a mock task with history
  */
-export const createMockTaskWithHistory = (messageCount = 3): HistoryItem => {
+export const createMockTaskWithHistory = (_messageCount = 3): HistoryItem => {
 	return createMockTask()
 }
 

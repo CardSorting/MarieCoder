@@ -31,12 +31,21 @@ export function useScrollBehavior(
 	const [showScrollToBottom, setShowScrollToBottom] = useState(false)
 	const [isAtBottom, setIsAtBottom] = useState(false)
 	const [pendingScrollToMessage, setPendingScrollToMessage] = useState<number | null>(null)
+
+	// Scroll momentum tracking for predictive scrolling
+	const lastScrollTimeRef = useRef(0)
+	const scrollVelocityRef = useRef(0)
+	const lastScrollTopRef = useRef(0)
+
 	const scrollToBottomSmooth = useMemo(
 		() =>
 			debounce(() => {
-				virtuosoRef.current?.scrollTo({
-					top: Number.MAX_SAFE_INTEGER,
-					behavior: "smooth",
+				// Use requestAnimationFrame for smoother, more responsive scrolling
+				requestAnimationFrame(() => {
+					virtuosoRef.current?.scrollTo({
+						top: Number.MAX_SAFE_INTEGER,
+						behavior: "smooth",
+					})
 				})
 			}, 10),
 		[],
@@ -129,27 +138,25 @@ export function useScrollBehavior(
 			}
 
 			if (isCollapsing && isAtBottom) {
-				const timer = setTimeout(() => {
+				// Use requestAnimationFrame for smoother, non-blocking scroll
+				requestAnimationFrame(() => {
 					scrollToBottomAuto()
-				}, 0)
-				return () => clearTimeout(timer)
+				})
 			} else if (isLast || isSecondToLast) {
 				if (isCollapsing) {
 					if (isSecondToLast && !isLastCollapsedApiReq) {
 						return
 					}
-					const timer = setTimeout(() => {
+					requestAnimationFrame(() => {
 						scrollToBottomAuto()
-					}, 0)
-					return () => clearTimeout(timer)
+					})
 				} else {
-					const timer = setTimeout(() => {
+					requestAnimationFrame(() => {
 						virtuosoRef.current?.scrollToIndex({
 							index: groupedMessages.length - (isLast ? 1 : 2),
 							align: "start",
 						})
-					}, 0)
-					return () => clearTimeout(timer)
+					})
 				}
 			}
 		},
@@ -162,9 +169,10 @@ export function useScrollBehavior(
 				if (isTaller) {
 					scrollToBottomSmooth()
 				} else {
-					setTimeout(() => {
+					// Use requestAnimationFrame for non-blocking, smooth updates
+					requestAnimationFrame(() => {
 						scrollToBottomAuto()
-					}, 0)
+					})
 				}
 			}
 		},
@@ -173,10 +181,10 @@ export function useScrollBehavior(
 
 	useEffect(() => {
 		if (!disableAutoScrollRef.current) {
-			setTimeout(() => {
+			// Use requestAnimationFrame for instant, smooth scroll without delay
+			requestAnimationFrame(() => {
 				scrollToBottomSmooth()
-			}, 50)
-			// return () => clearTimeout(timer) // dont cleanup since if visibleMessages.length changes it cancels.
+			})
 		}
 	}, [groupedMessages.length, scrollToBottomSmooth])
 
@@ -192,11 +200,38 @@ export function useScrollBehavior(
 		}
 	}, [messages.length])
 
+	// Enhanced wheel handler with momentum tracking
 	const handleWheel = useCallback((event: WheelEvent) => {
+		if (!scrollContainerRef.current?.contains(event.target as Node)) {
+			return
+		}
+
+		// Track scroll velocity for predictive behavior
+		const now = performance.now()
+		const timeDelta = now - lastScrollTimeRef.current
+		const scrollDelta = event.deltaY
+
+		if (timeDelta > 0) {
+			scrollVelocityRef.current = Math.abs(scrollDelta / timeDelta)
+		}
+
+		lastScrollTimeRef.current = now
+		lastScrollTopRef.current += event.deltaY
+
+		// Disable auto-scroll on upward scroll
 		if (event.deltaY && event.deltaY < 0) {
-			if (scrollContainerRef.current?.contains(event.target as Node)) {
-				// user scrolled up
-				disableAutoScrollRef.current = true
+			disableAutoScrollRef.current = true
+		}
+
+		// Re-enable auto-scroll if user scrolls to bottom with momentum
+		if (event.deltaY > 0 && scrollVelocityRef.current > 1) {
+			// Check if near bottom (within 100px)
+			const container = scrollContainerRef.current
+			if (container) {
+				const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight
+				if (distanceFromBottom < 100) {
+					disableAutoScrollRef.current = false
+				}
 			}
 		}
 	}, [])

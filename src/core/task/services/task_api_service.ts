@@ -88,7 +88,7 @@ export class TaskApiService {
 		private readonly contextBuilder: TaskContextBuilder,
 		private readonly messageStateHandler: MessageStateHandler,
 		private readonly contextManager: ContextManager,
-		private readonly diffViewProvider: DiffViewProvider,
+		readonly diffViewProvider: DiffViewProvider,
 		private readonly toolExecutor: ToolExecutor,
 		private readonly stateManager: StateManager,
 		private readonly cwd: string,
@@ -99,7 +99,7 @@ export class TaskApiService {
 		private readonly mcpHub: McpHub,
 		private readonly clineIgnoreController: ClineIgnoreController,
 		private readonly workspaceManager: WorkspaceRootManager | undefined,
-		private readonly checkpointManager: ICheckpointManager | undefined,
+		readonly checkpointManager: ICheckpointManager | undefined,
 		private readonly postStateToWebview: () => Promise<void>,
 		private readonly migrateDisableBrowserToolSetting: () => Promise<void>,
 		private readonly getCurrentProviderInfo: () => any,
@@ -635,7 +635,7 @@ export class TaskApiService {
 	 */
 	private async handleAssistantResponse(
 		assistantMessage: string,
-		reasoningMessage: string,
+		_reasoningMessage: string,
 		antThinkingContent: Array<Anthropic.Messages.RedactedThinkingBlock | Anthropic.Messages.ThinkingBlock>,
 		usage: any,
 		lastApiReqIndex: number,

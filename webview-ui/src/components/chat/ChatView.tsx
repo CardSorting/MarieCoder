@@ -9,7 +9,9 @@ import { normalizeApiConfiguration } from "@/components/settings/utils/providerU
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { FileServiceClient, UiServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
+import { useHapticFeedback } from "@/utils/haptic_feedback"
 import { useMount } from "@/utils/hooks"
+import { useChatKeyboardShortcuts } from "@/utils/use_keyboard_shortcuts"
 // Import utilities and hooks from the new structure
 import {
 	ActionButtons,
@@ -84,6 +86,7 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 		expandedRows,
 		setExpandedRows,
 		textAreaRef,
+		setActiveQuote,
 	} = chatState
 
 	useEffect(() => {
@@ -252,14 +255,13 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 							const newTextWithNewline = newText + "\n"
 							return prevValue ? `${prevValue}\n${newTextWithNewline}` : newTextWithNewline
 						})
-						// Add scroll to bottom after state update
-						// Auto focus the input and start the cursor on a new line for easy typing
-						setTimeout(() => {
+						// Use requestAnimationFrame for smoother, more responsive updates
+						requestAnimationFrame(() => {
 							if (textAreaRef.current) {
 								textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight
 								textAreaRef.current.focus()
 							}
-						}, 0)
+						})
 					}
 				},
 				onError: (error) => {
@@ -280,13 +282,11 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 	})
 
 	useEffect(() => {
-		const timer = setTimeout(() => {
-			if (!isHidden && !sendingDisabled && !enableButtons) {
+		// Use requestAnimationFrame for instant, smooth focus without blocking
+		if (!isHidden && !sendingDisabled && !enableButtons) {
+			requestAnimationFrame(() => {
 				textAreaRef.current?.focus()
-			}
-		}, 50)
-		return () => {
-			clearTimeout(timer)
+			})
 		}
 	}, [isHidden, sendingDisabled, enableButtons])
 
@@ -316,6 +316,53 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 		const text = task ? "Type a message..." : "Type your task here..."
 		return text
 	}, [task])
+
+	// Haptic feedback for interactions
+	const { triggerFeedback } = useHapticFeedback()
+
+	// Keyboard shortcuts for power users
+	useChatKeyboardShortcuts({
+		onSendMessage: () => {
+			const inputValue = textAreaRef.current?.value || ""
+			if (inputValue.trim() && !sendingDisabled) {
+				messageHandlers.handleSendMessage(inputValue, selectedImages, selectedFiles)
+				// Trigger haptic feedback on send
+				if (textAreaRef.current) {
+					triggerFeedback(textAreaRef.current, "success", "medium")
+				}
+			}
+		},
+		onClearInput: () => {
+			setInputValue("")
+			setSelectedImages([])
+			setSelectedFiles([])
+			setActiveQuote(null)
+			if (textAreaRef.current) {
+				triggerFeedback(textAreaRef.current, "info", "light")
+			}
+		},
+		onFocusInput: () => {
+			textAreaRef.current?.focus()
+		},
+		onScrollToBottom: () => {
+			scrollBehavior.scrollToBottomSmooth()
+		},
+		onScrollToTop: () => {
+			scrollBehavior.virtuosoRef.current?.scrollToIndex({
+				index: 0,
+				align: "start",
+				behavior: "smooth",
+			})
+		},
+		onCancelTask: () => {
+			if (task) {
+				messageHandlers.handleTaskCloseButtonClick()
+			}
+		},
+		onNewTask: () => {
+			messageHandlers.startNewTask()
+		},
+	})
 
 	return (
 		<ChatLayout isHidden={isHidden}>

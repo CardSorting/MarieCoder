@@ -157,7 +157,7 @@ class ImagePreview extends React.Component<
 
 		// Fallback display while loading
 		if (loading) {
-			const loadingMessage = `Loading image from ${getSafeHostname(url)}`
+			const _loadingMessage = `Loading image from ${getSafeHostname(url)}`
 			return (
 				<div
 					className="image-preview-loading"

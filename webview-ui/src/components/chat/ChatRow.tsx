@@ -48,8 +48,14 @@ const ChatRow = memo(
 			}
 		}, [height, isLast, onHeightChange, message])
 
+		// Apply animation classes based on message state
+		const isPartial = message.partial
+		const animationClass = isPartial ? "message-streaming" : "message-enter"
+
 		return (
-			<div className="group py-2.5 pr-1.5 pl-[15px] relative [&:hover_.checkpoint-controls]:opacity-100" ref={chatrowRef}>
+			<div
+				className={`group py-2.5 pr-1.5 pl-[15px] relative [&:hover_.checkpoint-controls]:opacity-100 ${animationClass}`}
+				ref={chatrowRef}>
 				<ChatRowContent {...props} />
 			</div>
 		)

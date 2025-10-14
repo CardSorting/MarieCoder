@@ -18,6 +18,8 @@ import type React from "react"
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
 import { createContextSelector } from "@/hooks/use_context_selector"
 import { debug, logError } from "@/utils/debug_logger"
+import { usePaintHoldingNavigation } from "@/utils/paint_holding"
+import { TransitionPresets, useViewTransition } from "@/utils/view_transitions"
 import { UiServiceClient } from "../services/grpc-client"
 
 export interface UIStateContextType {
@@ -72,60 +74,94 @@ export const UIStateContextProvider: React.FC<{
 	const relinquishControlUnsubscribeRef = useRef<(() => void) | null>(null)
 	const relinquishControlCallbacks = useRef<Set<() => void>>(new Set())
 
+	// Advanced UX features for smooth transitions
+	const transition = useViewTransition()
+	const paintHoldNav = usePaintHoldingNavigation()
+
 	// === SIMPLIFIED NAVIGATION FUNCTIONS ===
 	// Only History and Chat - pure local state, no gRPC complexity
 
 	/**
-	 * Navigate to History view
+	 * Navigate to History view with smooth transition
 	 * Shows task history, hides all other views
 	 */
-	const navigateToHistory = useCallback(() => {
+	const navigateToHistory = useCallback(async () => {
 		console.log("[UIStateContext] navigateToHistory - START")
 		console.log("[UIStateContext] Current state:", { showHistory, showSettings, showMcp })
-		setShowHistory(true)
+
+		await paintHoldNav(async () => {
+			await transition(() => {
+				setShowHistory(true)
+			}, TransitionPresets.fade(200))
+		})
+
 		console.log("[UIStateContext] navigateToHistory - COMPLETE, showHistory set to true")
-	}, [showHistory, showSettings, showMcp])
+	}, [showHistory, showSettings, showMcp, transition, paintHoldNav])
 
 	/**
-	 * Navigate to Chat view (New Task)
+	 * Navigate to Chat view (New Task) with smooth transition
 	 * Hides history, shows chat interface
 	 */
-	const navigateToChat = useCallback(() => {
+	const navigateToChat = useCallback(async () => {
 		console.log("[UIStateContext] navigateToChat - START")
 		console.log("[UIStateContext] Current state:", { showHistory })
-		setShowHistory(false)
-		console.log("[UIStateContext] navigateToChat - COMPLETE, showHistory set to false")
-	}, [showHistory])
 
-	// Hide functions
-	const hideHistory = useCallback(() => {
+		await paintHoldNav(async () => {
+			await transition(() => {
+				setShowHistory(false)
+			}, TransitionPresets.fade(200))
+		})
+
+		console.log("[UIStateContext] navigateToChat - COMPLETE, showHistory set to false")
+	}, [showHistory, transition, paintHoldNav])
+
+	// Hide functions with smooth transition
+	const hideHistory = useCallback(async () => {
 		console.log("[UIStateContext] hideHistory called")
-		setShowHistory(false)
-	}, [])
+		await transition(() => {
+			setShowHistory(false)
+		}, TransitionPresets.fade(200))
+	}, [transition])
 
 	// === LEGACY FUNCTIONS (kept for backward compatibility) ===
-	const closeMcpView = useCallback(() => {
-		setShowMcp(false)
-		setMcpTab(undefined)
-	}, [])
+	const closeMcpView = useCallback(async () => {
+		await transition(() => {
+			setShowMcp(false)
+			setMcpTab(undefined)
+		}, TransitionPresets.fade(200))
+	}, [transition])
 
-	const hideSettings = useCallback(() => setShowSettings(false), [])
+	const hideSettings = useCallback(async () => {
+		await transition(() => setShowSettings(false), TransitionPresets.fade(200))
+	}, [transition])
+
 	const hideChatModelSelector = useCallback(() => setShowChatModelSelector(false), [])
 
-	const navigateToMcp = useCallback((tab?: McpViewTab) => {
-		console.log("[UIStateContext] navigateToMcp (legacy) called", tab)
-		setShowHistory(false)
-		if (tab) {
-			setMcpTab(tab)
-		}
-		setShowMcp(true)
-	}, [])
+	const navigateToMcp = useCallback(
+		async (tab?: McpViewTab) => {
+			console.log("[UIStateContext] navigateToMcp (legacy) called", tab)
+			await paintHoldNav(async () => {
+				await transition(() => {
+					setShowHistory(false)
+					if (tab) {
+						setMcpTab(tab)
+					}
+					setShowMcp(true)
+				}, TransitionPresets.fade(200))
+			})
+		},
+		[transition, paintHoldNav],
+	)
 
-	const navigateToSettings = useCallback(() => {
+	const navigateToSettings = useCallback(async () => {
 		console.log("[UIStateContext] navigateToSettings (legacy) called")
-		setShowHistory(false)
-		setShowSettings(true)
-	}, [])
+		await paintHoldNav(async () => {
+			await transition(() => {
+				setShowHistory(false)
+				setShowSettings(true)
+			}, TransitionPresets.fade(200))
+		})
+	}, [transition, paintHoldNav])
 
 	// Event callback registration
 	const onRelinquishControl = useCallback((callback: () => void) => {

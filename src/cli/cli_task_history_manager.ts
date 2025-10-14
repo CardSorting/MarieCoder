@@ -9,7 +9,7 @@ import type { HistoryItem } from "@/shared/HistoryItem"
 export class CliTaskHistoryManager {
 	constructor(
 		private readonly controller: Controller,
-		private readonly verbose: boolean = false,
+		readonly _verbose: boolean = false,
 	) {}
 
 	/**
@@ -76,7 +76,7 @@ export class CliTaskHistoryManager {
 			console.log(`  Status: ${this.getTaskStatus(taskData.historyItem)}`)
 			console.log(`  Messages: ${taskData.apiConversationHistory.length}`)
 			console.log("─".repeat(80))
-		} catch (error) {
+		} catch (_error) {
 			console.error(`  Task not found: ${taskId}`)
 			console.log("─".repeat(80))
 		}
@@ -190,7 +190,7 @@ export class CliTaskHistoryManager {
 	/**
 	 * Get task status emoji
 	 */
-	private getTaskStatusEmoji(item: HistoryItem): string {
+	private getTaskStatusEmoji(_item: HistoryItem): string {
 		// This is a simple heuristic - could be enhanced
 		return "•"
 	}
@@ -198,7 +198,7 @@ export class CliTaskHistoryManager {
 	/**
 	 * Get task status text
 	 */
-	private getTaskStatus(item: HistoryItem): string {
+	private getTaskStatus(_item: HistoryItem): string {
 		// This is a simple heuristic - could be enhanced
 		return "Completed"
 	}
@@ -207,8 +207,12 @@ export class CliTaskHistoryManager {
 	 * Truncate text for display
 	 */
 	private truncateText(text: string, maxLength: number): string {
-		if (!text) return ""
-		if (text.length <= maxLength) return text
+		if (!text) {
+			return ""
+		}
+		if (text.length <= maxLength) {
+			return text
+		}
 		return text.substring(0, maxLength - 3) + "..."
 	}
 }

@@ -357,7 +357,7 @@ export class ApiStreamManager {
 		usage: TokenUsage,
 		cancelReason: ClineApiReqCancelReason,
 		providerId: string,
-		modelId: string,
+		_modelId: string,
 		streamingFailedMessage?: string,
 	): Promise<void> {
 		// Revert any pending diff changes

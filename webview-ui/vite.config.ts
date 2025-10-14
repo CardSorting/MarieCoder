@@ -114,6 +114,14 @@ export default defineConfig({
 		},
 		chunkSizeWarningLimit: 100000,
 	},
+	worker: {
+		format: "es",
+		rollupOptions: {
+			output: {
+				entryFileNames: "workers/[name].js",
+			},
+		},
+	},
 	server: {
 		port: 25463,
 		hmr: {

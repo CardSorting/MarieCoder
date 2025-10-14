@@ -312,7 +312,7 @@ export const e2e = test
 		},
 	})
 	.extend<{ sidebar: Frame }>({
-		sidebar: async ({ page, helper, server }, use) => {
+		sidebar: async ({ page, helper, server: _server }, use) => {
 			await E2ETestHelper.openClineSidebar(page)
 			const sidebar = await helper.getSidebar(page)
 			await use(sidebar)

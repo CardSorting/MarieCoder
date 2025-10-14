@@ -94,7 +94,7 @@ export class TaskLimitManager {
 	 * @returns Promise<LimitCheckResult>
 	 * @private
 	 */
-	private async checkMistakeLimit(userContent: UserContent): Promise<LimitCheckResult> {
+	private async checkMistakeLimit(_userContent: UserContent): Promise<LimitCheckResult> {
 		if (this.taskState.consecutiveMistakeCount < 3) {
 			return { shouldProceed: true }
 		}
@@ -148,7 +148,7 @@ export class TaskLimitManager {
 	 * @returns Promise<LimitCheckResult>
 	 * @private
 	 */
-	private async checkAutoApprovalLimit(userContent: UserContent): Promise<LimitCheckResult> {
+	private async checkAutoApprovalLimit(_userContent: UserContent): Promise<LimitCheckResult> {
 		const autoApprovalSettings = this.stateManager.getGlobalSettingsKey("autoApprovalSettings")
 
 		if (
