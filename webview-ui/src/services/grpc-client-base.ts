@@ -26,6 +26,9 @@ const generateUUID = (): string => {
 import { debug } from "@/utils/debug_logger"
 import { PLATFORM_CONFIG } from "../config/platform.config"
 
+// Default timeout for requests (30 seconds)
+const DEFAULT_REQUEST_TIMEOUT_MS = 30000
+
 export interface Callbacks<TResponse> {
 	onResponse: (response: TResponse) => void
 	onError: (error: Error) => void
@@ -40,16 +43,22 @@ export abstract class ProtoBusClient {
 		request: TRequest,
 		encodeRequest: (_: TRequest) => unknown,
 		decodeResponse: (_: { [key: string]: any }) => TResponse,
+		timeoutMs: number = DEFAULT_REQUEST_TIMEOUT_MS,
 	): Promise<TResponse> {
 		return new Promise((resolve, reject) => {
 			const requestId = generateUUID()
+			let timeoutId: NodeJS.Timeout | null = null
 
 			// Set up one-time listener for this specific request
 			const handleResponse = (event: MessageEvent) => {
 				const message = event.data
 				if (message.type === "grpc_response" && message.grpc_response?.request_id === requestId) {
-					// Remove listener once we get our response
+					// Clear timeout and remove listener once we get our response
+					if (timeoutId) {
+						clearTimeout(timeoutId)
+					}
 					window.removeEventListener("message", handleResponse)
+
 					if (message.grpc_response.message) {
 						const response = PLATFORM_CONFIG.decodeMessage(message.grpc_response.message, decodeResponse)
 						resolve(response)
@@ -57,9 +66,18 @@ export abstract class ProtoBusClient {
 						reject(new Error(message.grpc_response.error))
 					} else {
 						debug.error("Received ProtoBus message with no response or error ", JSON.stringify(message))
+						reject(new Error("Received invalid response from extension"))
 					}
 				}
 			}
+
+			// Set up timeout to prevent hanging requests
+			timeoutId = setTimeout(() => {
+				window.removeEventListener("message", handleResponse)
+				const errorMsg = `Request timeout: ${this.serviceName}.${methodName} did not respond within ${timeoutMs}ms. Please check if the extension is running properly.`
+				debug.error(errorMsg)
+				reject(new Error(errorMsg))
+			}, timeoutMs)
 
 			window.addEventListener("message", handleResponse)
 			PLATFORM_CONFIG.postMessage({
@@ -81,18 +99,32 @@ export abstract class ProtoBusClient {
 		encodeRequest: (_: TRequest) => unknown,
 		decodeResponse: (_: { [key: string]: any }) => TResponse,
 		callbacks: Callbacks<TResponse>,
+		timeoutMs: number = DEFAULT_REQUEST_TIMEOUT_MS,
 	): () => void {
-		const requestId = crypto.randomUUID()
+		const requestId = generateUUID()
+		let hasReceivedFirstResponse = false
+		let timeoutId: NodeJS.Timeout | null = null
+
 		// Set up listener for streaming responses
 		const handleResponse = (event: MessageEvent) => {
 			const message = event.data
 			if (message.type === "grpc_response" && message.grpc_response?.request_id === requestId) {
+				// Clear the initial timeout once we receive the first response
+				if (!hasReceivedFirstResponse && timeoutId) {
+					clearTimeout(timeoutId)
+					timeoutId = null
+					hasReceivedFirstResponse = true
+				}
+
 				if (message.grpc_response.message) {
 					// Process streaming message
 					const response = PLATFORM_CONFIG.decodeMessage(message.grpc_response.message, decodeResponse)
 					callbacks.onResponse(response)
 				} else if (message.grpc_response.error) {
 					// Handle error
+					if (timeoutId) {
+						clearTimeout(timeoutId)
+					}
 					if (callbacks.onError) {
 						callbacks.onError(new Error(message.grpc_response.error))
 					}
@@ -102,6 +134,9 @@ export abstract class ProtoBusClient {
 					debug.error("Received ProtoBus message with no response or error ", JSON.stringify(message))
 				}
 				if (message.grpc_response.is_streaming === false) {
+					if (timeoutId) {
+						clearTimeout(timeoutId)
+					}
 					if (callbacks.onComplete) {
 						callbacks.onComplete()
 					}
@@ -110,6 +145,19 @@ export abstract class ProtoBusClient {
 				}
 			}
 		}
+
+		// Set up timeout for the initial response to prevent hanging streams
+		timeoutId = setTimeout(() => {
+			if (!hasReceivedFirstResponse) {
+				window.removeEventListener("message", handleResponse)
+				const errorMsg = `Stream timeout: ${this.serviceName}.${methodName} did not start within ${timeoutMs}ms. Please check if the extension is running properly.`
+				debug.error(errorMsg)
+				if (callbacks.onError) {
+					callbacks.onError(new Error(errorMsg))
+				}
+			}
+		}, timeoutMs)
+
 		window.addEventListener("message", handleResponse)
 		PLATFORM_CONFIG.postMessage({
 			type: "grpc_request",
@@ -123,6 +171,9 @@ export abstract class ProtoBusClient {
 		})
 		// Return a function to cancel the stream
 		return () => {
+			if (timeoutId) {
+				clearTimeout(timeoutId)
+			}
 			window.removeEventListener("message", handleResponse)
 			PLATFORM_CONFIG.postMessage({
 				type: "grpc_request_cancel",

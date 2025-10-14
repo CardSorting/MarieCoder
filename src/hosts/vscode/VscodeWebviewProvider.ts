@@ -142,8 +142,23 @@ export class VscodeWebviewProvider extends WebviewProvider implements vscode.Web
 	 */
 	private setWebviewMessageListener(webview: vscode.Webview) {
 		webview.onDidReceiveMessage(
-			(message) => {
-				this.handleWebviewMessage(message)
+			async (message) => {
+				try {
+					await this.handleWebviewMessage(message)
+				} catch (error) {
+					console.error("Error handling webview message:", error)
+					// Optionally send error back to webview if it was a grpc_request
+					if (message.type === "grpc_request" && message.grpc_request?.request_id) {
+						await this.postMessageToWebview({
+							type: "grpc_response",
+							grpc_response: {
+								error: error instanceof Error ? error.message : String(error),
+								request_id: message.grpc_request.request_id,
+								is_streaming: false,
+							},
+						})
+					}
+				}
 			},
 			null,
 			this.disposables,
