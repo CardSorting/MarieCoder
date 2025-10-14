@@ -183,7 +183,7 @@ message ClineApiReqInfo {
 
 // Main ClineMessage type
 message ClineMessage {
-  int64 ts = 1;
+  string ts = 1;  // Timestamp as string to avoid int64 conversion complexity
   ClineMessageType type = 2;
   ClineAsk ask = 3;
   ClineSay say = 4;

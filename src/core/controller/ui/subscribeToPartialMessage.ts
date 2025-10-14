@@ -34,9 +34,13 @@ export async function subscribeToPartialMessage(
 
 	// Send initial empty message to prevent timeout (subscription is ready)
 	// The actual partial messages will be sent when they occur
+	// IMPORTANT: Set a valid timestamp to prevent validation errors in the UI
 	try {
 		await responseStream(
-			ClineMessage.create({}),
+			ClineMessage.create({
+				ts: String(Date.now()), // Timestamp as string (proto schema uses string now)
+				type: 0, // Default type
+			}),
 			false, // Not the last message
 		)
 	} catch (error) {

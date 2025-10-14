@@ -3,33 +3,55 @@ import { ClineAsk as AppClineAsk, ClineMessage as AppClineMessage, ClineSay as A
 import { ClineAsk, ClineMessageType, ClineSay, ClineMessage as ProtoClineMessage } from "@shared/proto/cline/ui"
 
 /**
- * Safely convert protobuf int64 to JavaScript number
- * Protobuf int64 fields can be serialized as objects with {low, high} properties
+ * Safely convert protobuf timestamp string to JavaScript number
+ *
+ * Since we changed the proto schema from int64 to string, this is now much simpler!
+ * The string contains the milliseconds since epoch as a decimal string.
  */
-function convertInt64ToNumber(value: any): number {
+function convertTimestampToNumber(value: string | number | undefined): number {
+	// Handle undefined/null
+	if (value === undefined || value === null) {
+		const fallbackTimestamp = Date.now()
+		console.warn("[convertTimestampToNumber] Undefined timestamp, using fallback:", fallbackTimestamp)
+		return fallbackTimestamp
+	}
+
+	// Handle if already a number (shouldn't happen with string proto, but defensive)
 	if (typeof value === "number") {
-		return value
+		if (!Number.isNaN(value) && Number.isFinite(value) && value > 0) {
+			return value
+		}
+		console.warn("[convertTimestampToNumber] Invalid number timestamp:", value)
+		return Date.now()
 	}
+
+	// Handle string (expected case with new proto schema)
 	if (typeof value === "string") {
-		return parseInt(value, 10)
-	}
-	if (typeof value === "object" && value !== null) {
-		// Handle Long/int64 object with low/high properties
-		if ("low" in value && "high" in value) {
-			// Convert to number (assumes value fits in JavaScript safe integer range)
-			return value.high * 4294967296 + (value.low >>> 0)
+		// Handle empty string
+		if (value === "") {
+			const fallbackTimestamp = Date.now()
+			console.warn("[convertTimestampToNumber] Empty timestamp string, using fallback:", fallbackTimestamp)
+			return fallbackTimestamp
 		}
-		if ("toNumber" in value && typeof value.toNumber === "function") {
-			return value.toNumber()
+
+		// Parse string to number
+		const parsed = parseInt(value, 10)
+
+		// Validate parsed value
+		if (!Number.isNaN(parsed) && Number.isFinite(parsed) && parsed > 0) {
+			return parsed
 		}
-		// Log unexpected object format for debugging
-		console.error("[convertInt64ToNumber] Unexpected timestamp object format:", {
-			value,
-			keys: Object.keys(value),
-			type: typeof value,
-		})
+
+		console.error("[convertTimestampToNumber] Failed to parse timestamp string:", value)
+		return Date.now()
 	}
-	return 0
+
+	// Unexpected type (shouldn't happen with string proto)
+	console.error("[convertTimestampToNumber] Unexpected timestamp type:", {
+		value,
+		type: typeof value,
+	})
+	return Date.now()
 }
 
 // Helper function to convert ClineAsk string to enum
@@ -191,7 +213,7 @@ export function convertClineMessageToProto(message: AppClineMessage): ProtoCline
 	}
 
 	const protoMessage: ProtoClineMessage = {
-		ts: message.ts,
+		ts: String(message.ts), // Convert number to string for proto
 		type: message.type === "ask" ? ClineMessageType.ASK : ClineMessageType.SAY,
 		ask: finalAskEnum,
 		say: finalSayEnum,
@@ -229,7 +251,7 @@ export function convertClineMessageToProto(message: AppClineMessage): ProtoCline
  */
 export function convertProtoToClineMessage(protoMessage: ProtoClineMessage): AppClineMessage {
 	const message: AppClineMessage = {
-		ts: convertInt64ToNumber(protoMessage.ts),
+		ts: convertTimestampToNumber(protoMessage.ts),
 		type: protoMessage.type === ClineMessageType.ASK ? "ask" : "say",
 	}
 

@@ -110,6 +110,13 @@ export const TaskStateContextProvider: React.FC<{
 						return
 					}
 
+					// Filter out initial handshake messages (empty messages with no content)
+					// These are sent to establish the subscription but should not be displayed
+					if (!partialMessage.ask && !partialMessage.say && !partialMessage.text) {
+						debug.log("[DEBUG] Ignoring empty handshake message")
+						return
+					}
+
 					setClineMessages((prevMessages) => {
 						const lastIndex = findLastIndex(prevMessages, (msg) => msg.ts === partialMessage.ts)
 						if (lastIndex !== -1) {
