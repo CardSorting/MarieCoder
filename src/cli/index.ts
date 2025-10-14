@@ -279,8 +279,11 @@ class MarieCli {
 				try {
 					const state = await controller.getStateToPostToWebview()
 
-					// Check if task is complete
-					if (!controller.task || !state.currentTaskItem) {
+					// Check if task is complete by checking:
+					// 1. Task has been cleared (controller.task is null)
+					// 2. Task has been aborted/completed (taskState.abort is true)
+					// 3. Current task item is no longer in state
+					if (!controller.task || !state.currentTaskItem || controller.task?.taskState?.abort) {
 						clearInterval(checkInterval)
 						console.log("\n✅ Task completed")
 						resolve()

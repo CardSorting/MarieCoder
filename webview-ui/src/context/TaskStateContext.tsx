@@ -22,7 +22,7 @@ import type React from "react"
 import { createContext, useContext, useEffect, useRef, useState } from "react"
 import { createContextSelector } from "@/hooks/use_context_selector"
 import { debug, logError } from "@/utils/debug_logger"
-import { UiServiceClient } from "../services/grpc-client"
+import { StateServiceClient, UiServiceClient } from "../services/grpc-client"
 
 export interface TaskStateContextType {
 	// Task state
@@ -50,6 +50,44 @@ export const TaskStateContextProvider: React.FC<{
 
 	// Subscription refs
 	const partialMessageUnsubscribeRef = useRef<(() => void) | null>(null)
+	const stateSubscriptionRef = useRef<(() => void) | null>(null)
+
+	// Subscribe to state updates to sync full message state
+	useEffect(() => {
+		stateSubscriptionRef.current = StateServiceClient.subscribeToState(EmptyRequest.create({}), {
+			onResponse: (response) => {
+				if (response.stateJson) {
+					try {
+						const stateData = JSON.parse(response.stateJson)
+						if (stateData.clineMessages) {
+							setClineMessages(stateData.clineMessages)
+						}
+						if (stateData.taskHistory) {
+							setTaskHistory(stateData.taskHistory)
+						}
+						if (stateData.currentTaskItem?.id) {
+							setCurrentTaskId(stateData.currentTaskItem.id)
+						}
+					} catch (error) {
+						logError("Error parsing state JSON in TaskStateContext:", error)
+					}
+				}
+			},
+			onError: (error) => {
+				logError("Error in state subscription:", error)
+			},
+			onComplete: () => {
+				debug.log("[DEBUG] state subscription completed")
+			},
+		})
+
+		return () => {
+			if (stateSubscriptionRef.current) {
+				stateSubscriptionRef.current()
+				stateSubscriptionRef.current = null
+			}
+		}
+	}, [])
 
 	// Subscribe to partial message updates
 	useEffect(() => {
@@ -66,11 +104,16 @@ export const TaskStateContextProvider: React.FC<{
 					setClineMessages((prevMessages) => {
 						const lastIndex = findLastIndex(prevMessages, (msg) => msg.ts === partialMessage.ts)
 						if (lastIndex !== -1) {
+							// Update existing message
 							const newMessages = [...prevMessages]
 							newMessages[lastIndex] = partialMessage
 							return newMessages
+						} else {
+							// Add new message if it doesn't exist
+							// This handles the case where partial messages arrive before
+							// the full state sync, ensuring task execution updates are not lost
+							return [...prevMessages, partialMessage]
 						}
-						return prevMessages
 					})
 				} catch (error) {
 					logError("Failed to process partial message:", error, protoMessage)

@@ -337,6 +337,9 @@ export class TaskLifecycleService {
 
 			//const totalCost = this.calculateApiCost(totalInputTokens, totalOutputTokens)
 			if (didEndLoop) {
+				// Task loop has completed - set abort flag to signal completion
+				// This allows CLI and other environments to detect when the task has finished
+				this.deps.taskState.abort = true
 				// For now a task never 'completes'. This will only happen if the user hits max requests and denies resetting the count.
 				//this.say("task_completed", `Task completed. Total API usage cost: ${totalCost}`)
 				break

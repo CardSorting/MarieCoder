@@ -55,13 +55,23 @@ declare global {
 // Initialize the vscode API if available
 const vsCodeApi = typeof acquireVsCodeApi === "function" ? acquireVsCodeApi() : null
 
+// Log API initialization status
+if (!vsCodeApi) {
+	debug.error("[PLATFORM_CONFIG] CRITICAL: VSCode API not available! acquireVsCodeApi =", typeof acquireVsCodeApi)
+} else {
+	debug.log("[PLATFORM_CONFIG] VSCode API successfully acquired")
+}
+
 // Implementations for post message handling
 const postMessageStrategies: Record<string, PostMessageFunction> = {
 	vscode: (message: any) => {
 		if (vsCodeApi) {
 			vsCodeApi.postMessage(message)
 		} else {
-			debug.log("postMessage fallback: ", message)
+			debug.error("[PLATFORM_CONFIG] CRITICAL: Attempted to post message but VSCode API is null:", message.type)
+			debug.error(
+				"[PLATFORM_CONFIG] This means the webview is not properly initialized. Check if acquireVsCodeApi is available.",
+			)
 		}
 	},
 	standalone: (message: any) => {
