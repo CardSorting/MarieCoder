@@ -10,6 +10,7 @@
 
 import DOMPurify from "dompurify"
 import Fuse from "fuse.js"
+import type { RendererObject, TokenizerAndRendererExtension } from "marked"
 import { marked } from "marked"
 
 /**
@@ -29,7 +30,7 @@ function escapeHtml(text: string): string {
 /**
  * Custom renderer to prevent filename patterns from becoming bold
  */
-const customRenderer: Partial<marked.RendererObject> = {
+const customRenderer: Partial<RendererObject> = {
 	strong({ text }: { text: string }) {
 		// Check if this looks like a filename pattern (__name__)
 		const filenamePattern = /^([a-zA-Z0-9_-]+)$/
@@ -67,7 +68,7 @@ const customRenderer: Partial<marked.RendererObject> = {
 /**
  * Auto-link extension
  */
-const autoLinkExtension: marked.TokenizerExtension & marked.RendererExtension = {
+const autoLinkExtension: TokenizerAndRendererExtension = {
 	name: "autolink",
 	level: "inline" as const,
 	start(src: string) {
@@ -139,7 +140,7 @@ interface WorkerResult {
 /**
  * Worker message handler
  */
-self.addEventListener("message", (event: MessageEvent<WorkerTask>) => {
+self.addEventListener("message", async (event: MessageEvent<WorkerTask>) => {
 	const { id, type, data } = event.data
 	const startTime = performance.now()
 
@@ -151,7 +152,7 @@ self.addEventListener("message", (event: MessageEvent<WorkerTask>) => {
 				const { markdown, options = {} } = data
 
 				// Parse markdown (marked is already configured)
-				let html = options.inline ? marked.parseInline(markdown) : marked.parse(markdown)
+				let html = options.inline ? await marked.parseInline(markdown) : await marked.parse(markdown)
 
 				// Apply custom post-processing
 				html = highlightActMode(html)

@@ -236,6 +236,7 @@ export class ApiStreamManager {
 	 * Flush any pending throttled updates at the end of streaming
 	 *
 	 * Ensures the final state is presented even if the last update was throttled.
+	 * Finalizes partial messages by setting partial=false.
 	 *
 	 * @param reasoningMessage - Final reasoning message
 	 * @param thinkingMessage - Final extended thinking message
@@ -254,9 +255,27 @@ export class ApiStreamManager {
 				await this.messageService.say("reasoning", finalThinking, undefined, undefined, false)
 			}
 
-			// Flush final text content
+			// Flush final text content and finalize the partial message
 			if (assistantMessage) {
-				await this.parseAndPresentStreamingText(assistantMessage)
+				// Send final text with partial=false to complete the streaming message
+				await this.messageService.say("text", assistantMessage, undefined, undefined, false)
+
+				// Parse and update task state for tool execution (without sending partial message)
+				try {
+					const parsedContent = parseAssistantMessageV2(assistantMessage)
+					const previousContentLength = this.taskState.assistantMessageContent.length
+					this.taskState.assistantMessageContent = parsedContent
+
+					// Trigger presentation if new content was added
+					if (this.presentAssistantMessage && parsedContent.length > previousContentLength) {
+						this.taskState.userMessageContentReady = false
+						this.presentAssistantMessage().catch((error) => {
+							console.error("Error presenting final content:", error)
+						})
+					}
+				} catch (error) {
+					console.error("Error parsing final text:", error)
+				}
 			}
 		} catch (error) {
 			console.error("Error flushing pending updates:", error)
@@ -304,11 +323,17 @@ export class ApiStreamManager {
 	 * assistantMessageContent array. If presentAssistantMessage is provided,
 	 * it triggers UI updates to show content as it streams.
 	 *
+	 * Also sends partial text message to webview for real-time streaming display.
+	 *
 	 * @param assistantMessage - The accumulated assistant message text
 	 * @private
 	 */
 	private async parseAndPresentStreamingText(assistantMessage: string): Promise<void> {
 		try {
+			// Send partial text message to webview for streaming display
+			// This ensures the UI updates in real-time as text streams in
+			await this.messageService.say("text", assistantMessage, undefined, undefined, true)
+
 			// Parse the accumulated text to extract content blocks (text + tool_use)
 			const parsedContent = parseAssistantMessageV2(assistantMessage)
 

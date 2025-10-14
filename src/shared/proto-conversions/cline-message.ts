@@ -22,6 +22,12 @@ function convertInt64ToNumber(value: any): number {
 		if ("toNumber" in value && typeof value.toNumber === "function") {
 			return value.toNumber()
 		}
+		// Log unexpected object format for debugging
+		console.error("[convertInt64ToNumber] Unexpected timestamp object format:", {
+			value,
+			keys: Object.keys(value),
+			type: typeof value,
+		})
 	}
 	return 0
 }

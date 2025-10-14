@@ -336,7 +336,7 @@ export function createOptimisticUpdate<T>(
 	onSuccess?: (value: T) => void,
 	onError?: (error: Error, rollback: T) => void,
 ): { execute: () => Promise<void>; rollback: T } {
-	let rollbackValue: T
+	const rollbackValue: T = optimisticValue
 
 	return {
 		execute: async () => {

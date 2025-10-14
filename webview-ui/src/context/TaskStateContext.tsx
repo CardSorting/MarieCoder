@@ -102,6 +102,9 @@ export const TaskStateContextProvider: React.FC<{
 					if (!partialMessage.ts || partialMessage.ts <= 0) {
 						logError("Invalid timestamp in partial message:", {
 							ts: partialMessage.ts,
+							tsType: typeof partialMessage.ts,
+							protoTs: protoMessage.ts,
+							protoTsType: typeof protoMessage.ts,
 							type: partialMessage.type,
 						})
 						return
