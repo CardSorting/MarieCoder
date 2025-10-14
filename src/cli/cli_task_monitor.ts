@@ -28,7 +28,7 @@ export class CliTaskMonitor {
 		this.terminalOutputConfig = {
 			lineLimit: terminalConfig?.lineLimit || 500,
 			shellIntegrationTimeout: terminalConfig?.shellIntegrationTimeout || 30000,
-			terminalReuseEnabled: terminalConfig?.terminalReuseEnabled || true,
+			terminalReuseEnabled: terminalConfig?.terminalReuseEnabled ?? true,
 		}
 	}
 
@@ -141,7 +141,7 @@ export class CliTaskMonitor {
 					console.error("Error processing message:", error)
 				}
 			}
-		} catch (error) {
+		} catch (_error) {
 			// Silently ignore errors during monitoring
 			if (this.task) {
 				// Only log if verbose mode is on (we'd need to pass this in)

@@ -24,3 +24,59 @@ vi.stubGlobal("acquireVsCodeApi", () => ({
 	getState: vi.fn(),
 	setState: vi.fn(),
 }))
+
+// Mock IntersectionObserver
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+	observe: vi.fn(),
+	unobserve: vi.fn(),
+	disconnect: vi.fn(),
+	root: null,
+	rootMargin: "",
+	thresholds: [],
+	takeRecords: vi.fn(),
+}))
+
+// Mock ResizeObserver
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+	observe: vi.fn(),
+	unobserve: vi.fn(),
+	disconnect: vi.fn(),
+}))
+
+// Mock scrollIntoView
+Element.prototype.scrollIntoView = vi.fn()
+
+// Mock gRPC client for context tests
+vi.mock("./services/grpc-client", () => ({
+	UiServiceClient: {
+		subscribeToDidBecomeVisible: vi.fn(() => vi.fn()),
+		subscribeToFocusChatInput: vi.fn(() => vi.fn()),
+		subscribeToRelinquishControl: vi.fn(() => vi.fn()),
+		initializeWebview: vi.fn(() => Promise.resolve()),
+	},
+	StateServiceClient: {
+		subscribeToState: vi.fn(() => vi.fn()),
+		getAvailableTerminalProfiles: vi.fn(() => Promise.resolve({ profiles: [] })),
+	},
+	TaskServiceClient: {
+		subscribeToCurrentTask: vi.fn(() => vi.fn()),
+		subscribeToTaskHistory: vi.fn(() => vi.fn()),
+	},
+	ModelsServiceClient: {
+		subscribeToModels: vi.fn(() => vi.fn()),
+		getLmStudioModels: vi.fn(() => Promise.resolve({ models: [] })),
+	},
+	McpServiceClient: {
+		subscribeToMcpServers: vi.fn(() => vi.fn()),
+		subscribeToMcpMarketplaceCatalog: vi.fn(() => vi.fn()),
+	},
+}))
+
+// Mock debug logger
+vi.mock("./utils/debug_logger", () => ({
+	debug: {
+		log: vi.fn(),
+		error: vi.fn(),
+	},
+	logError: vi.fn(),
+}))

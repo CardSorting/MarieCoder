@@ -1,221 +1,231 @@
-import { ApiConfiguration } from "@shared/api"
-import { fireEvent, render, screen } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
-import { ExtensionStateContextProvider, useExtensionState } from "@/context/ExtensionStateContext"
+/**
+ * APIOptions Component Tests
+ *
+ * Tests for the API configuration options component
+ */
+
+import { render, screen } from "@testing-library/react"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+import { createMockExtensionState, mockVSCodeAPI } from "@/__tests__/test-utils"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 import ApiOptions from "../ApiOptions"
 
-vi.mock("../../../context/ExtensionStateContext", async (importOriginal) => {
-	const actual = await importOriginal()
+// Mock the ExtensionStateContext
+vi.mock("@/context/ExtensionStateContext", async (importOriginal) => {
+	const actual = (await importOriginal()) as any
 	return {
-		...(actual || {}),
-		// your mocked methods
-		useExtensionState: vi.fn(() => ({
-			apiConfiguration: {
-				planModeApiProvider: "requesty",
-				actModeApiProvider: "requesty",
-				requestyApiKey: "",
-				planModeRequestyModelId: "",
-				actModeRequestyModelId: "",
-			},
-			setApiConfiguration: vi.fn(),
-			requestyModels: {},
-			planActSeparateModelsSetting: false,
-		})),
+		...actual,
+		useExtensionState: vi.fn(),
 	}
 })
 
-const mockExtensionState = (apiConfiguration: Partial<ApiConfiguration>) => {
-	vi.mocked(useExtensionState).mockReturnValue({
-		apiConfiguration,
-		setApiConfiguration: vi.fn(),
-		requestyModels: {},
-		planActSeparateModelsSetting: false,
-	} as any)
-}
+// Mock the ModelsContext to prevent gRPC errors
+vi.mock("@/context/ModelsContext", () => ({
+	useModels: vi.fn(() => ({
+		openRouterModels: {
+			"anthropic/claude-3.5-sonnet": {
+				id: "anthropic/claude-3.5-sonnet",
+				name: "Claude 3.5 Sonnet",
+				maxTokens: 8000,
+				contextWindow: 200000,
+				supportsImages: true,
+				supportsPromptCache: false,
+				inputPrice: 3,
+				outputPrice: 15,
+			},
+		},
+		openRouterModelsLoading: false,
+		openRouterModelsError: null,
+	})),
+	ModelsContextProvider: ({ children }: { children: React.ReactNode }) => children,
+}))
 
-describe("ApiOptions Component", () => {
-	vi.clearAllMocks()
-	const mockPostMessage = vi.fn()
-
-	beforeEach(() => {
-		//@ts-expect-error - vscode is not defined in the global namespace in test environment
-		global.vscode = { postMessage: mockPostMessage }
-		mockExtensionState({
-			planModeApiProvider: "anthropic",
-			actModeApiProvider: "anthropic",
-		})
-	})
-
-	it("renders Requesty API Key input", () => {
-		render(
-			<ExtensionStateContextProvider>
-				<ApiOptions currentMode="plan" showModelOptions={true} />
-			</ExtensionStateContextProvider>,
-		)
-		const apiKeyInput = screen.getByPlaceholderText("Enter API Key...")
-		expect(apiKeyInput).toBeInTheDocument()
-	})
-
-	it("renders Requesty Model ID input", () => {
-		render(
-			<ExtensionStateContextProvider>
-				<ApiOptions currentMode="plan" showModelOptions={true} />
-			</ExtensionStateContextProvider>,
-		)
-		const modelIdInput = screen.getByPlaceholderText("Search and select a model...")
-		expect(modelIdInput).toBeInTheDocument()
-	})
-})
-
-describe("ApiOptions Component", () => {
-	vi.clearAllMocks()
-	const mockPostMessage = vi.fn()
-
-	beforeEach(() => {
-		//@ts-expect-error - vscode is not defined in the global namespace in test environment
-		global.vscode = { postMessage: mockPostMessage }
-		mockExtensionState({
-			planModeApiProvider: "openrouter",
-			actModeApiProvider: "openrouter",
-		})
-	})
-
-	it("renders Together API Key input", () => {
-		render(
-			<ExtensionStateContextProvider>
-				<ApiOptions currentMode="plan" showModelOptions={true} />
-			</ExtensionStateContextProvider>,
-		)
-		const apiKeyInput = screen.getByPlaceholderText("Enter API Key...")
-		expect(apiKeyInput).toBeInTheDocument()
-	})
-
-	it("renders Together Model ID input", () => {
-		render(
-			<ExtensionStateContextProvider>
-				<ApiOptions currentMode="plan" showModelOptions={true} />
-			</ExtensionStateContextProvider>,
-		)
-		const modelIdInput = screen.getByPlaceholderText("Enter Model ID...")
-		expect(modelIdInput).toBeInTheDocument()
-	})
-})
-
-describe("ApiOptions Component", () => {
-	vi.clearAllMocks()
-	const mockPostMessage = vi.fn()
-
-	beforeEach(() => {
-		//@ts-expect-error - vscode is not defined in the global namespace in test environment
-		global.vscode = { postMessage: mockPostMessage }
-
-		mockExtensionState({
-			planModeApiProvider: "anthropic",
-			actModeApiProvider: "anthropic",
-		})
-	})
-
-	it("renders Fireworks API Key input", () => {
-		render(
-			<ExtensionStateContextProvider>
-				<ApiOptions currentMode="plan" showModelOptions={true} />
-			</ExtensionStateContextProvider>,
-		)
-		const apiKeyInput = screen.getByPlaceholderText("Enter API Key...")
-		expect(apiKeyInput).toBeInTheDocument()
-	})
-
-	it("renders Fireworks Model Select", () => {
-		render(
-			<ExtensionStateContextProvider>
-				<ApiOptions currentMode="plan" showModelOptions={true} />
-			</ExtensionStateContextProvider>,
-		)
-		const modelIdSelect = screen.getByLabelText("Model")
-		expect(modelIdSelect).toBeInTheDocument()
-		expect(modelIdSelect).toHaveValue("accounts/fireworks/models/kimi-k2-instruct-0905")
-	})
-})
-
-describe("OpenApiInfoOptions", () => {
-	const mockPostMessage = vi.fn()
-
+describe("ApiOptions Component - Anthropic Provider", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
-		//@ts-expect-error - vscode is not defined in the global namespace in test environment
-		global.vscode = { postMessage: mockPostMessage }
-		mockExtensionState({
-			planModeApiProvider: "openrouter",
-			actModeApiProvider: "openrouter",
+		mockVSCodeAPI()
+
+		const mockState = createMockExtensionState({
+			apiConfiguration: {
+				planModeApiProvider: "anthropic",
+				actModeApiProvider: "anthropic",
+				anthropicApiKey: "",
+				planModeApiModelId: "claude-sonnet-4-20250514",
+				actModeApiModelId: "claude-sonnet-4-20250514",
+			},
 		})
+
+		vi.mocked(useExtensionState).mockReturnValue(mockState as any)
 	})
 
-	it("renders OpenAI Supports Images input", () => {
-		render(
-			<ExtensionStateContextProvider>
-				<ApiOptions currentMode="plan" showModelOptions={true} />
-			</ExtensionStateContextProvider>,
-		)
-		fireEvent.click(screen.getByText("Model Configuration"))
-		const apiKeyInput = screen.getByText("Supports Images")
-		expect(apiKeyInput).toBeInTheDocument()
+	it("renders API Provider selector", () => {
+		render(<ApiOptions currentMode="plan" showModelOptions={true} />)
+		const providerSelector = screen.getByTestId("provider-selector-input")
+		expect(providerSelector).toBeInTheDocument()
 	})
 
-	it("renders OpenAI Context Window Size input", () => {
-		render(
-			<ExtensionStateContextProvider>
-				<ApiOptions currentMode="plan" showModelOptions={true} />
-			</ExtensionStateContextProvider>,
-		)
-		fireEvent.click(screen.getByText("Model Configuration"))
-		const orgIdInput = screen.getByText("Context Window Size")
-		expect(orgIdInput).toBeInTheDocument()
-	})
-
-	it("renders OpenAI Max Output Tokens input", () => {
-		render(
-			<ExtensionStateContextProvider>
-				<ApiOptions currentMode="plan" showModelOptions={true} />
-			</ExtensionStateContextProvider>,
-		)
-		fireEvent.click(screen.getByText("Model Configuration"))
-		const modelInput = screen.getByText("Max Output Tokens")
-		expect(modelInput).toBeInTheDocument()
-	})
-})
-
-describe("ApiOptions Component", () => {
-	vi.clearAllMocks()
-	const mockPostMessage = vi.fn()
-
-	beforeEach(() => {
-		//@ts-expect-error - vscode is not defined in the global namespace in test environment
-		global.vscode = { postMessage: mockPostMessage }
-
-		mockExtensionState({
-			planModeApiProvider: "anthropic",
-			actModeApiProvider: "anthropic",
-		})
-	})
-
-	it("renders Nebius API Key input", () => {
-		render(
-			<ExtensionStateContextProvider>
-				<ApiOptions currentMode="plan" showModelOptions={true} />
-			</ExtensionStateContextProvider>,
-		)
+	it("renders Anthropic API Key input", () => {
+		render(<ApiOptions currentMode="plan" showModelOptions={true} />)
+		// Anthropic provider should render its own API key input
 		const apiKeyInput = screen.getByPlaceholderText("Enter API Key...")
 		expect(apiKeyInput).toBeInTheDocument()
 	})
 
-	it("renders Nebius Model ID select with a default model", () => {
-		render(
-			<ExtensionStateContextProvider>
-				<ApiOptions currentMode="plan" showModelOptions={true} />
-			</ExtensionStateContextProvider>,
-		)
+	it("renders Anthropic Model Select when showModelOptions is true", () => {
+		render(<ApiOptions currentMode="plan" showModelOptions={true} />)
 		const modelIdSelect = screen.getByLabelText("Model")
 		expect(modelIdSelect).toBeInTheDocument()
-		expect(modelIdSelect).toHaveValue("Qwen/Qwen2.5-32B-Instruct-fast")
+	})
+
+	it("does not render model options when showModelOptions is false", () => {
+		render(<ApiOptions currentMode="plan" showModelOptions={false} />)
+		const modelIdSelect = screen.queryByLabelText("Model")
+		expect(modelIdSelect).not.toBeInTheDocument()
+	})
+})
+
+describe("ApiOptions Component - OpenRouter Provider", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		mockVSCodeAPI()
+
+		const mockState = createMockExtensionState({
+			apiConfiguration: {
+				planModeApiProvider: "openrouter",
+				actModeApiProvider: "openrouter",
+				openRouterApiKey: "test-key",
+				planModeOpenRouterModelId: "anthropic/claude-3.5-sonnet",
+				actModeOpenRouterModelId: "anthropic/claude-3.5-sonnet",
+				planModeOpenRouterModelInfo: {
+					maxTokens: 8000,
+					contextWindow: 128000,
+					supportsImages: true,
+					supportsPromptCache: false,
+					inputPrice: 0,
+					outputPrice: 0,
+				},
+				actModeOpenRouterModelInfo: {
+					maxTokens: 8000,
+					contextWindow: 128000,
+					supportsImages: true,
+					supportsPromptCache: false,
+					inputPrice: 0,
+					outputPrice: 0,
+				},
+			},
+			openRouterModels: {
+				"anthropic/claude-3.5-sonnet": {
+					id: "anthropic/claude-3.5-sonnet",
+					name: "Claude 3.5 Sonnet",
+					maxTokens: 8000,
+					contextWindow: 200000,
+					supportsImages: true,
+					supportsPromptCache: false,
+					inputPrice: 3,
+					outputPrice: 15,
+				},
+			},
+			refreshOpenRouterModels: vi.fn(),
+			favoritedModelIds: [],
+		})
+
+		vi.mocked(useExtensionState).mockReturnValue(mockState as any)
+	})
+
+	it("renders API Provider selector", () => {
+		render(<ApiOptions currentMode="plan" showModelOptions={true} />)
+		const providerSelector = screen.getByTestId("provider-selector-input")
+		expect(providerSelector).toBeInTheDocument()
+	})
+
+	it("renders OpenRouter API Key input", () => {
+		render(<ApiOptions currentMode="plan" showModelOptions={true} />)
+		const apiKeyInput = screen.getByPlaceholderText("Enter API Key...")
+		expect(apiKeyInput).toBeInTheDocument()
+	})
+
+	it("renders OpenRouter Model Picker when showModelOptions is true", () => {
+		render(<ApiOptions currentMode="plan" showModelOptions={true} />)
+		// OpenRouter uses a custom model picker, not a simple input
+		// Check for the model label which is part of the picker UI
+		const modelLabel = screen.getByText("Model")
+		expect(modelLabel).toBeInTheDocument()
+	})
+})
+
+describe("ApiOptions Component - LM Studio Provider", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		mockVSCodeAPI()
+
+		const mockState = createMockExtensionState({
+			apiConfiguration: {
+				planModeApiProvider: "lmstudio",
+				actModeApiProvider: "lmstudio",
+				lmStudioBaseUrl: "http://localhost:1234",
+				planModeLmStudioModelId: "test-model",
+				actModeLmStudioModelId: "test-model",
+			},
+		})
+
+		vi.mocked(useExtensionState).mockReturnValue(mockState as any)
+	})
+
+	it("renders API Provider selector", () => {
+		render(<ApiOptions currentMode="plan" showModelOptions={true} />)
+		const providerSelector = screen.getByTestId("provider-selector-input")
+		expect(providerSelector).toBeInTheDocument()
+	})
+
+	it("renders LM Studio Base URL checkbox", () => {
+		render(<ApiOptions currentMode="plan" showModelOptions={true} />)
+		const baseUrlCheckbox = screen.getByText("Use custom base URL")
+		expect(baseUrlCheckbox).toBeInTheDocument()
+	})
+
+	it("renders LM Studio Model selector when showModelOptions is true", () => {
+		render(<ApiOptions currentMode="plan" showModelOptions={true} />)
+		// LM Studio should have a model dropdown
+		const modelLabel = screen.getByText("Model")
+		expect(modelLabel).toBeInTheDocument()
+	})
+})
+
+describe("ApiOptions Component - Error Messages", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		mockVSCodeAPI()
+
+		const mockState = createMockExtensionState({
+			apiConfiguration: {
+				planModeApiProvider: "anthropic",
+				actModeApiProvider: "anthropic",
+			},
+		})
+
+		vi.mocked(useExtensionState).mockReturnValue(mockState as any)
+	})
+
+	it("displays API error message when provided", () => {
+		render(<ApiOptions apiErrorMessage="Invalid API key" currentMode="plan" showModelOptions={true} />)
+		expect(screen.getByText("Invalid API key")).toBeInTheDocument()
+	})
+
+	it("displays model ID error message when provided", () => {
+		render(<ApiOptions currentMode="plan" modelIdErrorMessage="Invalid model ID" showModelOptions={true} />)
+		expect(screen.getByText("Invalid model ID")).toBeInTheDocument()
+	})
+
+	it("displays both error messages when both are provided", () => {
+		render(
+			<ApiOptions
+				apiErrorMessage="Invalid API key"
+				currentMode="plan"
+				modelIdErrorMessage="Invalid model ID"
+				showModelOptions={true}
+			/>,
+		)
+		expect(screen.getByText("Invalid API key")).toBeInTheDocument()
+		expect(screen.getByText("Invalid model ID")).toBeInTheDocument()
 	})
 })

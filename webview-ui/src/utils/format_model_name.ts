@@ -76,9 +76,13 @@ export function formatModelName(fullModelName: string): { full: string; short: s
 			let formattedModel = modelName
 
 			if (modelMaker === "anthropic") {
+				// claude-3.5-sonnet -> sonnet-3.5
 				// claude-3-5-sonnet-20241022 -> sonnet-3.5
+				// claude-sonnet-4-20250514 -> sonnet-4
 				const tierMatch = modelName.match(/(opus|sonnet|haiku)/)
-				const versionMatch = modelName.match(/claude-(\d+)-(\d+)/) || modelName.match(/-([\d]+)/)
+				// Match both claude-3.5-sonnet and claude-3-5-sonnet formats
+				const versionMatch =
+					modelName.match(/claude-(\d+)\.(\d+)/) || modelName.match(/claude-(\d+)-(\d+)/) || modelName.match(/-([\d]+)/)
 
 				if (tierMatch) {
 					const tier = tierMatch[1]
@@ -120,11 +124,17 @@ export function formatModelName(fullModelName: string): { full: string; short: s
 	else if (provider === "google" || provider === "vertex") {
 		// gemini-1.5-pro-002 -> gemini-1.5-pro
 		// gemini-2.0-flash-exp -> gemini-2.0-flash
-		const modelWithoutSuffix = modelId
+		const cleanedModel = modelId
 			.replace(/-\d{3}$/, "") // Remove version suffixes like -002
 			.replace(/-exp$/, "") // Remove experimental suffix
 			.replace(/-preview$/, "") // Remove preview suffix
-		shortName = `${provider}:${modelWithoutSuffix}`
+
+		// Only use this if it actually shortened the name
+		if (cleanedModel.length < modelId.length) {
+			shortName = `${provider}:${cleanedModel}`
+		} else {
+			shortName = fullModelName
+		}
 	}
 
 	// Bedrock models: Show the core model identifier
@@ -151,8 +161,8 @@ export function formatModelName(fullModelName: string): { full: string; short: s
 		shortName = `${provider}:${cleanedModel}`
 	}
 
-	// Final fallback: if shortName is still empty or same length, use original
-	if (!shortName || shortName.length >= fullModelName.length - 5) {
+	// Final fallback: if shortName is still empty, use original
+	if (!shortName) {
 		shortName = fullModelName
 	}
 

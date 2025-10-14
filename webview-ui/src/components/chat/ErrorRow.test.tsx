@@ -82,7 +82,7 @@ describe("ErrorRow", () => {
 			expect(screen.getByText("Request ID: req_123456")).toBeInTheDocument()
 		})
 
-		it("renders auth error with sign in button when user is not signed in", async () => {
+		it("renders auth error with configuration message", async () => {
 			const mockClineError = {
 				message: "Authentication failed",
 				isErrorType: vi.fn((type) => type === "auth"),
@@ -96,7 +96,7 @@ describe("ErrorRow", () => {
 			render(<ErrorRow apiRequestFailedMessage="Authentication failed" errorType="error" message={mockMessage} />)
 
 			expect(screen.getByText("Authentication failed")).toBeInTheDocument()
-			expect(screen.getByText("Sign in to Marie")).toBeInTheDocument()
+			expect(screen.getByText("Please check your API configuration and credentials.")).toBeInTheDocument()
 		})
 
 		it("renders PowerShell troubleshooting link when error mentions PowerShell", async () => {
@@ -146,11 +146,11 @@ describe("ErrorRow", () => {
 
 			render(<ErrorRow apiRequestFailedMessage="Some API error" errorType="error" message={mockMessage} />)
 
-			// When ClineError.parse returns null, clineErrorMessage is undefined, so it renders an empty paragraph
+			// When ClineError.parse returns null, clineErrorMessage is undefined, so it renders an empty alert
 			// The fallback to message.text only happens when there's no apiRequestFailedMessage at all
-			const paragraph = screen.getByRole("paragraph")
-			expect(paragraph).toBeInTheDocument()
-			expect(paragraph).toBeEmptyDOMElement()
+			const alert = screen.getByRole("alert")
+			expect(alert).toBeInTheDocument()
+			expect(alert).toBeEmptyDOMElement()
 		})
 
 		it("renders regular error message when no API error messages are provided", () => {
