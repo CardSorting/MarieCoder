@@ -4,12 +4,13 @@
  * Provides factory functions to create mock data for testing
  */
 
-import type { ChatMessage, TaskItem } from "@shared/types"
+import type { ClineMessage } from "@shared/ExtensionMessage"
+import type { HistoryItem } from "@shared/HistoryItem"
 
 /**
  * Create a mock chat message
  */
-export const createMockChatMessage = (overrides: Partial<ChatMessage> = {}): ChatMessage => ({
+export const createMockChatMessage = (overrides: Partial<ClineMessage> = {}): ClineMessage => ({
 	type: "say",
 	say: "text",
 	text: "Test message",
@@ -20,7 +21,7 @@ export const createMockChatMessage = (overrides: Partial<ChatMessage> = {}): Cha
 /**
  * Create a mock task item
  */
-export const createMockTask = (overrides: Partial<TaskItem> = {}): TaskItem => ({
+export const createMockTask = (overrides: Partial<HistoryItem> = {}): HistoryItem => ({
 	id: "test-task-id",
 	task: "Test task",
 	ts: Date.now(),
@@ -29,8 +30,6 @@ export const createMockTask = (overrides: Partial<TaskItem> = {}): TaskItem => (
 	cacheWrites: 0,
 	cacheReads: 0,
 	totalCost: 0,
-	dirAbsolutePath: "/test/path",
-	conversationHistory: [],
 	...overrides,
 })
 
@@ -46,7 +45,7 @@ export const createMockApiResponse = (overrides = {}) => ({
 /**
  * Create mock conversation history
  */
-export const createMockConversationHistory = (length = 3): ChatMessage[] => {
+export const createMockConversationHistory = (length = 3): ClineMessage[] => {
 	return Array.from({ length }, (_, i) =>
 		createMockChatMessage({
 			text: `Message ${i + 1}`,
@@ -58,10 +57,8 @@ export const createMockConversationHistory = (length = 3): ChatMessage[] => {
 /**
  * Create a mock task with history
  */
-export const createMockTaskWithHistory = (messageCount = 3): TaskItem => {
-	return createMockTask({
-		conversationHistory: createMockConversationHistory(messageCount),
-	})
+export const createMockTaskWithHistory = (messageCount = 3): HistoryItem => {
+	return createMockTask()
 }
 
 /**
@@ -77,10 +74,9 @@ export const createMockImageData = () => ({
  */
 export const createMockMcpServer = (overrides = {}) => ({
 	name: "test-server",
-	command: "test-command",
-	args: [],
+	config: "test-config",
+	status: "disconnected" as const,
 	disabled: false,
-	alwaysAllow: [],
 	...overrides,
 })
 

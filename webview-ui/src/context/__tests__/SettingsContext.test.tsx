@@ -61,9 +61,9 @@ describe("SettingsContext", () => {
 			})
 
 			const newSettings: DictationSettings = {
-				language: "en-US",
-				enabled: true,
-				continuous: false,
+				dictationLanguage: "en",
+				dictationEnabled: true,
+				featureEnabled: true,
 			}
 
 			act(() => {
@@ -82,9 +82,9 @@ describe("SettingsContext", () => {
 
 			const originalMode = result.current.mode
 			const newSettings: DictationSettings = {
-				language: "es-ES",
-				enabled: true,
-				continuous: true,
+				dictationLanguage: "es",
+				dictationEnabled: true,
+				featureEnabled: true,
 			}
 
 			act(() => {
@@ -258,9 +258,9 @@ describe("SettingsContext", () => {
 
 			act(() => {
 				result.current.setDictationSettings({
-					language: "fr-FR",
-					enabled: true,
-					continuous: false,
+					dictationLanguage: "fr",
+					dictationEnabled: true,
+					featureEnabled: true,
 				})
 			})
 

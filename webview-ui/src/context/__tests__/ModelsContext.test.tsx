@@ -8,9 +8,9 @@
  * - Refresh functions
  */
 
+import type { ModelInfo } from "@shared/api"
 import { act, renderHook } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import type { ModelInfo } from "../../../../../src/shared/api"
 import { ModelsContextProvider, useModelsState } from "../ModelsContext"
 
 describe("ModelsContext", () => {
@@ -334,7 +334,6 @@ describe("ModelsContext", () => {
 					inputPrice: 0.003,
 					outputPrice: 0.015,
 					description: "A full-featured model",
-					tier: "premium",
 				},
 			}
 
@@ -350,7 +349,6 @@ describe("ModelsContext", () => {
 			expect(model.inputPrice).toBe(0.003)
 			expect(model.outputPrice).toBe(0.015)
 			expect(model.description).toBe("A full-featured model")
-			expect(model.tier).toBe("premium")
 		})
 
 		it("should handle models with minimal properties", () => {

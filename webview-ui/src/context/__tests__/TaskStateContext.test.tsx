@@ -93,7 +93,7 @@ describe("TaskStateContext", () => {
 				{
 					ts: Date.now(),
 					type: "say",
-					say: "test",
+					say: "text",
 					text: "Hello world",
 				},
 			]
@@ -181,7 +181,7 @@ describe("TaskStateContext", () => {
 				{
 					ts: Date.now(),
 					type: "say",
-					say: "test",
+					say: "text",
 					text: "Message 1",
 				},
 			]
@@ -190,7 +190,7 @@ describe("TaskStateContext", () => {
 				{
 					ts: Date.now(),
 					type: "say",
-					say: "test",
+					say: "text",
 					text: "Message 2",
 				},
 			]
@@ -216,14 +216,14 @@ describe("TaskStateContext", () => {
 			const message1: ClineMessage = {
 				ts: Date.now(),
 				type: "say",
-				say: "test",
+				say: "text",
 				text: "Message 1",
 			}
 
 			const message2: ClineMessage = {
 				ts: Date.now() + 1000,
 				type: "say",
-				say: "test",
+				say: "text",
 				text: "Message 2",
 			}
 
@@ -251,7 +251,7 @@ describe("TaskStateContext", () => {
 				{
 					ts: Date.now(),
 					type: "say",
-					say: "test",
+					say: "text",
 					text: "Original",
 				},
 			]
@@ -319,7 +319,7 @@ describe("TaskStateContext", () => {
 				{
 					ts: Date.now(),
 					type: "say",
-					say: "test",
+					say: "text",
 					text: "Test message",
 				},
 			]
@@ -397,7 +397,7 @@ describe("TaskStateContext", () => {
 				{
 					ts: Date.now(),
 					type: "say",
-					say: "test",
+					say: "text",
 					text: "Test message",
 				},
 			]
@@ -436,7 +436,7 @@ describe("TaskStateContext", () => {
 			const largeMessageArray: ClineMessage[] = Array.from({ length: 100 }, (_, i) => ({
 				ts: Date.now() + i,
 				type: "say" as const,
-				say: "test" as const,
+				say: "text" as const,
 				text: `Message ${i}`,
 			}))
 
@@ -564,7 +564,7 @@ describe("TaskStateContext", () => {
 						{
 							ts: Date.now() + i,
 							type: "say",
-							say: "test",
+							say: "text",
 							text: `Update ${i}`,
 						},
 					])

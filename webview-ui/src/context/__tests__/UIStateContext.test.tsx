@@ -108,11 +108,11 @@ describe("UIStateContext", () => {
 			})
 
 			act(() => {
-				result.current.navigateToMcp("installed")
+				result.current.navigateToMcp("marketplace")
 			})
 
 			expect(result.current.showMcp).toBe(true)
-			expect(result.current.mcpTab).toBe("installed")
+			expect(result.current.mcpTab).toBe("marketplace")
 		})
 
 		it("should navigate to MCP without tab", () => {
@@ -171,11 +171,11 @@ describe("UIStateContext", () => {
 			})
 
 			act(() => {
-				result.current.navigateToMcp("installed")
+				result.current.navigateToMcp("configure")
 			})
 
 			expect(result.current.showMcp).toBe(true)
-			expect(result.current.mcpTab).toBe("installed")
+			expect(result.current.mcpTab).toBe("configure")
 
 			act(() => {
 				result.current.closeMcpView()
@@ -237,10 +237,10 @@ describe("UIStateContext", () => {
 			})
 
 			act(() => {
-				result.current.setMcpTab("servers")
+				result.current.setMcpTab("addRemote")
 			})
 
-			expect(result.current.mcpTab).toBe("servers")
+			expect(result.current.mcpTab).toBe("addRemote")
 		})
 	})
 
@@ -264,7 +264,7 @@ describe("UIStateContext", () => {
 			// Clean up
 			if (unsubscribe) {
 				act(() => {
-					unsubscribe()
+					unsubscribe?.()
 				})
 			}
 		})
@@ -285,7 +285,7 @@ describe("UIStateContext", () => {
 			// Unregister
 			if (unsubscribe) {
 				act(() => {
-					unsubscribe()
+					unsubscribe?.()
 				})
 			}
 
