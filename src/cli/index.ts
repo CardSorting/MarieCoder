@@ -17,12 +17,13 @@ import * as path from "node:path"
 import * as readline from "node:readline"
 import { StateManager } from "@/core/storage/StateManager"
 import { HostProvider } from "@/hosts/host-provider"
-import { TerminalManager } from "@/integrations/terminal/TerminalManager"
+import type { TerminalManager } from "@/integrations/terminal/TerminalManager"
 import { CliConfigManager } from "./cli_config_manager"
 import { CliContext } from "./cli_context"
 import { CliDiffViewProvider } from "./cli_diff_provider"
 import { CliHostBridgeClient } from "./cli_host_bridge"
 import { CliTaskMonitor } from "./cli_task_monitor"
+import { CliTerminalManager } from "./cli_terminal_manager"
 import { CliWebviewProvider } from "./cli_webview_provider"
 
 interface CliOptions {
@@ -80,7 +81,7 @@ class MarieCli {
 		HostProvider.initialize(
 			() => new CliWebviewProvider(this.context),
 			() => new CliDiffViewProvider(),
-			() => new TerminalManager(),
+			() => new CliTerminalManager() as unknown as TerminalManager,
 			cliHostBridge,
 			(message: string) => {
 				if (this.options.verbose) {
@@ -298,14 +299,28 @@ class MarieCli {
 		// Set API configuration in state manager
 		stateManager.setGlobalState("mode", mode)
 
-		const apiConfiguration = {
-			apiKey: config.apiKey,
+		// Build API configuration with provider-specific API keys
+		const apiConfiguration: any = {
 			planModeApiProvider: (config.planModeApiProvider || provider) as any,
 			planModeApiModelId: config.planModeApiModelId || model,
 			actModeApiProvider: (config.actModeApiProvider || provider) as any,
 			actModeApiModelId: config.actModeApiModelId || model,
 			temperature: config.temperature,
 			maxTokens: config.maxTokens,
+		}
+
+		// Map API key to provider-specific field
+		if (config.apiKey) {
+			if (provider === "openrouter") {
+				apiConfiguration.openRouterApiKey = config.apiKey
+			} else if (provider === "anthropic") {
+				apiConfiguration.apiKey = config.apiKey
+			} else if (provider === "openai") {
+				apiConfiguration.openAiApiKey = config.apiKey
+			} else {
+				// Default to generic apiKey for other providers
+				apiConfiguration.apiKey = config.apiKey
+			}
 		}
 
 		stateManager.setApiConfiguration(apiConfiguration)

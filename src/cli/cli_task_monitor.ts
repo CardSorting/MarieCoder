@@ -177,7 +177,42 @@ export class CliTaskMonitor {
 					}
 
 					case "tool": {
-						approved = await interactionHandler.showToolExecution("tool", { operation: text })
+						// Parse tool information from JSON
+						try {
+							const toolInfo = JSON.parse(text)
+
+							if (toolInfo.tool === "editedExistingFile" || toolInfo.tool === "newFileCreated") {
+								// Show file edit approval with diff
+								console.log("\n" + "─".repeat(80))
+								console.log(
+									`📝 ${toolInfo.tool === "editedExistingFile" ? "Editing File" : "Creating New File"}: ${toolInfo.path}`,
+								)
+								console.log("─".repeat(80))
+
+								if (toolInfo.content) {
+									// Show content/diff (truncate if too long)
+									const content = toolInfo.content
+									const lines = content.split("\n")
+									const maxLines = 50
+
+									if (lines.length > maxLines) {
+										console.log(lines.slice(0, maxLines).join("\n"))
+										console.log(`\n... (${lines.length - maxLines} more lines)`)
+									} else {
+										console.log(content)
+									}
+								}
+
+								console.log("─".repeat(80))
+								approved = await interactionHandler.askApproval("Approve this file change?", true)
+							} else {
+								// Generic tool execution
+								approved = await interactionHandler.showToolExecution(toolInfo.tool || "tool", toolInfo)
+							}
+						} catch (_parseError) {
+							// If JSON parsing fails, fall back to generic approval
+							approved = await interactionHandler.showToolExecution("tool", { operation: text })
+						}
 						break
 					}
 
