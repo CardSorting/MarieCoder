@@ -354,15 +354,19 @@ class CliDiffService implements DiffServiceClientInterface {
 		try {
 			const lines = diff.modifiedContent.split("\n")
 
-			// Validate line numbers
-			if (params.startLine < 1 || params.startLine > lines.length + 1) {
-				throw new Error(`Invalid start line: ${params.startLine} (file has ${lines.length} lines)`)
+			// Validate line numbers (0-indexed to match VSCode behavior)
+			if (params.startLine < 0 || params.startLine > lines.length) {
+				throw new Error(`Invalid start line: ${params.startLine} (file has ${lines.length} lines, 0-indexed)`)
 			}
 			if (params.endLine < params.startLine) {
 				throw new Error(`End line ${params.endLine} is before start line ${params.startLine}`)
 			}
+			if (params.endLine > lines.length) {
+				throw new Error(`Invalid end line: ${params.endLine} (file has ${lines.length} lines, 0-indexed)`)
+			}
 
-			lines.splice(params.startLine - 1, params.endLine - params.startLine + 1, params.content)
+			// Replace the specified range with new content (0-indexed)
+			lines.splice(params.startLine, params.endLine - params.startLine, params.content)
 			diff.modifiedContent = lines.join("\n")
 
 			return {}
