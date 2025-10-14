@@ -325,18 +325,24 @@ class CliDiffService implements DiffServiceClientInterface {
 
 	async openDiff(params: { path: string; content: string }): Promise<{ diffId: string }> {
 		const diffId = `diff-${this.nextDiffId++}`
-		const modifiedContent = await fs.readFile(params.path, "utf-8").catch(() => "")
 
-		this.diffs.set(diffId, {
-			path: params.path,
-			originalContent: params.content,
-			modifiedContent,
-		})
+		try {
+			// Try to read existing file content
+			const modifiedContent = await fs.readFile(params.path, "utf-8").catch(() => "")
 
-		// Show initial diff
-		this.showDiff(diffId)
+			this.diffs.set(diffId, {
+				path: params.path,
+				originalContent: params.content,
+				modifiedContent,
+			})
 
-		return { diffId }
+			// Show initial diff
+			this.showDiff(diffId)
+
+			return { diffId }
+		} catch (error) {
+			throw new Error(`Failed to open diff for ${params.path}: ${error instanceof Error ? error.message : String(error)}`)
+		}
 	}
 
 	async replaceText(params: { diffId: string; content: string; startLine: number; endLine: number }): Promise<{}> {
@@ -345,11 +351,24 @@ class CliDiffService implements DiffServiceClientInterface {
 			throw new Error(`Diff not found: ${params.diffId}`)
 		}
 
-		const lines = diff.modifiedContent.split("\n")
-		lines.splice(params.startLine - 1, params.endLine - params.startLine + 1, params.content)
-		diff.modifiedContent = lines.join("\n")
+		try {
+			const lines = diff.modifiedContent.split("\n")
 
-		return {}
+			// Validate line numbers
+			if (params.startLine < 1 || params.startLine > lines.length + 1) {
+				throw new Error(`Invalid start line: ${params.startLine} (file has ${lines.length} lines)`)
+			}
+			if (params.endLine < params.startLine) {
+				throw new Error(`End line ${params.endLine} is before start line ${params.startLine}`)
+			}
+
+			lines.splice(params.startLine - 1, params.endLine - params.startLine + 1, params.content)
+			diff.modifiedContent = lines.join("\n")
+
+			return {}
+		} catch (error) {
+			throw new Error(`Failed to replace text: ${error instanceof Error ? error.message : String(error)}`)
+		}
 	}
 
 	async truncateDocument(params: { diffId: string; endLine: number }): Promise<{}> {
@@ -370,10 +389,22 @@ class CliDiffService implements DiffServiceClientInterface {
 			throw new Error(`Diff not found: ${params.diffId}`)
 		}
 
-		await fs.writeFile(diff.path, diff.modifiedContent, "utf-8")
-		console.log(`✅ Saved: ${diff.path}`)
+		try {
+			// Ensure directory exists
+			const dir = path.dirname(diff.path)
+			await fs.mkdir(dir, { recursive: true })
 
-		return {}
+			// Write file with proper error handling
+			await fs.writeFile(diff.path, diff.modifiedContent, "utf-8")
+			console.log(`✅ Saved: ${diff.path}`)
+
+			// Clean up the diff after successful save
+			this.diffs.delete(params.diffId)
+
+			return {}
+		} catch (error) {
+			throw new Error(`Failed to save ${diff.path}: ${error instanceof Error ? error.message : String(error)}`)
+		}
 	}
 
 	async scrollDiff(_params: { diffId: string; line: number }): Promise<{}> {

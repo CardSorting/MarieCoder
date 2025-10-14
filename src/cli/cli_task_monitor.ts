@@ -119,14 +119,33 @@ export class CliTaskMonitor {
 			// Get current messages
 			const messages = (this.task as any).clineMessages || []
 
+			// Validate messages is an array
+			if (!Array.isArray(messages)) {
+				return
+			}
+
 			// Process any new messages
 			for (let i = this.lastProcessedMessageIndex + 1; i < messages.length; i++) {
 				const message = messages[i]
-				await this.handleMessage(message)
-				this.lastProcessedMessageIndex = i
+
+				// Skip invalid messages
+				if (!message || typeof message !== "object") {
+					continue
+				}
+
+				try {
+					await this.handleMessage(message)
+					this.lastProcessedMessageIndex = i
+				} catch (error) {
+					// Log individual message errors but continue processing
+					console.error("Error processing message:", error)
+				}
 			}
-		} catch (_error) {
+		} catch (error) {
 			// Silently ignore errors during monitoring
+			if (this.task) {
+				// Only log if verbose mode is on (we'd need to pass this in)
+			}
 		}
 	}
 
@@ -153,6 +172,18 @@ export class CliTaskMonitor {
 		}
 
 		this.isProcessingApproval = true
+
+		// Set a timeout to prevent hanging indefinitely
+		const timeoutId = setTimeout(
+			() => {
+				console.log("\n⚠️  Approval timeout - auto-rejecting after 5 minutes of no response")
+				if (this.task) {
+					this.task.handleWebviewAskResponse("noButtonClicked").catch(() => {})
+				}
+				this.isProcessingApproval = false
+			},
+			5 * 60 * 1000,
+		) // 5 minute timeout
 
 		try {
 			const interactionHandler = getInteractionHandler()
@@ -272,14 +303,21 @@ export class CliTaskMonitor {
 				}
 			}
 
+			// Clear timeout since we got a response
+			clearTimeout(timeoutId)
+
 			// Send response back to task
 			const response = approved ? "yesButtonClicked" : "noButtonClicked"
 			await this.task.handleWebviewAskResponse(response, feedbackText, feedbackImages, feedbackFiles)
 		} catch (error) {
 			console.error("Error handling approval:", error)
+			// Clear timeout
+			clearTimeout(timeoutId)
 			// Default to rejection on error
 			if (this.task) {
-				await this.task.handleWebviewAskResponse("noButtonClicked")
+				await this.task.handleWebviewAskResponse("noButtonClicked").catch(() => {
+					// Ignore errors in error handler
+				})
 			}
 		} finally {
 			this.isProcessingApproval = false

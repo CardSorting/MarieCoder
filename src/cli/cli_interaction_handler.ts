@@ -4,6 +4,11 @@
  */
 
 import * as readline from "node:readline"
+import { getLogger } from "./cli_logger"
+import { getProgressManager } from "./cli_progress_manager"
+
+const logger = getLogger()
+const progressManager = getProgressManager()
 
 export class CliInteractionHandler {
 	private rl: readline.Interface
@@ -18,15 +23,41 @@ export class CliInteractionHandler {
 	/**
 	 * Ask for user approval with yes/no prompt
 	 */
-	async askApproval(message: string, defaultYes = false): Promise<boolean> {
+	async askApproval(message: string, defaultYes = false, timeoutMs = 300000): Promise<boolean> {
 		const suffix = defaultYes ? "[Y/n]" : "[y/N]"
 		return new Promise((resolve) => {
+			let timeout: NodeJS.Timeout | null = null
+			let answered = false
+
+			const cleanup = () => {
+				if (timeout) {
+					clearTimeout(timeout)
+					timeout = null
+				}
+			}
+
+			// Set timeout if specified
+			if (timeoutMs > 0) {
+				timeout = setTimeout(() => {
+					if (!answered) {
+						answered = true
+						cleanup()
+						console.log("\n⏱️  Timeout - using default response")
+						resolve(defaultYes)
+					}
+				}, timeoutMs)
+			}
+
 			this.rl.question(`${message} ${suffix}: `, (answer) => {
-				const normalized = answer.trim().toLowerCase()
-				if (!normalized) {
-					resolve(defaultYes)
-				} else {
-					resolve(normalized === "y" || normalized === "yes")
+				if (!answered) {
+					answered = true
+					cleanup()
+					const normalized = answer.trim().toLowerCase()
+					if (!normalized) {
+						resolve(defaultYes)
+					} else {
+						resolve(normalized === "y" || normalized === "yes")
+					}
 				}
 			})
 		})
@@ -35,11 +66,37 @@ export class CliInteractionHandler {
 	/**
 	 * Ask for text input
 	 */
-	async askInput(prompt: string, defaultValue?: string): Promise<string> {
+	async askInput(prompt: string, defaultValue?: string, timeoutMs = 300000): Promise<string> {
 		const suffix = defaultValue ? ` (default: ${defaultValue})` : ""
 		return new Promise((resolve) => {
+			let timeout: NodeJS.Timeout | null = null
+			let answered = false
+
+			const cleanup = () => {
+				if (timeout) {
+					clearTimeout(timeout)
+					timeout = null
+				}
+			}
+
+			// Set timeout if specified
+			if (timeoutMs > 0) {
+				timeout = setTimeout(() => {
+					if (!answered) {
+						answered = true
+						cleanup()
+						console.log("\n⏱️  Timeout - using default value")
+						resolve(defaultValue || "")
+					}
+				}, timeoutMs)
+			}
+
 			this.rl.question(`${prompt}${suffix}: `, (answer) => {
-				resolve(answer.trim() || defaultValue || "")
+				if (!answered) {
+					answered = true
+					cleanup()
+					resolve(answer.trim() || defaultValue || "")
+				}
 			})
 		})
 	}
@@ -156,7 +213,8 @@ export class CliInteractionHandler {
 	 * Display progress message
 	 */
 	showProgress(message: string): void {
-		process.stdout.write(`\r⏳ ${message}`)
+		const spinner = progressManager.createSpinner(message)
+		spinner.start()
 	}
 
 	/**
@@ -170,28 +228,28 @@ export class CliInteractionHandler {
 	 * Display success message
 	 */
 	showSuccess(message: string): void {
-		console.log(`✅ ${message}`)
+		logger.success(message)
 	}
 
 	/**
 	 * Display error message
 	 */
 	showError(message: string): void {
-		console.log(`❌ ${message}`)
+		logger.error(message)
 	}
 
 	/**
 	 * Display info message
 	 */
 	showInfo(message: string): void {
-		console.log(`ℹ️  ${message}`)
+		logger.info(message)
 	}
 
 	/**
 	 * Display warning message
 	 */
 	showWarning(message: string): void {
-		console.log(`⚠️  ${message}`)
+		logger.warn(message)
 	}
 
 	/**

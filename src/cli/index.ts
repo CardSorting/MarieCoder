@@ -18,13 +18,24 @@ import * as readline from "node:readline"
 import { StateManager } from "@/core/storage/StateManager"
 import { HostProvider } from "@/hosts/host-provider"
 import type { TerminalManager } from "@/integrations/terminal/TerminalManager"
+import { getCancellationManager } from "./cli_cancellation"
 import { CliConfigManager } from "./cli_config_manager"
+import { getApiConnectionPoolManager } from "./cli_connection_pool"
 import { CliContext } from "./cli_context"
 import { CliDiffViewProvider } from "./cli_diff_provider"
 import { CliHostBridgeClient } from "./cli_host_bridge"
+import { getLogger, LogLevel } from "./cli_logger"
+import { getProgressManager } from "./cli_progress_manager"
+import { getDeduplicationManager } from "./cli_request_deduplicator"
 import { CliTaskMonitor } from "./cli_task_monitor"
 import { CliTerminalManager } from "./cli_terminal_manager"
 import { CliWebviewProvider } from "./cli_webview_provider"
+
+const logger = getLogger()
+const progressManager = getProgressManager()
+const cancellationManager = getCancellationManager()
+const apiConnectionPoolManager = getApiConnectionPoolManager()
+const deduplicationManager = getDeduplicationManager()
 
 interface CliOptions {
 	workspace: string
@@ -38,6 +49,9 @@ interface CliOptions {
 	terminalOutputLineLimit?: number
 	shellIntegrationTimeout?: number
 	terminalReuseEnabled?: boolean
+	logLevel?: LogLevel
+	maxConcurrentRequests?: number
+	requestsPerMinute?: number
 }
 
 class MarieCli {
@@ -51,6 +65,19 @@ class MarieCli {
 	private mentionsParser!: import("./cli_mentions_parser").CliMentionsParser
 
 	constructor(private options: CliOptions) {
+		// Configure logger
+		const logLevel = this.options.verbose ? LogLevel.DEBUG : (this.options.logLevel ?? LogLevel.INFO)
+		logger.setLevel(logLevel)
+
+		// Configure connection pool
+		if (this.options.maxConcurrentRequests || this.options.requestsPerMinute) {
+			apiConnectionPoolManager.createPool("api", {
+				maxConnections: this.options.maxConcurrentRequests || 10,
+				requestsPerMinute: this.options.requestsPerMinute || 60,
+				requestsPerSecond: 10,
+			})
+		}
+
 		this.rl = readline.createInterface({
 			input: process.stdin,
 			output: process.stdout,
@@ -66,11 +93,11 @@ class MarieCli {
 	 * Initialize the CLI environment
 	 */
 	async initialize(): Promise<void> {
-		console.log("\n⚡ Initializing MarieCoder CLI...")
-		console.log("─".repeat(80))
+		logger.info("Initializing MarieCoder CLI...")
+		logger.separator()
 
 		// Show workspace information
-		console.log(`📁 Workspace: ${this.options.workspace}`)
+		logger.info(`Workspace: ${this.options.workspace}`)
 
 		// Create CLI context
 		this.context = new CliContext(this.options.workspace)
@@ -99,9 +126,12 @@ class MarieCli {
 
 		// Initialize state manager (CLI-specific initialization)
 		try {
+			const spinner = progressManager.createSpinner("Initializing state manager")
+			spinner.start()
 			await StateManager.initialize(this.context)
+			spinner.succeed("State manager initialized")
 		} catch (error) {
-			console.error("[CLI] Failed to initialize StateManager:", error)
+			logger.error("Failed to initialize StateManager", error)
 			throw new Error("Failed to initialize MarieCoder's application state")
 		}
 
@@ -114,7 +144,10 @@ class MarieCli {
 		// Initialize MCP manager
 		const { CliMcpManager: McpManager } = await import("./cli_mcp_manager")
 		this.mcpManager = new McpManager(this.webviewProvider.controller, this.options.verbose || false)
+		const mcpSpinner = progressManager.createSpinner("Initializing MCP manager")
+		mcpSpinner.start()
 		await this.mcpManager.initialize()
+		mcpSpinner.succeed("MCP manager initialized")
 
 		// Initialize task history manager
 		const { CliTaskHistoryManager: HistoryManager } = await import("./cli_task_history_manager")
@@ -128,8 +161,9 @@ class MarieCli {
 		const { CliMentionsParser: MentionsParser } = await import("./cli_mentions_parser")
 		this.mentionsParser = new MentionsParser(this.options.workspace)
 
-		console.log("✅ MarieCoder CLI initialized")
-		console.log("─".repeat(80) + "\n")
+		logger.success("MarieCoder CLI initialized")
+		logger.separator()
+		console.log()
 	}
 
 	/**
@@ -585,16 +619,63 @@ class MarieCli {
 	 * Cleanup resources
 	 */
 	cleanup(): void {
-		this.taskMonitor.stopMonitoring()
-		if (this.mcpManager) {
-			this.mcpManager.cleanup().catch((error: unknown) => {
-				if (this.options.verbose) {
-					console.warn("Error during MCP cleanup:", error)
+		try {
+			logger.debug("Starting cleanup...")
+
+			// Cancel all ongoing operations
+			cancellationManager.cancelAll()
+
+			// Stop monitoring first to prevent new operations
+			this.taskMonitor.stopMonitoring()
+
+			// Close task if active
+			if (this.webviewProvider?.controller?.task) {
+				try {
+					this.webviewProvider.controller.clearTask().catch(() => {
+						// Ignore errors during cleanup
+					})
+				} catch {
+					// Ignore errors
 				}
+			}
+
+			// Cleanup MCP manager
+			if (this.mcpManager) {
+				this.mcpManager.cleanup().catch((error: unknown) => {
+					logger.warn("Error during MCP cleanup", error)
+				})
+			}
+
+			// Shutdown connection pool
+			apiConnectionPoolManager.shutdown().catch((error: unknown) => {
+				logger.warn("Error shutting down connection pool", error)
 			})
+
+			// Clear progress bars
+			progressManager.clear()
+
+			// Close readline interface
+			if (this.rl) {
+				this.rl.close()
+			}
+
+			// Dispose context
+			if (this.context) {
+				this.context.dispose()
+			}
+
+			// Cleanup terminal manager
+			try {
+				const terminalManager = HostProvider.get().createTerminalManager()
+				terminalManager.disposeAll()
+			} catch {
+				// Ignore if not initialized
+			}
+
+			logger.debug("Cleanup complete")
+		} catch (error) {
+			logger.error("Error during cleanup", error)
 		}
-		this.rl.close()
-		this.context.dispose()
 	}
 }
 
@@ -652,6 +733,13 @@ function parseArgs(args: string[]): {
 			options.autoApprove = true
 		} else if (arg === "--verbose") {
 			options.verbose = true
+		} else if (arg === "--log-level") {
+			const level = args[++i].toUpperCase()
+			options.logLevel = LogLevel[level as keyof typeof LogLevel] ?? LogLevel.INFO
+		} else if (arg === "--max-concurrent-requests") {
+			options.maxConcurrentRequests = Number.parseInt(args[++i], 10)
+		} else if (arg === "--requests-per-minute") {
+			options.requestsPerMinute = Number.parseInt(args[++i], 10)
 		} else if (!arg.startsWith("-")) {
 			// This is the prompt
 			prompt = args.slice(i).join(" ")
@@ -729,6 +817,9 @@ AI PROVIDER OPTIONS:
 EXECUTION OPTIONS:
   -y, --auto-approve                Auto-approve all actions (⚠️  use with caution!)
   --verbose                         Show detailed logging
+  --log-level <level>               Set log level (DEBUG, INFO, WARN, ERROR, SILENT)
+  --max-concurrent-requests <n>     Maximum concurrent API requests (default: 10)
+  --requests-per-minute <n>         Rate limit for API requests (default: 60)
 
 EXAMPLES:
 
@@ -937,16 +1028,53 @@ async function main() {
 		// Create CLI instance
 		const cli = new MarieCli(options)
 
+		// Track if cleanup has been called
+		let cleanupCalled = false
+		const doCleanup = (signal?: string) => {
+			if (cleanupCalled) {
+				return
+			}
+			cleanupCalled = true
+
+			if (signal) {
+				console.log(`\n\n👋 Received ${signal}, shutting down gracefully...`)
+			}
+
+			try {
+				cli.cleanup()
+			} catch (error) {
+				if (options.verbose) {
+					console.error("Error during cleanup:", error)
+				}
+			}
+		}
+
 		// Setup cleanup on exit
 		process.on("SIGINT", () => {
-			console.log("\n\n👋 Interrupted by user")
-			cli.cleanup()
-			process.exit(0)
+			doCleanup("SIGINT")
+			process.exit(130) // Standard exit code for SIGINT
 		})
 
 		process.on("SIGTERM", () => {
-			cli.cleanup()
-			process.exit(0)
+			doCleanup("SIGTERM")
+			process.exit(143) // Standard exit code for SIGTERM
+		})
+
+		process.on("exit", () => {
+			doCleanup()
+		})
+
+		// Handle uncaught errors
+		process.on("uncaughtException", (error) => {
+			console.error("\n❌ Uncaught exception:", error)
+			doCleanup()
+			process.exit(1)
+		})
+
+		process.on("unhandledRejection", (reason) => {
+			console.error("\n❌ Unhandled rejection:", reason)
+			doCleanup()
+			process.exit(1)
 		})
 
 		// Initialize

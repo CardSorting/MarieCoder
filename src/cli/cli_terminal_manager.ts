@@ -37,62 +37,85 @@ class CliTerminalProcess extends EventEmitter {
 
 	async run(terminalInfo: CliTerminalInfo, command: string): Promise<void> {
 		return new Promise((resolve, reject) => {
-			const shell = terminalInfo.shellPath || process.env.SHELL || "/bin/sh"
-			const proc = spawn(shell, ["-c", command], {
-				cwd: terminalInfo.cwd,
-				env: {
-					...process.env,
-					CLINE_ACTIVE: "true",
-				},
-				stdio: ["pipe", "pipe", "pipe"],
-			})
+			try {
+				const shell = terminalInfo.shellPath || process.env.SHELL || "/bin/sh"
+				const proc = spawn(shell, ["-c", command], {
+					cwd: terminalInfo.cwd,
+					env: {
+						...process.env,
+						CLINE_ACTIVE: "true",
+					},
+					stdio: ["pipe", "pipe", "pipe"],
+				})
 
-			terminalInfo.process = proc
+				terminalInfo.process = proc
 
-			// Handle stdout
-			proc.stdout?.on("data", (data: Buffer) => {
-				const text = data.toString()
-				this.fullOutput += text
-				this.emit("line", text)
-				this.markAsHot()
-			})
+				// Handle stdout
+				proc.stdout?.on("data", (data: Buffer) => {
+					try {
+						const text = data.toString()
+						this.fullOutput += text
+						this.emit("line", text)
+						this.markAsHot()
+					} catch (error) {
+						// Silently ignore encoding errors
+						console.error("Error processing stdout:", error)
+					}
+				})
 
-			// Handle stderr
-			proc.stderr?.on("data", (data: Buffer) => {
-				const text = data.toString()
-				this.fullOutput += text
-				this.emit("line", text)
-				this.markAsHot()
-			})
+				// Handle stderr
+				proc.stderr?.on("data", (data: Buffer) => {
+					try {
+						const text = data.toString()
+						this.fullOutput += text
+						this.emit("line", text)
+						this.markAsHot()
+					} catch (error) {
+						// Silently ignore encoding errors
+						console.error("Error processing stderr:", error)
+					}
+				})
 
-			// Handle process completion
-			proc.on("close", (code: number | null) => {
-				this.isHot = false
-				if (this.hotTimer) {
-					clearTimeout(this.hotTimer)
-					this.hotTimer = null
-				}
+				// Handle process completion
+				proc.on("close", (code: number | null, signal: NodeJS.Signals | null) => {
+					this.isHot = false
+					if (this.hotTimer) {
+						clearTimeout(this.hotTimer)
+						this.hotTimer = null
+					}
 
-				if (code === 0 || code === null) {
-					this.emit("completed")
-					resolve()
-				} else {
-					const error = new Error(`Command exited with code ${code}`)
+					if (signal) {
+						const error = new Error(`Command terminated by signal: ${signal}`)
+						this.emit("error", error)
+						reject(error)
+					} else if (code === 0 || code === null) {
+						this.emit("completed")
+						resolve()
+					} else {
+						const error = new Error(`Command exited with code ${code}`)
+						this.emit("error", error)
+						reject(error)
+					}
+				})
+
+				// Handle process errors
+				proc.on("error", (error: Error) => {
+					this.isHot = false
+					if (this.hotTimer) {
+						clearTimeout(this.hotTimer)
+						this.hotTimer = null
+					}
 					this.emit("error", error)
 					reject(error)
-				}
-			})
+				})
 
-			// Handle process errors
-			proc.on("error", (error: Error) => {
-				this.isHot = false
-				if (this.hotTimer) {
-					clearTimeout(this.hotTimer)
-					this.hotTimer = null
+				// Handle spawn errors
+				if (!proc.pid) {
+					throw new Error(`Failed to spawn shell process: ${shell}`)
 				}
-				this.emit("error", error)
-				reject(error)
-			})
+			} catch (error) {
+				reject(error instanceof Error ? error : new Error(String(error)))
+			}
 		})
 	}
 
@@ -235,7 +258,20 @@ export class CliTerminalManager {
 	disposeAll(): void {
 		for (const terminal of this.terminals.values()) {
 			if (terminal.process) {
-				terminal.process.kill()
+				try {
+					// Try graceful termination first
+					terminal.process.kill("SIGTERM")
+
+					// Force kill after timeout if still running
+					setTimeout(() => {
+						if (terminal.process && !terminal.process.killed) {
+							terminal.process.kill("SIGKILL")
+						}
+					}, 1000)
+				} catch (error) {
+					// Process might already be dead
+					console.error("Error killing terminal process:", error)
+				}
 			}
 		}
 		this.terminals.clear()
