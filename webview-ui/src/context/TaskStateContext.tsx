@@ -94,13 +94,19 @@ export const TaskStateContextProvider: React.FC<{
 		partialMessageUnsubscribeRef.current = UiServiceClient.subscribeToPartialMessage(EmptyRequest.create({}), {
 			onResponse: (protoMessage) => {
 				try {
-					// Validate critical fields
-					if (!protoMessage.ts || protoMessage.ts <= 0) {
-						logError("Invalid timestamp in partial message:", protoMessage)
+					// Convert proto message to application message
+					// This handles int64 timestamp conversion from protobuf
+					const partialMessage = convertProtoToClineMessage(protoMessage)
+
+					// Validate critical fields after conversion
+					if (!partialMessage.ts || partialMessage.ts <= 0) {
+						logError("Invalid timestamp in partial message:", {
+							ts: partialMessage.ts,
+							type: partialMessage.type,
+						})
 						return
 					}
 
-					const partialMessage = convertProtoToClineMessage(protoMessage)
 					setClineMessages((prevMessages) => {
 						const lastIndex = findLastIndex(prevMessages, (msg) => msg.ts === partialMessage.ts)
 						if (lastIndex !== -1) {

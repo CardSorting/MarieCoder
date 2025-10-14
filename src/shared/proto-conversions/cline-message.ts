@@ -2,6 +2,30 @@ import { ClineAsk as AppClineAsk, ClineMessage as AppClineMessage, ClineSay as A
 
 import { ClineAsk, ClineMessageType, ClineSay, ClineMessage as ProtoClineMessage } from "@shared/proto/cline/ui"
 
+/**
+ * Safely convert protobuf int64 to JavaScript number
+ * Protobuf int64 fields can be serialized as objects with {low, high} properties
+ */
+function convertInt64ToNumber(value: any): number {
+	if (typeof value === "number") {
+		return value
+	}
+	if (typeof value === "string") {
+		return parseInt(value, 10)
+	}
+	if (typeof value === "object" && value !== null) {
+		// Handle Long/int64 object with low/high properties
+		if ("low" in value && "high" in value) {
+			// Convert to number (assumes value fits in JavaScript safe integer range)
+			return value.high * 4294967296 + (value.low >>> 0)
+		}
+		if ("toNumber" in value && typeof value.toNumber === "function") {
+			return value.toNumber()
+		}
+	}
+	return 0
+}
+
 // Helper function to convert ClineAsk string to enum
 function convertClineAskToProtoEnum(ask: AppClineAsk | undefined): ClineAsk | undefined {
 	if (!ask) {
@@ -199,7 +223,7 @@ export function convertClineMessageToProto(message: AppClineMessage): ProtoCline
  */
 export function convertProtoToClineMessage(protoMessage: ProtoClineMessage): AppClineMessage {
 	const message: AppClineMessage = {
-		ts: protoMessage.ts,
+		ts: convertInt64ToNumber(protoMessage.ts),
 		type: protoMessage.type === ClineMessageType.ASK ? "ask" : "say",
 	}
 
