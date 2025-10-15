@@ -41,12 +41,13 @@ const ChatRow = memo(
 			const isInitialRender = prevHeightRef.current === 0 // prevents scrolling when new element is added since we already scroll for that
 			// height starts off at Infinity
 			if (isLast && height !== 0 && height !== Infinity && height !== prevHeightRef.current) {
-				if (!isInitialRender) {
+				// Only trigger height change if this is not the initial render AND the height actually changed
+				if (!isInitialRender && prevHeightRef.current > 0) {
 					onHeightChange(height > prevHeightRef.current)
 				}
 				prevHeightRef.current = height
 			}
-		}, [height, isLast, onHeightChange, message])
+		}, [height, isLast, onHeightChange])
 
 		// Apply animation classes based on message state
 		const isPartial = message.partial

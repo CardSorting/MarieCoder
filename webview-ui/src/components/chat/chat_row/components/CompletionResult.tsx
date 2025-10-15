@@ -1,12 +1,13 @@
 import { COMPLETION_RESULT_CHANGES_FLAG } from "@shared/ExtensionMessage"
 import { Int64Request } from "@shared/proto/cline/common"
-import { memo, useEffect, useState } from "react"
+import { memo, useEffect, useMemo, useState } from "react"
 import QuoteButton from "@/components/chat/QuoteButton"
 import TaskFeedbackButtons from "@/components/chat/TaskFeedbackButtons"
 import { Button } from "@/components/common/Button"
 import { WithCopyButton } from "@/components/common/CopyButton"
 import { useUIState } from "@/context/UIStateContext"
 import { TaskServiceClient } from "@/services/grpc-client"
+import { removeCodeBlocks } from "@/utils/chat/code_block_filter"
 import { debug } from "@/utils/debug_logger"
 import { Markdown } from "./Markdown"
 import { MessageHeader } from "./MessageHeader"
@@ -69,7 +70,10 @@ export const CompletionResult = memo(
 		}, [onRelinquishControl])
 
 		const hasChanges = text.endsWith(COMPLETION_RESULT_CHANGES_FLAG)
-		const displayText = hasChanges ? text.slice(0, -COMPLETION_RESULT_CHANGES_FLAG.length) : text
+		const rawText = hasChanges ? text.slice(0, -COMPLETION_RESULT_CHANGES_FLAG.length) : text
+
+		// Filter code blocks from completion text
+		const displayText = useMemo(() => removeCodeBlocks(rawText), [rawText])
 
 		const handleSeeChanges = () => {
 			setSeeNewChangesDisabled(true)

@@ -90,7 +90,9 @@ export const MessagesArea: React.FC<MessagesAreaProps> = ({
 						top: 3_000,
 						bottom: 10_000,
 					}}
-					initialTopMostItemIndex={groupedMessages.length - 1} // messages is the raw format returned by extension, modifiedMessages is the manipulated structure that combines certain messages of related type, and visibleMessages is the filtered structure that removes messages that should not be rendered
+					// Only set initial index if there are messages to scroll to
+					// This prevents scroll events on initial empty state
+					initialTopMostItemIndex={groupedMessages.length > 0 ? groupedMessages.length - 1 : 0}
 					itemContent={itemContent}
 					key={task.ts}
 					ref={virtuosoRef} // anything lower causes issues with followOutput
