@@ -8,8 +8,9 @@ import { PlanActMode, TogglePlanActModeRequest } from "@shared/proto/cline/state
 import { memo, useEffect, useRef, useState } from "react"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import MermaidBlock from "@/components/common/MermaidBlock"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { FileServiceClient, StateServiceClient } from "@/services/grpc-client"
+import { logError, logWarn } from "@/utils/debug_logger"
 import { renderMarkdown } from "@/utils/markdown_renderer"
 import { useWebWorker, WorkerTasks } from "@/utils/web_worker_manager"
 import { getMarkdownWorkerScript } from "@/workers"
@@ -23,7 +24,7 @@ const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 	const [htmlContent, setHtmlContent] = useState("")
 	const [mermaidBlocks, setMermaidBlocks] = useState<Array<{ id: string; code: string }>>([])
 	const containerRef = useRef<HTMLDivElement>(null)
-	const { mode } = useExtensionState()
+	const { mode } = useSettingsState()
 
 	// Initialize web worker for heavy markdown parsing with bundled dependencies
 	const { executeTask } = useWebWorker({
@@ -88,7 +89,7 @@ const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 						}
 					} catch (workerError) {
 						// Fallback to main thread if worker fails
-						console.warn("[MarkdownBlock] Worker failed, falling back to main thread:", workerError)
+						logWarn("[MarkdownBlock] Worker failed, falling back to main thread:", workerError)
 						html = await renderMarkdown(markdown, {
 							inline: false,
 							processFilePaths: true,
@@ -118,7 +119,7 @@ const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 				setMermaidBlocks(blocks)
 				setHtmlContent(processedHtml)
 			} catch (error) {
-				console.error("Failed to render markdown:", error)
+				logError("Failed to render markdown:", error)
 				setHtmlContent(
 					`<pre style="color: var(--vscode-errorForeground); padding: 8px;">Error rendering markdown: ${error instanceof Error ? error.message : String(error)}</pre>`,
 				)

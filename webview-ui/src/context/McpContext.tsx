@@ -12,13 +12,13 @@
  * - Better organization of MCP functionality
  */
 
+import type { McpMarketplaceCatalog, McpServer } from "@shared/mcp"
 import { EmptyRequest } from "@shared/proto/cline/common"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
 import type React from "react"
 import { createContext, useContext, useEffect, useRef, useState } from "react"
 import { createContextSelector } from "@/hooks/use_context_selector"
 import { debug, logError } from "@/utils/debug_logger"
-import type { McpMarketplaceCatalog, McpServer } from "../../../src/shared/mcp"
 import { McpServiceClient } from "../services/grpc-client"
 
 export interface McpContextType {

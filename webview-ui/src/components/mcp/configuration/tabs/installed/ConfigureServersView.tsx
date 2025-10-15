@@ -1,12 +1,14 @@
 import { EmptyRequest, StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useMcpState } from "@/context/McpContext"
+import { useUIState } from "@/context/UIStateContext"
 import { McpServiceClient, UiServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import ServersToggleList from "./ServersToggleList"
 
 const ConfigureServersView = () => {
-	const { mcpServers: servers, navigateToSettings } = useExtensionState()
+	const { mcpServers: servers } = useMcpState()
+	const { navigateToSettings } = useUIState()
 
 	return (
 		<div style={{ padding: "16px 20px" }}>

@@ -2,7 +2,8 @@ import { Int64Request } from "@shared/proto/index.cline"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useCallback } from "react"
 import { Megaphone } from "@/components/icons"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useModelsState } from "@/context/ModelsContext"
+import { useUIState } from "@/context/UIStateContext"
 import { StateServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { useMount } from "@/utils/hooks"
@@ -12,7 +13,8 @@ import { useApiConfigurationHandlers } from "../settings/utils/useApiConfigurati
 export const CURRENT_MODEL_BANNER_VERSION = 1
 
 export const NewModelBanner: React.FC = () => {
-	const { openRouterModels, setShowChatModelSelector, refreshOpenRouterModels } = useExtensionState()
+	const { openRouterModels, refreshOpenRouterModels } = useModelsState()
+	const { setShowChatModelSelector } = useUIState()
 	const { handleFieldsChange } = useApiConfigurationHandlers()
 
 	// Need to get latest model list in case user hits shortcut button to set model

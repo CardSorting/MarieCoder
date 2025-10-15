@@ -1,7 +1,7 @@
 import { StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { memo, useState } from "react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useTaskState } from "@/context/TaskStateContext"
 import { TaskServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { formatLargeNumber } from "@/utils/format"
@@ -11,7 +11,7 @@ type HistoryPreviewProps = {
 }
 
 const HistoryPreview = ({ showHistoryView }: HistoryPreviewProps) => {
-	const { taskHistory } = useExtensionState()
+	const { taskHistory } = useTaskState()
 	const [isExpanded, setIsExpanded] = useState(true)
 
 	const handleHistorySelect = (id: string) => {

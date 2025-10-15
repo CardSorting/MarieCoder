@@ -11,14 +11,16 @@ import {
 } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useMemo, useState } from "react"
 import { Virtuoso } from "react-virtuoso"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useMcpState } from "@/context/McpContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import McpMarketplaceCard from "./McpMarketplaceCard"
 import McpSubmitCard from "./McpSubmitCard"
 
 const McpMarketplaceView = () => {
-	const { mcpServers, mcpMarketplaceCatalog, setMcpMarketplaceCatalog, mcpMarketplaceEnabled } = useExtensionState()
+	const { mcpServers, mcpMarketplaceCatalog, setMcpMarketplaceCatalog } = useMcpState()
+	const { mcpMarketplaceEnabled } = useSettingsState()
 	const [isLoading, setIsLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 	const [isRefreshing, setIsRefreshing] = useState(false)

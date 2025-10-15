@@ -1,10 +1,10 @@
+import { BROWSER_VIEWPORT_PRESETS } from "@shared/BrowserSettings"
 import { EmptyRequest, StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton, VSCodeCheckbox, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import React, { useCallback, useEffect, useState } from "react"
+import { useSettingsState } from "@/context/SettingsContext"
+import { BrowserServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
-import { BROWSER_VIEWPORT_PRESETS } from "../../../../../src/shared/BrowserSettings"
-import { useExtensionState } from "../../../context/ExtensionStateContext"
-import { BrowserServiceClient } from "../../../services/grpc-client"
 import CollapsibleContent from "../CollapsibleContent"
 import { DebouncedTextField } from "../common/DebouncedTextField"
 import Section from "../Section"
@@ -47,7 +47,7 @@ const ConnectionStatusIndicator = ({
 }
 
 export const BrowserSettingsSection: React.FC<BrowserSettingsSectionProps> = ({ renderSectionHeader }) => {
-	const { browserSettings } = useExtensionState()
+	const { browserSettings } = useSettingsState()
 	const [isCheckingConnection, setIsCheckingConnection] = useState(false)
 	const [connectionStatus, setConnectionStatus] = useState<boolean | null>(null)
 	const [relaunchResult, setRelaunchResult] = useState<{ success: boolean; message: string } | null>(null)

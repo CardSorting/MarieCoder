@@ -1,6 +1,6 @@
 import { anthropicModels, CLAUDE_SONNET_1M_SUFFIX } from "@shared/api"
 import { Mode } from "@shared/storage/types"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { ApiKeyField } from "../common/ApiKeyField"
 import { BaseUrlField } from "../common/BaseUrlField"
 import { ContextWindowSwitcher } from "../common/ContextWindowSwitcher"
@@ -34,7 +34,7 @@ interface AnthropicProviderProps {
  * The Anthropic provider configuration component
  */
 export const AnthropicProvider = ({ showModelOptions, isPopup, currentMode }: AnthropicProviderProps) => {
-	const { apiConfiguration } = useExtensionState()
+	const { apiConfiguration } = useSettingsState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
 	// Get the normalized configuration

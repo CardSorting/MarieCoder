@@ -1,6 +1,6 @@
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import React, { useCallback, useState } from "react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { updateSetting } from "./utils/settingsHandlers"
 
 interface CustomPromptCheckboxProps {
@@ -11,7 +11,7 @@ interface CustomPromptCheckboxProps {
  * Checkbox to enable or disable the use of a compact prompt for local models providers.
  */
 const UseCustomPromptCheckbox: React.FC<CustomPromptCheckboxProps> = ({ providerId }) => {
-	const { customPrompt } = useExtensionState()
+	const { customPrompt } = useSettingsState()
 	const [isCompactPromptEnabled, setIsCompactPromptEnabled] = useState<boolean>(customPrompt === "compact")
 
 	const toggleCompactPrompt = useCallback((isChecked: boolean) => {

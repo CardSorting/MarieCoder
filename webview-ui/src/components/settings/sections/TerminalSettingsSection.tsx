@@ -1,9 +1,9 @@
 import { UpdateTerminalConnectionTimeoutResponse } from "@shared/proto/index.cline"
 import { VSCodeCheckbox, VSCodeDropdown, VSCodeOption, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import React, { useState } from "react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
+import { StateServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
-import { StateServiceClient } from "../../../services/grpc-client"
 import Section from "../Section"
 import TerminalOutputLineLimitSlider from "../TerminalOutputLineLimitSlider"
 import { updateSetting } from "../utils/settingsHandlers"
@@ -14,7 +14,7 @@ interface TerminalSettingsSectionProps {
 
 export const TerminalSettingsSection: React.FC<TerminalSettingsSectionProps> = ({ renderSectionHeader }) => {
 	const { shellIntegrationTimeout, terminalReuseEnabled, defaultTerminalProfile, availableTerminalProfiles } =
-		useExtensionState()
+		useSettingsState()
 
 	const [inputValue, setInputValue] = useState((shellIntegrationTimeout / 1000).toString())
 	const [inputError, setInputError] = useState<string | null>(null)

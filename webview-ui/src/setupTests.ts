@@ -52,6 +52,7 @@ vi.mock("./services/grpc-client", () => ({
 		subscribeToDidBecomeVisible: vi.fn(() => vi.fn()),
 		subscribeToFocusChatInput: vi.fn(() => vi.fn()),
 		subscribeToRelinquishControl: vi.fn(() => vi.fn()),
+		subscribeToPartialMessage: vi.fn(() => vi.fn()),
 		initializeWebview: vi.fn(() => Promise.resolve()),
 	},
 	StateServiceClient: {
@@ -64,6 +65,8 @@ vi.mock("./services/grpc-client", () => ({
 	},
 	ModelsServiceClient: {
 		subscribeToModels: vi.fn(() => vi.fn()),
+		subscribeToOpenRouterModels: vi.fn(() => vi.fn()),
+		refreshOpenRouterModels: vi.fn(() => Promise.resolve({ models: {} })),
 		getLmStudioModels: vi.fn(() => Promise.resolve({ models: [] })),
 	},
 	McpServiceClient: {

@@ -86,8 +86,8 @@ export const UIStateContextProvider: React.FC<{
 	 * Shows task history, hides all other views
 	 */
 	const navigateToHistory = useCallback(async () => {
-		console.log("[UIStateContext] navigateToHistory - START")
-		console.log("[UIStateContext] Current state:", { showHistory, showSettings, showMcp })
+		debug.log("[UIStateContext] navigateToHistory - START")
+		debug.log("[UIStateContext] Current state:", { showHistory, showSettings, showMcp })
 
 		await paintHoldNav(async () => {
 			await transition(() => {
@@ -95,7 +95,7 @@ export const UIStateContextProvider: React.FC<{
 			}, TransitionPresets.fade(200))
 		})
 
-		console.log("[UIStateContext] navigateToHistory - COMPLETE, showHistory set to true")
+		debug.log("[UIStateContext] navigateToHistory - COMPLETE, showHistory set to true")
 	}, [showHistory, showSettings, showMcp, transition, paintHoldNav])
 
 	/**
@@ -103,8 +103,8 @@ export const UIStateContextProvider: React.FC<{
 	 * Hides history, shows chat interface
 	 */
 	const navigateToChat = useCallback(async () => {
-		console.log("[UIStateContext] navigateToChat - START")
-		console.log("[UIStateContext] Current state:", { showHistory })
+		debug.log("[UIStateContext] navigateToChat - START")
+		debug.log("[UIStateContext] Current state:", { showHistory })
 
 		await paintHoldNav(async () => {
 			await transition(() => {
@@ -112,12 +112,12 @@ export const UIStateContextProvider: React.FC<{
 			}, TransitionPresets.fade(200))
 		})
 
-		console.log("[UIStateContext] navigateToChat - COMPLETE, showHistory set to false")
+		debug.log("[UIStateContext] navigateToChat - COMPLETE, showHistory set to false")
 	}, [showHistory, transition, paintHoldNav])
 
 	// Hide functions with smooth transition
 	const hideHistory = useCallback(async () => {
-		console.log("[UIStateContext] hideHistory called")
+		debug.log("[UIStateContext] hideHistory called")
 		await transition(() => {
 			setShowHistory(false)
 		}, TransitionPresets.fade(200))
@@ -139,7 +139,7 @@ export const UIStateContextProvider: React.FC<{
 
 	const navigateToMcp = useCallback(
 		async (tab?: McpViewTab) => {
-			console.log("[UIStateContext] navigateToMcp (legacy) called", tab)
+			debug.log("[UIStateContext] navigateToMcp (legacy) called", tab)
 			await paintHoldNav(async () => {
 				await transition(() => {
 					setShowHistory(false)
@@ -154,7 +154,7 @@ export const UIStateContextProvider: React.FC<{
 	)
 
 	const navigateToSettings = useCallback(async () => {
-		console.log("[UIStateContext] navigateToSettings (legacy) called")
+		debug.log("[UIStateContext] navigateToSettings (legacy) called")
 		await paintHoldNav(async () => {
 			await transition(() => {
 				setShowHistory(false)
@@ -173,7 +173,7 @@ export const UIStateContextProvider: React.FC<{
 
 	// Subscribe to essential UI events only (removed complex gRPC navigation subscriptions)
 	useEffect(() => {
-		console.log("[UIStateContext] Setting up event subscriptions")
+		debug.log("[UIStateContext] Setting up event subscriptions")
 
 		// Subscribe to didBecomeVisible events
 		didBecomeVisibleUnsubscribeRef.current = UiServiceClient.subscribeToDidBecomeVisible(EmptyRequest.create({}), {
@@ -214,7 +214,7 @@ export const UIStateContextProvider: React.FC<{
 			onComplete: () => {},
 		})
 
-		console.log("[UIStateContext] Event subscriptions complete")
+		debug.log("[UIStateContext] Event subscriptions complete")
 
 		// Clean up subscriptions
 		return () => {

@@ -2,7 +2,7 @@ import { EmptyRequest } from "@shared/proto/cline/common"
 import { Mode } from "@shared/storage/types"
 import { VSCodeButton, VSCodeCheckbox, VSCodeDropdown, VSCodeLink, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import { useState } from "react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { AccountServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { useOpenRouterKeyInfo } from "../../ui/hooks/useOpenRouterKeyInfo"
@@ -61,7 +61,7 @@ interface OpenRouterProviderProps {
  * The OpenRouter provider configuration component
  */
 export const OpenRouterProvider = ({ showModelOptions, isPopup, currentMode }: OpenRouterProviderProps) => {
-	const { apiConfiguration } = useExtensionState()
+	const { apiConfiguration } = useSettingsState()
 	const { handleFieldChange } = useApiConfigurationHandlers()
 
 	const [providerSortingSelected, setProviderSortingSelected] = useState(!!apiConfiguration?.openRouterProviderSorting)

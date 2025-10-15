@@ -11,7 +11,7 @@ import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useRef, useState } from "react"
 import { IconButton } from "@/components/chat/chat_text_area/components/input_toolbar/toolbar_components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { FileServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { useClickAway, useWindowSize } from "@/utils/hooks"
@@ -31,7 +31,7 @@ const ClineRulesToggleModal: React.FC = () => {
 		setLocalWindsurfRulesToggles,
 		setLocalWorkflowToggles,
 		setGlobalWorkflowToggles,
-	} = useExtensionState()
+	} = useSettingsState()
 	const [isVisible, setIsVisible] = useState(false)
 	const buttonRef = useRef<HTMLDivElement>(null)
 	const modalRef = useRef<HTMLDivElement>(null)

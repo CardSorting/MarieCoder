@@ -1,6 +1,6 @@
+import { ClineError, ClineErrorType } from "@shared/../services/error/ClineError"
 import { ClineMessage } from "@shared/ExtensionMessage"
 import { memo } from "react"
-import { ClineError, ClineErrorType } from "../../../../src/services/error/ClineError"
 
 const _errorColor = "var(--vscode-errorForeground)"
 

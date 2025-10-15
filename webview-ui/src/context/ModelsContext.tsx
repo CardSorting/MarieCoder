@@ -12,12 +12,6 @@
  * - Better organization of provider-specific models
  */
 
-import { EmptyRequest } from "@shared/proto/cline/common"
-import type { OpenRouterCompatibleModelInfo } from "@shared/proto/cline/models"
-import type React from "react"
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
-import { createContextSelector } from "@/hooks/use_context_selector"
-import { debug, logError } from "@/utils/debug_logger"
 import {
 	basetenDefaultModelId,
 	basetenModels,
@@ -30,7 +24,13 @@ import {
 	requestyDefaultModelInfo,
 	vercelAiGatewayDefaultModelId,
 	vercelAiGatewayDefaultModelInfo,
-} from "../../../src/shared/api"
+} from "@shared/api"
+import { EmptyRequest } from "@shared/proto/cline/common"
+import type { OpenRouterCompatibleModelInfo } from "@shared/proto/cline/models"
+import type React from "react"
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
+import { createContextSelector } from "@/hooks/use_context_selector"
+import { debug, logError } from "@/utils/debug_logger"
 import { ModelsServiceClient } from "../services/grpc-client"
 
 export interface ModelsContextType {

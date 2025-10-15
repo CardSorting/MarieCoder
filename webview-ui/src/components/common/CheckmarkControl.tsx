@@ -5,7 +5,7 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useUIState } from "@/context/UIStateContext"
 import { CheckpointsServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { calculatePosition, type Placement } from "@/utils/floating_position"
@@ -28,7 +28,7 @@ export const CheckmarkControl = ({ messageTs, isCheckpointCheckedOut }: Checkmar
 	})
 	const referenceRef = useRef<HTMLDivElement>(null)
 	const floatingRef = useRef<HTMLDivElement>(null)
-	const { onRelinquishControl } = useExtensionState()
+	const { onRelinquishControl } = useUIState()
 
 	// Debounce
 	const closeMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null)

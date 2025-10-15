@@ -4,7 +4,8 @@ import { McpServers } from "@shared/proto/cline/mcp"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useState } from "react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useMcpState } from "@/context/McpContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import AddRemoteServerForm from "./tabs/add-server/AddRemoteServerForm"
@@ -17,7 +18,8 @@ type McpViewProps = {
 }
 
 const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
-	const { mcpMarketplaceEnabled, setMcpServers } = useExtensionState()
+	const { mcpMarketplaceEnabled } = useSettingsState()
+	const { setMcpServers } = useMcpState()
 	const [activeTab, setActiveTab] = useState<McpViewTab>(initialTab || (mcpMarketplaceEnabled ? "marketplace" : "configure"))
 
 	const handleTabChange = (tab: McpViewTab) => {
@@ -32,7 +34,7 @@ const McpConfigurationView = ({ onDone, initialTab }: McpViewProps) => {
 	}, [mcpMarketplaceEnabled, activeTab])
 
 	// Get setter for MCP marketplace catalog from context
-	const { setMcpMarketplaceCatalog } = useExtensionState()
+	const { setMcpMarketplaceCatalog } = useMcpState()
 
 	useEffect(() => {
 		if (mcpMarketplaceEnabled) {

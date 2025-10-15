@@ -3,8 +3,8 @@ import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import type Fuse from "fuse.js"
 import { forwardRef, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
 import { normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
-import { useExtensionState } from "@/context/ExtensionStateContext"
-import { highlight } from "../history/HistoryView"
+import { useSettingsState } from "@/context/SettingsContext"
+import { highlight } from "../history/history_view/utils/highlight_utils"
 import { OPENROUTER_MODEL_PICKER_Z_INDEX } from "./OpenRouterModelPicker"
 import { AnthropicProvider } from "./providers/AnthropicProvider"
 import { LMStudioProvider } from "./providers/LMStudioProvider"
@@ -53,7 +53,7 @@ export const DropdownContainer = ({
 
 const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, isPopup, currentMode }: ApiOptionsProps) => {
 	// Use full context state for immediate save payload
-	const { apiConfiguration } = useExtensionState()
+	const { apiConfiguration } = useSettingsState()
 
 	const { selectedProvider } = normalizeApiConfiguration(apiConfiguration, currentMode)
 

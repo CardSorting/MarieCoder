@@ -6,7 +6,7 @@ import React, { CSSProperties, memo, useCallback, useEffect, useMemo, useRef, us
 import { BrowserSettingsMenu } from "@/components/browser/BrowserSettingsMenu"
 import { ChatRowContent, ProgressIndicator } from "@/components/chat/ChatRow"
 import CodeBlock, { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { FileServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import deepEqual from "@/utils/deep_equal"
@@ -111,7 +111,7 @@ const headerStyle: CSSProperties = {
 
 const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 	const { messages, isLast, onHeightChange, lastModifiedMessage } = props
-	const { browserSettings } = useExtensionState()
+	const { browserSettings } = useSettingsState()
 	const prevHeightRef = useRef(0)
 	const [maxActionHeight, setMaxActionHeight] = useState(0)
 	const [consoleLogsExpanded, setConsoleLogsExpanded] = useState(false)

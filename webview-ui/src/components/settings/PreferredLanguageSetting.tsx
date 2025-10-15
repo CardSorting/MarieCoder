@@ -1,10 +1,10 @@
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import React from "react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { updateSetting } from "./utils/settingsHandlers"
 
 const PreferredLanguageSetting: React.FC = () => {
-	const { preferredLanguage } = useExtensionState()
+	const { preferredLanguage } = useSettingsState()
 
 	const handleLanguageChange = (newLanguage: string) => {
 		updateSetting("preferredLanguage", newLanguage)

@@ -1,7 +1,8 @@
 import { EmptyRequest, StringRequest } from "@shared/proto/cline/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useRef, useState } from "react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
+import { useUIState } from "@/context/UIStateContext"
 import { debug } from "@/utils/debug_logger"
 import { BrowserServiceClient, UiServiceClient } from "../../services/grpc-client"
 
@@ -12,7 +13,8 @@ interface ConnectionInfo {
 }
 
 export const BrowserSettingsMenu = () => {
-	const { browserSettings, navigateToSettings } = useExtensionState()
+	const { browserSettings } = useSettingsState()
+	const { navigateToSettings } = useUIState()
 	const containerRef = useRef<HTMLDivElement>(null)
 	const [showInfoPopover, setShowInfoPopover] = useState(false)
 	const [connectionInfo, setConnectionInfo] = useState<ConnectionInfo>({

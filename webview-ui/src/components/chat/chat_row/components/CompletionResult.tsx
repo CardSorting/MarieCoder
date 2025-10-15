@@ -5,7 +5,7 @@ import QuoteButton from "@/components/chat/QuoteButton"
 import TaskFeedbackButtons from "@/components/chat/TaskFeedbackButtons"
 import { Button } from "@/components/common/Button"
 import { WithCopyButton } from "@/components/common/CopyButton"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useUIState } from "@/context/UIStateContext"
 import { TaskServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { Markdown } from "./Markdown"
@@ -58,7 +58,7 @@ export const CompletionResult = memo(
 		onQuoteClick,
 		onMouseUp,
 	}: CompletionResultProps) => {
-		const { onRelinquishControl } = useExtensionState()
+		const { onRelinquishControl } = useUIState()
 		const [seeNewChangesDisabled, setSeeNewChangesDisabled] = useState(false)
 
 		// Reset see changes button when control is relinquished

@@ -13,7 +13,7 @@ import {
 	SquareTerminal,
 	Wrench,
 } from "@/components/icons"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { StateServiceClient } from "@/services/grpc-client"
 import { debounce } from "@/utils/debounce"
 import { debug } from "@/utils/debug_logger"
@@ -139,7 +139,7 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 		[],
 	) // Empty deps - these imports never change
 
-	const { version } = useExtensionState()
+	const { version } = useSettingsState()
 
 	// Initialize active tab with memoized calculation
 	const initialTab = useMemo(() => targetSection || SETTINGS_TABS[0].id, [targetSection])

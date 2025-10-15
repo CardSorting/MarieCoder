@@ -2,7 +2,8 @@ import { VSCodeButton, VSCodeRadio, VSCodeRadioGroup, VSCodeTextField } from "@v
 import { memo, useCallback, useEffect, useState } from "react"
 import { Virtuoso } from "react-virtuoso"
 import { Button } from "@/components/common/Button"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useTaskState } from "@/context/TaskStateContext"
+import { useUIState } from "@/context/UIStateContext"
 import { formatSize } from "@/utils/format"
 import { CustomFilterRadio } from "./history_view/components/CustomFilterRadio"
 import { HistoryItem } from "./history_view/components/HistoryItem"
@@ -20,7 +21,8 @@ type HistoryViewProps = {
  * Main orchestrator for history functionality
  */
 const HistoryView = ({ onDone }: HistoryViewProps) => {
-	const { taskHistory, onRelinquishControl, totalTasksSize, setTotalTasksSize } = useExtensionState()
+	const { taskHistory, totalTasksSize, setTotalTasksSize } = useTaskState()
+	const { onRelinquishControl } = useUIState()
 
 	// Filter state
 	const [searchQuery, setSearchQuery] = useState("")

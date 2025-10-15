@@ -5,7 +5,9 @@ import Thumbnails from "@/components/common/Thumbnails"
 import { ChevronDownIcon, ChevronRightIcon } from "@/components/icons"
 import { Navbar } from "@/components/menu/Navbar"
 import { getModeSpecificFields, normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
+import { useTaskState } from "@/context/TaskStateContext"
+import { useUIState } from "@/context/UIStateContext"
 import { UiServiceClient } from "@/services/grpc-client"
 import { cn } from "@/utils/classnames"
 import { debug } from "@/utils/debug_logger"
@@ -49,16 +51,9 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 	onScrollToMessage,
 	onSendMessage,
 }) => {
-	const {
-		apiConfiguration,
-		currentTaskItem,
-		checkpointManagerErrorMessage,
-		clineMessages,
-		navigateToSettings,
-		mode,
-		expandTaskHeader: isTaskExpanded,
-		setExpandTaskHeader: setIsTaskExpanded,
-	} = useExtensionState()
+	const { apiConfiguration, mode } = useSettingsState()
+	const { currentTaskItem, checkpointManagerErrorMessage, clineMessages } = useTaskState()
+	const { navigateToSettings, expandTaskHeader: isTaskExpanded, setExpandTaskHeader: setIsTaskExpanded } = useUIState()
 
 	// Simplified computed values
 	const { selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, mode)

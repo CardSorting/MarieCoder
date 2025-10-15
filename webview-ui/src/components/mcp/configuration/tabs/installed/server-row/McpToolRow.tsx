@@ -3,7 +3,8 @@ import { ToggleToolAutoApproveRequest } from "@shared/proto/cline/mcp"
 import { convertProtoMcpServersToMcpServers } from "@shared/proto-conversions/mcp/mcp-server-conversion"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { useCallback } from "react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useMcpState } from "@/context/McpContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 
@@ -13,9 +14,8 @@ type McpToolRowProps = {
 }
 
 const McpToolRow = ({ tool, serverName }: McpToolRowProps) => {
-	const { autoApprovalSettings } = useExtensionState()
-
-	const { setMcpServers } = useExtensionState()
+	const { autoApprovalSettings } = useSettingsState()
+	const { setMcpServers } = useMcpState()
 
 	// Memoize handler to prevent re-renders
 	const handleAutoApproveChange = useCallback(

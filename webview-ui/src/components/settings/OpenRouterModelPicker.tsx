@@ -5,12 +5,13 @@ import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import type Fuse from "fuse.js"
 import React, { forwardRef, KeyboardEvent, memo, type ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useModelsState } from "@/context/ModelsContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { StateServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { useMount } from "@/utils/hooks"
 import { renderMarkdownSync } from "@/utils/markdown_renderer"
-import { highlight } from "../history/HistoryView"
+import { highlight } from "../history/history_view/utils/highlight_utils"
 import { ContextWindowSwitcher } from "./common/ContextWindowSwitcher"
 import { ModelInfoView } from "./common/ModelInfoView"
 import FeaturedModelCard from "./FeaturedModelCard"
@@ -65,7 +66,8 @@ const featuredModels = [
 
 const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup, currentMode }) => {
 	const { handleModeFieldsChange } = useApiConfigurationHandlers()
-	const { apiConfiguration, favoritedModelIds, openRouterModels, refreshOpenRouterModels } = useExtensionState()
+	const { apiConfiguration, favoritedModelIds } = useSettingsState()
+	const { openRouterModels, refreshOpenRouterModels } = useModelsState()
 	const modeFields = getModeSpecificFields(apiConfiguration, currentMode)
 	const [searchTerm, setSearchTerm] = useState(modeFields.openRouterModelId || openRouterDefaultModelId)
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)

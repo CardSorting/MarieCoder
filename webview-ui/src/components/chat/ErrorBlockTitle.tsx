@@ -1,5 +1,5 @@
+import { ClineError, ClineErrorType } from "@shared/../services/error/ClineError"
 import React from "react"
-import { ClineError, ClineErrorType } from "../../../../src/services/error/ClineError"
 import { ProgressIndicator } from "./ChatRow"
 
 const RetryMessage = React.memo(

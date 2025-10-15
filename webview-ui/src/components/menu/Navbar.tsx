@@ -1,13 +1,13 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useMemo } from "react"
 import { HistoryIcon, PlusIcon } from "@/components/icons"
+import { useUIState } from "@/context/UIStateContext"
 import { TaskServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
-import { useExtensionState } from "../../context/ExtensionStateContext"
 import HeroTooltip from "../common/HeroTooltip"
 
 export const Navbar = () => {
-	const { navigateToHistory, navigateToChat } = useExtensionState()
+	const { navigateToHistory, navigateToChat } = useUIState()
 
 	const NAVBAR_TABS = useMemo(
 		() => [
@@ -17,14 +17,14 @@ export const Navbar = () => {
 				tooltip: "New Task",
 				icon: PlusIcon,
 				navigate: () => {
-					console.log("[Navbar] Starting new task flow")
+					debug.log("[Navbar] Starting new task flow")
 					// Close the current task, then navigate to the chat view
 					TaskServiceClient.clearTask({})
 						.catch((error) => {
 							debug.error("Failed to clear task:", error)
 						})
 						.finally(() => {
-							console.log("[Navbar] Task cleared, navigating to chat")
+							debug.log("[Navbar] Task cleared, navigating to chat")
 							navigateToChat()
 						})
 				},
@@ -35,7 +35,7 @@ export const Navbar = () => {
 				tooltip: "History",
 				icon: HistoryIcon,
 				navigate: () => {
-					console.log("[Navbar] Navigating to history")
+					debug.log("[Navbar] Navigating to history")
 					navigateToHistory()
 				},
 			},
@@ -58,9 +58,9 @@ export const Navbar = () => {
 						onClick={(e) => {
 							e.preventDefault()
 							e.stopPropagation()
-							console.log(`[Navbar] Clicked ${tab.id} button`)
+							debug.log(`[Navbar] Clicked ${tab.id} button`)
 							tab.navigate()
-							console.log(`[Navbar] Called navigate for ${tab.id}`)
+							debug.log(`[Navbar] Called navigate for ${tab.id}`)
 						}}
 						style={{ padding: "0px", height: "20px", cursor: "pointer", pointerEvents: "auto" }}>
 						<div className="flex items-center gap-1 text-xs whitespace-nowrap min-w-0 w-full">

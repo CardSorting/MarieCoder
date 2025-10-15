@@ -6,13 +6,15 @@ import React, { useEffect, useRef, useState } from "react"
 import { IconButton } from "@/components/chat/chat_text_area/components/input_toolbar/toolbar_components"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import ServersToggleList from "@/components/mcp/configuration/tabs/installed/ServersToggleList"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useMcpState } from "@/context/McpContext"
+import { useUIState } from "@/context/UIStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { useClickAway, useWindowSize } from "@/utils/hooks"
 
 const ServersToggleModal: React.FC = () => {
-	const { mcpServers, navigateToMcp, setMcpServers } = useExtensionState()
+	const { mcpServers, setMcpServers } = useMcpState()
+	const { navigateToMcp } = useUIState()
 	const [isVisible, setIsVisible] = useState(false)
 	const buttonRef = useRef<HTMLDivElement>(null)
 	const modalRef = useRef<HTMLDivElement>(null)

@@ -30,12 +30,14 @@ export interface TaskStateContextType {
 	taskHistory: HistoryItem[]
 	currentTaskId: string | undefined
 	totalTasksSize: number | null
+	checkpointManagerErrorMessage?: string
 
 	// Setters
 	setTotalTasksSize: (value: number | null) => void
 	setClineMessages: (messages: ClineMessage[]) => void
 	setTaskHistory: (history: HistoryItem[]) => void
 	setCurrentTaskId: (id: string | undefined) => void
+	setCheckpointManagerErrorMessage: (message: string | undefined) => void
 }
 
 const TaskStateContext = createContext<TaskStateContextType | undefined>(undefined)
@@ -47,6 +49,7 @@ export const TaskStateContextProvider: React.FC<{
 	const [taskHistory, setTaskHistory] = useState<HistoryItem[]>([])
 	const [currentTaskId, setCurrentTaskId] = useState<string | undefined>(undefined)
 	const [totalTasksSize, setTotalTasksSize] = useState<number | null>(null)
+	const [checkpointManagerErrorMessage, setCheckpointManagerErrorMessage] = useState<string | undefined>(undefined)
 
 	// Subscription refs
 	const partialMessageUnsubscribeRef = useRef<(() => void) | null>(null)
@@ -67,6 +70,9 @@ export const TaskStateContextProvider: React.FC<{
 						}
 						if (stateData.currentTaskItem?.id) {
 							setCurrentTaskId(stateData.currentTaskItem.id)
+						}
+						if (stateData.checkpointManagerErrorMessage !== undefined) {
+							setCheckpointManagerErrorMessage(stateData.checkpointManagerErrorMessage)
 						}
 					} catch (error) {
 						logError("Error parsing state JSON in TaskStateContext:", error)
@@ -157,10 +163,12 @@ export const TaskStateContextProvider: React.FC<{
 		taskHistory,
 		currentTaskId,
 		totalTasksSize,
+		checkpointManagerErrorMessage,
 		setTotalTasksSize,
 		setClineMessages,
 		setTaskHistory,
 		setCurrentTaskId,
+		setCheckpointManagerErrorMessage,
 	}
 
 	return <TaskStateContext.Provider value={contextValue}>{children}</TaskStateContext.Provider>

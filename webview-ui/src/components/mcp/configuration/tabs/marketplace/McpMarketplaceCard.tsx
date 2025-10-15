@@ -1,7 +1,7 @@
 import { McpMarketplaceItem, McpServer } from "@shared/mcp"
 import { StringRequest } from "@shared/proto/cline/common"
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useUIState } from "@/context/UIStateContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 
@@ -16,7 +16,7 @@ const McpMarketplaceCardComponent = ({ item, installedServers, setError }: McpMa
 	const [isDownloading, setIsDownloading] = useState(false)
 	const [isLoading, setIsLoading] = useState(false)
 	const githubLinkRef = useRef<HTMLDivElement>(null)
-	const { onRelinquishControl } = useExtensionState()
+	const { onRelinquishControl } = useUIState()
 
 	useEffect(() => {
 		return onRelinquishControl(() => {

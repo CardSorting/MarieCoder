@@ -18,7 +18,8 @@ import {
 } from "@vscode/webview-ui-toolkit/react"
 import { useCallback, useState } from "react"
 import { Button } from "@/components/common/Button"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useMcpState } from "@/context/McpContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { getMcpServerDisplayName } from "@/utils/mcp"
@@ -48,7 +49,8 @@ const ServerRow = ({
 	isExpandable?: boolean
 	hasTrashIcon?: boolean
 }) => {
-	const { mcpMarketplaceCatalog, autoApprovalSettings, setMcpServers } = useExtensionState()
+	const { mcpMarketplaceCatalog, setMcpServers } = useMcpState()
+	const { autoApprovalSettings } = useSettingsState()
 
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [isDeleting, setIsDeleting] = useState(false)

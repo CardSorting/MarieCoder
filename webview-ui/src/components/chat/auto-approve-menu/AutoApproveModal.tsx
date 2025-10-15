@@ -2,7 +2,7 @@ import { VSCodeButton, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useRef, useState } from "react"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import HeroTooltip from "@/components/common/HeroTooltip"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { useAutoApproveActions } from "@/hooks/useAutoApproveActions"
 import { useClickAway, useWindowSize } from "@/utils/hooks"
 import { getAsVar, VSC_TITLEBAR_INACTIVE_FOREGROUND } from "@/utils/vscStyles"
@@ -26,7 +26,7 @@ const AutoApproveModal: React.FC<AutoApproveModalProps> = ({
 	ACTION_METADATA,
 	NOTIFICATIONS_SETTING,
 }) => {
-	const { autoApprovalSettings } = useExtensionState()
+	const { autoApprovalSettings } = useSettingsState()
 	const { isChecked, isFavorited, toggleFavorite, updateAction, updateMaxRequests } = useAutoApproveActions()
 
 	const modalRef = useRef<HTMLDivElement>(null)

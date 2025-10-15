@@ -2,7 +2,7 @@ import { ANTHROPIC_MAX_THINKING_BUDGET, ANTHROPIC_MIN_THINKING_BUDGET } from "@s
 import { Mode } from "@shared/storage/types"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { memo, useCallback, useEffect, useState } from "react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { getModeSpecificFields } from "./utils/providerUtils"
 import { useApiConfigurationHandlers } from "./utils/useApiConfigurationHandlers"
 
@@ -12,7 +12,7 @@ interface ThinkingBudgetSliderProps {
 }
 
 const ThinkingBudgetSlider = ({ currentMode }: ThinkingBudgetSliderProps) => {
-	const { apiConfiguration } = useExtensionState()
+	const { apiConfiguration } = useSettingsState()
 	const { handleModeFieldChange } = useApiConfigurationHandlers()
 
 	const modeFields = getModeSpecificFields(apiConfiguration, currentMode)

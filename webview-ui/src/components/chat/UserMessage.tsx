@@ -3,7 +3,7 @@ import { ClineCheckpointRestore } from "@shared/WebviewMessage"
 import React, { forwardRef, useRef, useState } from "react"
 import DynamicTextArea from "@/components/common/AutoGrowTextarea"
 import Thumbnails from "@/components/common/Thumbnails"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useTaskState } from "@/context/TaskStateContext"
 import { CheckpointsServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { highlightText } from "./task-header/Highlights"
@@ -20,7 +20,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ text, images, files, messageT
 	const [isEditing, setIsEditing] = useState(false)
 	const [editedText, setEditedText] = useState(text || "")
 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
-	const { checkpointManagerErrorMessage } = useExtensionState()
+	const { checkpointManagerErrorMessage } = useTaskState()
 
 	// Create refs for the buttons to check in the blur handler
 	const restoreAllButtonRef = useRef<HTMLButtonElement>(null)

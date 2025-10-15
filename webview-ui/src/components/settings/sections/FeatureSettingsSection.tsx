@@ -5,7 +5,7 @@ import { VSCodeCheckbox, VSCodeDropdown, VSCodeOption, VSCodeTextField } from "@
 import { memo } from "react"
 import { OptimisticCheckbox } from "@/components/common/OptimisticCheckbox"
 import McpDisplayModeDropdown from "@/components/mcp/chat-display/McpDisplayModeDropdown"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import Section from "../Section"
 import { updateSetting } from "../utils/settingsHandlers"
 
@@ -26,7 +26,7 @@ const FeatureSettingsSection = ({ renderSectionHeader }: FeatureSettingsSectionP
 		useAutoCondense,
 		focusChainSettings,
 		multiRootSetting,
-	} = useExtensionState()
+	} = useSettingsState()
 
 	const handleReasoningEffortChange = (newValue: OpenaiReasoningEffort) => {
 		updateSetting("openaiReasoningEffort", newValue)

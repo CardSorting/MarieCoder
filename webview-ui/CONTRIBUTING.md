@@ -1,416 +1,569 @@
-# Contributing Guide
+# Contributing to MarieCoder Webview-UI
 
-**Guidelines for contributing to the webview-ui codebase with compassion and clarity.**
-
----
-
-## 🎯 **Core Philosophy**
-
-We follow the **KonMari Method** for code:
-- **Observe** what exists and learn from it
-- **Appreciate** the problems it solved
-- **Learn** from patterns and friction points
-- **Evolve** to clearer implementations
-- **Release** old code once new path is stable
-- **Share** lessons learned in commit messages
-
-**Before changing any code, ask:**
-1. What purpose did this serve?
-2. What has this taught us?
-3. What brings clarity now?
+Thank you for your interest in contributing to the MarieCoder webview-ui! This document provides guidelines and best practices for contributing to this project.
 
 ---
 
-## 📁 **Code Organization**
+## Table of Contents
 
-### **Directory Structure**
-
-```
-webview-ui/src/
-├── components/          # React components
-│   ├── common/         # Shared UI components (Button, Tooltip, etc.)
-│   │   └── button/     # Each complex component gets a directory
-│   ├── chat/           # Chat feature components
-│   │   └── hooks/      # Chat-specific hooks
-│   ├── settings/       # Settings feature components
-│   └── [feature]/      # Organize by feature, not by type
-│
-├── hooks/              # Global, reusable hooks
-│   ├── use_keyboard.ts
-│   ├── use_debounce_effect.ts
-│   └── index.ts        # Barrel export
-│
-├── utils/              # Utility functions
-│   ├── chat/           # Chat-specific utilities
-│   ├── mcp/            # MCP-specific utilities
-│   ├── marie_coder/    # MarieCoder-specific utilities
-│   └── format.ts       # General utilities at root
-│
-├── context/            # React contexts
-├── services/           # API/service clients
-└── config/             # Configuration files
-```
+1. [Getting Started](#getting-started)
+2. [Development Setup](#development-setup)
+3. [Architecture Overview](#architecture-overview)
+4. [Coding Standards](#coding-standards)
+5. [Pull Request Process](#pull-request-process)
+6. [Testing Requirements](#testing-requirements)
 
 ---
 
-## 🎨 **Styling Standards**
+## Getting Started
 
-### **Primary: Tailwind CSS**
-Use Tailwind for all new styling:
-```tsx
-<div className="flex items-center gap-4 px-4 py-2">
-  Content here
-</div>
-```
+### Prerequisites
 
-### **VSCode Theme Variables**
-Always use VSCode theme variables for colors:
-```tsx
-className="bg-[var(--vscode-sidebar-background)] text-[var(--vscode-foreground)]"
-```
+- Node.js 18+ and npm
+- Familiarity with React 18, TypeScript, and Vite
+- Understanding of VS Code extension development
+- Read `docs/ARCHITECTURE.md` and `docs/BEST_PRACTICES.md`
 
-### **Complex Components: HeroUI**
-Use HeroUI for tooltips, modals, dropdowns:
-```tsx
-import { Tooltip } from "@heroui/react"
-```
+### First Steps
 
-### **Avoid**
-- ❌ New styled-components
-- ❌ Inline styles (unless absolutely necessary)
-- ❌ Hardcoded colors
-- ❌ Magic numbers
+1. **Read the documentation:**
+   - `docs/ARCHITECTURE.md` - System architecture
+   - `docs/BEST_PRACTICES.md` - Coding standards
+   - `docs/CONTEXT_MIGRATION_GUIDE.md` - Context usage
 
-**See [STYLING_GUIDE.md](./STYLING_GUIDE.md) for complete details.**
+2. **Explore the codebase:**
+   - Browse `src/components/` to see component patterns
+   - Review `src/context/` to understand state management
+   - Check `src/__tests__/` for testing examples
+
+3. **Run the development environment:**
+   ```bash
+   cd webview-ui
+   npm install
+   npm run dev
+   ```
 
 ---
 
-## 📝 **Naming Conventions**
+## Development Setup
 
-### **Files: snake_case**
-```
-✅ prompt_manager.ts
-✅ response_formatter.ts
-✅ use_debounce_effect.ts
+### Installation
 
-❌ PromptManager.ts
-❌ responseFormatter.ts
-❌ useDebounceEffect.ts
-```
+```bash
+# Install dependencies
+npm install
 
-### **Components: PascalCase**
-```tsx
-export const Button = () => { }
-export const ChatTextArea = () => { }
-```
+# Start development server
+npm run dev
 
-### **Functions & Variables: camelCase**
-```tsx
-const getUserById = () => { }
-const isValidEmail = () => { }
-const userCount = 42
+# Run tests
+npm test
+
+# Check bundle size
+npm run check:bundle-size
+
+# Build for production
+npm run build
 ```
 
-### **Types & Interfaces: PascalCase**
-```tsx
-interface ButtonProps { }
-type ButtonVariant = "primary" | "secondary"
-```
+### Development Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `npm run dev` | Start Vite dev server |
+| `npm run build` | Production build |
+| `npm test` | Run test suite |
+| `npm run check:bundle-size` | Check bundle size against thresholds |
+| `npm run lint` | Run linter |
+| `npm run type-check` | TypeScript type checking |
 
 ---
 
-## 🔧 **Component Guidelines**
+## Architecture Overview
 
-### **1. Component Structure**
+### Focused Context System
 
-```tsx
-import { /* imports */ } from "package"
-import { /* local imports */ } from "@/path"
+The webview-ui uses a **focused context architecture** where state is split into specialized contexts:
 
-/**
- * Component description
- * 
- * @example
- * ```tsx
- * <MyComponent variant="primary">Hello</MyComponent>
- * ```
- */
-export interface MyComponentProps {
-  /** Prop description */
-  variant?: "primary" | "secondary"
-  /** Child content */
-  children: React.ReactNode
+#### Context Providers
+
+| Context | Purpose | When to Use |
+|---------|---------|-------------|
+| **SettingsContext** | Settings & configuration | API config, feature flags, preferences |
+| **UIStateContext** | Navigation & visibility | View routing, modal state, UI toggles |
+| **TaskStateContext** | Task execution & messages | Chat messages, history, checkpoints |
+| **ModelsContext** | Model data & operations | OpenRouter models, model refresh |
+| **McpContext** | MCP server management | MCP servers, marketplace, tools |
+
+#### Deprecated Context
+
+⚠️ **ExtensionStateContext is DEPRECATED** - Do not use in new code!
+
+All production components (48/48) have been migrated to focused contexts. Use focused contexts for all new development.
+
+### Key Principles
+
+1. **Use the most specific context** - Don't import SettingsContext if you only need UI state
+2. **Multiple contexts are OK** - Components can use 2-3 focused contexts
+3. **Think about re-renders** - Focused contexts minimize unnecessary updates
+
+---
+
+## Coding Standards
+
+### 1. Context Usage (REQUIRED)
+
+```typescript
+// ✅ DO: Use focused contexts
+import { useSettingsState } from '@/context/SettingsContext'
+import { useUIState } from '@/context/UIStateContext'
+
+const MyComponent = () => {
+  const { apiConfiguration } = useSettingsState()
+  const { navigateToSettings } = useUIState()
+  // ...
 }
 
-export const MyComponent = ({
-  variant = "primary",
-  children,
-}: MyComponentProps) => {
-  return (
-    <div className="...">
-      {children}
-    </div>
-  )
+// ❌ DON'T: Use deprecated context
+import { useExtensionState } from '@/context/ExtensionStateContext'
+
+const MyComponent = () => {
+  const { apiConfiguration, navigateToSettings } = useExtensionState()
+  // This causes unnecessary re-renders!
 }
 ```
 
-### **2. TypeScript Standards**
+### 2. File Naming (REQUIRED)
 
-✅ **Do:**
-- Use specific types (never `any` without justification)
-- Export types/interfaces from components
-- Add JSDoc comments to public APIs
-- Validate all inputs
+All files MUST use `snake_case`:
 
-❌ **Don't:**
-- Use `any` casually
-- Skip input validation
-- Leave public APIs undocumented
+```
+✅ Correct:
+- user_message.tsx
+- browser_settings_menu.tsx
+- api_configuration_section.tsx
 
-### **3. Error Handling**
+❌ Incorrect:
+- UserMessage.tsx
+- BrowserSettingsMenu.tsx
+- ApiConfigurationSection.tsx
+```
 
-Always provide actionable error messages:
-```tsx
-if (!data.email) {
-  throw new Error(
-    'Email required. Please provide a valid email address'
-  )
+### 3. Import Paths (REQUIRED)
+
+Use configured path aliases:
+
+```typescript
+// ✅ DO: Use path aliases
+import { useSettingsState } from '@/context/SettingsContext'
+import { Button } from '@/components/common/Button'
+import { debug } from '@/utils/debug_logger'
+
+// ❌ DON'T: Use deep relative imports
+import { useSettingsState } from '../../../context/SettingsContext'
+import { Button } from '../../common/Button'
+```
+
+**Available aliases:**
+- `@/` → `src/`
+- `@components` → `src/components`
+- `@context` → `src/context`
+- `@shared` → `../src/shared`
+- `@utils` → `src/utils`
+
+### 4. Debug Logging (REQUIRED)
+
+```typescript
+import { debug, logError } from '@/utils/debug_logger'
+
+// ✅ DO: Use debug logger
+debug.log('Processing data:', data)
+debug.error('Operation failed:', error)
+
+// ❌ DON'T: Use console directly
+console.log('Processing data:', data)  // Included in production!
+console.error('Operation failed:', error)
+```
+
+**Benefits:**
+- Automatically stripped from production
+- Structured logging
+- Better debugging
+
+### 5. Type Safety (REQUIRED)
+
+```typescript
+// ✅ DO: Define explicit types
+interface ComponentProps {
+  value: string
+  onChange: (value: string) => void
+}
+
+const Component = ({ value, onChange }: ComponentProps) => {
+  // Fully typed
+}
+
+// ❌ DON'T: Use 'any' without justification
+const Component = ({ value, onChange }: any) => {
+  // TypeScript can't help you!
 }
 ```
 
 ---
 
-## 🪝 **Hooks Organization**
+## Component Development Guidelines
 
-### **When to place in `/hooks`**
-✅ Reusable across features
-✅ General-purpose utility
-✅ Used in multiple unrelated components
+### Creating New Components
 
-### **When to place in `components/[feature]/hooks/`**
-✅ Specific to one feature
-✅ Depends on feature-specific logic
-✅ Only used within that feature
+**Step 1: Choose the Right Context(s)**
 
-**Example:**
-```
-✅ /hooks/use_debounce_effect.ts       (general utility)
-✅ /components/chat/hooks/useChatState.ts  (chat-specific)
+Determine which context(s) your component needs:
+
+```typescript
+// Need settings? → useSettingsState()
+// Need navigation? → useUIState()
+// Need messages? → useTaskState()
+// Need models? → useModelsState()
+// Need MCP? → useMcpState()
 ```
 
----
+**Step 2: Component Template**
 
-## 🔨 **Utils Organization**
+```typescript
+import React from 'react'
+import { useSettingsState } from '@/context/SettingsContext'
 
-### **Domain Subdirectories**
-Create subdirectories for related utilities:
-```
-utils/
-├── chat/           # 3+ chat-specific utilities
-│   ├── context_mentions.ts
-│   ├── slash_commands.ts
-│   └── index.ts
-├── mcp/            # MCP-specific utilities
-└── format.ts       # General utility at root
-```
+interface MyComponentProps {
+  // Define props
+}
 
-### **When to create a subdirectory**
-- Have 3+ related utility functions for a domain
-- Utilities are only used within that domain
-- Domain has clear boundaries
+const MyComponent = ({ }: MyComponentProps) => {
+  // 1. Context hooks (focused contexts only!)
+  const { apiConfiguration } = useSettingsState()
+  
+  // 2. Local state
+  const [localState, setLocalState] = React.useState('')
+  
+  // 3. Effects and handlers
+  React.useEffect(() => {
+    // Side effects
+  }, [])
+  
+  const handleAction = () => {
+    // Event handling
+  }
+  
+  // 4. Render
+  return <div>...</div>
+}
 
-### **Best Practices**
-- Pure functions (no side effects)
-- Well-typed parameters and returns
-- JSDoc comments
-- Unit tests for complex logic
-- Barrel exports (`index.ts`)
-
----
-
-## 📦 **Adding New Features**
-
-### **Step 1: Plan Organization**
-```
-Where does this feature belong?
-├─ New major feature? → Create components/[feature]/
-├─ Enhancement to existing? → Add to components/[feature]/
-└─ Shared component? → Add to components/common/
+export default MyComponent
 ```
 
-### **Step 2: Create Structure**
-```
-components/my-feature/
-├── MyFeature.tsx        # Main component
-├── MyFeatureItem.tsx    # Sub-components
-├── hooks/               # Feature-specific hooks
-│   └── useMyFeature.ts
-└── index.ts             # Barrel export
-```
+**Step 3: Add Tests**
 
-### **Step 3: Add Tests**
-Target 80%+ coverage for public APIs:
-```
-components/my-feature/
-├── __tests__/
-│   ├── MyFeature.test.tsx
-│   └── useMyFeature.test.ts
-```
+Create `MyComponent.test.tsx`:
 
-### **Step 4: Document**
-- JSDoc on public APIs
-- Update relevant READMEs
-- Add usage examples
+```typescript
+import { render, screen } from '@testing-library/react'
+import { SettingsContextProvider } from '@/context/SettingsContext'
+import MyComponent from './MyComponent'
 
----
-
-## 🧪 **Testing Standards**
-
-### **What to Test**
-- Public component APIs
-- Edge cases and error conditions
-- User interactions
-- Business logic in hooks/utils
-
-### **Example Test**
-```tsx
-describe("Button", () => {
-  it("calls onClick when clicked", () => {
-    const handleClick = jest.fn()
-    render(<Button onClick={handleClick}>Click me</Button>)
+describe('MyComponent', () => {
+  it('renders correctly', () => {
+    render(
+      <SettingsContextProvider>
+        <MyComponent />
+      </SettingsContextProvider>
+    )
     
-    fireEvent.click(screen.getByText("Click me"))
-    
-    expect(handleClick).toHaveBeenCalledTimes(1)
+    expect(screen.getByText('Expected')).toBeInTheDocument()
   })
 })
 ```
 
 ---
 
-## 📄 **Documentation Standards**
+## Pull Request Process
 
-### **Component Documentation**
-```tsx
-/**
- * A versatile button component with multiple variants.
- * 
- * @example
- * ```tsx
- * <Button variant="danger" onClick={handleDelete}>
- *   Delete
- * </Button>
- * ```
- */
-export const Button = (props: ButtonProps) => { }
-```
+### Before Submitting
 
-### **Function Documentation**
-```tsx
-/**
- * Formats a file size in bytes to human-readable format.
- * 
- * @param bytes - The size in bytes
- * @returns Formatted string (e.g., "1.5 MB")
- * 
- * @example
- * formatSize(1500000) // "1.5 MB"
- */
-export const formatSize = (bytes: number): string => { }
-```
+**Pre-submission checklist:**
 
----
-
-## 🔄 **Refactoring Guidelines**
-
-### **Before Refactoring**
-1. **Understand**: Why does the code exist?
-2. **Document**: What problems did it solve?
-3. **Plan**: What would be clearer?
-4. **Test**: Ensure existing tests pass
-
-### **During Refactoring**
-1. **Small steps**: Incremental changes
-2. **Keep it working**: Don't break functionality
-3. **Add tests**: Cover new code paths
-4. **Update docs**: Keep documentation current
-
-### **After Refactoring**
-1. **Verify**: All tests pass
-2. **Review**: Check for unintended changes
-3. **Document**: Share lessons learned
-4. **Clean up**: Remove deprecated code
-
-### **Example Commit Message**
-```
-feat: Consolidate button components into unified API
-
-Previous separate button components (DangerButton, SuccessButton,
-SettingsButton) taught us about semantic variants and icon handling.
-Evolved to single Button component with variant prop.
-
-Lessons applied:
-- Semantic variants improve clarity
-- Icon prop better than inline styles
-- Consistent API reduces mental load
-
-Files:
-- Created: components/common/button/Button.tsx
-- Updated: 7 files to use new Button API
-- Removed: 3 deprecated button components
-```
-
----
-
-## ✅ **Pre-Commit Checklist**
-
-Before submitting a pull request:
-
-- [ ] All tests pass (`npm test`)
-- [ ] No linter errors (`npm run lint`)
-- [ ] Code follows naming conventions
-- [ ] Components are properly typed
-- [ ] Public APIs have JSDoc comments
-- [ ] Error messages are actionable
-- [ ] Styling uses Tailwind (not styled-components)
-- [ ] VSCode theme variables used for colors
+- [ ] Code follows focused context pattern
+- [ ] No `useExtensionState()` usage in new code
+- [ ] Path aliases used throughout
+- [ ] Debug logger used (no console.*)
+- [ ] All TypeScript types defined
+- [ ] Tests written and passing
+- [ ] No linting errors
+- [ ] Bundle size checked
 - [ ] Documentation updated (if needed)
-- [ ] Commit message explains "why" not just "what"
+
+### Running Checks
+
+```bash
+# Type checking
+npm run type-check
+
+# Linting
+npm run lint
+
+# Tests
+npm test
+
+# Bundle size
+npm run check:bundle-size
+
+# Production build
+npm run build
+```
+
+### PR Title Format
+
+```
+type(scope): Brief description
+
+Examples:
+feat(contexts): Add new FeatureContext for X
+fix(chat): Correct message rendering issue
+refactor(settings): Simplify settings handler
+perf(bundle): Reduce vendor chunk size
+docs(architecture): Update context documentation
+```
+
+### PR Description Template
+
+```markdown
+## Description
+Brief description of changes
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Performance improvement
+- [ ] Refactoring
+- [ ] Documentation
+
+## Testing
+- [ ] Tests added/updated
+- [ ] All tests passing
+- [ ] Manual testing completed
+
+## Performance Impact
+- Bundle size: [before] → [after]
+- Performance: [describe impact]
+
+## Checklist
+- [ ] Follows focused context pattern
+- [ ] No useExtensionState() in new code
+- [ ] Path aliases used
+- [ ] Debug logger used
+- [ ] Types defined
+- [ ] Tests passing
+- [ ] No linting errors
+- [ ] Documentation updated
+```
 
 ---
 
-## 🎓 **Learning from the Code**
+## Testing Requirements
 
-Good places to learn patterns:
-- `components/common/button/` - Component organization
-- `components/chat/chat-view/` - Complex feature structure
-- `components/settings/` - Provider pattern
-- `hooks/` - Hook organization
-- `utils/chat/` - Domain-specific utilities
+### Minimum Requirements
+
+- **New features:** 80%+ test coverage
+- **Bug fixes:** Test that reproduces the bug
+- **Refactoring:** Existing tests must pass
+- **Context changes:** Comprehensive context tests
+
+### Test Structure
+
+```typescript
+describe('ComponentName', () => {
+  describe('feature/behavior', () => {
+    it('does something specific', () => {
+      // Arrange
+      const props = { value: 'test' }
+      
+      // Act
+      render(<Component {...props} />)
+      
+      // Assert
+      expect(screen.getByText('test')).toBeInTheDocument()
+    })
+  })
+})
+```
+
+### Mocking
+
+gRPC services are mocked in `src/setupTests.ts`:
+
+```typescript
+// Services are already mocked globally
+// Just import and use in your tests
+import { StateServiceClient } from '@/services/grpc-client'
+
+// StateServiceClient.updateSettings is already mocked
+```
 
 ---
 
-## 💬 **Getting Help**
+## Code Review Guidelines
 
-When stuck:
-1. **Read the code**: Look for similar patterns
-2. **Check docs**: READMEs in directories
-3. **Ask questions**: Better to ask than guess
-4. **Document solutions**: Help others who follow
+### What Reviewers Look For
+
+1. **Focused Context Usage**
+   - Is the component using focused contexts?
+   - Are the right contexts being used?
+   - Could it use fewer contexts?
+
+2. **Performance**
+   - Any unnecessary re-renders?
+   - Should heavy components be lazy loaded?
+   - Is memoization appropriate?
+
+3. **Type Safety**
+   - Are all props typed?
+   - Any use of `any`?
+   - Generic types used correctly?
+
+4. **Testing**
+   - Adequate test coverage?
+   - Tests actually test behavior?
+   - Edge cases covered?
+
+5. **Code Quality**
+   - Follows naming conventions?
+   - Path aliases used?
+   - Debug logger used?
+   - Well documented?
 
 ---
 
-## 🙏 **Mindset**
+## Common Contribution Scenarios
 
-**Remember:**
-- Code is a conversation with future developers
-- "Legacy" was once innovative
-- We refactor to evolve, not criticize
-- Small, consistent improvements compound
-- Every commit is an act of care
+### Scenario 1: Adding a New Setting
 
-**Be gentle with yourself. Be gentle with the code. Be gentle with those who came before.**
+**Step 1:** Add to SettingsContext
+
+```typescript
+// src/context/SettingsContext.tsx
+export interface SettingsContextType {
+  // ... existing settings
+  myNewSetting: boolean
+}
+```
+
+**Step 2:** Add to backend state sync
+
+```typescript
+// In SettingsContextProvider
+if (stateData.myNewSetting !== undefined) {
+  setMyNewSetting(stateData.myNewSetting)
+}
+```
+
+**Step 3:** Create settings UI component
+
+```typescript
+import { useSettingsState } from '@/context/SettingsContext'
+import { updateSetting } from '@/components/settings/utils/settingsHandlers'
+
+const MyNewSetting = () => {
+  const { myNewSetting } = useSettingsState()
+  
+  return (
+    <input
+      type="checkbox"
+      checked={myNewSetting}
+      onChange={(e) => updateSetting('myNewSetting', e.target.checked)}
+    />
+  )
+}
+```
+
+**Step 4:** Add tests
+
+```typescript
+// src/context/__tests__/SettingsContext.test.tsx
+it('provides myNewSetting', () => {
+  const { result } = renderHook(() => useSettingsState(), {
+    wrapper: SettingsContextProvider
+  })
+  
+  expect(result.current.myNewSetting).toBeDefined()
+})
+```
+
+### Scenario 2: Adding a New Component
+
+**Follow the component template:**
+
+```typescript
+import { useSettingsState } from '@/context/SettingsContext'
+
+interface MyComponentProps {
+  value: string
+}
+
+const MyComponent = ({ value }: MyComponentProps) => {
+  const { apiConfiguration } = useSettingsState()
+  
+  return <div>{value}</div>
+}
+
+export default MyComponent
+```
+
+**Add tests:**
+
+```typescript
+import { render } from '@testing-library/react'
+import { SettingsContextProvider } from '@/context/SettingsContext'
+import MyComponent from './MyComponent'
+
+describe('MyComponent', () => {
+  it('renders value', () => {
+    const { getByText } = render(
+      <SettingsContextProvider>
+        <MyComponent value="test" />
+      </SettingsContextProvider>
+    )
+    
+    expect(getByText('test')).toBeInTheDocument()
+  })
+})
+```
+
+### Scenario 3: Fixing a Bug
+
+1. **Write a failing test** that reproduces the bug
+2. **Fix the bug** in the code
+3. **Verify the test passes**
+4. **Check for regressions** (run full test suite)
+5. **Update documentation** if behavior changed
 
 ---
 
-*Inspired by the KonMari Method: We evolve code with intention, gratitude, and compassion.*
+## Questions?
+
+If you have questions:
+
+1. Check `docs/ARCHITECTURE.md` for system design
+2. Check `docs/BEST_PRACTICES.md` for coding patterns
+3. Check `docs/CONTEXT_MIGRATION_GUIDE.md` for context usage
+4. Look at recently migrated components for examples
+5. Ask in discussions or issues
+
+---
+
+## Thank You!
+
+Your contributions help make MarieCoder better for everyone. We appreciate your time and effort in maintaining the high quality standards that make this codebase excellent! 🙏✨
+
+---
+
+**Last Updated:** October 15, 2025  
+**Architecture Version:** 1.0.0 (Focused Context System)  
+**Migration Status:** 100% Complete (48/48 components)

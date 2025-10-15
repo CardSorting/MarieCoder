@@ -1,7 +1,9 @@
 import { lazy, Suspense } from "react"
+import { debug } from "@/utils/debug_logger"
 import ChatView from "./components/chat/ChatView"
 import { SkeletonLoader } from "./components/common/SkeletonLoader"
-import { useExtensionState } from "./context/ExtensionStateContext"
+import { useSettingsState } from "./context/SettingsContext"
+import { useUIState } from "./context/UIStateContext"
 import { Providers } from "./Providers"
 
 // Lazy load infrequently accessed views for faster initial load
@@ -10,21 +12,12 @@ const McpView = lazy(() => import("./components/mcp/configuration/McpConfigurati
 const SettingsView = lazy(() => import("./components/settings/SettingsView"))
 
 const AppContent = () => {
-	const {
-		didHydrateState,
-		showMcp,
-		mcpTab,
-		showSettings,
-		showHistory,
-		closeMcpView,
-		navigateToHistory,
-		hideSettings,
-		hideHistory,
-		currentTaskItem: _currentTaskItem,
-	} = useExtensionState()
+	const { didHydrateState } = useSettingsState()
+	const { showMcp, mcpTab, showSettings, showHistory, closeMcpView, navigateToHistory, hideSettings, hideHistory } =
+		useUIState()
 
 	// Debug logging
-	console.log("[App] Render state:", { showSettings, showHistory, showMcp, didHydrateState })
+	debug.log("[App] Render state:", { showSettings, showHistory, showMcp, didHydrateState })
 
 	if (!didHydrateState) {
 		return null

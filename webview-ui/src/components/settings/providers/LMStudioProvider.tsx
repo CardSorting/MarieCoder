@@ -1,8 +1,9 @@
 import type { Mode } from "@shared/storage/types"
 import { VSCodeDropdown, VSCodeLink, VSCodeOption, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { ModelsServiceClient } from "@/services/grpc-client"
+import { logError } from "@/utils/debug_logger"
 import { BaseUrlField } from "../common/BaseUrlField"
 import { DebouncedTextField } from "../common/DebouncedTextField"
 import { DropdownContainer } from "../common/ModelSelector"
@@ -35,7 +36,7 @@ interface LMStudioApiModel {
  * The LM Studio provider configuration component
  */
 export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
-	const { apiConfiguration } = useExtensionState()
+	const { apiConfiguration } = useSettingsState()
 	const { handleFieldChange, handleModeFieldChange } = useApiConfigurationHandlers()
 
 	const { lmStudioModelId } = getModeSpecificFields(apiConfiguration, currentMode)
@@ -63,7 +64,7 @@ export const LMStudioProvider = ({ currentMode }: LMStudioProviderProps) => {
 				}
 			})
 			.catch((error) => {
-				console.error("Failed to parse LM Studio models:", error)
+				logError("Failed to parse LM Studio models:", error)
 			})
 	}, [endpoint])
 

@@ -1,7 +1,7 @@
 import type { ClineAskUseMcpServer, ClineMessage, ClineSayTool } from "@shared/ExtensionMessage"
 import { memo, useCallback } from "react"
 import QuoteButton from "@/components/chat/QuoteButton"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useMcpState } from "@/context/McpContext"
 import { MessageContent } from "./components/MessageContent"
 import { useMessageHeader } from "./hooks/use_message_header"
 import { useMessageState } from "./hooks/use_message_state"
@@ -43,7 +43,7 @@ export const ChatRowContent = memo(
 		sendMessageFromChatRow,
 		onSetQuote,
 	}: ChatRowContentProps) => {
-		const { mcpServers, mcpMarketplaceCatalog } = useExtensionState()
+		const { mcpServers, mcpMarketplaceCatalog } = useMcpState()
 
 		// Quote selection hook
 		const { quoteButtonState, contentRef, handleQuoteClick, handleMouseUp } = useQuoteSelection(onSetQuote)

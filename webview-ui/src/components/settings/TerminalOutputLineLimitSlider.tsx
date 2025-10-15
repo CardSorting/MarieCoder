@@ -1,9 +1,9 @@
 import React from "react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { updateSetting } from "./utils/settingsHandlers"
 
 const TerminalOutputLineLimitSlider: React.FC = () => {
-	const { terminalOutputLineLimit } = useExtensionState()
+	const { terminalOutputLineLimit } = useSettingsState()
 
 	const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const value = parseInt(event.target.value, 10)

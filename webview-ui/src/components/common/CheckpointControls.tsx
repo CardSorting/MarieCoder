@@ -3,7 +3,7 @@ import { Int64Request } from "@shared/proto/cline/common"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { useEffect, useRef, useState } from "react"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useUIState } from "@/context/UIStateContext"
 import { CheckpointsServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { useClickAway } from "@/utils/hooks"
@@ -21,7 +21,7 @@ export const CheckpointOverlay = ({ messageTs }: CheckpointOverlayProps) => {
 	const [hasMouseEntered, setHasMouseEntered] = useState(false)
 	const containerRef = useRef<HTMLDivElement>(null)
 	const tooltipRef = useRef<HTMLDivElement>(null)
-	const { onRelinquishControl } = useExtensionState()
+	const { onRelinquishControl } = useUIState()
 
 	const handleCloseConfirm = () => {
 		setShowRestoreConfirm(false)

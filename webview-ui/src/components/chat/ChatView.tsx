@@ -4,9 +4,10 @@ import { combineCommandSequences } from "@shared/combineCommandSequences"
 import type { ClineApiReqInfo, ClineMessage } from "@shared/ExtensionMessage"
 import { getApiMetrics } from "@shared/getApiMetrics"
 import { BooleanRequest, StringRequest } from "@shared/proto/cline/common"
-import { useCallback, useEffect, useMemo } from "react"
+import { lazy, Suspense, useCallback, useEffect, useMemo } from "react"
 import { normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
+import { useTaskState } from "@/context/TaskStateContext"
 import { FileServiceClient, UiServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { useHapticFeedback } from "@/utils/haptic_feedback"
@@ -14,20 +15,26 @@ import { useMount } from "@/utils/hooks"
 import { useChatKeyboardShortcuts } from "@/utils/use_keyboard_shortcuts"
 // Import utilities and hooks from the new structure
 import {
-	ActionButtons,
 	CHAT_CONSTANTS,
 	ChatLayout,
 	convertHtmlToMarkdown,
 	filterVisibleMessages,
 	groupMessages,
-	InputSection,
-	MessagesArea,
-	TaskSection,
 	useChatState,
 	useMessageHandlers,
 	useScrollBehavior,
-	WelcomeSection,
 } from "./chat-view"
+
+// Lazy load the heavy components for better initial load performance
+const TaskSection = lazy(() => import("./chat-view/components/layout/TaskSection").then((m) => ({ default: m.TaskSection })))
+const WelcomeSection = lazy(() =>
+	import("./chat-view/components/layout/WelcomeSection").then((m) => ({ default: m.WelcomeSection })),
+)
+const MessagesArea = lazy(() => import("./chat-view/components/layout/MessagesArea").then((m) => ({ default: m.MessagesArea })))
+const ActionButtons = lazy(() =>
+	import("./chat-view/components/layout/ActionButtons").then((m) => ({ default: m.ActionButtons })),
+)
+const InputSection = lazy(() => import("./chat-view/components/layout/InputSection").then((m) => ({ default: m.InputSection })))
 
 interface ChatViewProps {
 	isHidden: boolean
@@ -38,14 +45,8 @@ interface ChatViewProps {
 const MAX_IMAGES_AND_FILES_PER_MESSAGE = CHAT_CONSTANTS.MAX_IMAGES_AND_FILES_PER_MESSAGE
 
 const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
-	const {
-		version,
-		clineMessages: messages,
-		taskHistory,
-		apiConfiguration,
-		mode,
-		currentFocusChainChecklist,
-	} = useExtensionState()
+	const { version, apiConfiguration, mode, currentFocusChainChecklist } = useSettingsState()
+	const { clineMessages: messages, taskHistory } = useTaskState()
 
 	//const task = messages.length > 0 ? (messages[0].say === "task" ? messages[0] : undefined) : undefined) : undefined
 	const task = useMemo(() => messages.at(0), [messages]) // leaving this less safe version here since if the first message is not a task, then the extension is in a bad state and needs to be debugged (see Cline.abort)
@@ -368,31 +369,40 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 		<ChatLayout isHidden={isHidden}>
 			<div className="flex flex-col flex-1 overflow-hidden">
 				<main className="flex flex-col flex-1 overflow-hidden">
-					{task ? (
-						<TaskSection
-							apiMetrics={apiMetrics}
-							lastApiReqTotalTokens={lastApiReqTotalTokens}
-							lastProgressMessageText={lastProgressMessageText}
-							messageHandlers={messageHandlers}
-							scrollBehavior={scrollBehavior}
-							selectedModelInfo={{
-								supportsPromptCache: selectedModelInfo.supportsPromptCache,
-								supportsImages: selectedModelInfo.supportsImages || false,
-							}}
-							task={task}
-						/>
-					) : (
-						<WelcomeSection showHistoryView={showHistoryView} taskHistory={taskHistory} version={version} />
-					)}
+					<Suspense
+						fallback={
+							<div className="flex items-center justify-center p-8">
+								<div className="text-[var(--vscode-descriptionForeground)]">Loading...</div>
+							</div>
+						}>
+						{task ? (
+							<TaskSection
+								apiMetrics={apiMetrics}
+								lastApiReqTotalTokens={lastApiReqTotalTokens}
+								lastProgressMessageText={lastProgressMessageText}
+								messageHandlers={messageHandlers}
+								scrollBehavior={scrollBehavior}
+								selectedModelInfo={{
+									supportsPromptCache: selectedModelInfo.supportsPromptCache,
+									supportsImages: selectedModelInfo.supportsImages || false,
+								}}
+								task={task}
+							/>
+						) : (
+							<WelcomeSection showHistoryView={showHistoryView} taskHistory={taskHistory} version={version} />
+						)}
+					</Suspense>
 					{task && (
-						<MessagesArea
-							chatState={chatState}
-							groupedMessages={groupedMessages}
-							messageHandlers={messageHandlers}
-							modifiedMessages={modifiedMessages}
-							scrollBehavior={scrollBehavior}
-							task={task}
-						/>
+						<Suspense fallback={<div className="flex-1" />}>
+							<MessagesArea
+								chatState={chatState}
+								groupedMessages={groupedMessages}
+								messageHandlers={messageHandlers}
+								modifiedMessages={modifiedMessages}
+								scrollBehavior={scrollBehavior}
+								task={task}
+							/>
+						</Suspense>
 					)}
 				</main>
 			</div>
@@ -402,27 +412,29 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 					gridRow: "2",
 					boxShadow: "0 -2px 8px rgba(0, 0, 0, 0.05)",
 				}}>
-				<ActionButtons
-					chatState={chatState}
-					messageHandlers={messageHandlers}
-					messages={messages}
-					mode={mode}
-					scrollBehavior={{
-						scrollToBottomSmooth: scrollBehavior.scrollToBottomSmooth,
-						disableAutoScrollRef: scrollBehavior.disableAutoScrollRef,
-						showScrollToBottom: scrollBehavior.showScrollToBottom,
-						virtuosoRef: scrollBehavior.virtuosoRef,
-					}}
-					task={task}
-				/>
-				<InputSection
-					chatState={chatState}
-					messageHandlers={messageHandlers}
-					placeholderText={placeholderText}
-					scrollBehavior={scrollBehavior}
-					selectFilesAndImages={selectFilesAndImages}
-					shouldDisableFilesAndImages={shouldDisableFilesAndImages}
-				/>
+				<Suspense fallback={<div className="h-[100px]" />}>
+					<ActionButtons
+						chatState={chatState}
+						messageHandlers={messageHandlers}
+						messages={messages}
+						mode={mode}
+						scrollBehavior={{
+							scrollToBottomSmooth: scrollBehavior.scrollToBottomSmooth,
+							disableAutoScrollRef: scrollBehavior.disableAutoScrollRef,
+							showScrollToBottom: scrollBehavior.showScrollToBottom,
+							virtuosoRef: scrollBehavior.virtuosoRef,
+						}}
+						task={task}
+					/>
+					<InputSection
+						chatState={chatState}
+						messageHandlers={messageHandlers}
+						placeholderText={placeholderText}
+						scrollBehavior={scrollBehavior}
+						selectFilesAndImages={selectFilesAndImages}
+						shouldDisableFilesAndImages={shouldDisableFilesAndImages}
+					/>
+				</Suspense>
 			</footer>
 		</ChatLayout>
 	)

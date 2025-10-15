@@ -2,7 +2,7 @@ import { UpdateSettingsRequest } from "@shared/proto/cline/state"
 import { Mode } from "@shared/storage/types"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { useState } from "react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useSettingsState } from "@/context/SettingsContext"
 import { StateServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { TabButton } from "../../mcp/configuration/McpConfigurationView"
@@ -16,7 +16,7 @@ interface ApiConfigurationSectionProps {
 }
 
 const ApiConfigurationSection = ({ renderSectionHeader }: ApiConfigurationSectionProps) => {
-	const { planActSeparateModelsSetting, mode, apiConfiguration } = useExtensionState()
+	const { planActSeparateModelsSetting, mode, apiConfiguration } = useSettingsState()
 	const [currentTab, setCurrentTab] = useState<Mode>(mode)
 	const { handleFieldsChange } = useApiConfigurationHandlers()
 	return (

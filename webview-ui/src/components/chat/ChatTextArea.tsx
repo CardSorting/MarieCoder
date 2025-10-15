@@ -3,7 +3,9 @@
  */
 
 import { forwardRef, useCallback, useEffect, useMemo, useState } from "react"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useModelsState } from "@/context/ModelsContext"
+import { useSettingsState } from "@/context/SettingsContext"
+import { useUIState } from "@/context/UIStateContext"
 import { InputToolbar } from "./chat_text_area/components/input_toolbar/InputToolbar"
 import { ModeSwitch } from "./chat_text_area/components/mode_switch/ModeSwitch"
 import { TextInputArea } from "./chat_text_area/components/TextInputArea"
@@ -40,16 +42,9 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		},
 		ref,
 	) => {
-		const {
-			mode,
-			apiConfiguration,
-			openRouterModels,
-			localWorkflowToggles,
-			globalWorkflowToggles,
-			showChatModelSelector: showModelSelector,
-			setShowChatModelSelector: setShowModelSelector,
-			dictationSettings,
-		} = useExtensionState()
+		const { mode, apiConfiguration, localWorkflowToggles, globalWorkflowToggles, dictationSettings } = useSettingsState()
+		const { openRouterModels } = useModelsState()
+		const { showChatModelSelector: showModelSelector, setShowChatModelSelector: setShowModelSelector } = useUIState()
 
 		// Input state management
 		const {

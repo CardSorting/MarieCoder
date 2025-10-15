@@ -5,7 +5,7 @@ import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { useState } from "react"
 import { ValidatedInput, validators } from "@/components/common/ValidatedInput"
 import { LINKS } from "@/constants"
-import { useExtensionState } from "@/context/ExtensionStateContext"
+import { useMcpState } from "@/context/McpContext"
 import { McpServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 
@@ -15,7 +15,7 @@ const AddRemoteServerForm = ({ onServerAdded }: { onServerAdded: () => void }) =
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const [error, setError] = useState("")
 	const [showConnectingMessage, setShowConnectingMessage] = useState(false)
-	const { setMcpServers } = useExtensionState()
+	const { setMcpServers } = useMcpState()
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
