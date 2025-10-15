@@ -10,12 +10,9 @@ import { useSettingsState } from "@/context/SettingsContext"
 import { useTaskState } from "@/context/TaskStateContext"
 import { FileServiceClient, UiServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
-import { useMount } from "@/utils/hooks"
-// Import utilities and hooks from the new structure
 import {
 	CHAT_CONSTANTS,
 	ChatLayout,
-	convertHtmlToMarkdown,
 	filterVisibleMessages,
 	groupMessages,
 	useChatState,
@@ -40,10 +37,8 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 	const { version, apiConfiguration, mode, currentFocusChainChecklist } = useSettingsState()
 	const { clineMessages: messages, taskHistory } = useTaskState()
 
-	//const task = messages.length > 0 ? (messages[0].say === "task" ? messages[0] : undefined) : undefined) : undefined
-	const task = useMemo(() => messages.at(0), [messages]) // leaving this less safe version here since if the first message is not a task, then the extension is in a bad state and needs to be debugged (see Cline.abort)
+	const task = messages.at(0)
 	const modifiedMessages = useMemo(() => combineApiRequests(combineCommandSequences(messages.slice(1))), [messages])
-	// has to be after api_req_finished are all reduced into api_req_started messages
 	const apiMetrics = useMemo(() => getApiMetrics(modifiedMessages), [modifiedMessages])
 
 	const lastApiReqTotalTokens = useMemo(() => {
@@ -83,111 +78,70 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 
 	useEffect(() => {
 		const handleCopy = async (e: ClipboardEvent) => {
-			const targetElement = e.target as HTMLElement | null
-			// If the copy event originated from an input or textarea, let the default behavior handle it
-			if (
-				targetElement &&
-				(targetElement.tagName === "INPUT" || targetElement.tagName === "TEXTAREA" || targetElement.isContentEditable)
-			) {
+			const target = e.target as HTMLElement | null
+			// Let default behavior handle input/textarea
+			if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
 				return
 			}
 
 			const selection = window.getSelection()
-			if (!selection || selection.rangeCount === 0) {
-				return
-			}
-
-			const range = selection.getRangeAt(0)
-			const commonAncestor = range.commonAncestorContainer
-			let currentElement =
-				commonAncestor.nodeType === Node.ELEMENT_NODE ? (commonAncestor as HTMLElement) : commonAncestor.parentElement
-
-			// Check if we're in a code block - if so, use plain text
-			let isCodeBlock = false
-			while (currentElement) {
-				if (currentElement.tagName === "PRE" && currentElement.querySelector("code")) {
-					isCodeBlock = true
-					break
-				}
-				if (currentElement.tagName === "BODY") {
-					break
-				}
-				currentElement = currentElement.parentElement
-			}
-
-			try {
-				const textToCopy = isCodeBlock
-					? selection.toString()
-					: await convertHtmlToMarkdown(range.cloneContents().textContent || "")
-
-				if (textToCopy) {
-					await FileServiceClient.copyToClipboard(StringRequest.create({ value: textToCopy }))
+			const text = selection?.toString()
+			if (text) {
+				try {
+					await FileServiceClient.copyToClipboard(StringRequest.create({ value: text }))
 					e.preventDefault()
+				} catch (error) {
+					debug.error("Error copying to clipboard:", error)
 				}
-			} catch (error) {
-				debug.error("Error copying to clipboard:", error)
 			}
 		}
 
 		document.addEventListener("copy", handleCopy)
 		return () => document.removeEventListener("copy", handleCopy)
 	}, [])
-	// Button state is now managed by useButtonState hook
 
 	useEffect(() => {
 		setExpandedRows({})
 	}, [task?.ts])
 
-	// handleFocusChange is already provided by chatState
-
-	// Use message handlers hook
 	const messageHandlers = useMessageHandlers(messages, chatState)
-
-	const { selectedModelInfo } = useMemo(() => {
-		return normalizeApiConfiguration(apiConfiguration, mode)
-	}, [apiConfiguration, mode])
+	const { selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, mode)
 
 	const selectFilesAndImages = useCallback(async () => {
 		try {
 			const response = await FileServiceClient.selectFiles(
-				BooleanRequest.create({
-					value: selectedModelInfo.supportsImages,
-				}),
+				BooleanRequest.create({ value: selectedModelInfo.supportsImages }),
 			)
-			if (
-				response &&
-				response.values1 &&
-				response.values2 &&
-				(response.values1.length > 0 || response.values2.length > 0)
-			) {
-				const currentTotal = selectedImages.length + selectedFiles.length
-				const availableSlots = MAX_IMAGES_AND_FILES_PER_MESSAGE - currentTotal
+			if (!response || (!response.values1?.length && !response.values2?.length)) {
+				return
+			}
 
-				if (availableSlots > 0) {
-					// Prioritize images first
-					const imagesToAdd = Math.min(response.values1.length, availableSlots)
-					if (imagesToAdd > 0) {
-						setSelectedImages((prevImages) => [...prevImages, ...response.values1.slice(0, imagesToAdd)])
-					}
+			const currentTotal = selectedImages.length + selectedFiles.length
+			const availableSlots = MAX_IMAGES_AND_FILES_PER_MESSAGE - currentTotal
 
-					// Use remaining slots for files
-					const remainingSlots = availableSlots - imagesToAdd
-					if (remainingSlots > 0) {
-						setSelectedFiles((prevFiles) => [...prevFiles, ...response.values2.slice(0, remainingSlots)])
-					}
-				}
+			if (availableSlots <= 0) {
+				return
+			}
+
+			const imagesToAdd = Math.min(response.values1.length, availableSlots)
+			if (imagesToAdd > 0) {
+				setSelectedImages((prev) => [...prev, ...response.values1.slice(0, imagesToAdd)])
+			}
+
+			const remainingSlots = availableSlots - imagesToAdd
+			if (remainingSlots > 0) {
+				setSelectedFiles((prev) => [...prev, ...response.values2.slice(0, remainingSlots)])
 			}
 		} catch (error) {
 			debug.error("Error selecting images & files:", error)
 		}
-	}, [selectedModelInfo.supportsImages])
+	}, [selectedModelInfo.supportsImages, selectedImages.length, selectedFiles.length])
 
 	const shouldDisableFilesAndImages = selectedImages.length + selectedFiles.length >= MAX_IMAGES_AND_FILES_PER_MESSAGE
 
-	// Listen for local focusChatInput event
+	// Handle focus events and input subscription
 	useEffect(() => {
 		const handleFocusChatInput = () => {
-			// Only focus chat input box if user is currently viewing the chat (not hidden).
 			if (!isHidden) {
 				textAreaRef.current?.focus()
 			}
@@ -195,73 +149,42 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 
 		window.addEventListener("focusChatInput", handleFocusChatInput)
 
-		return () => {
-			window.removeEventListener("focusChatInput", handleFocusChatInput)
-		}
-	}, [isHidden])
-
-	// Set up addToInput subscription
-	useEffect(() => {
 		const cleanup = UiServiceClient.subscribeToAddToInput(
 			{},
 			{
 				onResponse: (event) => {
 					if (event.value) {
-						setInputValue((prevValue) => {
-							const newText = event.value
-							const newTextWithNewline = newText + "\n"
-							return prevValue ? `${prevValue}\n${newTextWithNewline}` : newTextWithNewline
-						})
+						setInputValue((prev) => (prev ? `${prev}\n${event.value}\n` : `${event.value}\n`))
 						if (textAreaRef.current) {
 							textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight
 							textAreaRef.current.focus()
 						}
 					}
 				},
-				onError: (error) => {
-					debug.error("Error in addToInput subscription:", error)
-				},
-				onComplete: () => {
-					debug.log("addToInput subscription completed")
-				},
+				onError: (error) => debug.error("Error in addToInput subscription:", error),
+				onComplete: () => debug.log("addToInput subscription completed"),
 			},
 		)
 
-		return cleanup
-	}, [])
+		return () => {
+			window.removeEventListener("focusChatInput", handleFocusChatInput)
+			cleanup()
+		}
+	}, [isHidden])
 
-	useMount(() => {
-		// NOTE: the vscode window needs to be focused for this to work
-		textAreaRef.current?.focus()
-	})
-
+	// Auto-focus textarea when conditions are met
 	useEffect(() => {
 		if (!isHidden && !sendingDisabled && !enableButtons) {
 			textAreaRef.current?.focus()
 		}
 	}, [isHidden, sendingDisabled, enableButtons])
 
-	const visibleMessages = useMemo(() => {
-		return filterVisibleMessages(modifiedMessages)
-	}, [modifiedMessages])
-
-	const lastProgressMessageText = useMemo(() => {
-		// First check if we have a current focus chain list from the extension state
-		if (currentFocusChainChecklist) {
-			return currentFocusChainChecklist
-		}
-
-		// Fall back to the last task_progress message if no state focus chain list
-		const lastProgressMessage = [...modifiedMessages].reverse().find((message) => message.say === "task_progress")
-		return lastProgressMessage?.text
-	}, [modifiedMessages, currentFocusChainChecklist])
-
-	const groupedMessages = useMemo(() => {
-		return groupMessages(visibleMessages)
-	}, [visibleMessages])
-
-	// Use scroll behavior hook
+	const visibleMessages = useMemo(() => filterVisibleMessages(modifiedMessages), [modifiedMessages])
+	const groupedMessages = useMemo(() => groupMessages(visibleMessages), [visibleMessages])
 	const scrollBehavior = useScrollBehavior(messages, visibleMessages, groupedMessages, expandedRows, setExpandedRows)
+
+	const lastProgressMessageText =
+		currentFocusChainChecklist || [...modifiedMessages].reverse().find((msg) => msg.say === "task_progress")?.text
 
 	const placeholderText = task ? "Type a message..." : "Type your task here..."
 
