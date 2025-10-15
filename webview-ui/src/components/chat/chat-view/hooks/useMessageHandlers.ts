@@ -12,17 +12,11 @@ import type { ChatState, MessageHandlers } from "../types/chatTypes"
  * Handles sending messages, button clicks, and task management
  */
 export function useMessageHandlers(messages: ClineMessage[], chatState: ChatState): MessageHandlers {
-	const {
-		setInputValue,
-		activeQuote,
-		setActiveQuote,
-		setSelectedImages,
-		setSelectedFiles,
-		setSendingDisabled,
-		setEnableButtons,
-		clineAsk,
-		lastMessage,
-	} = chatState
+	const { setInputValue, activeQuote, setActiveQuote, setSelectedImages, setSelectedFiles, setSendingDisabled } = chatState
+
+	// Derive message-related values from messages
+	const lastMessage = messages.at(-1)
+	const clineAsk = lastMessage?.ask
 
 	// Use ref to access chatState without creating dependency
 	const chatStateRef = useRef(chatState)
@@ -53,7 +47,6 @@ export function useMessageHandlers(messages: ClineMessage[], chatState: ChatStat
 				setSendingDisabled(true)
 				setSelectedImages([])
 				setSelectedFiles([])
-				setEnableButtons(false)
 
 				// Reset auto-scroll using ref to avoid chatState dependency
 				if ("disableAutoScrollRef" in chatStateRef.current) {
@@ -110,7 +103,6 @@ export function useMessageHandlers(messages: ClineMessage[], chatState: ChatStat
 			setSendingDisabled,
 			setSelectedImages,
 			setSelectedFiles,
-			setEnableButtons,
 			// chatState removed - causes entire handler to recreate on any state change
 		],
 	)

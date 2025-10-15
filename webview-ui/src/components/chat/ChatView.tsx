@@ -133,7 +133,7 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 		setExpandedRows({})
 	}, [task?.ts])
 
-	const messageHandlers = useMessageHandlers(messages, chatState as any) // TODO: Update useMessageHandlers interface
+	const messageHandlers = useMessageHandlers(messages, chatState)
 	const { selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, mode)
 
 	const selectFilesAndImages = useCallback(async () => {
