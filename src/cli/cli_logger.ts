@@ -1,6 +1,22 @@
 /**
  * Structured logging system for CLI
- * Provides different log levels and configurable output
+ *
+ * @module cli_logger
+ * @description Provides leveled logging with optional timestamps and color output.
+ * Supports DEBUG, INFO, WARN, ERROR, and SILENT log levels.
+ *
+ * @example
+ * ```typescript
+ * import { getLogger, LogLevel } from './cli_logger'
+ *
+ * const logger = getLogger({ level: LogLevel.DEBUG })
+ *
+ * logger.debug('Detailed debug information')
+ * logger.info('General information')
+ * logger.warn('Warning message')
+ * logger.error('Error occurred', error)
+ * logger.success('Operation completed!')
+ * ```
  */
 
 export enum LogLevel {
@@ -19,6 +35,29 @@ export interface LoggerOptions {
 
 /**
  * CLI Logger with structured logging and levels
+ *
+ * Provides formatted console output with configurable log levels,
+ * optional timestamps, and ANSI color support.
+ *
+ * @example
+ * ```typescript
+ * // Create logger with custom options
+ * const logger = new CliLogger({
+ *   level: LogLevel.DEBUG,
+ *   timestamp: true,
+ *   colorize: true
+ * })
+ *
+ * // Use different log levels
+ * logger.debug('Debug info')
+ * logger.info('Information')
+ * logger.warn('Warning!')
+ * logger.error('Error!', errorObject)
+ *
+ * // Create child logger with prefix
+ * const childLogger = logger.child('Module')
+ * childLogger.info('Message') // Output: [Module] Message
+ * ```
  */
 export class CliLogger {
 	private level: LogLevel
@@ -112,7 +151,7 @@ export class CliLogger {
 	/**
 	 * Debug level logging (most verbose)
 	 */
-	debug(message: string, ...args: any[]): void {
+	debug(message: string, ...args: unknown[]): void {
 		if (this.level <= LogLevel.DEBUG) {
 			const formatted = this.formatMessage("DEBUG", message, "gray")
 			console.log(formatted, ...args)
@@ -122,7 +161,7 @@ export class CliLogger {
 	/**
 	 * Info level logging (general information)
 	 */
-	info(message: string, ...args: any[]): void {
+	info(message: string, ...args: unknown[]): void {
 		if (this.level <= LogLevel.INFO) {
 			const formatted = this.formatMessage("INFO", message, "blue")
 			console.log(formatted, ...args)
@@ -132,7 +171,7 @@ export class CliLogger {
 	/**
 	 * Warning level logging
 	 */
-	warn(message: string, ...args: any[]): void {
+	warn(message: string, ...args: unknown[]): void {
 		if (this.level <= LogLevel.WARN) {
 			const formatted = this.formatMessage("WARN", message, "yellow")
 			console.warn(formatted, ...args)
@@ -142,7 +181,7 @@ export class CliLogger {
 	/**
 	 * Error level logging
 	 */
-	error(message: string, error?: any, ...args: any[]): void {
+	error(message: string, error?: unknown, ...args: unknown[]): void {
 		if (this.level <= LogLevel.ERROR) {
 			const formatted = this.formatMessage("ERROR", message, "red")
 			console.error(formatted, ...args)
@@ -163,7 +202,7 @@ export class CliLogger {
 	/**
 	 * Success message (always shown unless SILENT)
 	 */
-	success(message: string, ...args: any[]): void {
+	success(message: string, ...args: unknown[]): void {
 		if (this.level < LogLevel.SILENT) {
 			const formatted = this.formatMessage("SUCCESS", message, "green")
 			console.log(formatted, ...args)
@@ -219,7 +258,7 @@ export class CliLogger {
 	/**
 	 * Log table data
 	 */
-	table(data: any): void {
+	table(data: unknown): void {
 		if (this.level <= LogLevel.INFO) {
 			console.table(data)
 		}

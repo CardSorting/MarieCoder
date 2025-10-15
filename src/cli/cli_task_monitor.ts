@@ -1,16 +1,29 @@
 /**
- * CLI Task Monitor - Simplified
- * Monitors task messages and handles user approvals
+ * CLI Task Monitor - Simplified monitoring and approval handling
+ *
+ * @description Monitors task messages in real-time and handles user approval requests
+ * for CLI operations. Provides both automatic and manual approval modes.
+ *
+ * @example
+ * ```typescript
+ * const monitor = new CliTaskMonitor(false, { lineLimit: 500 })
+ * monitor.startMonitoring(task)
+ * // Monitor will handle messages and approvals
+ * monitor.stopMonitoring()
+ * ```
  */
 
 import type { Task } from "@/core/task"
 import type { ClineMessage } from "@/shared/ExtensionMessage"
+import { OUTPUT_LIMITS, TIMEOUTS } from "./cli_constants"
 import { getInteractionHandler } from "./cli_interaction_handler"
 import { formatCommandExecution, formatMessageBox, TerminalColors } from "./cli_message_formatter"
 import { getStreamHandler } from "./cli_stream_handler"
 
 export interface TerminalOutputConfig {
 	lineLimit?: number // Maximum lines to display per output
+	shellIntegrationTimeout?: number // Shell integration timeout (milliseconds)
+	terminalReuseEnabled?: boolean // Whether to reuse terminals
 }
 
 interface ApprovalResult {
@@ -20,6 +33,22 @@ interface ApprovalResult {
 	feedbackFiles?: string[]
 }
 
+/**
+ * Extended Task interface with CLI-specific properties
+ */
+interface TaskWithMessages {
+	clineMessages?: ClineMessage[]
+}
+
+/**
+ * Monitors task execution and handles approval requests
+ *
+ * Provides real-time monitoring of task messages with support for:
+ * - Automatic or manual approval of operations
+ * - Output truncation for long terminal outputs
+ * - Streaming display of partial messages
+ * - Type-safe message handling
+ */
 export class CliTaskMonitor {
 	private task: Task | null = null
 	private lastProcessedMessageIndex = -1
@@ -28,11 +57,36 @@ export class CliTaskMonitor {
 	private lineLimit: number
 	private streamHandler = getStreamHandler()
 
+	/**
+	 * Creates a new CLI task monitor
+	 *
+	 * @param autoApprove - If true, automatically approves all requests
+	 * @param config - Optional configuration for terminal output behavior
+	 *
+	 * @example
+	 * ```typescript
+	 * // Manual approval mode with custom line limit
+	 * const monitor = new CliTaskMonitor(false, { lineLimit: 1000 })
+	 *
+	 * // Auto-approve mode
+	 * const autoMonitor = new CliTaskMonitor(true)
+	 * ```
+	 */
 	constructor(
 		private autoApprove: boolean = false,
 		config?: TerminalOutputConfig,
 	) {
-		this.lineLimit = config?.lineLimit || 500
+		this.lineLimit = config?.lineLimit || OUTPUT_LIMITS.DEFAULT_LINE_LIMIT
+	}
+
+	/**
+	 * Get messages from task in a type-safe way
+	 */
+	private getMessages(): ClineMessage[] {
+		if (!this.task) {
+			return []
+		}
+		return (this.task as TaskWithMessages).clineMessages || []
 	}
 
 	/**
@@ -66,7 +120,7 @@ export class CliTaskMonitor {
 		this.lastProcessedMessageIndex = -1
 		this.isProcessingApproval = false
 
-		this.monitorInterval = setInterval(() => this.checkForNewMessages(), 100)
+		this.monitorInterval = setInterval(() => this.checkForNewMessages(), TIMEOUTS.MESSAGE_CHECK_INTERVAL)
 	}
 
 	/**
@@ -90,7 +144,7 @@ export class CliTaskMonitor {
 			return
 		}
 
-		const messages = (this.task as any).clineMessages || []
+		const messages = this.getMessages()
 		if (!Array.isArray(messages)) {
 			return
 		}
@@ -109,7 +163,14 @@ export class CliTaskMonitor {
 				}
 				this.lastProcessedMessageIndex = i
 			} catch (error) {
-				console.error("Error processing message:", error)
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				console.error(
+					`${TerminalColors.red}Failed to process task message. ` +
+						`Error: ${errorMessage}. ` +
+						`This may indicate a communication issue with the task. ` +
+						`Try: 1) Restart the task, 2) Check task state, ` +
+						`3) Enable --verbose for more details${TerminalColors.reset}`,
+				)
 			}
 		}
 	}
@@ -123,7 +184,7 @@ export class CliTaskMonitor {
 		}
 
 		this.isProcessingApproval = true
-		const timeoutId = setTimeout(() => this.handleTimeout(), 5 * 60 * 1000)
+		const timeoutId = setTimeout(() => this.handleTimeout(), TIMEOUTS.APPROVAL_REQUEST)
 
 		try {
 			const result = this.autoApprove ? await this.autoApproveRequest(message) : await this.manualApproveRequest(message)

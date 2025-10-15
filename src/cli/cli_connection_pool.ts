@@ -1,6 +1,33 @@
 /**
  * Connection pooling and rate limiting for API calls
- * Manages concurrent requests and prevents rate limit issues
+ *
+ * @module cli_connection_pool
+ * @description Manages concurrent API requests with rate limiting and connection pooling
+ * to prevent overwhelming APIs and hitting rate limits.
+ *
+ * Features:
+ * - Configurable connection limits
+ * - Per-second and per-minute rate limiting
+ * - Request deduplication
+ * - Queue timeout handling
+ * - Graceful shutdown
+ *
+ * @example
+ * ```typescript
+ * const pool = new ConnectionPool({
+ *   maxConnections: 10,
+ *   requestsPerMinute: 60,
+ *   requestsPerSecond: 10
+ * })
+ *
+ * // Execute a request through the pool
+ * const result = await pool.execute(async () => {
+ *   return await apiCall()
+ * })
+ *
+ * // Get pool statistics
+ * const stats = pool.getStats()
+ * ```
  */
 
 import type { CancellationToken } from "./cli_cancellation"
@@ -121,14 +148,32 @@ class RateLimiter {
 
 /**
  * Connection pool for managing concurrent API requests
+ *
+ * Provides connection pooling with rate limiting to ensure API requests
+ * stay within configured limits while maximizing throughput.
+ *
+ * @example
+ * ```typescript
+ * const pool = new ConnectionPool({
+ *   maxConnections: 5,
+ *   requestsPerMinute: 30
+ * }, 'my-api')
+ *
+ * // Execute requests through pool
+ * const result = await pool.execute(
+ *   async () => fetch('/api/endpoint'),
+ *   cancellationToken,
+ *   'unique-request-key' // Optional for deduplication
+ * )
+ * ```
  */
 export class ConnectionPool {
 	private maxConnections: number
 	private activeConnections: number = 0
 	private queue: Array<{
-		execute: () => Promise<any>
-		resolve: (value: any) => void
-		reject: (error: any) => void
+		execute: () => Promise<void>
+		resolve: (value: void) => void
+		reject: (error: unknown) => void
 		timeout?: NodeJS.Timeout
 	}> = []
 	private rateLimiter: RateLimiter
@@ -215,7 +260,15 @@ export class ConnectionPool {
 				if (index !== -1) {
 					this.queue.splice(index, 1)
 				}
-				reject(new Error(`Connection pool timeout after ${this.queueTimeout}ms`))
+				reject(
+					new Error(
+						`Connection pool timeout after ${this.queueTimeout}ms. ` +
+							`The API may be slow or unresponsive. ` +
+							`Try: 1) Reduce --max-concurrent-requests, ` +
+							`2) Check network connection, ` +
+							`3) Verify API endpoint is accessible`,
+					),
+				)
 			}, this.queueTimeout)
 
 			token?.onCancellationRequested(() => {
@@ -270,7 +323,14 @@ export class ConnectionPool {
 		rateLimitStatus: ReturnType<RateLimiter["getStatus"]>
 		deduplicationStats?: ReturnType<typeof deduplicationManager.getAllStats>[string]
 	} {
-		const stats: any = {
+		const stats: {
+			activeConnections: number
+			maxConnections: number
+			queuedRequests: number
+			utilization: number
+			rateLimitStatus: ReturnType<RateLimiter["getStatus"]>
+			deduplicationStats?: ReturnType<typeof deduplicationManager.getAllStats>[string]
+		} = {
 			activeConnections: this.activeConnections,
 			maxConnections: this.maxConnections,
 			queuedRequests: this.queue.length,
@@ -295,7 +355,14 @@ export class ConnectionPool {
 			if (item.timeout) {
 				clearTimeout(item.timeout)
 			}
-			item.reject(new Error(reason || "Connection pool queue cleared"))
+			const message = reason || "Connection pool queue cleared"
+			item.reject(
+				new Error(
+					`${message}. ` +
+						`This usually happens during shutdown or task cancellation. ` +
+						`If unexpected, check system resources and task state.`,
+				),
+			)
 		}
 	}
 

@@ -1,6 +1,31 @@
 /**
  * CLI Configuration Manager
- * Handles loading, saving, and managing CLI configuration
+ *
+ * @module cli_config_manager
+ * @description Manages CLI configuration including API keys, provider settings,
+ * and user preferences. Handles secure storage of API keys separate from main config.
+ *
+ * Configuration is stored in `~/.mariecoder/cli/`:
+ * - `config.json` - Main configuration (no sensitive data)
+ * - `secrets.json` - API keys with restricted permissions (0600)
+ *
+ * @example
+ * ```typescript
+ * const manager = new CliConfigManager()
+ *
+ * // Load configuration
+ * const config = manager.loadConfig()
+ *
+ * // Save configuration
+ * manager.saveConfig({
+ *   apiProvider: 'anthropic',
+ *   apiModelId: 'claude-3-5-sonnet-20241022',
+ *   ...
+ * })
+ *
+ * // Validate configuration
+ * const { valid, errors } = manager.validateConfig(config)
+ * ```
  */
 
 import * as fs from "node:fs"
@@ -32,12 +57,26 @@ export interface CliConfiguration {
 	taskHistoryLimit?: number
 }
 
+/**
+ * Manages CLI configuration with secure API key storage
+ *
+ * Handles loading, saving, and validating configuration while keeping
+ * API keys separate from main config file for better security.
+ */
 export class CliConfigManager {
 	private configDir: string
 	private configPath: string
 	private secretsPath: string
 	private cachedConfig: CliConfiguration | null = null
 
+	/**
+	 * Creates a new configuration manager
+	 *
+	 * Initializes paths for configuration storage:
+	 * - Config dir: `~/.mariecoder/cli/`
+	 * - Config file: `~/.mariecoder/cli/config.json`
+	 * - Secrets file: `~/.mariecoder/cli/secrets.json` (with 0600 permissions)
+	 */
 	constructor() {
 		this.configDir = path.join(os.homedir(), ".mariecoder", "cli")
 		this.configPath = path.join(this.configDir, "config.json")
@@ -148,7 +187,13 @@ export class CliConfigManager {
 		try {
 			fs.writeFileSync(this.configPath, JSON.stringify(configWithoutKey, null, 2))
 		} catch (error) {
-			throw new Error(`Failed to save configuration: ${error}`)
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			throw new Error(
+				`Failed to save configuration: ${errorMessage}. ` +
+					`Unable to write to ${this.configPath}. ` +
+					`Try: 1) Check directory exists and is writable, ` +
+					`2) Verify sufficient disk space, 3) Ensure file is not locked by another program`,
+			)
 		}
 
 		// Save API key separately if provided
@@ -190,7 +235,12 @@ export class CliConfigManager {
 				// Windows doesn't support chmod, ignore
 			}
 		} catch (error) {
-			throw new Error(`Failed to save API key: ${error}`)
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			throw new Error(
+				`Failed to save API key: ${errorMessage}. ` +
+					`Unable to write secrets to ${this.secretsPath}. ` +
+					`Ensure ~/.mariecoder/cli/ directory has write permissions and sufficient disk space.`,
+			)
 		}
 	}
 

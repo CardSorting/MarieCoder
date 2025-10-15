@@ -3,6 +3,7 @@
  * Provides visual feedback for long-running tasks
  */
 
+import { FORMATTING, STREAMING } from "./cli_constants"
 import { getLogger } from "./cli_logger"
 
 const _logger = getLogger()
@@ -16,10 +17,29 @@ export interface ProgressBarOptions {
 	showEta?: boolean
 }
 
+// Interface for ProgressBar to ensure type-safe no-op implementation
+interface IProgressBar {
+	update(current?: number, label?: string): void
+	increment(amount?: number, label?: string): void
+	complete(label?: string): void
+	stop(): void
+}
+
+// Interface for Spinner to ensure type-safe no-op implementation
+interface ISpinner {
+	start(): void
+	update(label: string): void
+	succeed(message?: string): void
+	fail(message?: string): void
+	warn(message?: string): void
+	info(message?: string): void
+	stop(): void
+}
+
 /**
  * Simple progress bar implementation without external dependencies
  */
-export class ProgressBar {
+export class ProgressBar implements IProgressBar {
 	private current: number = 0
 	private total: number
 	private label: string
@@ -28,12 +48,12 @@ export class ProgressBar {
 	private showEta: boolean
 	private startTime: number
 	private lastRenderTime: number = 0
-	private throttleMs: number = 100
+	private throttleMs: number = STREAMING.PROGRESS_BAR_THROTTLE
 
 	constructor(options: ProgressBarOptions) {
 		this.total = options.total
 		this.label = options.label || "Progress"
-		this.barWidth = options.barWidth || 40
+		this.barWidth = options.barWidth || FORMATTING.PROGRESS_BAR_WIDTH
 		this.showPercentage = options.showPercentage ?? true
 		this.showEta = options.showEta ?? true
 		this.startTime = Date.now()
@@ -144,7 +164,7 @@ export class ProgressManager {
 	/**
 	 * Create or update a progress bar
 	 */
-	create(id: string, options: ProgressBarOptions): ProgressBar {
+	create(id: string, options: ProgressBarOptions): ProgressBar | IProgressBar {
 		if (!this.enabled) {
 			// Return a no-op progress bar if disabled
 			return this.createNoOpBar()
@@ -196,19 +216,19 @@ export class ProgressManager {
 	/**
 	 * Create a no-op progress bar (for when disabled)
 	 */
-	private createNoOpBar(): ProgressBar {
+	private createNoOpBar(): IProgressBar {
 		return {
 			update: () => {},
 			increment: () => {},
 			complete: () => {},
 			stop: () => {},
-		} as any
+		}
 	}
 
 	/**
 	 * Create a spinner for indeterminate operations
 	 */
-	createSpinner(label: string): Spinner {
+	createSpinner(label: string): ISpinner {
 		if (!this.enabled) {
 			return this.createNoOpSpinner()
 		}
@@ -218,7 +238,7 @@ export class ProgressManager {
 	/**
 	 * Create a no-op spinner
 	 */
-	private createNoOpSpinner(): Spinner {
+	private createNoOpSpinner(): ISpinner {
 		return {
 			start: () => {},
 			update: () => {},
@@ -227,14 +247,14 @@ export class ProgressManager {
 			warn: () => {},
 			info: () => {},
 			stop: () => {},
-		} as any
+		}
 	}
 }
 
 /**
  * Spinner for indeterminate progress
  */
-export class Spinner {
+export class Spinner implements ISpinner {
 	private frames: string[] = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
 	private currentFrame: number = 0
 	private label: string
@@ -252,7 +272,7 @@ export class Spinner {
 			const frame = this.frames[this.currentFrame]
 			process.stdout.write(`\r${frame} ${this.label}`)
 			this.currentFrame = (this.currentFrame + 1) % this.frames.length
-		}, 80)
+		}, STREAMING.SPINNER_FRAME_DURATION)
 	}
 
 	/**

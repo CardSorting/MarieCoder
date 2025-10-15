@@ -5,21 +5,8 @@
 
 import { HostProvider } from "@/hosts/host-provider"
 import { DiffViewProvider } from "@/integrations/editor/DiffViewProvider"
-
-// ANSI color codes for terminal output
-const COLORS = {
-	reset: "\x1b[0m",
-	bright: "\x1b[1m",
-	dim: "\x1b[2m",
-	red: "\x1b[31m",
-	green: "\x1b[32m",
-	yellow: "\x1b[33m",
-	blue: "\x1b[34m",
-	cyan: "\x1b[36m",
-	gray: "\x1b[90m",
-	bgRed: "\x1b[41m",
-	bgGreen: "\x1b[42m",
-}
+import { FORMATTING } from "./cli_constants"
+import { TerminalColors } from "./cli_terminal_colors"
 
 export interface DiffStats {
 	additions: number
@@ -72,7 +59,7 @@ export class CliDiffViewProvider extends DiffViewProvider {
 		})
 	}
 
-	protected async saveDocument(): Promise<Boolean> {
+	protected async saveDocument(): Promise<boolean> {
 		if (!this.activeDiffEditorId) {
 			return false
 		}
@@ -80,8 +67,9 @@ export class CliDiffViewProvider extends DiffViewProvider {
 		try {
 			await HostProvider.diff.saveDocument({ diffId: this.activeDiffEditorId })
 			return true
-		} catch (err: any) {
-			console.error("Failed to save document:", err)
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			console.error(`Failed to save document: ${errorMessage}`)
 			return false
 		}
 	}
@@ -126,21 +114,21 @@ export class CliDiffViewProvider extends DiffViewProvider {
 		}
 
 		if (line.startsWith("+++") || line.startsWith("---")) {
-			return `${COLORS.bright}${COLORS.yellow}${line}${COLORS.reset}`
+			return `${TerminalColors.bright}${TerminalColors.yellow}${line}${TerminalColors.reset}`
 		}
 		if (line.startsWith("@@")) {
-			return `${COLORS.cyan}${line}${COLORS.reset}`
+			return `${TerminalColors.cyan}${line}${TerminalColors.reset}`
 		}
 		if (line.startsWith("+")) {
-			return `${COLORS.green}${line}${COLORS.reset}`
+			return `${TerminalColors.green}${line}${TerminalColors.reset}`
 		}
 		if (line.startsWith("-")) {
-			return `${COLORS.red}${line}${COLORS.reset}`
+			return `${TerminalColors.red}${line}${TerminalColors.reset}`
 		}
 		if (line.startsWith("diff --git")) {
-			return `${COLORS.bright}${line}${COLORS.reset}`
+			return `${TerminalColors.bright}${line}${TerminalColors.reset}`
 		}
-		return `${COLORS.gray}${line}${COLORS.reset}`
+		return `${TerminalColors.gray}${line}${TerminalColors.reset}`
 	}
 
 	/**
@@ -150,15 +138,15 @@ export class CliDiffViewProvider extends DiffViewProvider {
 		const diff = this.generateUnifiedDiff(originalContent, newContent, filePath)
 		const stats = this.calculateDiffStats(diff)
 
-		console.log("\n" + "═".repeat(80))
-		console.log(`${COLORS.bright}Diff: ${filePath}${COLORS.reset}`)
-		console.log("─".repeat(80))
+		console.log("\n" + "═".repeat(FORMATTING.SEPARATOR_LENGTH))
+		console.log(`${TerminalColors.bright}Diff: ${filePath}${TerminalColors.reset}`)
+		console.log(FORMATTING.SEPARATOR_CHAR.repeat(FORMATTING.SEPARATOR_LENGTH))
 
 		// Display diff statistics
 		console.log(
-			`${COLORS.green}+${stats.additions}${COLORS.reset} ${COLORS.red}-${stats.deletions}${COLORS.reset} (${stats.totalLines} lines)`,
+			`${TerminalColors.green}+${stats.additions}${TerminalColors.reset} ${TerminalColors.red}-${stats.deletions}${TerminalColors.reset} (${stats.totalLines} lines)`,
 		)
-		console.log("─".repeat(80))
+		console.log(FORMATTING.SEPARATOR_CHAR.repeat(FORMATTING.SEPARATOR_LENGTH))
 
 		// Display formatted diff
 		const lines = diff.split("\n")
@@ -166,7 +154,7 @@ export class CliDiffViewProvider extends DiffViewProvider {
 			console.log(this.formatDiffLine(line))
 		}
 
-		console.log("═".repeat(80) + "\n")
+		console.log("═".repeat(FORMATTING.SEPARATOR_LENGTH) + "\n")
 	}
 
 	/**
@@ -193,7 +181,7 @@ export class CliDiffViewProvider extends DiffViewProvider {
 
 			if (originalLine !== newLine) {
 				if (!inHunk) {
-					hunkStart = Math.max(0, i - 3)
+					hunkStart = Math.max(0, i - FORMATTING.DIFF_CONTEXT_LINES)
 					inHunk = true
 					hunkLines.length = 0
 
@@ -221,8 +209,8 @@ export class CliDiffViewProvider extends DiffViewProvider {
 				if (originalLine !== undefined) {
 					hunkLines.push(` ${originalLine}`)
 				}
-				// Close hunk after 3 context lines
-				if (hunkLines.filter((l) => l.startsWith(" ")).length >= 3) {
+				// Close hunk after context lines
+				if (hunkLines.filter((l) => l.startsWith(" ")).length >= FORMATTING.DIFF_CONTEXT_LINES) {
 					diff.push(`@@ -${hunkStart + 1},${i - hunkStart} +${hunkStart + 1},${i - hunkStart} @@`)
 					diff.push(...hunkLines)
 					inHunk = false

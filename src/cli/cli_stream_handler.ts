@@ -9,7 +9,11 @@
  */
 
 import type { ClineMessage } from "@/shared/ExtensionMessage"
+import { OUTPUT_LIMITS, STREAMING } from "./cli_constants"
+import { getLogger } from "./cli_logger"
 import { formatStreamingIndicator, formatThinkingBlock, TerminalColors } from "./cli_message_formatter"
+
+const logger = getLogger()
 
 /**
  * Stream handler configuration
@@ -54,10 +58,10 @@ export class CliStreamHandler {
 
 	constructor(config: StreamHandlerConfig = {}) {
 		this.config = {
-			throttleMs: config.throttleMs || 100,
+			throttleMs: config.throttleMs || STREAMING.THROTTLE_MS,
 			showPartialContent: config.showPartialContent ?? true,
 			autoExpandThinking: config.autoExpandThinking ?? true,
-			maxPartialLength: config.maxPartialLength || 500,
+			maxPartialLength: config.maxPartialLength || OUTPUT_LIMITS.MAX_PARTIAL_LENGTH,
 		}
 	}
 
@@ -65,6 +69,12 @@ export class CliStreamHandler {
 	 * Start a new streaming session
 	 */
 	startStream(type: "text" | "thinking" | "command"): void {
+		// Check terminal capabilities and warn if limited
+		const supportsAnsi = process.stdout.isTTY === true && !process.env.NO_COLOR && process.env.TERM !== "dumb"
+		if (!supportsAnsi) {
+			logger.debug("Terminal does not support ANSI codes. " + "Stream clearing disabled. Output may accumulate.")
+		}
+
 		// End any existing session
 		this.endStream()
 
