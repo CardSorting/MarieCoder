@@ -245,8 +245,7 @@ const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 							${language ? `<span class="code-block-info">${language}</span>` : ""}
 							<span class="code-block-info">${totalLines} lines</span>
 						`
-						// Smooth scroll to keep context
-						pre.scrollIntoView({ behavior: "smooth", block: "nearest" })
+						pre.scrollIntoView({ block: "nearest" })
 					} else {
 						pre.classList.add("code-block-collapsed")
 						pre.classList.remove("code-block-expanded")

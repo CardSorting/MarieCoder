@@ -256,13 +256,10 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 							const newTextWithNewline = newText + "\n"
 							return prevValue ? `${prevValue}\n${newTextWithNewline}` : newTextWithNewline
 						})
-						// Use requestAnimationFrame for smoother, more responsive updates
-						requestAnimationFrame(() => {
-							if (textAreaRef.current) {
-								textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight
-								textAreaRef.current.focus()
-							}
-						})
+						if (textAreaRef.current) {
+							textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight
+							textAreaRef.current.focus()
+						}
 					}
 				},
 				onError: (error) => {
@@ -283,11 +280,8 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 	})
 
 	useEffect(() => {
-		// Use requestAnimationFrame for instant, smooth focus without blocking
 		if (!isHidden && !sendingDisabled && !enableButtons) {
-			requestAnimationFrame(() => {
-				textAreaRef.current?.focus()
-			})
+			textAreaRef.current?.focus()
 		}
 	}, [isHidden, sendingDisabled, enableButtons])
 

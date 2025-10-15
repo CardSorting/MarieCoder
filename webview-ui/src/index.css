@@ -251,51 +251,6 @@ button:hover:not(:disabled) {
 }
 
 /* ==========================================================================
-   Scroll Performance - Buttery Smooth, Effortless Navigation
-   ========================================================================== */
-
-/* GPU-accelerated scrolling with world-class comfort */
-.scrollable {
-	will-change: scroll-position;
-	-webkit-overflow-scrolling: touch;
-	transform: translateZ(0);
-	/* Optimize rendering performance */
-	contain: layout style paint;
-	/* Prevent jarring bounce/rubber-band at scroll boundaries */
-	overscroll-behavior: contain;
-	/* Reserve space for scrollbar to prevent layout shift */
-	scrollbar-gutter: stable;
-	/* Ultra-smooth momentum scrolling on touch devices */
-	scroll-behavior: smooth;
-	/* Snap to content for crisp, comfortable scrolling */
-	scroll-padding: 16px;
-}
-
-/* Silky smooth scroll with natural, human-perceived easing */
-html {
-	scroll-behavior: smooth;
-	/* Prevent bounce at document boundaries */
-	overscroll-behavior-y: contain;
-	/* Optimize text rendering for comfort during scroll */
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-}
-
-/* Accessibility: Instant scroll for reduced motion */
-@media (prefers-reduced-motion: reduce) {
-	.scrollable,
-	html {
-		scroll-behavior: auto !important;
-	}
-}
-
-/* Optimize rendering performance */
-.optimize-rendering {
-	content-visibility: auto;
-	contain-intrinsic-size: auto 500px;
-}
-
-/* ==========================================================================
    Motion Preferences - Accessibility First
    ========================================================================== */
 

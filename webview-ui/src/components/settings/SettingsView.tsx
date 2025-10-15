@@ -172,20 +172,18 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 		}
 
 		// Fallback to element scrolling
-		requestAnimationFrame(() => {
-			const element = document.getElementById(tabId)
-			if (!element) {
-				return
-			}
+		const element = document.getElementById(tabId)
+		if (!element) {
+			return
+		}
 
-			element.scrollIntoView({ behavior: "smooth" })
-			element.style.transition = "background-color 0.5s ease"
-			element.style.backgroundColor = "var(--vscode-textPreformat-background)"
+		element.scrollIntoView()
+		element.style.transition = "background-color 0.5s ease"
+		element.style.backgroundColor = "var(--vscode-textPreformat-background)"
 
-			setTimeout(() => {
-				element.style.backgroundColor = "transparent"
-			}, 1200)
-		})
+		setTimeout(() => {
+			element.style.backgroundColor = "transparent"
+		}, 1200)
 	}, [])
 
 	useEffect(() => {

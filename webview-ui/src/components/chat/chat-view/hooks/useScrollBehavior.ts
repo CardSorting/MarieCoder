@@ -1,7 +1,6 @@
 import { ClineMessage } from "@shared/ExtensionMessage"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { VirtuosoHandle } from "react-virtuoso"
-import { debounce } from "@/utils/debounce"
 import { ScrollBehavior } from "../types/chatTypes"
 
 /**
@@ -32,46 +31,16 @@ export function useScrollBehavior(
 	const [isAtBottom, setIsAtBottom] = useState(false)
 	const [pendingScrollToMessage, setPendingScrollToMessage] = useState<number | null>(null)
 
-	// Scroll momentum tracking for predictive scrolling
-	const lastScrollTimeRef = useRef(0)
-	const scrollVelocityRef = useRef(0)
-	const lastScrollTopRef = useRef(0)
-
 	// Ref to track current isAtBottom value without causing re-renders
 	const isAtBottomRef = useRef(false)
 
-	// Ref to prevent recursive scroll calls
-	const isScrollingRef = useRef(false)
+	const scrollToBottomSmooth = useCallback(() => {
+		virtuosoRef.current?.scrollTo({
+			top: Number.MAX_SAFE_INTEGER,
+			behavior: "smooth",
+		})
+	}, [])
 
-	const scrollToBottomSmooth = useMemo(
-		() =>
-			debounce(() => {
-				// Prevent recursive scroll calls
-				if (isScrollingRef.current) {
-					return
-				}
-				isScrollingRef.current = true
-
-				// Double requestAnimationFrame for even smoother scrolling
-				// First RAF ensures we're at the start of a frame
-				requestAnimationFrame(() => {
-					// Second RAF ensures layout is complete before scrolling
-					requestAnimationFrame(() => {
-						virtuosoRef.current?.scrollTo({
-							top: Number.MAX_SAFE_INTEGER,
-							behavior: "smooth",
-						})
-						// Reset scrolling flag after a delay
-						setTimeout(() => {
-							isScrollingRef.current = false
-						}, 100)
-					})
-				})
-			}, 16), // Increased from 10ms to align with frame timing
-		[],
-	)
-
-	// Smooth scroll to bottom with debounce
 	const scrollToBottomAuto = useCallback(() => {
 		virtuosoRef.current?.scrollTo({
 			top: Number.MAX_SAFE_INTEGER,
@@ -116,14 +85,10 @@ export function useScrollBehavior(
 			if (groupIndex !== -1) {
 				setPendingScrollToMessage(null)
 				disableAutoScrollRef.current = true
-				requestAnimationFrame(() => {
-					requestAnimationFrame(() => {
-						virtuosoRef.current?.scrollToIndex({
-							index: groupIndex,
-							align: "start",
-							behavior: "smooth",
-						})
-					})
+				virtuosoRef.current?.scrollToIndex({
+					index: groupIndex,
+					align: "start",
+					behavior: "smooth",
 				})
 			}
 		},
@@ -159,24 +124,17 @@ export function useScrollBehavior(
 
 			// Use ref value instead of state to avoid circular dependencies
 			if (isCollapsing && isAtBottomRef.current) {
-				// Use requestAnimationFrame for smoother, non-blocking scroll
-				requestAnimationFrame(() => {
-					scrollToBottomAuto()
-				})
+				scrollToBottomAuto()
 			} else if (isLast || isSecondToLast) {
 				if (isCollapsing) {
 					if (isSecondToLast && !isLastCollapsedApiReq) {
 						return
 					}
-					requestAnimationFrame(() => {
-						scrollToBottomAuto()
-					})
+					scrollToBottomAuto()
 				} else {
-					requestAnimationFrame(() => {
-						virtuosoRef.current?.scrollToIndex({
-							index: groupedMessages.length - (isLast ? 1 : 2),
-							align: "start",
-						})
+					virtuosoRef.current?.scrollToIndex({
+						index: groupedMessages.length - (isLast ? 1 : 2),
+						align: "start",
 					})
 				}
 			}
@@ -190,10 +148,7 @@ export function useScrollBehavior(
 				if (isTaller) {
 					scrollToBottomSmooth()
 				} else {
-					// Use requestAnimationFrame for non-blocking, smooth updates
-					requestAnimationFrame(() => {
-						scrollToBottomAuto()
-					})
+					scrollToBottomAuto()
 				}
 			}
 		},
@@ -204,12 +159,7 @@ export function useScrollBehavior(
 		// Only auto-scroll if auto-scroll is not disabled by user
 		// Don't add isAtBottom to dependencies to avoid circular updates
 		if (!disableAutoScrollRef.current) {
-			// Double RAF for smoother, jank-free scrolling on new messages
-			requestAnimationFrame(() => {
-				requestAnimationFrame(() => {
-					scrollToBottomSmooth()
-				})
-			})
+			scrollToBottomSmooth()
 		}
 	}, [groupedMessages.length, scrollToBottomSmooth])
 
@@ -230,59 +180,25 @@ export function useScrollBehavior(
 		}
 	}, [messages.length])
 
-	// Enhanced wheel handler with momentum tracking
+	// Simple wheel handler to detect user scroll
 	const handleWheel = useCallback((event: WheelEvent) => {
 		if (!scrollContainerRef.current?.contains(event.target as Node)) {
 			return
 		}
 
-		// Track scroll velocity for predictive behavior
-		const now = performance.now()
-		const timeDelta = now - lastScrollTimeRef.current
-		const scrollDelta = event.deltaY
-
-		if (timeDelta > 0) {
-			scrollVelocityRef.current = Math.abs(scrollDelta / timeDelta)
-		}
-
-		lastScrollTimeRef.current = now
-		lastScrollTopRef.current += event.deltaY
-
-		// Disable auto-scroll on ANY upward scroll (user wants to browse)
+		// Disable auto-scroll on upward scroll (user wants to browse)
 		if (event.deltaY && event.deltaY < 0) {
 			disableAutoScrollRef.current = true
 		}
 	}, [])
 
-	// Handle touch events for better mobile support
-	// Use touchstart to detect when user begins a scroll gesture
-	const handleTouchStart = useCallback(() => {
-		if (!scrollContainerRef.current) {
-			return
-		}
-
-		// Disable auto-scroll when user initiates a touch scroll
-		// This gives mobile users full control over scrolling
-		disableAutoScrollRef.current = true
-	}, [])
-
 	useEffect(() => {
 		window.addEventListener("wheel", handleWheel, { passive: true })
 
-		// Add touch detection for mobile devices
-		const scrollContainer = scrollContainerRef.current
-		if (scrollContainer) {
-			// Use touchstart to detect when user initiates a touch scroll gesture
-			scrollContainer.addEventListener("touchstart", handleTouchStart, { passive: true })
-		}
-
 		return () => {
 			window.removeEventListener("wheel", handleWheel)
-			if (scrollContainer) {
-				scrollContainer.removeEventListener("touchstart", handleTouchStart)
-			}
 		}
-	}, [handleWheel, handleTouchStart])
+	}, [handleWheel])
 
 	return {
 		virtuosoRef,
