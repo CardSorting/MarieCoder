@@ -4,15 +4,13 @@ import { combineCommandSequences } from "@shared/combineCommandSequences"
 import type { ClineApiReqInfo, ClineMessage } from "@shared/ExtensionMessage"
 import { getApiMetrics } from "@shared/getApiMetrics"
 import { BooleanRequest, StringRequest } from "@shared/proto/cline/common"
-import { lazy, Suspense, useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { useSettingsState } from "@/context/SettingsContext"
 import { useTaskState } from "@/context/TaskStateContext"
 import { FileServiceClient, UiServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
-import { useHapticFeedback } from "@/utils/haptic_feedback"
 import { useMount } from "@/utils/hooks"
-import { useChatKeyboardShortcuts } from "@/utils/use_keyboard_shortcuts"
 // Import utilities and hooks from the new structure
 import {
 	CHAT_CONSTANTS,
@@ -24,17 +22,11 @@ import {
 	useMessageHandlers,
 	useScrollBehavior,
 } from "./chat-view"
-
-// Lazy load the heavy components for better initial load performance
-const TaskSection = lazy(() => import("./chat-view/components/layout/TaskSection").then((m) => ({ default: m.TaskSection })))
-const WelcomeSection = lazy(() =>
-	import("./chat-view/components/layout/WelcomeSection").then((m) => ({ default: m.WelcomeSection })),
-)
-const MessagesArea = lazy(() => import("./chat-view/components/layout/MessagesArea").then((m) => ({ default: m.MessagesArea })))
-const ActionButtons = lazy(() =>
-	import("./chat-view/components/layout/ActionButtons").then((m) => ({ default: m.ActionButtons })),
-)
-const InputSection = lazy(() => import("./chat-view/components/layout/InputSection").then((m) => ({ default: m.InputSection })))
+import { ActionButtons } from "./chat-view/components/layout/ActionButtons"
+import { InputSection } from "./chat-view/components/layout/InputSection"
+import { MessagesArea } from "./chat-view/components/layout/MessagesArea"
+import { TaskSection } from "./chat-view/components/layout/TaskSection"
+import { WelcomeSection } from "./chat-view/components/layout/WelcomeSection"
 
 interface ChatViewProps {
 	isHidden: boolean
@@ -87,14 +79,12 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 		expandedRows,
 		setExpandedRows,
 		textAreaRef,
-		setActiveQuote,
 	} = chatState
 
 	useEffect(() => {
 		const handleCopy = async (e: ClipboardEvent) => {
 			const targetElement = e.target as HTMLElement | null
-			// If the copy event originated from an input or textarea,
-			// let the default browser behavior handle it.
+			// If the copy event originated from an input or textarea, let the default behavior handle it
 			if (
 				targetElement &&
 				(targetElement.tagName === "INPUT" || targetElement.tagName === "TEXTAREA" || targetElement.isContentEditable)
@@ -102,79 +92,45 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 				return
 			}
 
-			if (window.getSelection) {
-				const selection = window.getSelection()
-				if (selection && selection.rangeCount > 0) {
-					const range = selection.getRangeAt(0)
-					const commonAncestor = range.commonAncestorContainer
-					let textToCopy: string | null = null
+			const selection = window.getSelection()
+			if (!selection || selection.rangeCount === 0) {
+				return
+			}
 
-					// Check if the selection is inside an element where plain text copy is preferred
-					let currentElement =
-						commonAncestor.nodeType === Node.ELEMENT_NODE
-							? (commonAncestor as HTMLElement)
-							: commonAncestor.parentElement
-					let preferPlainTextCopy = false
-					while (currentElement) {
-						if (currentElement.tagName === "PRE" && currentElement.querySelector("code")) {
-							preferPlainTextCopy = true
-							break
-						}
-						// Check computed white-space style
-						const computedStyle = window.getComputedStyle(currentElement)
-						if (
-							computedStyle.whiteSpace === "pre" ||
-							computedStyle.whiteSpace === "pre-wrap" ||
-							computedStyle.whiteSpace === "pre-line"
-						) {
-							// If the element itself or an ancestor has pre-like white-space,
-							// and the selection is likely contained within it, prefer plain text.
-							// This helps with elements like the TaskHeader's text display.
-							preferPlainTextCopy = true
-							break
-						}
+			const range = selection.getRangeAt(0)
+			const commonAncestor = range.commonAncestorContainer
+			let currentElement =
+				commonAncestor.nodeType === Node.ELEMENT_NODE ? (commonAncestor as HTMLElement) : commonAncestor.parentElement
 
-						// Stop searching if we reach a known chat message boundary or body
-						if (
-							currentElement.classList.contains("chat-row-assistant-message-container") ||
-							currentElement.classList.contains("chat-row-user-message-container") ||
-							currentElement.tagName === "BODY"
-						) {
-							break
-						}
-						currentElement = currentElement.parentElement
-					}
-
-					if (preferPlainTextCopy) {
-						// For code blocks or elements with pre-formatted white-space, get plain text.
-						textToCopy = selection.toString()
-					} else {
-						// For other content, use the existing HTML-to-Markdown conversion
-						const clonedSelection = range.cloneContents()
-						const div = document.createElement("div")
-						div.appendChild(clonedSelection)
-						const selectedHtml = div.innerHTML
-						textToCopy = await convertHtmlToMarkdown(selectedHtml)
-					}
-
-					if (textToCopy !== null) {
-						try {
-							FileServiceClient.copyToClipboard(StringRequest.create({ value: textToCopy })).catch((err) => {
-								debug.error("Error copying to clipboard:", err)
-							})
-							e.preventDefault()
-						} catch (error) {
-							debug.error("Error copying to clipboard:", error)
-						}
-					}
+			// Check if we're in a code block - if so, use plain text
+			let isCodeBlock = false
+			while (currentElement) {
+				if (currentElement.tagName === "PRE" && currentElement.querySelector("code")) {
+					isCodeBlock = true
+					break
 				}
+				if (currentElement.tagName === "BODY") {
+					break
+				}
+				currentElement = currentElement.parentElement
+			}
+
+			try {
+				const textToCopy = isCodeBlock
+					? selection.toString()
+					: await convertHtmlToMarkdown(range.cloneContents().textContent || "")
+
+				if (textToCopy) {
+					await FileServiceClient.copyToClipboard(StringRequest.create({ value: textToCopy }))
+					e.preventDefault()
+				}
+			} catch (error) {
+				debug.error("Error copying to clipboard:", error)
 			}
 		}
-		document.addEventListener("copy", handleCopy)
 
-		return () => {
-			document.removeEventListener("copy", handleCopy)
-		}
+		document.addEventListener("copy", handleCopy)
+		return () => document.removeEventListener("copy", handleCopy)
 	}, [])
 	// Button state is now managed by useButtonState hook
 
@@ -307,96 +263,37 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 	// Use scroll behavior hook
 	const scrollBehavior = useScrollBehavior(messages, visibleMessages, groupedMessages, expandedRows, setExpandedRows)
 
-	const placeholderText = useMemo(() => {
-		const text = task ? "Type a message..." : "Type your task here..."
-		return text
-	}, [task])
-
-	// Haptic feedback for interactions
-	const { triggerFeedback } = useHapticFeedback()
-
-	// Keyboard shortcuts for power users
-	useChatKeyboardShortcuts({
-		onSendMessage: () => {
-			const inputValue = textAreaRef.current?.value || ""
-			if (inputValue.trim() && !sendingDisabled) {
-				messageHandlers.handleSendMessage(inputValue, selectedImages, selectedFiles)
-				// Trigger haptic feedback on send
-				if (textAreaRef.current) {
-					triggerFeedback(textAreaRef.current, "success", "medium")
-				}
-			}
-		},
-		onClearInput: () => {
-			setInputValue("")
-			setSelectedImages([])
-			setSelectedFiles([])
-			setActiveQuote(null)
-			if (textAreaRef.current) {
-				triggerFeedback(textAreaRef.current, "info", "light")
-			}
-		},
-		onFocusInput: () => {
-			textAreaRef.current?.focus()
-		},
-		onScrollToBottom: () => {
-			scrollBehavior.scrollToBottomSmooth()
-		},
-		onScrollToTop: () => {
-			scrollBehavior.virtuosoRef.current?.scrollToIndex({
-				index: 0,
-				align: "start",
-				behavior: "smooth",
-			})
-		},
-		onCancelTask: () => {
-			if (task) {
-				messageHandlers.handleTaskCloseButtonClick()
-			}
-		},
-		onNewTask: () => {
-			messageHandlers.startNewTask()
-		},
-	})
+	const placeholderText = task ? "Type a message..." : "Type your task here..."
 
 	return (
 		<ChatLayout isHidden={isHidden}>
 			<div className="flex flex-col flex-1 overflow-hidden">
 				<main className="flex flex-col flex-1 overflow-hidden">
-					<Suspense
-						fallback={
-							<div className="flex items-center justify-center p-8">
-								<div className="text-[var(--vscode-descriptionForeground)]">Loading...</div>
-							</div>
-						}>
-						{task ? (
-							<TaskSection
-								apiMetrics={apiMetrics}
-								lastApiReqTotalTokens={lastApiReqTotalTokens}
-								lastProgressMessageText={lastProgressMessageText}
-								messageHandlers={messageHandlers}
-								scrollBehavior={scrollBehavior}
-								selectedModelInfo={{
-									supportsPromptCache: selectedModelInfo.supportsPromptCache,
-									supportsImages: selectedModelInfo.supportsImages || false,
-								}}
-								task={task}
-							/>
-						) : (
-							<WelcomeSection showHistoryView={showHistoryView} taskHistory={taskHistory} version={version} />
-						)}
-					</Suspense>
+					{task ? (
+						<TaskSection
+							apiMetrics={apiMetrics}
+							lastApiReqTotalTokens={lastApiReqTotalTokens}
+							lastProgressMessageText={lastProgressMessageText}
+							messageHandlers={messageHandlers}
+							scrollBehavior={scrollBehavior}
+							selectedModelInfo={{
+								supportsPromptCache: selectedModelInfo.supportsPromptCache,
+								supportsImages: selectedModelInfo.supportsImages || false,
+							}}
+							task={task}
+						/>
+					) : (
+						<WelcomeSection showHistoryView={showHistoryView} taskHistory={taskHistory} version={version} />
+					)}
 					{task && (
-						<Suspense fallback={<div className="flex-1" />}>
-							<MessagesArea
-								chatState={chatState}
-								groupedMessages={groupedMessages}
-								messageHandlers={messageHandlers}
-								modifiedMessages={modifiedMessages}
-								scrollBehavior={scrollBehavior}
-								task={task}
-							/>
-						</Suspense>
+						<MessagesArea
+							chatState={chatState}
+							groupedMessages={groupedMessages}
+							messageHandlers={messageHandlers}
+							modifiedMessages={modifiedMessages}
+							scrollBehavior={scrollBehavior}
+							task={task}
+						/>
 					)}
 				</main>
 			</div>
@@ -406,29 +303,27 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 					gridRow: "2",
 					boxShadow: "0 -2px 8px rgba(0, 0, 0, 0.05)",
 				}}>
-				<Suspense fallback={<div className="h-[100px]" />}>
-					<ActionButtons
-						chatState={chatState}
-						messageHandlers={messageHandlers}
-						messages={messages}
-						mode={mode}
-						scrollBehavior={{
-							scrollToBottomSmooth: scrollBehavior.scrollToBottomSmooth,
-							disableAutoScrollRef: scrollBehavior.disableAutoScrollRef,
-							showScrollToBottom: scrollBehavior.showScrollToBottom,
-							virtuosoRef: scrollBehavior.virtuosoRef,
-						}}
-						task={task}
-					/>
-					<InputSection
-						chatState={chatState}
-						messageHandlers={messageHandlers}
-						placeholderText={placeholderText}
-						scrollBehavior={scrollBehavior}
-						selectFilesAndImages={selectFilesAndImages}
-						shouldDisableFilesAndImages={shouldDisableFilesAndImages}
-					/>
-				</Suspense>
+				<ActionButtons
+					chatState={chatState}
+					messageHandlers={messageHandlers}
+					messages={messages}
+					mode={mode}
+					scrollBehavior={{
+						scrollToBottomSmooth: scrollBehavior.scrollToBottomSmooth,
+						disableAutoScrollRef: scrollBehavior.disableAutoScrollRef,
+						showScrollToBottom: scrollBehavior.showScrollToBottom,
+						virtuosoRef: scrollBehavior.virtuosoRef,
+					}}
+					task={task}
+				/>
+				<InputSection
+					chatState={chatState}
+					messageHandlers={messageHandlers}
+					placeholderText={placeholderText}
+					scrollBehavior={scrollBehavior}
+					selectFilesAndImages={selectFilesAndImages}
+					shouldDisableFilesAndImages={shouldDisableFilesAndImages}
+				/>
 			</footer>
 		</ChatLayout>
 	)

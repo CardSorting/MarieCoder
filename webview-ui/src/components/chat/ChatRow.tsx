@@ -25,7 +25,7 @@ interface ChatRowProps {
  */
 const ChatRow = memo(
 	(props: ChatRowProps) => {
-		const { isLast, onHeightChange, message } = props
+		const { isLast, onHeightChange } = props
 		// Store the previous height to compare with the current height
 		// This allows us to detect changes without causing re-renders
 		const prevHeightRef = useRef(0)
@@ -35,13 +35,9 @@ const ChatRow = memo(
 		const height = chatrowSize.height
 
 		useEffect(() => {
-			// Used for partials command output etc.
-			// NOTE: it's important we don't distinguish between partial or complete here
-			// since our scroll effects in chatview need to handle height change during partial -> complete
-			const isInitialRender = prevHeightRef.current === 0 // prevents scrolling when new element is added since we already scroll for that
-			// height starts off at Infinity
+			// Track height changes for last message to handle auto-scroll
+			const isInitialRender = prevHeightRef.current === 0
 			if (isLast && height !== 0 && height !== Infinity && height !== prevHeightRef.current) {
-				// Only trigger height change if this is not the initial render AND the height actually changed
 				if (!isInitialRender && prevHeightRef.current > 0) {
 					onHeightChange(height > prevHeightRef.current)
 				}
@@ -49,14 +45,8 @@ const ChatRow = memo(
 			}
 		}, [height, isLast, onHeightChange])
 
-		// Apply animation classes based on message state
-		const isPartial = message.partial
-		const animationClass = isPartial ? "message-streaming" : "message-enter"
-
 		return (
-			<div
-				className={`group py-2.5 pr-1.5 pl-[15px] relative [&:hover_.checkpoint-controls]:opacity-100 ${animationClass}`}
-				ref={chatrowRef}>
+			<div className="group py-2.5 pr-1.5 pl-[15px] relative [&:hover_.checkpoint-controls]:opacity-100" ref={chatrowRef}>
 				<ChatRowContent {...props} />
 			</div>
 		)
