@@ -19,6 +19,8 @@ export class VscodeDiffViewProvider extends DiffViewProvider {
 			throw new Error("No file path set")
 		}
 
+		console.log(`[VscodeDiffViewProvider] 🔥 openDiffEditor called for ${this.absolutePath}`)
+
 		// Prevent concurrent editor opening attempts
 		if (this.isOpeningEditor) {
 			console.warn("[VscodeDiffViewProvider] Editor opening already in progress, waiting...")
@@ -28,7 +30,9 @@ export class VscodeDiffViewProvider extends DiffViewProvider {
 
 		this.isOpeningEditor = true
 		try {
+			console.log(`[VscodeDiffViewProvider] Starting openDiffEditorWithRetry...`)
 			await this.openDiffEditorWithRetry()
+			console.log(`[VscodeDiffViewProvider] ✅ Diff editor opened successfully`)
 		} finally {
 			this.isOpeningEditor = false
 		}

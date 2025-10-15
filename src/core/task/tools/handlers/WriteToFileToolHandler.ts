@@ -30,12 +30,17 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 	}
 
 	async handlePartialBlock(block: ToolUse, uiHelpers: StronglyTypedUIHelpers): Promise<void> {
+		console.log(`[WriteToFileToolHandler] handlePartialBlock called for ${block.name}, path: ${block.params.path}`)
+
 		const rawRelPath = block.params.path
 		const rawContent = block.params.content // for write_to_file
 		const rawDiff = block.params.diff // for replace_in_file
 
 		// Early return if we don't have enough data yet
 		if (!rawRelPath || (!rawContent && !rawDiff)) {
+			console.log(
+				`[WriteToFileToolHandler] Not enough data yet - path: ${!!rawRelPath}, content: ${!!rawContent}, diff: ${!!rawDiff}`,
+			)
 			// Wait until we have the path and either content or diff
 			return
 		}
@@ -45,6 +50,7 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 		// Creates file if it doesn't exist, and opens editor to stream content in. We don't want to handle this in the try/catch below since the error handler for it resets the diff view, which wouldn't be open if this failed.
 		const result = await this.validateAndPrepareFileOperation(config, block, rawRelPath, rawDiff, rawContent)
 		if (!result) {
+			console.log(`[WriteToFileToolHandler] Validation failed, skipping partial block`)
 			// Validation failed (e.g., clineignore error, diff error)
 			// Remove any partial tool message to prevent infinite scroll loop in UI
 			await uiHelpers.removeLastPartialMessageIfExistsWithType("ask", "tool")
@@ -75,14 +81,19 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 
 			// CRITICAL: Open editor and stream content in real-time (from original code)
 			if (!config.services.diffViewProvider.isEditing) {
+				console.log(`[WriteToFileToolHandler] 🔥 Opening diff editor for ${absolutePath}`)
 				// Open the editor and prepare to stream content in
 				// Auto-focus editor so user can see code being written
 				await config.services.diffViewProvider.open(absolutePath, { displayPath: relPath, autoFocus: true })
+				console.log(`[WriteToFileToolHandler] ✅ Diff editor opened successfully`)
 				// Start status bar indicator
 				getEditorStreamingStatus().startEdit(absolutePath)
+			} else {
+				console.log(`[WriteToFileToolHandler] Editor already open, updating content`)
 			}
 			// Editor is open, stream content in real-time (false = don't finalize yet)
 			await config.services.diffViewProvider.update(newContent, false)
+			console.log(`[WriteToFileToolHandler] Content updated in diff editor`)
 			// Update status bar
 			getEditorStreamingStatus().updateEdit(absolutePath)
 		} catch (error) {
@@ -341,6 +352,9 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 	 *          or undefined if validation fails
 	 */
 	async validateAndPrepareFileOperation(config: TaskConfig, block: ToolUse, relPath: string, diff?: string, content?: string) {
+		console.log(
+			`[WriteToFileToolHandler] validateAndPrepareFileOperation called - path: ${relPath}, hasDiff: ${!!diff}, hasContent: ${!!content}`,
+		)
 		// Parse workspace hint and resolve path for multi-workspace support
 		const pathResult = resolveWorkspacePath(config, relPath, "WriteToFileToolHandler.validateAndPrepareFileOperation")
 		const { absolutePath, resolvedPath } =

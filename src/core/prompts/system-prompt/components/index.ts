@@ -11,6 +11,7 @@
 
 // Core prompt components - self-explanatory names
 export * from "./agent_identity" // Agent identity and role (renamed from agent_role)
+export * from "./automatic_todo_management" // Automatic todo list management and tracking
 export * from "./file_operations" // File editing guidelines
 export * from "./mcp_servers" // MCP server integration (renamed from external_servers)
 export * from "./mission_statement" // Core mission and objectives
@@ -27,6 +28,7 @@ export * from "./utils/ComponentUtils"
 // Registry helper function
 import { SystemPromptSection } from "../templates"
 import { getAgentRoleSection } from "./agent_identity"
+import { getTodoListSection } from "./automatic_todo_management"
 import { getEditingFilesSection } from "./file_operations"
 import { getMcp } from "./mcp_servers"
 import { getObjectiveSection } from "./mission_statement"
@@ -42,6 +44,7 @@ export function getSystemPromptComponents() {
 		{ id: SystemPromptSection.AGENT_ROLE, fn: getAgentRoleSection },
 		{ id: SystemPromptSection.EDITING_FILES, fn: getEditingFilesSection },
 		{ id: SystemPromptSection.MCP, fn: getMcp },
+		{ id: SystemPromptSection.TODO, fn: getTodoListSection },
 		{ id: SystemPromptSection.OBJECTIVE, fn: getObjectiveSection },
 		{ id: SystemPromptSection.ACT_VS_PLAN, fn: getActVsPlanModeSection },
 		{ id: SystemPromptSection.RULES, fn: getRulesSection },

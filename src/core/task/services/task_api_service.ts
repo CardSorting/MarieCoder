@@ -332,6 +332,8 @@ export class TaskApiService {
 
 		const block = structuredClone(this.taskState.assistantMessageContent[this.taskState.currentStreamingContentIndex])
 
+		console.log(`[TaskApiService] presentAssistantMessage - Block type: ${block.type}, partial: ${block.partial}`)
+
 		switch (block.type) {
 			case "text": {
 				if (this.taskState.didRejectTool || this.taskState.didAlreadyUseTool) {
@@ -358,6 +360,7 @@ export class TaskApiService {
 				break
 			}
 			case "tool_use":
+				console.log(`[TaskApiService] 🔥 Calling toolExecutor.executeTool for ${block.name}`)
 				await this.toolExecutor.executeTool(block)
 				break
 		}

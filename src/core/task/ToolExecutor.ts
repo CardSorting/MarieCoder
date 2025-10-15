@@ -270,6 +270,11 @@ export class ToolExecutor {
 			return false // Tool not handled by coordinator
 		}
 
+		// DEBUG: Track tool execution flow
+		console.log(
+			`[ToolExecutor] Executing tool: ${block.name}, partial: ${block.partial}, path: ${block.params.path || "N/A"}`,
+		)
+
 		const config = this.asToolConfig()
 
 		try {
@@ -312,11 +317,13 @@ export class ToolExecutor {
 
 			// Handle partial blocks
 			if (block.partial) {
+				console.log(`[ToolExecutor] ✅ Calling handlePartialBlock for ${block.name}`)
 				await this.handlePartialBlock(block, config)
 				return true
 			}
 
 			// Handle complete blocks
+			console.log(`[ToolExecutor] Calling handleCompleteBlock for ${block.name}`)
 			await this.handleCompleteBlock(block, config)
 			await this.saveCheckpoint()
 			return true
