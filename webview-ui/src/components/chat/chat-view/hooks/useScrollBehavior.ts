@@ -184,7 +184,10 @@ export function useScrollBehavior(
 	)
 
 	useEffect(() => {
-		if (!disableAutoScrollRef.current) {
+		// Only auto-scroll if:
+		// 1. Auto-scroll is not disabled by user
+		// 2. User is already at or near the bottom (within threshold)
+		if (!disableAutoScrollRef.current && isAtBottom) {
 			// Double RAF for smoother, jank-free scrolling on new messages
 			requestAnimationFrame(() => {
 				requestAnimationFrame(() => {
@@ -192,7 +195,7 @@ export function useScrollBehavior(
 				})
 			})
 		}
-	}, [groupedMessages.length, scrollToBottomSmooth])
+	}, [groupedMessages.length, scrollToBottomSmooth, isAtBottom])
 
 	useEffect(() => {
 		if (pendingScrollToMessage !== null) {
@@ -224,28 +227,41 @@ export function useScrollBehavior(
 		lastScrollTimeRef.current = now
 		lastScrollTopRef.current += event.deltaY
 
-		// Disable auto-scroll on upward scroll
+		// Disable auto-scroll on ANY upward scroll (user wants to browse)
 		if (event.deltaY && event.deltaY < 0) {
 			disableAutoScrollRef.current = true
 		}
+	}, [])
 
-		// Re-enable auto-scroll if user scrolls to bottom with momentum
-		if (event.deltaY > 0 && scrollVelocityRef.current > 1) {
-			// Check if near bottom (within 100px)
-			const container = scrollContainerRef.current
-			if (container) {
-				const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight
-				if (distanceFromBottom < 100) {
-					disableAutoScrollRef.current = false
-				}
-			}
+	// Handle touch events for better mobile support
+	// Use touchstart to detect when user begins a scroll gesture
+	const handleTouchStart = useCallback(() => {
+		if (!scrollContainerRef.current) {
+			return
 		}
+
+		// Disable auto-scroll when user initiates a touch scroll
+		// This gives mobile users full control over scrolling
+		disableAutoScrollRef.current = true
 	}, [])
 
 	useEffect(() => {
 		window.addEventListener("wheel", handleWheel, { passive: true })
-		return () => window.removeEventListener("wheel", handleWheel)
-	}, [handleWheel])
+
+		// Add touch detection for mobile devices
+		const scrollContainer = scrollContainerRef.current
+		if (scrollContainer) {
+			// Use touchstart to detect when user initiates a touch scroll gesture
+			scrollContainer.addEventListener("touchstart", handleTouchStart, { passive: true })
+		}
+
+		return () => {
+			window.removeEventListener("wheel", handleWheel)
+			if (scrollContainer) {
+				scrollContainer.removeEventListener("touchstart", handleTouchStart)
+			}
+		}
+	}, [handleWheel, handleTouchStart])
 
 	return {
 		virtuosoRef,

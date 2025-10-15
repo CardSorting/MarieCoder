@@ -66,9 +66,8 @@ export const MessagesArea: React.FC<MessagesAreaProps> = ({
 				<Virtuoso
 					atBottomStateChange={(isAtBottom) => {
 						setIsAtBottom(isAtBottom)
-						if (isAtBottom) {
-							disableAutoScrollRef.current = false
-						}
+						// Don't automatically re-enable auto-scroll just because user is at bottom
+						// User must explicitly scroll to bottom or use scroll button to re-enable
 						setShowScrollToBottom(disableAutoScrollRef.current && !isAtBottom)
 					}}
 					// Treat within ~1 line as bottom to avoid jitter when close to the end
