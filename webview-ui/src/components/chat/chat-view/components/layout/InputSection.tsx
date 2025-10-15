@@ -26,7 +26,6 @@ export const InputSection: React.FC<InputSectionProps> = ({
 	const {
 		activeQuote,
 		setActiveQuote,
-		isTextAreaFocused,
 		inputValue,
 		setInputValue,
 		sendingDisabled,
@@ -35,7 +34,6 @@ export const InputSection: React.FC<InputSectionProps> = ({
 		selectedFiles,
 		setSelectedFiles,
 		textAreaRef,
-		handleFocusChange,
 	} = chatState
 
 	const { isAtBottom, scrollToBottomAuto } = scrollBehavior
@@ -59,14 +57,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
 		<>
 			{activeQuote && (
 				<div style={{ marginBottom: "-12px", marginTop: "10px" }}>
-					<QuotedMessagePreview isFocused={isTextAreaFocused} onDismiss={handleDismissQuote} text={activeQuote} />
+					<QuotedMessagePreview isFocused={true} onDismiss={handleDismissQuote} text={activeQuote} />
 				</div>
 			)}
 
 			<ChatTextArea
 				activeQuote={activeQuote}
 				inputValue={inputValue}
-				onFocusChange={handleFocusChange}
 				onHeightChange={handleHeightChange}
 				onSelectFilesAndImages={selectFilesAndImages}
 				onSend={handleSend}

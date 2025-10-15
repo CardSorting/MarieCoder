@@ -4,7 +4,7 @@ import { combineCommandSequences } from "@shared/combineCommandSequences"
 import type { ClineApiReqInfo } from "@shared/ExtensionMessage"
 import { getApiMetrics } from "@shared/getApiMetrics"
 import { BooleanRequest, StringRequest } from "@shared/proto/cline/common"
-import { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { normalizeApiConfiguration } from "@/components/settings/utils/providerUtils"
 import { useSettingsState } from "@/context/SettingsContext"
 import { useTaskState } from "@/context/TaskStateContext"
@@ -15,8 +15,10 @@ import {
 	ChatLayout,
 	filterVisibleMessages,
 	groupMessages,
-	useChatState,
+	useAttachmentsHook,
+	useInputStateHook,
 	useMessageHandlers,
+	useMessageUIHook,
 	useScrollBehavior,
 } from "./chat-view"
 import { ActionButtons } from "./chat-view/components/layout/ActionButtons"
@@ -24,6 +26,7 @@ import { InputSection } from "./chat-view/components/layout/InputSection"
 import { MessagesArea } from "./chat-view/components/layout/MessagesArea"
 import { TaskSection } from "./chat-view/components/layout/TaskSection"
 import { WelcomeSection } from "./chat-view/components/layout/WelcomeSection"
+import { getButtonConfig } from "./chat-view/shared/buttonConfig"
 
 interface ChatViewProps {
 	isHidden: boolean
@@ -52,20 +55,55 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 		return total > 0 ? total : undefined
 	}, [modifiedMessages])
 
-	// Use custom hooks for state management
-	const chatState = useChatState(messages)
-	const {
-		setInputValue,
-		selectedImages,
-		setSelectedImages,
-		selectedFiles,
-		setSelectedFiles,
-		sendingDisabled,
-		enableButtons,
-		expandedRows,
-		setExpandedRows,
-		textAreaRef,
-	} = chatState
+	// Use focused hooks for state management
+	const inputState = useInputStateHook()
+	const attachments = useAttachmentsHook()
+	const messageUI = useMessageUIHook()
+
+	// Create textAreaRef in ChatView and forward to ChatTextArea
+	const textAreaRef = useRef<HTMLTextAreaElement>(null)
+
+	// Derive message-related state (compute once, don't store)
+	const lastMessage = useMemo(() => messages.at(-1), [messages])
+	const buttonConfig = useMemo(() => getButtonConfig(lastMessage, mode), [lastMessage, mode])
+
+	// Destructure for easier access
+	const { inputValue, setInputValue, activeQuote, setActiveQuote, sendingDisabled, setSendingDisabled } = inputState
+	const { selectedImages, setSelectedImages, selectedFiles, setSelectedFiles } = attachments
+	const { expandedRows, setExpandedRows } = messageUI
+
+	// Combine state for passing to child components (for backward compatibility)
+	const chatState = useMemo(
+		() => ({
+			inputValue,
+			setInputValue,
+			activeQuote,
+			setActiveQuote,
+			sendingDisabled,
+			setSendingDisabled,
+			selectedImages,
+			setSelectedImages,
+			selectedFiles,
+			setSelectedFiles,
+			expandedRows,
+			setExpandedRows,
+			textAreaRef,
+		}),
+		[
+			inputValue,
+			setInputValue,
+			activeQuote,
+			setActiveQuote,
+			sendingDisabled,
+			setSendingDisabled,
+			selectedImages,
+			setSelectedImages,
+			selectedFiles,
+			setSelectedFiles,
+			expandedRows,
+			setExpandedRows,
+		],
+	)
 
 	useEffect(() => {
 		const handleCopy = async (e: ClipboardEvent) => {
@@ -95,7 +133,7 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 		setExpandedRows({})
 	}, [task?.ts])
 
-	const messageHandlers = useMessageHandlers(messages, chatState)
+	const messageHandlers = useMessageHandlers(messages, chatState as any) // TODO: Update useMessageHandlers interface
 	const { selectedModelInfo } = normalizeApiConfiguration(apiConfiguration, mode)
 
 	const selectFilesAndImages = useCallback(async () => {
@@ -168,11 +206,11 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 	}, [isHidden])
 
 	useEffect(() => {
-		if (isHidden || sendingDisabled || enableButtons) {
+		if (isHidden || sendingDisabled || buttonConfig.enableButtons) {
 			return
 		}
 		textAreaRef.current?.focus()
-	}, [isHidden, sendingDisabled, enableButtons])
+	}, [isHidden, sendingDisabled, buttonConfig.enableButtons])
 
 	const visibleMessages = useMemo(() => filterVisibleMessages(modifiedMessages), [modifiedMessages])
 	const groupedMessages = useMemo(() => groupMessages(visibleMessages), [visibleMessages])

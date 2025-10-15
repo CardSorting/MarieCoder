@@ -15,49 +15,33 @@ export interface ChatViewProps {
 }
 
 /**
- * Chat state interface
+ * Simplified chat state interface
+ * Combines input, attachments, and message UI state
+ * Note: Button state is now derived, not stored
+ * Note: Focus state is internal to ChatTextArea
+ * Note: textAreaRef is owned by ChatView and forwarded
  */
 export interface ChatState {
-	// State values
+	// Input state
 	inputValue: string
 	setInputValue: React.Dispatch<React.SetStateAction<string>>
 	activeQuote: string | null
 	setActiveQuote: React.Dispatch<React.SetStateAction<string | null>>
-	isTextAreaFocused: boolean
-	setIsTextAreaFocused: React.Dispatch<React.SetStateAction<boolean>>
+	sendingDisabled: boolean
+	setSendingDisabled: React.Dispatch<React.SetStateAction<boolean>>
+
+	// Attachments
 	selectedImages: string[]
 	setSelectedImages: React.Dispatch<React.SetStateAction<string[]>>
 	selectedFiles: string[]
 	setSelectedFiles: React.Dispatch<React.SetStateAction<string[]>>
-	sendingDisabled: boolean
-	setSendingDisabled: React.Dispatch<React.SetStateAction<boolean>>
-	enableButtons: boolean
-	setEnableButtons: React.Dispatch<React.SetStateAction<boolean>>
-	primaryButtonText: string | undefined
-	setPrimaryButtonText: React.Dispatch<React.SetStateAction<string | undefined>>
-	secondaryButtonText: string | undefined
-	setSecondaryButtonText: React.Dispatch<React.SetStateAction<string | undefined>>
+
+	// Message UI
 	expandedRows: Record<number, boolean>
 	setExpandedRows: React.Dispatch<React.SetStateAction<Record<number, boolean>>>
 
-	// Refs
+	// Refs (forwarded from ChatView)
 	textAreaRef: React.RefObject<HTMLTextAreaElement>
-
-	// Derived values
-	lastMessage: ClineMessage | undefined
-	secondLastMessage: ClineMessage | undefined
-	clineAsk: ClineAsk | undefined
-	task: ClineMessage | undefined
-
-	// Handlers
-	handleFocusChange: (isFocused: boolean) => void
-	clearExpandedRows: () => void
-	resetState: () => void
-
-	// Scroll-related state (will be moved to scroll hook)
-	showScrollToBottom?: boolean
-	isAtBottom?: boolean
-	pendingScrollToMessage?: number | null
 }
 
 /**

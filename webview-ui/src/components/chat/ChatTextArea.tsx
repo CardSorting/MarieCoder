@@ -205,13 +205,11 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			contextMenu.setShowContextMenu(false)
 			slashCommands.setShowSlashCommandsMenu(false)
 			setIsTextAreaFocused(false)
-			onFocusChange?.(false)
-		}, [contextMenu, slashCommands, setIsTextAreaFocused, onFocusChange])
+		}, [contextMenu, slashCommands, setIsTextAreaFocused])
 
 		const handleFocus = useCallback(() => {
 			setIsTextAreaFocused(true)
-			onFocusChange?.(true)
-		}, [setIsTextAreaFocused, onFocusChange])
+		}, [setIsTextAreaFocused])
 
 		// Voice transcription handlers
 		const handleVoiceTranscription = useCallback(
