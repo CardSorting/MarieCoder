@@ -95,7 +95,7 @@ This index provides a roadmap to all documentation related to the streaming dupl
 
 ---
 
-### 7. [docs/development/state_machine_poc.md](./docs/development/state_machine_poc.md)
+### 7. [state_machine_poc.md](../state_machine_poc.md)
 **Purpose:** State Machine proof-of-concept  
 **Key Content:**
 - Complete implementation (200+ lines)
@@ -108,7 +108,7 @@ This index provides a roadmap to all documentation related to the streaming dupl
 
 ---
 
-### 8. [docs/development/unified_subscription_poc.md](./docs/development/unified_subscription_poc.md)
+### 8. [unified_subscription_poc.md](../unified_subscription_poc.md)
 **Purpose:** Unified Subscription proof-of-concept  
 **Key Content:**
 - Frontend consolidation implementation
@@ -148,7 +148,7 @@ This index provides a roadmap to all documentation related to the streaming dupl
 
 ---
 
-### 11. [docs/development/BACKEND_UNIFIED_SUBSCRIPTION_IMPLEMENTATION.md](./docs/development/BACKEND_UNIFIED_SUBSCRIPTION_IMPLEMENTATION.md)
+### 11. [BACKEND_UNIFIED_SUBSCRIPTION_IMPLEMENTATION.md](../BACKEND_UNIFIED_SUBSCRIPTION_IMPLEMENTATION.md)
 **Purpose:** Implementation guide for backend unified subscription  
 **Key Content:**
 - Complete implementation details

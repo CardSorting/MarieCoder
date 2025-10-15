@@ -22,6 +22,13 @@ This directory contains internal development documentation, implementation repor
 - **PROTO_SYSTEM_EXPLANATION.md** - Protocol buffer system explanation
 - **SUBSCRIPTION_TIMEOUT_FIX.md** - Subscription timeout fix documentation
 
+### Streaming Architecture
+- **streaming/** - Comprehensive streaming architecture documentation
+  - Message streaming implementation and optimization
+  - Race condition fixes and unified subscription approach
+  - Backend architecture and frontend integration
+  - See [streaming/README.md](./streaming/README.md) for complete navigation
+
 ## Purpose
 
 This directory serves as a reference for:
