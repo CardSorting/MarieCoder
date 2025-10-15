@@ -371,20 +371,42 @@ export class Task {
 					const protoMessage = convertClineMessageToProto(lastMessage)
 					await sendPartialMessageEvent(protoMessage)
 				} else {
-					// New partial=false message - add as complete message
-					this.taskState.askResponse = undefined
-					this.taskState.askResponseText = undefined
-					this.taskState.askResponseImages = undefined
-					this.taskState.askResponseFiles = undefined
-					askTs = Date.now()
-					this.taskState.lastMessageTs = askTs
-					await this.messageStateHandler.addToClineMessages({
-						ts: askTs,
-						type: "ask",
-						ask: type,
-						text,
-					})
-					await this.postStateToWebview()
+					// Check if we should convert a partial say message to a non-partial ask message
+					const canConvertPartialSayToAsk =
+						lastMessage && lastMessage.partial && lastMessage.type === "say" && lastMessage.say === type
+
+					if (canConvertPartialSayToAsk) {
+						// Convert partial say to non-partial ask
+						this.taskState.askResponse = undefined
+						this.taskState.askResponseText = undefined
+						this.taskState.askResponseImages = undefined
+						this.taskState.askResponseFiles = undefined
+						askTs = lastMessage.ts
+						this.taskState.lastMessageTs = askTs
+						await this.messageStateHandler.updateClineMessage(lastMessageIndex, {
+							type: "ask",
+							ask: type,
+							text: text || lastMessage.text, // Use provided text or keep existing
+							partial: false,
+						})
+						const protoMessage = convertClineMessageToProto(lastMessage)
+						await sendPartialMessageEvent(protoMessage)
+					} else {
+						// New partial=false message - add as complete message
+						this.taskState.askResponse = undefined
+						this.taskState.askResponseText = undefined
+						this.taskState.askResponseImages = undefined
+						this.taskState.askResponseFiles = undefined
+						askTs = Date.now()
+						this.taskState.lastMessageTs = askTs
+						await this.messageStateHandler.addToClineMessages({
+							ts: askTs,
+							type: "ask",
+							ask: type,
+							text,
+						})
+						await this.postStateToWebview()
+					}
 				}
 			}
 		} else {
@@ -393,15 +415,35 @@ export class Task {
 			this.taskState.askResponseText = undefined
 			this.taskState.askResponseImages = undefined
 			this.taskState.askResponseFiles = undefined
-			askTs = Date.now()
-			this.taskState.lastMessageTs = askTs
-			await this.messageStateHandler.addToClineMessages({
-				ts: askTs,
-				type: "ask",
-				ask: type,
-				text,
-			})
-			await this.postStateToWebview()
+
+			// Check if the last message is a say message with matching type that we should convert to ask
+			const clineMessages = this.messageStateHandler.getClineMessages()
+			const lastMessage = clineMessages.at(-1)
+			const lastMessageIndex = clineMessages.length - 1
+			const canConvertSayToAsk = lastMessage && lastMessage.type === "say" && lastMessage.say === type
+
+			if (canConvertSayToAsk) {
+				// Convert the existing say message to an ask message
+				askTs = lastMessage.ts
+				this.taskState.lastMessageTs = askTs
+				await this.messageStateHandler.updateClineMessage(lastMessageIndex, {
+					type: "ask",
+					ask: type,
+					text: text || lastMessage.text, // Use provided text or keep existing
+				})
+				await this.postStateToWebview()
+			} else {
+				// Create new ask message
+				askTs = Date.now()
+				this.taskState.lastMessageTs = askTs
+				await this.messageStateHandler.addToClineMessages({
+					ts: askTs,
+					type: "ask",
+					ask: type,
+					text,
+				})
+				await this.postStateToWebview()
+			}
 		}
 
 		await pWaitFor(() => this.taskState.askResponse !== undefined || this.taskState.lastMessageTs !== askTs, {

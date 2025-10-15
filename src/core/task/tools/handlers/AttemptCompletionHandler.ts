@@ -113,8 +113,17 @@ export class AttemptCompletionHandler implements IToolHandler, IPartialBlockHand
 			// user didn't reject, but the command may have output
 			commandResult = execCommandResult
 		} else {
-			const completionMessageTs = await config.callbacks.say("completion_result", result, undefined, undefined, false)
-			await config.callbacks.saveCheckpoint(true, completionMessageTs)
+			// Don't send a separate say message - we'll convert any existing partial say to an ask
+			// Only save checkpoint if we actually sent a message
+			const lastMessage = config.messageState.getClineMessages().at(-1)
+			if (lastMessage && lastMessage.say === "completion_result") {
+				// We already have a completion_result say from streaming, just save checkpoint
+				await config.callbacks.saveCheckpoint(true, lastMessage.ts)
+			} else {
+				// No previous completion_result message, create one
+				const completionMessageTs = await config.callbacks.say("completion_result", result, undefined, undefined, false)
+				await config.callbacks.saveCheckpoint(true, completionMessageTs)
+			}
 			await addNewChangesFlagToLastCompletionResultMessage()
 		}
 
@@ -128,7 +137,9 @@ export class AttemptCompletionHandler implements IToolHandler, IPartialBlockHand
 			await config.callbacks.updateFCListFromToolResponse(block.params.task_progress)
 		}
 
-		const { response, text, images, files: completionFiles } = await config.callbacks.ask("completion_result", "", false)
+		// Convert the completion_result say message to an ask message
+		// This will either finalize a partial say or convert a complete say to an ask
+		const { response, text, images, files: completionFiles } = await config.callbacks.ask("completion_result", result, false)
 		if (response === "yesButtonClicked") {
 			return "" // signals to recursive loop to stop (for now this never happens since yesButtonClicked will trigger a new task)
 		}
