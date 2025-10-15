@@ -23,7 +23,9 @@ import { CliConfigManager } from "./cli_config_manager"
 import { getApiConnectionPoolManager } from "./cli_connection_pool"
 import { CliContext } from "./cli_context"
 import { CliDiffViewProvider } from "./cli_diff_provider"
+import { LiveActivityMonitor, MetricsDisplay } from "./cli_enhanced_feedback"
 import { CliHostBridgeClient } from "./cli_host_bridge"
+import { SplashScreen, SuccessAnimation, TutorialOverlay } from "./cli_immersive_experience"
 import { getLogger, LogLevel } from "./cli_logger"
 import { output } from "./cli_output"
 import { getProgressManager } from "./cli_progress_manager"
@@ -64,6 +66,9 @@ class MarieCli {
 	private taskHistoryManager!: import("./cli_task_history_manager").CliTaskHistoryManager
 	private slashCommandsHandler!: import("./cli_slash_commands").CliSlashCommandsHandler
 	private mentionsParser!: import("./cli_mentions_parser").CliMentionsParser
+	private commandHistory: string[] = []
+	private readonly MAX_HISTORY = 100
+	private hasSeenInteractiveTutorial = false
 
 	constructor(private options: CliOptions) {
 		// Configure logger
@@ -209,27 +214,37 @@ class MarieCli {
 	 * Execute a task with the given prompt
 	 */
 	async executeTask(prompt: string): Promise<void> {
-		output.log("\n" + "=".repeat(80))
-		output.log("📝 Task:", prompt)
-		output.log("=".repeat(80) + "\n")
+		// Create live monitoring components
+		const activityMonitor = new LiveActivityMonitor()
+		const metrics = new MetricsDisplay()
+		let updateInterval: NodeJS.Timeout | null = null
+
+		// Truncate long prompts for display
+		const displayPrompt = prompt.length > 60 ? prompt.substring(0, 60) + "..." : prompt
+
+		activityMonitor.updateActivity("main", "Initializing task...", "active", displayPrompt)
 
 		try {
 			// Get the controller
 			const controller = this.webviewProvider.controller
 
 			// Check if API is configured
+			activityMonitor.updateActivity("main", "Checking configuration...", "active")
 			const apiConfig = await this.checkApiConfiguration()
 			if (!apiConfig) {
+				activityMonitor.updateActivity("main", "Configuration missing", "error")
+				output.log("\n" + activityMonitor.render())
 				return
 			}
 
 			// Parse and resolve mentions
+			activityMonitor.updateActivity("main", "Resolving mentions...", "active")
 			const { text: processedPrompt, mentions } = await this.mentionsParser.resolveAllMentions(prompt)
 
 			// Display resolved mentions if any
 			if (mentions.length > 0) {
 				const formatted = this.mentionsParser.formatResolvedMentions(mentions)
-				output.log(formatted)
+				output.log("\n" + formatted)
 			}
 
 			// Enhance prompt with mention content
@@ -241,27 +256,88 @@ class MarieCli {
 			}
 
 			// Start a new task
+			activityMonitor.updateActivity("main", "Clearing previous task...", "active")
 			await controller.clearTask()
 
-			// Create task with the prompt
-			output.log("🤖 Starting task execution...\n")
-
 			// Initialize and execute the task
-			const taskId = await controller.initTask(enhancedPrompt)
-			output.log(`✓ Task initialized with ID: ${taskId}\n`)
+			activityMonitor.updateActivity("main", "Starting AI analysis...", "active")
+			await controller.initTask(enhancedPrompt)
 
 			// Start monitoring the task for approvals
 			if (controller.task) {
 				this.taskMonitor.startMonitoring(controller.task)
 			}
 
+			// Start live update loop
+			activityMonitor.updateActivity("main", "Processing your request...", "active")
+			updateInterval = setInterval(() => {
+				console.clear()
+				output.log("\n" + "═".repeat(80))
+				output.log(activityMonitor.render())
+				output.log("═".repeat(80))
+				output.flush()
+			}, 100)
+
 			// Wait for task completion or user interruption
 			await this.waitForTaskCompletion(controller)
 
 			// Stop monitoring
 			this.taskMonitor.stopMonitoring()
+
+			// Clear update interval
+			if (updateInterval) {
+				clearInterval(updateInterval)
+				updateInterval = null
+			}
+
+			// Update to success state
+			activityMonitor.updateActivity("main", "Task completed!", "success")
+
+			// Clear screen and show success animation
+			console.clear()
+			const success = new SuccessAnimation()
+
+			// Animate success message
+			for (let i = 0; i < 6; i++) {
+				console.clear()
+				output.log(success.render("Task completed successfully! 🎉"))
+				output.flush()
+				await new Promise((resolve) => setTimeout(resolve, 150))
+			}
+
+			// Show final status
+			console.clear()
+			output.log("\n" + activityMonitor.render())
+
+			// Populate and display metrics
+			try {
+				// Show basic completion metrics
+				metrics.updateMetric("Status", 1, "✓")
+				metrics.updateMetric("Completed", 1, "task")
+
+				// Display metrics panel
+				output.log("\n" + metrics.render())
+			} catch {
+				// Ignore errors in metrics collection
+			}
+
+			output.log("\n✅ Task completed\n")
 		} catch (error) {
 			this.taskMonitor.stopMonitoring()
+
+			// Clear update interval
+			if (updateInterval) {
+				clearInterval(updateInterval)
+				updateInterval = null
+			}
+
+			// Update to error state
+			activityMonitor.updateActivity("main", "Task failed", "error", error instanceof Error ? error.message : String(error))
+
+			// Show error state
+			console.clear()
+			output.log("\n" + activityMonitor.render())
+
 			console.error("\n❌ Error executing task:", error)
 			if (this.options.verbose && error instanceof Error) {
 				console.error("Stack trace:", error.stack)
@@ -397,9 +473,108 @@ class MarieCli {
 	}
 
 	/**
+	 * Load tutorial state from disk
+	 */
+	private async loadTutorialState(): Promise<void> {
+		try {
+			const fs = await import("node:fs")
+			const os = await import("node:os")
+			const statePath = path.join(os.homedir(), ".mariecoder", "cli", "state.json")
+
+			if (fs.existsSync(statePath)) {
+				const data = JSON.parse(fs.readFileSync(statePath, "utf-8"))
+				this.hasSeenInteractiveTutorial = data.hasSeenInteractiveTutorial || false
+			}
+		} catch {
+			// Ignore errors - not critical
+		}
+	}
+
+	/**
+	 * Save tutorial state to disk
+	 */
+	private async saveTutorialState(): Promise<void> {
+		try {
+			const fs = await import("node:fs")
+			const os = await import("node:os")
+			const stateDir = path.join(os.homedir(), ".mariecoder", "cli")
+			const statePath = path.join(stateDir, "state.json")
+
+			let state: any = {}
+			if (fs.existsSync(statePath)) {
+				state = JSON.parse(fs.readFileSync(statePath, "utf-8"))
+			}
+
+			state.hasSeenInteractiveTutorial = true
+
+			fs.mkdirSync(stateDir, { recursive: true })
+			fs.writeFileSync(statePath, JSON.stringify(state, null, 2))
+		} catch {
+			// Ignore errors - not critical
+		}
+	}
+
+	/**
+	 * Show interactive tutorial for first-time users
+	 */
+	private async showInteractiveTutorial(): Promise<void> {
+		const tutorial = new TutorialOverlay([
+			{
+				title: "👋 Welcome to MarieCoder CLI Interactive Mode",
+				content:
+					"You can chat with MarieCoder by typing your coding tasks.\n\nI'll help you write code, fix bugs, refactor, and more!\n\nJust describe what you want in plain English.",
+				hint: 'Example: "Create a React component for a user profile card"',
+			},
+			{
+				title: "🎯 How It Works",
+				content:
+					"1. Type your request in natural language\n2. I'll analyze your codebase and context\n3. I'll make the changes or create new files\n4. You can continue the conversation and iterate",
+			},
+			{
+				title: "⚡ Special Commands",
+				content:
+					"• help or commands - Show all available commands\n• history - View your past tasks\n• config - View or change settings\n• mode - Switch between plan/act modes\n• exit - Quit MarieCoder",
+				hint: "Try typing: help",
+			},
+			{
+				title: "💡 Pro Tips",
+				content:
+					"• Be specific in your requests for better results\n• Use @mentions to reference files or folders\n• Use Up/Down arrows to navigate command history\n• Press Ctrl+C anytime to cancel\n• I'll remember our conversation context",
+			},
+		])
+
+		// Show each tutorial step with a delay
+		console.clear()
+		while (true) {
+			output.log(tutorial.render())
+			output.flush()
+
+			if (tutorial.isLastStep()) {
+				await new Promise((resolve) => setTimeout(resolve, 3000))
+				break
+			}
+
+			await new Promise((resolve) => setTimeout(resolve, 2500))
+			tutorial.nextStep()
+			console.clear()
+		}
+		console.clear()
+	}
+
+	/**
 	 * Interactive mode - keep asking for prompts
 	 */
 	async interactiveMode(): Promise<void> {
+		// Load tutorial state
+		await this.loadTutorialState()
+
+		// Show tutorial for first-time users
+		if (!this.hasSeenInteractiveTutorial) {
+			await this.showInteractiveTutorial()
+			this.hasSeenInteractiveTutorial = true
+			await this.saveTutorialState()
+		}
+
 		output.log("\n" + "═".repeat(80))
 		output.log("🎯 Interactive Mode")
 		output.log("═".repeat(80))
@@ -413,11 +588,19 @@ class MarieCli {
 		output.log("  • Type 'mcp' to show MCP server status")
 		output.log("  • Type 'history' to view task history")
 		output.log("  • Type '/help' to see slash commands (e.g., /search, /analyze)")
-		output.log("  • Type 'help' for more options")
+		output.log("  • Type 'help' or 'commands' for all options")
+		output.log("  • Use Up/Down arrows to navigate command history")
 		output.log("─".repeat(80))
 
 		// Flush output before starting interactive loop
 		output.flush()
+
+		// Enable history support in readline
+		// @ts-ignore - history is available but not in types
+		if (this.rl.history && Array.isArray(this.rl.history)) {
+			// @ts-ignore
+			this.rl.history = this.commandHistory
+		}
 
 		const prompt = async (): Promise<void> => {
 			// Ensure output is flushed before each prompt
@@ -429,6 +612,20 @@ class MarieCli {
 				if (!trimmed) {
 					await prompt()
 					return
+				}
+
+				// Add to command history (avoid duplicates)
+				if (trimmed !== this.commandHistory[this.commandHistory.length - 1]) {
+					this.commandHistory.push(trimmed)
+					if (this.commandHistory.length > this.MAX_HISTORY) {
+						this.commandHistory.shift()
+					}
+					// Update readline history
+					// @ts-ignore
+					if (this.rl.history) {
+						// @ts-ignore
+						this.rl.history = this.commandHistory.slice().reverse()
+					}
 				}
 
 				// Check for slash commands first
@@ -471,7 +668,7 @@ class MarieCli {
 					await this.handleHistoryCommand(trimmed)
 					await prompt()
 					return
-				} else if (command === "help") {
+				} else if (command === "help" || command === "commands") {
 					this.showInteractiveModeHelp()
 					await prompt()
 					return
@@ -594,35 +791,53 @@ class MarieCli {
 	 * Show help for interactive mode
 	 */
 	private showInteractiveModeHelp(): void {
-		output.log("\n" + "─".repeat(80))
-		output.log("📚 Interactive Mode Help")
-		output.log("─".repeat(80))
-		output.log("\nAvailable Commands:")
-		output.log("  • exit, quit   - Exit interactive mode")
-		output.log("  • config       - Show current configuration")
-		output.log("  • mode, toggle - Switch between plan and act modes")
-		output.log("  • mcp          - Show MCP server status")
-		output.log("  • mcp tools    - Show available MCP tools and resources")
-		output.log("  • history      - Show task history")
-		output.log("  • history export <id>   - Export task as markdown")
-		output.log("  • history resume <id>   - Resume a previous task")
-		output.log("  • history delete <id>   - Delete task from history")
-		output.log("  • history search <query> - Search task history")
-		output.log("  • help         - Show this help message")
-		output.log("  • clear        - Clear the screen")
-		output.log("\nModes:")
-		output.log("  • plan mode    - AI proposes changes for your review (safer)")
-		output.log("  • act mode     - AI executes changes directly (faster)")
-		output.log("\nMCP (Model Context Protocol):")
-		output.log("  • Extends MarieCoder with custom tools and capabilities")
-		output.log("  • Configure servers in extension settings or .mcp directory")
-		output.log("  • Access databases, file systems, APIs, and custom workflows")
-		output.log("\nTips:")
-		output.log("  • Be specific with your tasks for best results")
-		output.log("  • You can iterate on previous tasks by providing feedback")
-		output.log("  • Use Ctrl+C to interrupt a running task")
-		output.log("  • Use plan mode for complex/risky changes")
-		output.log("─".repeat(80))
+		import("./cli_terminal_colors").then(({ style, SemanticColors, TerminalColors }) => {
+			output.log("\n" + style("═".repeat(80), SemanticColors.info))
+			output.log(style("📚 Command Palette - MarieCoder CLI", TerminalColors.bright))
+			output.log(style("═".repeat(80), SemanticColors.info))
+
+			// Essentials
+			output.log("\n" + style("🎯 Essential Commands", TerminalColors.bright))
+			output.log("  " + style("exit, quit", SemanticColors.highlight) + "     Exit interactive mode")
+			output.log("  " + style("help", SemanticColors.highlight) + "            Show this help message")
+			output.log("  " + style("clear", SemanticColors.highlight) + "           Clear the screen")
+			output.log("  " + style("commands", SemanticColors.highlight) + "        Show this command palette")
+
+			// Configuration
+			output.log("\n" + style("⚙️  Configuration & Settings", TerminalColors.bright))
+			output.log("  " + style("config", SemanticColors.highlight) + "          Show current configuration")
+			output.log("  " + style("mode, toggle", SemanticColors.highlight) + "    Switch between plan/act modes")
+
+			// History
+			output.log("\n" + style("📜 Task History", TerminalColors.bright))
+			output.log("  " + style("history", SemanticColors.highlight) + "         Show task history")
+			output.log("  " + style("history export <id>", SemanticColors.highlight) + "     Export task as markdown")
+			output.log("  " + style("history resume <id>", SemanticColors.highlight) + "     Resume a previous task")
+			output.log("  " + style("history delete <id>", SemanticColors.highlight) + "     Delete task from history")
+			output.log("  " + style("history search <query>", SemanticColors.highlight) + "  Search task history")
+
+			// MCP
+			output.log("\n" + style("🔧 MCP (Model Context Protocol)", TerminalColors.bright))
+			output.log("  " + style("mcp", SemanticColors.highlight) + "             Show MCP server status")
+			output.log("  " + style("mcp tools", SemanticColors.highlight) + "        Show available MCP tools and resources")
+			output.log("  " + style("💡 Tip:", TerminalColors.dim) + " MCP extends MarieCoder with custom tools")
+
+			// Modes
+			output.log("\n" + style("🔄 Operating Modes", TerminalColors.bright))
+			output.log("  " + style("plan mode", SemanticColors.complete) + "      AI proposes changes for your review (safer)")
+			output.log("  " + style("act mode", SemanticColors.progress) + "       AI executes changes directly (faster)")
+
+			// Tips
+			output.log("\n" + style("💡 Pro Tips", TerminalColors.bright))
+			output.log("  • Be specific with your tasks for best results")
+			output.log("  • You can iterate on previous tasks by providing feedback")
+			output.log("  • Use " + style("Up/Down arrows", SemanticColors.highlight) + " to navigate command history")
+			output.log("  • Use " + style("Ctrl+C", SemanticColors.warning) + " to interrupt a running task")
+			output.log("  • Use plan mode for complex/risky changes")
+			output.log("  • Use @mentions to reference files, folders, or URLs")
+
+			output.log("\n" + style("─".repeat(80), TerminalColors.dim))
+		})
 	}
 
 	/**
@@ -914,21 +1129,11 @@ async function main() {
 			return
 		}
 
-		// Show banner
-		output.log(`
-╔═══════════════════════════════════════════════════════════════╗
-║                                                               ║
-║   ███╗   ███╗ █████╗ ██████╗ ██╗███████╗ ██████╗██╗     ██╗  ║
-║   ████╗ ████║██╔══██╗██╔══██╗██║██╔════╝██╔════╝██║     ██║  ║
-║   ██╔████╔██║███████║██████╔╝██║█████╗  ██║     ██║     ██║  ║
-║   ██║╚██╔╝██║██╔══██║██╔══██╗██║██╔══╝  ██║     ██║     ██║  ║
-║   ██║ ╚═╝ ██║██║  ██║██║  ██║██║███████╗╚██████╗███████╗██║  ║
-║   ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚══════╝ ╚═════╝╚══════╝╚═╝  ║
-║                                                               ║
-║            AI Coding Assistant - Command Line Edition        ║
-║                                                               ║
-╚═══════════════════════════════════════════════════════════════╝
-`)
+		// Show enhanced animated splash screen with ASCII art
+		const splash = new SplashScreen("MarieCoder", "2.0.0", "AI Coding Assistant - Command Line Edition")
+
+		// Render animated splash for visual impact
+		await splash.renderAnimated(1500, 60)
 
 		// Handle --config (show configuration)
 		if (showConfig) {

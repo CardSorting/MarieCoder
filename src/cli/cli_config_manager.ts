@@ -31,7 +31,9 @@
 import * as fs from "node:fs"
 import * as os from "node:os"
 import * as path from "node:path"
+import { DataTable } from "./cli_data_visualization"
 import { output } from "./cli_output"
+import { SemanticColors, style, TerminalColors } from "./cli_terminal_colors"
 
 export interface CliConfiguration {
 	apiProvider?: string
@@ -404,49 +406,83 @@ export class CliConfigManager {
 	displayConfig(config?: CliConfiguration): void {
 		const currentConfig = config || this.loadConfig()
 
-		output.log("\n📋 Current Configuration")
-		output.log("─".repeat(80))
-		output.log(`  Config Directory: ${this.configDir}`)
-		output.log(`  Provider: ${currentConfig.apiProvider || "not set"}`)
-		output.log(`  Model: ${currentConfig.apiModelId || "not set"}`)
-		output.log(`  API Key: ${currentConfig.apiKey ? this.maskApiKey(currentConfig.apiKey) : "not set"}`)
+		// Build table rows
+		const rows: Array<[string, string]> = [
+			["Provider", currentConfig.apiProvider || style("not set", TerminalColors.dim)],
+			["Model", currentConfig.apiModelId || style("not set", TerminalColors.dim)],
+			[
+				"API Key",
+				currentConfig.apiKey
+					? style(this.maskApiKey(currentConfig.apiKey), SemanticColors.complete)
+					: style("not set", TerminalColors.dim),
+			],
+		]
 
+		// Add optional settings
 		if (currentConfig.temperature !== undefined) {
-			output.log(`  Temperature: ${currentConfig.temperature}`)
+			rows.push(["Temperature", currentConfig.temperature.toString()])
+		} else {
+			rows.push(["Temperature", style("Default (0.7)", TerminalColors.dim)])
 		}
+
 		if (currentConfig.maxTokens !== undefined) {
-			output.log(`  Max Tokens: ${currentConfig.maxTokens}`)
+			rows.push(["Max Tokens", currentConfig.maxTokens.toString()])
+		} else {
+			rows.push(["Max Tokens", style("Default (8192)", TerminalColors.dim)])
 		}
+
+		// Current mode
+		const currentMode = currentConfig.mode || "act"
+		const modeDisplay =
+			currentMode === "plan"
+				? style("plan", SemanticColors.warning) + " (safer)"
+				: style("act", SemanticColors.progress) + " (faster)"
+		rows.push(["Mode", modeDisplay])
 
 		// Plan/Act Mode Configuration
 		if (currentConfig.planActSeparateModelsSetting) {
-			output.log(`\n  Plan/Act Mode: Separate Models Enabled`)
-			output.log(`  Current Mode: ${currentConfig.mode || "act"} mode`)
+			rows.push(["Plan/Act Models", style("Separate Models Enabled", SemanticColors.highlight)])
+
 			if (currentConfig.planModeApiProvider || currentConfig.planModeApiModelId) {
-				output.log(
-					`  Plan Mode: ${currentConfig.planModeApiProvider || "not set"} / ${currentConfig.planModeApiModelId || "not set"}`,
-				)
+				const planMode = `${currentConfig.planModeApiProvider || "default"} / ${currentConfig.planModeApiModelId || "default"}`
+				rows.push(["Plan Mode", planMode])
 			}
+
 			if (currentConfig.actModeApiProvider || currentConfig.actModeApiModelId) {
-				output.log(
-					`  Act Mode: ${currentConfig.actModeApiProvider || "not set"} / ${currentConfig.actModeApiModelId || "not set"}`,
-				)
+				const actMode = `${currentConfig.actModeApiProvider || "default"} / ${currentConfig.actModeApiModelId || "default"}`
+				rows.push(["Act Mode", actMode])
 			}
-		} else {
-			output.log(`  Mode: ${currentConfig.mode || "act"}`)
 		}
 
+		// Additional settings
 		if (currentConfig.workspace) {
-			output.log(`\n  Workspace: ${currentConfig.workspace}`)
-		}
-		if (currentConfig.verbose) {
-			output.log(`  Verbose: ${currentConfig.verbose}`)
-		}
-		if (currentConfig.autoApprove) {
-			output.log(`  Auto-Approve: ${currentConfig.autoApprove}`)
+			rows.push(["Workspace", currentConfig.workspace])
 		}
 
-		output.log("─".repeat(80) + "\n")
+		if (currentConfig.verbose) {
+			rows.push(["Verbose", style("Enabled", SemanticColors.info)])
+		}
+
+		if (currentConfig.autoApprove) {
+			rows.push(["Auto-Approve", style("Enabled", SemanticColors.warning)])
+		}
+
+		if (currentConfig.terminalOutputLineLimit) {
+			rows.push(["Terminal Line Limit", currentConfig.terminalOutputLineLimit.toString()])
+		}
+
+		if (currentConfig.taskHistoryLimit) {
+			rows.push(["History Limit", currentConfig.taskHistoryLimit.toString()])
+		}
+
+		// Create and display table
+		const table = new DataTable("MarieCoder CLI Configuration", ["Setting", "Value"], rows)
+
+		output.log("\n" + table.render())
+
+		// Show config directory
+		output.log("\n" + style("💡 Config Directory: ", TerminalColors.dim) + this.configDir)
+		output.log(style("💡 To change settings: ", TerminalColors.dim) + "mariecoder --setup\n")
 	}
 
 	/**

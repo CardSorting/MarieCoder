@@ -397,3 +397,207 @@ export function truncate(text: string, width: number, position: "end" | "middle"
 	const halfWidth = Math.floor((width - ellipsis.length) / 2)
 	return text.slice(0, halfWidth) + ellipsis + text.slice(text.length - halfWidth)
 }
+
+/**
+ * 256-color support for advanced terminal styling
+ */
+export const Colors256 = {
+	/**
+	 * Generate foreground color from 256-color palette
+	 * @param color - Color code (0-255)
+	 */
+	fg: (color: number): string => `\x1b[38;5;${Math.min(255, Math.max(0, color))}m`,
+
+	/**
+	 * Generate background color from 256-color palette
+	 * @param color - Color code (0-255)
+	 */
+	bg: (color: number): string => `\x1b[48;5;${Math.min(255, Math.max(0, color))}m`,
+
+	/**
+	 * Generate RGB foreground color (true color support)
+	 * @param r - Red (0-255)
+	 * @param g - Green (0-255)
+	 * @param b - Blue (0-255)
+	 */
+	rgb: (r: number, g: number, b: number): string => {
+		const clamp = (v: number) => Math.min(255, Math.max(0, v))
+		return `\x1b[38;2;${clamp(r)};${clamp(g)};${clamp(b)}m`
+	},
+
+	/**
+	 * Generate RGB background color (true color support)
+	 * @param r - Red (0-255)
+	 * @param g - Green (0-255)
+	 * @param b - Blue (0-255)
+	 */
+	bgRgb: (r: number, g: number, b: number): string => {
+		const clamp = (v: number) => Math.min(255, Math.max(0, v))
+		return `\x1b[48;2;${clamp(r)};${clamp(g)};${clamp(b)}m`
+	},
+
+	/** Color palette presets */
+	presets: {
+		// Blues
+		oceanBlue: 33,
+		skyBlue: 117,
+		deepBlue: 20,
+		teal: 37,
+
+		// Greens
+		forestGreen: 28,
+		limeGreen: 118,
+		seaGreen: 36,
+		mint: 121,
+
+		// Purples
+		violet: 93,
+		lavender: 183,
+		purple: 127,
+		magenta: 201,
+
+		// Oranges
+		orange: 208,
+		coral: 209,
+		peach: 217,
+
+		// Reds
+		crimson: 196,
+		rose: 204,
+		pink: 218,
+
+		// Grays
+		darkGray: 236,
+		mediumGray: 244,
+		lightGray: 250,
+		silver: 188,
+
+		// Accent colors
+		gold: 220,
+		amber: 214,
+		bronze: 136,
+	},
+} as const
+
+/**
+ * Enhanced rounded box characters using Unicode
+ */
+export const RoundedBoxChars = {
+	topLeft: "╭",
+	topRight: "╮",
+	bottomLeft: "╰",
+	bottomRight: "╯",
+	horizontal: "─",
+	vertical: "│",
+	heavyHorizontal: "━",
+	heavyVertical: "┃",
+} as const
+
+/**
+ * Special effect characters
+ */
+export const EffectChars = {
+	/** Progress bars */
+	progressFull: "█",
+	progressSeven: "▇",
+	progressSix: "▆",
+	progressFive: "▅",
+	progressFour: "▄",
+	progressThree: "▃",
+	progressTwo: "▂",
+	progressOne: "▁",
+	progressEmpty: "░",
+
+	/** Blocks and shades */
+	fullBlock: "█",
+	darkShade: "▓",
+	mediumShade: "▒",
+	lightShade: "░",
+
+	/** Triangles */
+	triangleUp: "▲",
+	triangleDown: "▼",
+	triangleLeft: "◀",
+	triangleRight: "▶",
+
+	/** Circles */
+	circleFilled: "●",
+	circleEmpty: "○",
+	circleHalf: "◐",
+	circleDot: "◉",
+
+	/** Diamonds */
+	diamondFilled: "◆",
+	diamondEmpty: "◇",
+
+	/** Stars */
+	starFilled: "★",
+	starEmpty: "☆",
+
+	/** Other */
+	heart: "♥",
+	lightning: "⚡",
+	gear: "⚙",
+	lock: "🔒",
+	unlock: "🔓",
+} as const
+
+/**
+ * Create a gradient text effect (works on terminals with 256-color support)
+ * @param text - Text to apply gradient to
+ * @param startColor - Starting color code (0-255)
+ * @param endColor - Ending color code (0-255)
+ */
+export function gradient(text: string, startColor: number, endColor: number): string {
+	if (!TerminalCapabilities.supportsColors() || text.length === 0) {
+		return text
+	}
+
+	const chars = text.split("")
+	const steps = chars.length
+	const colorStep = (endColor - startColor) / Math.max(1, steps - 1)
+
+	return (
+		chars
+			.map((char, i) => {
+				const color = Math.round(startColor + colorStep * i)
+				return `${Colors256.fg(color)}${char}`
+			})
+			.join("") + TerminalColors.reset
+	)
+}
+
+/**
+ * Create a pulsing effect by alternating between two styles
+ * (Returns one of two styles based on current time)
+ */
+export function pulse(text: string, style1: string, style2: string): string {
+	const phase = Math.floor(Date.now() / 500) % 2
+	return phase === 0 ? `${style1}${text}${TerminalColors.reset}` : `${style2}${text}${TerminalColors.reset}`
+}
+
+/**
+ * Add a subtle shadow effect using dim characters
+ */
+export function shadow(text: string, color: string = TerminalColors.bright): string {
+	const lines = text.split("\n")
+	return lines.map((line) => `${color}${line}${TerminalColors.reset}`).join("\n")
+}
+
+/**
+ * Create a box with padding
+ */
+export function padText(text: string, padding: number = 1): string {
+	const lines = text.split("\n")
+	const padStr = " ".repeat(padding)
+	return lines.map((line) => `${padStr}${line}${padStr}`).join("\n")
+}
+
+/**
+ * Left pad text with spaces
+ */
+export function leftPad(text: string, width: number): string {
+	const plainText = stripAnsi(text)
+	const padding = Math.max(0, width - plainText.length)
+	return " ".repeat(padding) + text
+}

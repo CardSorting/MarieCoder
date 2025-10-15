@@ -7,7 +7,10 @@
 
 import {
 	BoxChars,
+	Colors256,
 	centerText,
+	gradient,
+	RoundedBoxChars,
 	SemanticColors,
 	stripAnsi,
 	style,
@@ -411,4 +414,287 @@ function wordWrap(text: string, width: number): string[] {
 	}
 
 	return lines
+}
+
+/**
+ * Create an enhanced panel with rounded corners and gradient header
+ */
+export function formatEnhancedPanel(
+	title: string,
+	content: string,
+	options: {
+		icon?: string
+		gradient?: boolean
+		rounded?: boolean
+		footer?: string
+	} = {},
+): string {
+	const { icon, gradient: useGradient = true, rounded = true, footer } = options
+	const lines: string[] = []
+	const contentWidth = getContentWidth()
+	const borderWidth = contentWidth - 2
+
+	const boxStyle = rounded ? RoundedBoxChars : BoxChars
+
+	// Top border
+	lines.push("")
+	lines.push(style(`${boxStyle.topLeft}${boxStyle.horizontal.repeat(borderWidth)}${boxStyle.topRight}`, SemanticColors.info))
+
+	// Title with optional gradient
+	const titleText = icon ? `${icon}  ${title.toUpperCase()}` : title.toUpperCase()
+	const titleStyled = useGradient
+		? gradient(titleText, Colors256.presets.skyBlue, Colors256.presets.violet)
+		: style(titleText, TerminalColors.bright)
+
+	const titlePadding = " ".repeat(Math.max(0, borderWidth - stripAnsi(titleText).length - 2))
+	lines.push(
+		`${style(boxStyle.vertical, SemanticColors.info)} ${titleStyled}${titlePadding} ${style(boxStyle.vertical, SemanticColors.info)}`,
+	)
+
+	// Separator
+	lines.push(
+		style(`${BoxChars.verticalRight}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.verticalLeft}`, SemanticColors.info),
+	)
+
+	// Content
+	const contentLines = wordWrap(content, borderWidth - 4)
+	for (const line of contentLines) {
+		const padding = " ".repeat(Math.max(0, borderWidth - stripAnsi(line).length - 4))
+		lines.push(
+			`${style(boxStyle.vertical, SemanticColors.info)}  ${line}${padding}  ${style(boxStyle.vertical, SemanticColors.info)}`,
+		)
+	}
+
+	// Footer if provided
+	if (footer) {
+		lines.push(
+			style(
+				`${BoxChars.verticalRight}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.verticalLeft}`,
+				SemanticColors.info,
+			),
+		)
+		const footerStyled = style(footer, TerminalColors.dim)
+		const footerPadding = " ".repeat(Math.max(0, borderWidth - stripAnsi(footer).length - 2))
+		lines.push(
+			`${style(boxStyle.vertical, SemanticColors.info)} ${footerStyled}${footerPadding} ${style(boxStyle.vertical, SemanticColors.info)}`,
+		)
+	}
+
+	// Bottom border
+	lines.push(
+		style(`${boxStyle.bottomLeft}${boxStyle.horizontal.repeat(borderWidth)}${boxStyle.bottomRight}`, SemanticColors.info),
+	)
+	lines.push("")
+
+	return lines.join("\n")
+}
+
+/**
+ * Create a side-by-side comparison layout
+ */
+export function formatComparison(
+	leftTitle: string,
+	leftContent: string,
+	rightTitle: string,
+	rightContent: string,
+	options: {
+		color?: string
+	} = {},
+): string {
+	const { color = SemanticColors.info } = options
+	const lines: string[] = []
+	const contentWidth = getContentWidth()
+	const columnWidth = Math.floor((contentWidth - 5) / 2)
+
+	lines.push("")
+	lines.push(
+		style(
+			`${RoundedBoxChars.topLeft}${RoundedBoxChars.horizontal.repeat(columnWidth)}${BoxChars.horizontalDown}${RoundedBoxChars.horizontal.repeat(columnWidth)}${RoundedBoxChars.topRight}`,
+			color,
+		),
+	)
+
+	// Titles
+	const leftTitleTrunc = truncate(leftTitle, columnWidth - 2, "end")
+	const rightTitleTrunc = truncate(rightTitle, columnWidth - 2, "end")
+	const leftTitlePad = " ".repeat(Math.max(0, columnWidth - stripAnsi(leftTitleTrunc).length - 2))
+	const rightTitlePad = " ".repeat(Math.max(0, columnWidth - stripAnsi(rightTitleTrunc).length - 2))
+
+	lines.push(
+		`${style(RoundedBoxChars.vertical, color)} ${style(leftTitleTrunc, TerminalColors.bright)}${leftTitlePad} ${style(RoundedBoxChars.vertical, color)} ${style(rightTitleTrunc, TerminalColors.bright)}${rightTitlePad} ${style(RoundedBoxChars.vertical, color)}`,
+	)
+
+	// Separator
+	lines.push(
+		style(
+			`${BoxChars.verticalRight}${BoxChars.horizontal.repeat(columnWidth)}${BoxChars.cross}${BoxChars.horizontal.repeat(columnWidth)}${BoxChars.verticalLeft}`,
+			color,
+		),
+	)
+
+	// Content
+	const leftLines = wordWrap(leftContent, columnWidth - 2)
+	const rightLines = wordWrap(rightContent, columnWidth - 2)
+	const maxLines = Math.max(leftLines.length, rightLines.length)
+
+	for (let i = 0; i < maxLines; i++) {
+		const leftLine = leftLines[i] || ""
+		const rightLine = rightLines[i] || ""
+
+		const leftPad = " ".repeat(Math.max(0, columnWidth - stripAnsi(leftLine).length - 2))
+		const rightPad = " ".repeat(Math.max(0, columnWidth - stripAnsi(rightLine).length - 2))
+
+		lines.push(
+			`${style(RoundedBoxChars.vertical, color)} ${leftLine}${leftPad} ${style(RoundedBoxChars.vertical, color)} ${rightLine}${rightPad} ${style(RoundedBoxChars.vertical, color)}`,
+		)
+	}
+
+	// Bottom
+	lines.push(
+		style(
+			`${RoundedBoxChars.bottomLeft}${RoundedBoxChars.horizontal.repeat(columnWidth)}${BoxChars.horizontalUp}${RoundedBoxChars.horizontal.repeat(columnWidth)}${RoundedBoxChars.bottomRight}`,
+			color,
+		),
+	)
+	lines.push("")
+
+	return lines.join("\n")
+}
+
+/**
+ * Create a tabbed interface layout (visual representation)
+ */
+export function formatTabs(tabs: Array<{ label: string; active: boolean }>, content: string): string {
+	const lines: string[] = []
+	const contentWidth = getContentWidth()
+
+	lines.push("")
+
+	// Tab headers
+	const tabHeaders: string[] = []
+	for (const tab of tabs) {
+		const label = tab.active
+			? style(` ${tab.label} `, TerminalColors.bright, SemanticColors.highlight)
+			: style(` ${tab.label} `, TerminalColors.dim)
+
+		if (tab.active) {
+			tabHeaders.push(
+				`${RoundedBoxChars.topLeft}${BoxChars.horizontal}${label}${BoxChars.horizontal}${RoundedBoxChars.topRight}`,
+			)
+		} else {
+			tabHeaders.push(`${BoxChars.topLeft}${BoxChars.horizontal}${label}${BoxChars.horizontal}${BoxChars.topRight}`)
+		}
+	}
+
+	lines.push(tabHeaders.join(" "))
+
+	// Content box
+	const borderWidth = contentWidth - 2
+	lines.push(
+		style(
+			`${RoundedBoxChars.topLeft}${RoundedBoxChars.horizontal.repeat(borderWidth)}${RoundedBoxChars.topRight}`,
+			SemanticColors.info,
+		),
+	)
+
+	const contentLines = wordWrap(content, borderWidth - 4)
+	for (const line of contentLines) {
+		const padding = " ".repeat(Math.max(0, borderWidth - stripAnsi(line).length - 4))
+		lines.push(
+			`${style(RoundedBoxChars.vertical, SemanticColors.info)}  ${line}${padding}  ${style(RoundedBoxChars.vertical, SemanticColors.info)}`,
+		)
+	}
+
+	lines.push(
+		style(
+			`${RoundedBoxChars.bottomLeft}${RoundedBoxChars.horizontal.repeat(borderWidth)}${RoundedBoxChars.bottomRight}`,
+			SemanticColors.info,
+		),
+	)
+	lines.push("")
+
+	return lines.join("\n")
+}
+
+/**
+ * Create an accordion-style collapsible section
+ */
+export function formatAccordion(
+	sections: Array<{
+		title: string
+		content: string
+		expanded: boolean
+		icon?: string
+	}>,
+): string {
+	const lines: string[] = []
+	const contentWidth = getContentWidth()
+	const borderWidth = contentWidth - 2
+
+	lines.push("")
+
+	for (let i = 0; i < sections.length; i++) {
+		const section = sections[i]
+		const isFirst = i === 0
+		const isLast = i === sections.length - 1
+
+		const expandIcon = section.expanded ? "▼" : "▶"
+		const icon = section.icon || expandIcon
+		const titleText = `${icon}  ${section.title}`
+
+		// Top border
+		if (isFirst) {
+			lines.push(
+				style(
+					`${RoundedBoxChars.topLeft}${RoundedBoxChars.horizontal.repeat(borderWidth)}${RoundedBoxChars.topRight}`,
+					SemanticColors.info,
+				),
+			)
+		}
+
+		// Title
+		const titleStyled = style(titleText, TerminalColors.bright)
+		const titlePadding = " ".repeat(Math.max(0, borderWidth - stripAnsi(titleText).length - 2))
+		lines.push(
+			`${style(RoundedBoxChars.vertical, SemanticColors.info)} ${titleStyled}${titlePadding} ${style(RoundedBoxChars.vertical, SemanticColors.info)}`,
+		)
+
+		// Content if expanded
+		if (section.expanded) {
+			lines.push(
+				style(
+					`${BoxChars.verticalRight}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.verticalLeft}`,
+					TerminalColors.dim,
+				),
+			)
+
+			const contentLines = wordWrap(section.content, borderWidth - 4)
+			for (const line of contentLines) {
+				const padding = " ".repeat(Math.max(0, borderWidth - stripAnsi(line).length - 4))
+				lines.push(
+					`${style(RoundedBoxChars.vertical, SemanticColors.info)}  ${style(line, TerminalColors.dim)}${padding}  ${style(RoundedBoxChars.vertical, SemanticColors.info)}`,
+				)
+			}
+		}
+
+		// Separator or bottom border
+		if (isLast) {
+			lines.push(
+				style(
+					`${RoundedBoxChars.bottomLeft}${RoundedBoxChars.horizontal.repeat(borderWidth)}${RoundedBoxChars.bottomRight}`,
+					SemanticColors.info,
+				),
+			)
+		} else {
+			lines.push(
+				style(
+					`${BoxChars.verticalRight}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.verticalLeft}`,
+					SemanticColors.info,
+				),
+			)
+		}
+	}
+
+	lines.push("")
+	return lines.join("\n")
 }
