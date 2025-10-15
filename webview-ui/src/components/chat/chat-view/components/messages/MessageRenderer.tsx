@@ -39,7 +39,6 @@ export const MessageRenderer: React.FC<MessageRendererProps> = ({
 			<BrowserSessionRow
 				expandedRows={expandedRows}
 				isLast={index === groupedMessages.length - 1}
-				key={messageOrGroup[0]?.ts}
 				lastModifiedMessage={modifiedMessages.at(-1)}
 				messages={messageOrGroup}
 				onHeightChange={onHeightChange}
@@ -61,7 +60,6 @@ export const MessageRenderer: React.FC<MessageRendererProps> = ({
 			inputValue={inputValue}
 			isExpanded={expandedRows[messageOrGroup.ts] || false}
 			isLast={isLast}
-			key={messageOrGroup.ts}
 			lastModifiedMessage={modifiedMessages.at(-1)}
 			message={messageOrGroup}
 			onHeightChange={onHeightChange}

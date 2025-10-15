@@ -18,7 +18,8 @@ The correct order is:
 */
 
 /* External imports must come first, before Tailwind imports */
-@import url("@vscode/codicons/dist/codicon.css");
+/* Codicon CSS is loaded by the extension directly from node_modules, not bundled here */
+/* This prevents path resolution issues with the codicon.ttf font file in VSCode webviews */
 /* Font import removed - @fontsource/azeret-mono not in dependencies */
 /* @import url("../node_modules/@fontsource/azeret-mono/index.css"); */
 
