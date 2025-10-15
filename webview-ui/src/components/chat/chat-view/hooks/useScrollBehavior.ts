@@ -37,9 +37,21 @@ export function useScrollBehavior(
 	const scrollVelocityRef = useRef(0)
 	const lastScrollTopRef = useRef(0)
 
+	// Ref to track current isAtBottom value without causing re-renders
+	const isAtBottomRef = useRef(false)
+
+	// Ref to prevent recursive scroll calls
+	const isScrollingRef = useRef(false)
+
 	const scrollToBottomSmooth = useMemo(
 		() =>
 			debounce(() => {
+				// Prevent recursive scroll calls
+				if (isScrollingRef.current) {
+					return
+				}
+				isScrollingRef.current = true
+
 				// Double requestAnimationFrame for even smoother scrolling
 				// First RAF ensures we're at the start of a frame
 				requestAnimationFrame(() => {
@@ -49,6 +61,10 @@ export function useScrollBehavior(
 							top: Number.MAX_SAFE_INTEGER,
 							behavior: "smooth",
 						})
+						// Reset scrolling flag after a delay
+						setTimeout(() => {
+							isScrollingRef.current = false
+						}, 100)
 					})
 				})
 			}, 16), // Increased from 10ms to align with frame timing
@@ -141,7 +157,8 @@ export function useScrollBehavior(
 				disableAutoScrollRef.current = true
 			}
 
-			if (isCollapsing && isAtBottom) {
+			// Use ref value instead of state to avoid circular dependencies
+			if (isCollapsing && isAtBottomRef.current) {
 				// Use requestAnimationFrame for smoother, non-blocking scroll
 				requestAnimationFrame(() => {
 					scrollToBottomAuto()
@@ -164,7 +181,7 @@ export function useScrollBehavior(
 				}
 			}
 		},
-		[groupedMessages, expandedRows, scrollToBottomAuto, isAtBottom],
+		[groupedMessages, expandedRows, scrollToBottomAuto],
 	)
 
 	const handleRowHeightChange = useCallback(
@@ -184,10 +201,9 @@ export function useScrollBehavior(
 	)
 
 	useEffect(() => {
-		// Only auto-scroll if:
-		// 1. Auto-scroll is not disabled by user
-		// 2. User is already at or near the bottom (within threshold)
-		if (!disableAutoScrollRef.current && isAtBottom) {
+		// Only auto-scroll if auto-scroll is not disabled by user
+		// Don't add isAtBottom to dependencies to avoid circular updates
+		if (!disableAutoScrollRef.current) {
 			// Double RAF for smoother, jank-free scrolling on new messages
 			requestAnimationFrame(() => {
 				requestAnimationFrame(() => {
@@ -195,13 +211,18 @@ export function useScrollBehavior(
 				})
 			})
 		}
-	}, [groupedMessages.length, scrollToBottomSmooth, isAtBottom])
+	}, [groupedMessages.length, scrollToBottomSmooth])
+
+	// Sync isAtBottom state to ref
+	useEffect(() => {
+		isAtBottomRef.current = isAtBottom
+	}, [isAtBottom])
 
 	useEffect(() => {
 		if (pendingScrollToMessage !== null) {
 			scrollToMessage(pendingScrollToMessage)
 		}
-	}, [pendingScrollToMessage, groupedMessages, scrollToMessage])
+	}, [pendingScrollToMessage, scrollToMessage])
 
 	useEffect(() => {
 		if (!messages?.length) {

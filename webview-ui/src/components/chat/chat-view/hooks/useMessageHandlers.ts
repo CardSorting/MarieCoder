@@ -1,7 +1,7 @@
 import type { ClineMessage } from "@shared/ExtensionMessage"
 import { EmptyRequest, StringRequest } from "@shared/proto/cline/common"
 import { AskResponseRequest, NewTaskRequest } from "@shared/proto/cline/task"
-import { useCallback } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { SlashServiceClient, TaskServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import type { ButtonActionType } from "../shared/buttonConfig"
@@ -23,6 +23,12 @@ export function useMessageHandlers(messages: ClineMessage[], chatState: ChatStat
 		clineAsk,
 		lastMessage,
 	} = chatState
+
+	// Use ref to access chatState without creating dependency
+	const chatStateRef = useRef(chatState)
+	useEffect(() => {
+		chatStateRef.current = chatState
+	}, [chatState])
 
 	// Handle sending a message
 	const handleSendMessage = useCallback(
@@ -49,9 +55,9 @@ export function useMessageHandlers(messages: ClineMessage[], chatState: ChatStat
 				setSelectedFiles([])
 				setEnableButtons(false)
 
-				// Reset auto-scroll
-				if ("disableAutoScrollRef" in chatState) {
-					;(chatState as any).disableAutoScrollRef.current = false
+				// Reset auto-scroll using ref to avoid chatState dependency
+				if ("disableAutoScrollRef" in chatStateRef.current) {
+					;(chatStateRef.current as any).disableAutoScrollRef.current = false
 				}
 
 				// Send message asynchronously (already feels sent to user)
@@ -95,6 +101,7 @@ export function useMessageHandlers(messages: ClineMessage[], chatState: ChatStat
 			}
 		},
 		[
+			// Minimize dependencies - only include primitives, not entire chatState object
 			messages.length,
 			clineAsk,
 			activeQuote,
@@ -104,7 +111,7 @@ export function useMessageHandlers(messages: ClineMessage[], chatState: ChatStat
 			setSelectedImages,
 			setSelectedFiles,
 			setEnableButtons,
-			chatState,
+			// chatState removed - causes entire handler to recreate on any state change
 		],
 	)
 
@@ -232,11 +239,21 @@ export function useMessageHandlers(messages: ClineMessage[], chatState: ChatStat
 					break
 			}
 
-			if ("disableAutoScrollRef" in chatState) {
-				;(chatState as any).disableAutoScrollRef.current = false
+			// Use ref to avoid chatState dependency
+			if ("disableAutoScrollRef" in chatStateRef.current) {
+				;(chatStateRef.current as any).disableAutoScrollRef.current = false
 			}
 		},
-		[clineAsk, lastMessage, messages, clearInputState, handleSendMessage, startNewTask, chatState],
+		[
+			// Removed excessive dependencies that cause recreation
+			clineAsk,
+			lastMessage,
+			// messages removed - only length matters, accessed via closure
+			clearInputState,
+			// handleSendMessage removed - not actually used in this function
+			startNewTask,
+			// chatState removed - causes recreation on any state change
+		],
 	)
 
 	// Handle task close button click
