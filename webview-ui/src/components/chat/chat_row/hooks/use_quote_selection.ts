@@ -25,14 +25,21 @@ export const useQuoteSelection = (onSetQuote: (text: string) => void) => {
 	})
 	const contentRef = useRef<HTMLDivElement>(null)
 
+	// Use ref to track selected text without causing callback recreation
+	const selectedTextRef = useRef<string>("")
+
+	// Sync state to ref whenever quoteButtonState changes
+	selectedTextRef.current = quoteButtonState.selectedText
+
 	/**
 	 * Handles the quote button click
 	 */
 	const handleQuoteClick = useCallback(() => {
-		onSetQuote(quoteButtonState.selectedText)
+		// Use ref value instead of state to avoid circular dependency
+		onSetQuote(selectedTextRef.current)
 		window.getSelection()?.removeAllRanges() // Clear the browser selection
 		setQuoteButtonState({ visible: false, top: 0, left: 0, selectedText: "" })
-	}, [onSetQuote, quoteButtonState.selectedText])
+	}, [onSetQuote])
 
 	/**
 	 * Handles mouse up events to show/hide the quote button
