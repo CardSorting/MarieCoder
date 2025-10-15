@@ -324,15 +324,27 @@ export class ApiStreamManager {
 	 * it triggers UI updates to show content as it streams.
 	 *
 	 * Also sends partial text message to webview for real-time streaming display.
+	 * Extracts and separately displays any <thinking> blocks as reasoning messages.
 	 *
 	 * @param assistantMessage - The accumulated assistant message text
 	 * @private
 	 */
 	private async parseAndPresentStreamingText(assistantMessage: string): Promise<void> {
 		try {
+			// Extract thinking content from the message
+			const thinkingContent = this.extractThinkingContent(assistantMessage)
+
+			// If there's thinking content, send it as reasoning message
+			if (thinkingContent) {
+				await this.messageService.say("reasoning", thinkingContent, undefined, undefined, true)
+			}
+
+			// Remove thinking tags from text before displaying
+			const cleanedMessage = this.cleanThinkingTags(assistantMessage)
+
 			// Send partial text message to webview for streaming display
 			// This ensures the UI updates in real-time as text streams in
-			await this.messageService.say("text", assistantMessage, undefined, undefined, true)
+			await this.messageService.say("text", cleanedMessage, undefined, undefined, true)
 
 			// Parse the accumulated text to extract content blocks (text + tool_use)
 			const parsedContent = parseAssistantMessageV2(assistantMessage)
@@ -357,6 +369,43 @@ export class ApiStreamManager {
 			// Parsing errors shouldn't interrupt the stream
 			console.error("Error parsing streaming text:", error)
 		}
+	}
+
+	/**
+	 * Extract thinking content from assistant message
+	 *
+	 * Extracts all content between <thinking> tags and returns it as a single string.
+	 * Multiple thinking blocks are concatenated together.
+	 *
+	 * @param content - The message content to extract thinking from
+	 * @returns The extracted thinking content, or empty string if none found
+	 * @private
+	 */
+	private extractThinkingContent(content: string): string {
+		const thinkingBlocks: string[] = []
+		const thinkingRegex = /<thinking>([\s\S]*?)<\/thinking>/g
+		const matches = content.matchAll(thinkingRegex)
+
+		for (const match of matches) {
+			thinkingBlocks.push(match[1].trim())
+		}
+
+		return thinkingBlocks.join("\n\n")
+	}
+
+	/**
+	 * Clean thinking tags from content
+	 *
+	 * Removes all <thinking> and </thinking> tags along with optional whitespace.
+	 *
+	 * @param content - The content to clean
+	 * @returns The cleaned content without thinking tags
+	 * @private
+	 */
+	private cleanThinkingTags(content: string): string {
+		let cleaned = content.replace(/<thinking>\s?/g, "")
+		cleaned = cleaned.replace(/\s?<\/thinking>/g, "")
+		return cleaned
 	}
 
 	/**

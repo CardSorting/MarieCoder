@@ -214,7 +214,7 @@ export const createPlanContentParameter = (customInstruction?: string) => ({
  * Standard parameter template for completion attempts
  */
 export const createAttemptCompletionParameter = (customInstruction?: string) => ({
-	name: "completion",
+	name: "result",
 	required: true,
 	instruction: customInstruction || "The completion attempt description.",
 	usage: "Completion attempt here",
