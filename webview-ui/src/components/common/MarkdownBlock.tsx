@@ -187,6 +187,96 @@ const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 		}
 	}, [htmlContent, mode])
 
+	// Handle collapsible code blocks
+	useEffect(() => {
+		if (!containerRef.current) {
+			return
+		}
+
+		const codeBlocks = containerRef.current.querySelectorAll("pre")
+		const toggleHandlers: Array<{ button: HTMLElement; handler: () => void }> = []
+
+		for (const pre of codeBlocks) {
+			// Skip if already processed
+			if (pre.dataset.collapseProcessed === "true") {
+				continue
+			}
+
+			const preHeight = pre.scrollHeight
+			const maxHeight = 350 // pixels (reduced from 400 for better containment)
+
+			// Only add collapse functionality if content exceeds maxHeight
+			if (preHeight > maxHeight) {
+				pre.dataset.collapseProcessed = "true"
+				pre.classList.add("code-block-collapsed")
+
+				// Calculate approximate line count
+				const lineHeight = 20 // approximate line height
+				const totalLines = Math.ceil(preHeight / lineHeight)
+				const visibleLines = Math.ceil(maxHeight / lineHeight)
+				const hiddenLines = totalLines - visibleLines
+
+				// Get language from code block if available
+				const codeElement = pre.querySelector("code")
+				const languageClass = codeElement?.className?.match(/language-(\w+)/)
+				const language = languageClass ? languageClass[1].toUpperCase() : null
+
+				// Create toggle button
+				const toggleBtn = document.createElement("div")
+				toggleBtn.className = "code-block-toggle-btn"
+				toggleBtn.setAttribute("role", "button")
+				toggleBtn.setAttribute("aria-label", "Expand code block")
+				toggleBtn.innerHTML = `
+					<span class="codicon codicon-chevron-down"></span>
+					<span>Expand code block</span>
+					${language ? `<span class="code-block-info">${language}</span>` : ""}
+					<span class="code-block-info">+${hiddenLines} lines</span>
+				`
+
+				const handler = () => {
+					const isCollapsed = pre.classList.contains("code-block-collapsed")
+					if (isCollapsed) {
+						pre.classList.remove("code-block-collapsed")
+						pre.classList.add("code-block-expanded")
+						toggleBtn.setAttribute("aria-label", "Collapse code block")
+						toggleBtn.innerHTML = `
+							<span class="codicon codicon-chevron-up"></span>
+							<span>Collapse code block</span>
+							${language ? `<span class="code-block-info">${language}</span>` : ""}
+							<span class="code-block-info">${totalLines} lines</span>
+						`
+						// Smooth scroll to keep context
+						pre.scrollIntoView({ behavior: "smooth", block: "nearest" })
+					} else {
+						pre.classList.add("code-block-collapsed")
+						pre.classList.remove("code-block-expanded")
+						toggleBtn.setAttribute("aria-label", "Expand code block")
+						toggleBtn.innerHTML = `
+							<span class="codicon codicon-chevron-down"></span>
+							<span>Expand code block</span>
+							${language ? `<span class="code-block-info">${language}</span>` : ""}
+							<span class="code-block-info">+${hiddenLines} lines</span>
+						`
+					}
+				}
+
+				toggleBtn.addEventListener("click", handler)
+				toggleHandlers.push({ button: toggleBtn, handler })
+
+				// Insert toggle button after the pre element
+				pre.parentNode?.insertBefore(toggleBtn, pre.nextSibling)
+			}
+		}
+
+		return () => {
+			// Cleanup toggle buttons and event listeners
+			for (const { button, handler } of toggleHandlers) {
+				button.removeEventListener("click", handler)
+				button.remove()
+			}
+		}
+	}, [htmlContent])
+
 	return (
 		<div>
 			<style>{`
@@ -196,14 +286,118 @@ const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 				}
 				.markdown-block-styled pre {
 					background-color: ${CODE_BLOCK_BG_COLOR};
-					border-radius: 3px;
+					border: 1px solid var(--vscode-editorGroup-border);
+					border-radius: 6px;
 					margin: 13px 0;
-					padding: 10px 10px;
+					padding: 12px 14px;
 					max-width: calc(100vw - 20px);
 					overflow-x: auto;
-					overflow-y: hidden;
+					overflow-y: auto;
 					padding-right: 70px;
 					position: relative;
+					box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+					transition: box-shadow 0.2s ease;
+				}
+				.markdown-block-styled pre:hover {
+					box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+				}
+				/* Custom scrollbar styling */
+				.markdown-block-styled pre::-webkit-scrollbar {
+					width: 10px;
+					height: 10px;
+				}
+				.markdown-block-styled pre::-webkit-scrollbar-track {
+					background: color-mix(in srgb, ${CODE_BLOCK_BG_COLOR} 70%, transparent);
+					border-radius: 6px;
+				}
+				.markdown-block-styled pre::-webkit-scrollbar-thumb {
+					background: var(--vscode-scrollbarSlider-background);
+					border-radius: 6px;
+					border: 2px solid transparent;
+					background-clip: padding-box;
+				}
+				.markdown-block-styled pre::-webkit-scrollbar-thumb:hover {
+					background: var(--vscode-scrollbarSlider-hoverBackground);
+					border-radius: 6px;
+					border: 2px solid transparent;
+					background-clip: padding-box;
+				}
+				.markdown-block-styled pre::-webkit-scrollbar-thumb:active {
+					background: var(--vscode-scrollbarSlider-activeBackground);
+				}
+				.markdown-block-styled pre::-webkit-scrollbar-corner {
+					background: transparent;
+				}
+				.markdown-block-styled pre.code-block-collapsed {
+					max-height: 350px;
+					overflow-y: hidden;
+					position: relative;
+					padding-bottom: 8px;
+				}
+				.markdown-block-styled pre.code-block-collapsed::after {
+					content: '';
+					position: absolute;
+					bottom: 0;
+					left: 0;
+					right: 0;
+					height: 80px;
+					background: linear-gradient(to bottom, 
+						transparent 0%, 
+						color-mix(in srgb, ${CODE_BLOCK_BG_COLOR} 60%, transparent) 30%,
+						${CODE_BLOCK_BG_COLOR} 85%);
+					pointer-events: none;
+					border-radius: 0 0 6px 6px;
+				}
+				.markdown-block-styled pre.code-block-expanded {
+					max-height: 600px;
+					transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+				}
+				.code-block-container {
+					position: relative;
+					margin: 13px 0;
+				}
+				.code-block-toggle-btn {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					gap: 8px;
+					padding: 8px 16px;
+					margin-top: -8px;
+					margin-bottom: 8px;
+					cursor: pointer;
+					user-select: none;
+					background: linear-gradient(135deg, 
+						color-mix(in srgb, var(--vscode-button-background, #0e639c) 8%, ${CODE_BLOCK_BG_COLOR}) 0%, 
+						${CODE_BLOCK_BG_COLOR} 100%);
+					border: 1px solid var(--vscode-editorGroup-border);
+					border-top: none;
+					border-radius: 0 0 6px 6px;
+					font-size: 12px;
+					color: var(--vscode-foreground);
+					transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+					box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+					font-weight: 500;
+				}
+				.code-block-toggle-btn:hover {
+					background: linear-gradient(135deg, 
+						color-mix(in srgb, var(--vscode-button-background, #0e639c) 12%, ${CODE_BLOCK_BG_COLOR}) 0%, 
+						color-mix(in srgb, var(--vscode-list-hoverBackground) 80%, ${CODE_BLOCK_BG_COLOR}) 100%);
+					transform: translateY(-1px);
+					box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+					border-color: var(--vscode-button-background);
+				}
+				.code-block-toggle-btn:active {
+					transform: translateY(0);
+					box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+				}
+				.code-block-toggle-btn .codicon {
+					transition: transform 0.2s;
+				}
+				.code-block-info {
+					font-size: 11px;
+					opacity: 0.7;
+					font-weight: 400;
+					margin-left: 4px;
 				}
 				.markdown-block-styled pre > code .hljs-deletion {
 					background-color: var(--vscode-diffEditor-removedTextBackground);
@@ -229,12 +423,20 @@ const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 					font-family: var(--vscode-editor-font-family, monospace);
 					color: var(--vscode-textPreformat-foreground, #f78383);
 					background-color: var(--vscode-textCodeBlock-background, #1e1e1e);
-					padding: 0px 2px;
-					border-radius: 3px;
-					border: 1px solid var(--vscode-textSeparator-foreground, #424242);
+					padding: 2px 6px;
+					border-radius: 4px;
+					border: 1px solid color-mix(in srgb, var(--vscode-textSeparator-foreground, #424242) 50%, transparent);
 					white-space: pre-line;
 					word-break: break-word;
 					overflow-wrap: anywhere;
+					font-size: 0.95em;
+					font-weight: 500;
+					box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+					transition: all 0.15s ease;
+				}
+				.markdown-block-styled code:not(pre > code):hover {
+					border-color: var(--vscode-textSeparator-foreground, #424242);
+					box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 				}
 				.markdown-block-styled p,
 				.markdown-block-styled li,
