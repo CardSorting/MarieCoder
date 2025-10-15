@@ -148,6 +148,20 @@ This index provides a roadmap to all documentation related to the streaming dupl
 
 ---
 
+### 11. [docs/development/BACKEND_UNIFIED_SUBSCRIPTION_IMPLEMENTATION.md](./docs/development/BACKEND_UNIFIED_SUBSCRIPTION_IMPLEMENTATION.md)
+**Purpose:** Implementation guide for backend unified subscription  
+**Key Content:**
+- Complete implementation details
+- Architecture before/after
+- Code changes and files modified
+- Testing checklist
+- Performance considerations
+
+**Audience:** Engineers implementing or reviewing the unified backend approach  
+**Reading Time:** 15-20 minutes
+
+---
+
 ## 🗺️ Reading Path Recommendations
 
 ### For New Team Members
@@ -322,6 +336,7 @@ If you have questions about:
 | STREAMING_ARCHITECTURE_RECOMMENDATIONS.md | ✅ Complete | Oct 15, 2025 | Q1 2026 |
 | STREAMING_INVESTIGATION_SUMMARY.md | ✅ Complete | Oct 15, 2025 | Q1 2026 |
 | STREAMING_DOCUMENTATION_INDEX.md | ✅ Complete | Oct 15, 2025 | As needed |
+| BACKEND_UNIFIED_SUBSCRIPTION_IMPLEMENTATION.md | ✅ Complete | Oct 15, 2025 | As needed |
 
 ---
 

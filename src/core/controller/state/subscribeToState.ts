@@ -3,6 +3,7 @@ import { State } from "@shared/proto/cline/state"
 import { ExtensionState } from "@/shared/ExtensionMessage"
 import { getRequestRegistry, StreamingResponseHandler } from "../grpc-handler"
 import { Controller } from "../index"
+import { sendMessageStreamFullStateUpdate } from "../messageStream/subscribeToMessageStream"
 
 // Keep track of active state subscriptions
 const activeStateSubscriptions = new Set<StreamingResponseHandler<State>>()
@@ -77,4 +78,7 @@ export async function sendStateUpdate(state: ExtensionState): Promise<void> {
 	})
 
 	await Promise.all(promises)
+
+	// Also send to unified message stream subscribers (full state updates)
+	await sendMessageStreamFullStateUpdate(state)
 }

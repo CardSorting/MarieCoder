@@ -2,27 +2,34 @@
  * TaskStateContext - Manages task and message state
  *
  * This context handles:
- * - Current task and messages
+ * - Current task and messages (via unified MessageStreamService)
  * - Task history
- * - Partial message updates
+ * - Message updates (full state sync and partial streaming)
  * - Task size tracking
  *
+ * Architecture:
+ * - Uses MessageStreamService for coordinated message updates
+ * - Eliminates race conditions between full state and partial updates
+ * - Backend intelligently merges streams based on streaming state
+ *
  * Benefits:
+ * - No more competing subscriptions
+ * - Cleaner state management
+ * - Better performance during streaming
  * - Components only re-render when task/message state changes
- * - Isolated task-related logic
- * - Better performance for chat interactions
  */
 
 import { findLastIndex } from "@shared/array"
 import type { ClineMessage } from "@shared/ExtensionMessage"
 import type { HistoryItem } from "@shared/HistoryItem"
 import { EmptyRequest } from "@shared/proto/cline/common"
+import { MessageUpdateType } from "@shared/proto/cline/message_stream"
 import { convertProtoToClineMessage } from "@shared/proto-conversions/cline-message"
 import type React from "react"
 import { createContext, useContext, useEffect, useRef, useState } from "react"
 import { createContextSelector } from "@/hooks/use_context_selector"
 import { debug, logError } from "@/utils/debug_logger"
-import { StateServiceClient, UiServiceClient } from "../services/grpc-client"
+import { MessageStreamServiceClient, StateServiceClient } from "../services/grpc-client"
 
 export interface TaskStateContextType {
 	// Task state
@@ -52,14 +59,89 @@ export const TaskStateContextProvider: React.FC<{
 	const [checkpointManagerErrorMessage, setCheckpointManagerErrorMessage] = useState<string | undefined>(undefined)
 
 	// Subscription refs
-	const partialMessageUnsubscribeRef = useRef<(() => void) | null>(null)
+	const messageStreamUnsubscribeRef = useRef<(() => void) | null>(null)
 	const stateSubscriptionRef = useRef<(() => void) | null>(null)
 
-	// Track the timestamp of the last partial message update to prevent race conditions
-	const lastPartialUpdateTimeRef = useRef<number>(0)
-	const PARTIAL_UPDATE_DEBOUNCE_MS = 100 // Debounce window for state updates
+	// Subscribe to unified message stream
+	// Consolidates full state sync and partial message updates into a single coordinated stream
+	useEffect(() => {
+		messageStreamUnsubscribeRef.current = MessageStreamServiceClient.subscribeToMessageStream(EmptyRequest.create({}), {
+			onResponse: (update) => {
+				try {
+					switch (update.type) {
+						case MessageUpdateType.FULL_SYNC:
+							// Replace entire message array with full state
+							if (update.fullState) {
+								const messages = update.fullState.map((protoMsg) => convertProtoToClineMessage(protoMsg))
+								setClineMessages(messages)
+								debug.log("[DEBUG] Applied full state sync from unified stream")
+							}
+							break
 
-	// Subscribe to state updates to sync full message state
+						case MessageUpdateType.PARTIAL_UPDATE:
+							// Update or add single message
+							if (update.partialMessage) {
+								const partialMessage = convertProtoToClineMessage(update.partialMessage)
+
+								// Validate critical fields
+								if (!partialMessage.ts || partialMessage.ts <= 0) {
+									logError("Invalid timestamp in partial message:", {
+										ts: partialMessage.ts,
+										type: partialMessage.type,
+									})
+									return
+								}
+
+								// Filter out empty handshake messages
+								if (!partialMessage.ask && !partialMessage.say && !partialMessage.text) {
+									debug.log("[DEBUG] Ignoring empty handshake message")
+									return
+								}
+
+								setClineMessages((prevMessages) => {
+									const lastIndex = findLastIndex(prevMessages, (msg) => msg.ts === partialMessage.ts)
+									if (lastIndex !== -1) {
+										// Update existing message
+										const newMessages = [...prevMessages]
+										newMessages[lastIndex] = partialMessage
+										return newMessages
+									} else {
+										// Add new message
+										return [...prevMessages, partialMessage]
+									}
+								})
+							}
+							break
+
+						case MessageUpdateType.STREAM_START:
+							debug.log("[DEBUG] Streaming session started")
+							break
+
+						case MessageUpdateType.STREAM_END:
+							debug.log("[DEBUG] Streaming session ended")
+							break
+					}
+				} catch (error) {
+					logError("Error processing message stream update:", error)
+				}
+			},
+			onError: (error) => {
+				logError("Error in message stream subscription:", error)
+			},
+			onComplete: () => {
+				debug.log("[DEBUG] Message stream subscription completed")
+			},
+		})
+
+		return () => {
+			if (messageStreamUnsubscribeRef.current) {
+				messageStreamUnsubscribeRef.current()
+				messageStreamUnsubscribeRef.current = null
+			}
+		}
+	}, [])
+
+	// Subscribe to state updates for non-message data (task history, current task, etc.)
 	useEffect(() => {
 		stateSubscriptionRef.current = StateServiceClient.subscribeToState(EmptyRequest.create({}), {
 			onResponse: (response) => {
@@ -67,17 +149,7 @@ export const TaskStateContextProvider: React.FC<{
 					try {
 						const stateData = JSON.parse(response.stateJson)
 
-						// Prevent full state updates from overwriting recent partial updates
-						// This avoids race conditions during streaming
-						const timeSinceLastPartialUpdate = Date.now() - lastPartialUpdateTimeRef.current
-						const shouldSkipMessagesUpdate = timeSinceLastPartialUpdate < PARTIAL_UPDATE_DEBOUNCE_MS
-
-						if (stateData.clineMessages && !shouldSkipMessagesUpdate) {
-							setClineMessages(stateData.clineMessages)
-						} else if (shouldSkipMessagesUpdate) {
-							debug.log("[DEBUG] Skipping full state update - recent partial update detected")
-						}
-
+						// Only handle non-message state (messages are handled by MessageStreamService)
 						if (stateData.taskHistory) {
 							setTaskHistory(stateData.taskHistory)
 						}
@@ -96,7 +168,7 @@ export const TaskStateContextProvider: React.FC<{
 				logError("Error in state subscription:", error)
 			},
 			onComplete: () => {
-				debug.log("[DEBUG] state subscription completed")
+				debug.log("[DEBUG] State subscription completed")
 			},
 		})
 
@@ -104,73 +176,6 @@ export const TaskStateContextProvider: React.FC<{
 			if (stateSubscriptionRef.current) {
 				stateSubscriptionRef.current()
 				stateSubscriptionRef.current = null
-			}
-		}
-	}, [])
-
-	// Subscribe to partial message updates
-	useEffect(() => {
-		partialMessageUnsubscribeRef.current = UiServiceClient.subscribeToPartialMessage(EmptyRequest.create({}), {
-			onResponse: (protoMessage) => {
-				try {
-					// Convert proto message to application message
-					// This handles int64 timestamp conversion from protobuf
-					const partialMessage = convertProtoToClineMessage(protoMessage)
-
-					// Validate critical fields after conversion
-					if (!partialMessage.ts || partialMessage.ts <= 0) {
-						logError("Invalid timestamp in partial message:", {
-							ts: partialMessage.ts,
-							tsType: typeof partialMessage.ts,
-							protoTs: protoMessage.ts,
-							protoTsType: typeof protoMessage.ts,
-							type: partialMessage.type,
-						})
-						return
-					}
-
-					// Filter out initial handshake messages (empty messages with no content)
-					// These are sent to establish the subscription but should not be displayed
-					if (!partialMessage.ask && !partialMessage.say && !partialMessage.text) {
-						debug.log("[DEBUG] Ignoring empty handshake message")
-						return
-					}
-
-					// Update timestamp to track when partial updates occur
-					// This helps prevent race conditions with full state updates
-					lastPartialUpdateTimeRef.current = Date.now()
-
-					setClineMessages((prevMessages) => {
-						const lastIndex = findLastIndex(prevMessages, (msg) => msg.ts === partialMessage.ts)
-						if (lastIndex !== -1) {
-							// Update existing message
-							const newMessages = [...prevMessages]
-							newMessages[lastIndex] = partialMessage
-							return newMessages
-						} else {
-							// Add new message if it doesn't exist
-							// This handles the case where partial messages arrive before
-							// the full state sync, ensuring task execution updates are not lost
-							return [...prevMessages, partialMessage]
-						}
-					})
-				} catch (error) {
-					logError("Failed to process partial message:", error, protoMessage)
-				}
-			},
-			onError: (error) => {
-				logError("Error in partialMessage subscription:", error)
-			},
-			onComplete: () => {
-				debug.log("[DEBUG] partialMessage subscription completed")
-			},
-		})
-
-		// Clean up subscription
-		return () => {
-			if (partialMessageUnsubscribeRef.current) {
-				partialMessageUnsubscribeRef.current()
-				partialMessageUnsubscribeRef.current = null
 			}
 		}
 	}, [])

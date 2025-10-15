@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package cline;
+
+import "cline/common.proto";
+import "cline/ui.proto";
+
+option go_package = "github.com/cline/grpc-go/cline";
+option java_package = "bot.cline.proto";
+option java_multiple_files = true;
+
+/**
+ * Service for unified message streaming
+ * Consolidates full state sync and partial message updates into a single coordinated stream
+ */
+service MessageStreamService {
+  // Subscribe to unified message updates
+  // This stream intelligently merges full state synchronization and partial message updates
+  rpc subscribeToMessageStream(EmptyRequest) returns (stream MessageStreamUpdate);
+}
+
+/**
+ * Unified message stream update
+ * Contains either full state sync, partial message update, or session markers
+ */
+message MessageStreamUpdate {
+  // Type of update
+  MessageUpdateType type = 1;
+  
+  // Full state sync (present when type = FULL_SYNC)
+  // Contains the complete array of messages
+  repeated ClineMessage full_state = 2;
+  
+  // Partial message update (present when type = PARTIAL_UPDATE)
+  // Contains a single message to be updated or added
+  optional ClineMessage partial_message = 3;
+  
+  // Indicates if streaming is currently active
+  // Used by clients to understand system state
+  bool is_streaming = 4;
+}
+
+/**
+ * Type of message stream update
+ */
+enum MessageUpdateType {
+  // Complete state replacement
+  // Client should replace entire message array with full_state
+  FULL_SYNC = 0;
+  
+  // Single message update or addition
+  // Client should update existing message (by timestamp) or add new one
+  PARTIAL_UPDATE = 1;
+  
+  // Streaming session started
+  // Informational marker indicating streaming has begun
+  STREAM_START = 2;
+  
+  // Streaming session ended
+  // Informational marker indicating streaming has completed
+  STREAM_END = 3;
+}
+

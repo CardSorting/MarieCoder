@@ -2,6 +2,7 @@ import { EmptyRequest } from "@shared/proto/cline/common"
 import { ClineMessage } from "@shared/proto/cline/ui"
 import { getRequestRegistry, StreamingResponseHandler } from "../grpc-handler"
 import { Controller } from "../index"
+import { sendMessageStreamPartialUpdate } from "../messageStream/subscribeToMessageStream"
 
 // Keep track of active partial message subscriptions
 const activePartialMessageSubscriptions = new Set<StreamingResponseHandler<ClineMessage>>()
@@ -54,7 +55,7 @@ export async function subscribeToPartialMessage(
  * @param partialMessage The ClineMessage to send
  */
 export async function sendPartialMessageEvent(partialMessage: ClineMessage): Promise<void> {
-	// Send the event to all active subscribers
+	// Send to legacy partial message subscribers
 	const promises = Array.from(activePartialMessageSubscriptions).map(async (responseStream) => {
 		try {
 			await responseStream(
@@ -69,4 +70,7 @@ export async function sendPartialMessageEvent(partialMessage: ClineMessage): Pro
 	})
 
 	await Promise.all(promises)
+
+	// Also send to unified message stream subscribers
+	await sendMessageStreamPartialUpdate(partialMessage)
 }
