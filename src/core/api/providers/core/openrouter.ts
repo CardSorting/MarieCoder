@@ -174,6 +174,7 @@ export class OpenRouterProvider extends HttpProvider {
 
 	/**
 	 * Get API stream usage (for cost tracking)
+	 * Uses OpenRouter's generation API to fetch usage data
 	 */
 	async getApiStreamUsage(): Promise<ApiStreamUsageChunk | undefined> {
 		if (!this.lastGenerationId) {
@@ -181,21 +182,39 @@ export class OpenRouterProvider extends HttpProvider {
 		}
 
 		try {
-			const client = this.ensureClient()
-			const response = await client.chat.completions.retrieve(this.lastGenerationId)
+			// OpenRouter has a dedicated generation endpoint for fetching usage
+			// https://openrouter.ai/api/v1/generation?id={generation_id}
+			const response = await fetch(`https://openrouter.ai/api/v1/generation?id=${this.lastGenerationId}`, {
+				headers: {
+					Authorization: `Bearer ${this.openRouterOptions.openRouterApiKey}`,
+					"HTTP-Referer": "https://github.com/CardSorting/MarieCoder",
+					"X-Title": "MarieCoder",
+				},
+			})
 
-			if (response.usage) {
+			if (!response.ok) {
+				throw new Error(`OpenRouter generation API returned ${response.status}: ${response.statusText}`)
+			}
+
+			const data = await response.json()
+
+			if (data.data?.usage) {
+				const usage = data.data.usage
 				return {
 					type: "usage",
-					inputTokens: response.usage.prompt_tokens || 0,
-					outputTokens: response.usage.completion_tokens || 0,
-					totalCost: response.usage.total_cost,
+					inputTokens: usage.prompt_tokens || 0,
+					outputTokens: usage.completion_tokens || 0,
+					totalCost: usage.total_cost,
 				}
 			}
 
 			return undefined
 		} catch (error) {
-			console.warn("Failed to retrieve OpenRouter usage:", error)
+			// Silently fail - usage tracking is not critical and the stream should already have usage info
+			// Only log in development/debug mode
+			if (process.env.NODE_ENV === "development") {
+				console.warn("Failed to retrieve OpenRouter usage:", error)
+			}
 			return undefined
 		}
 	}

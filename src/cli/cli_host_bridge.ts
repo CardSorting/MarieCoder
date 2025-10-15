@@ -363,18 +363,31 @@ class CliDiffService implements DiffServiceClientInterface {
 			const lines = diff.modifiedContent.split("\n")
 
 			// Validate line numbers (0-indexed to match VSCode behavior)
+			// Note: endLine is exclusive (like array slicing), so it can equal lines.length
 			if (params.startLine < 0 || params.startLine > lines.length) {
 				throw new Error(`Invalid start line: ${params.startLine} (file has ${lines.length} lines, 0-indexed)`)
 			}
 			if (params.endLine < params.startLine) {
 				throw new Error(`End line ${params.endLine} is before start line ${params.startLine}`)
 			}
+			// Allow endLine to equal lines.length for replacing to end of file
 			if (params.endLine > lines.length) {
-				throw new Error(`Invalid end line: ${params.endLine} (file has ${lines.length} lines, 0-indexed)`)
+				throw new Error(`Invalid end line: ${params.endLine} (file has ${lines.length} lines, 0-indexed, exclusive)`)
 			}
 
-			// Replace the specified range with new content (0-indexed)
-			lines.splice(params.startLine, params.endLine - params.startLine, params.content)
+			// Replace the specified range with new content
+			// Split content into lines, but preserve the structure
+			// Content may or may not have trailing newline - handle both cases
+			const contentLines = params.content.split("\n")
+
+			// If content ends with newline, the split will create an empty last element
+			// Remove it to avoid creating an extra blank line
+			if (params.content.endsWith("\n") && contentLines[contentLines.length - 1] === "") {
+				contentLines.pop()
+			}
+
+			// Replace lines from startLine to endLine (exclusive) with new content lines
+			lines.splice(params.startLine, params.endLine - params.startLine, ...contentLines)
 			diff.modifiedContent = lines.join("\n")
 
 			return {}
