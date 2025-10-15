@@ -43,8 +43,8 @@ export class OpenRouterProvider extends HttpProvider {
 				baseURL: "https://openrouter.ai/api/v1",
 				apiKey: this.openRouterOptions.openRouterApiKey!,
 				defaultHeaders: {
-					"HTTP-Referer": "https://cline.bot", // Optional, for including your app on openrouter.ai rankings.
-					"X-Title": "Cline", // Optional. Shows in rankings on openrouter.ai.
+					"HTTP-Referer": "https://github.com/CardSorting/MarieCoder", // Optional, for including your app on openrouter.ai rankings.
+					"X-Title": "MarieCoder", // Optional. Shows in rankings on openrouter.ai.
 				},
 			})
 		} catch (error) {
