@@ -52,7 +52,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 	onSendMessage,
 }) => {
 	const { apiConfiguration, mode } = useSettingsState()
-	const { currentTaskItem, checkpointManagerErrorMessage, clineMessages } = useTaskState()
+	const { currentTaskId, totalTasksSize, checkpointManagerErrorMessage, clineMessages } = useTaskState()
 	const { navigateToSettings, expandTaskHeader: isTaskExpanded, setExpandTaskHeader: setIsTaskExpanded } = useUIState()
 
 	// Simplified computed values
@@ -122,13 +122,11 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 								<CopyTaskButton className={BUTTON_CLASS} taskText={task.text} />
 								<DeleteTaskButton
 									className={BUTTON_CLASS}
-									taskId={currentTaskItem?.id}
-									taskSize={currentTaskItem?.size}
+									taskId={currentTaskId}
+									taskSize={totalTasksSize ?? undefined}
 								/>
 								{/* Only visible in development mode */}
-								{IS_DEV && (
-									<OpenDiskConversationHistoryButton className={BUTTON_CLASS} taskId={currentTaskItem?.id} />
-								)}
+								{IS_DEV && <OpenDiskConversationHistoryButton className={BUTTON_CLASS} taskId={currentTaskId} />}
 							</div>
 						)}
 					</div>
@@ -153,7 +151,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 
 				{/* Expand/Collapse Task Details */}
 				{isTaskExpanded && (
-					<div className="flex flex-col break-words" key={`task-details-${currentTaskItem?.id}`}>
+					<div className="flex flex-col break-words" key={`task-details-${currentTaskId}`}>
 						<div className="whitespace-nowrap overflow-hidden text-ellipsis flex-grow min-w-0 max-h-20 overflow-y-auto scroll-smooth">
 							<div
 								className={
