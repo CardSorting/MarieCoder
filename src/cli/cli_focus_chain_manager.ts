@@ -1,7 +1,14 @@
 /**
  * CLI Focus Chain Manager
  * Manages structured multi-step task execution with focus chains
+ *
+ * Enhanced with webview-ui improvements:
+ * - Better visual formatting with terminal styling
+ * - Enhanced progress visualization
+ * - Improved task state display
  */
+
+import { formatFocusChain } from "./cli_message_formatter"
 
 export interface FocusChainStep {
 	id: string
@@ -163,63 +170,34 @@ export class CliFocusChainManager {
 
 	/**
 	 * Display focus chain progress
+	 * Enhanced with better visual formatting
 	 */
 	displayFocusChain(): string {
 		if (!this.activeFocusChain) {
 			return "No active focus chain."
 		}
 
-		const lines: string[] = []
-		lines.push("\n" + "═".repeat(80))
-		lines.push(`📋 Focus Chain: ${this.activeFocusChain.title}`)
-		lines.push("═".repeat(80))
-		lines.push("")
-
-		for (let i = 0; i < this.activeFocusChain.steps.length; i++) {
-			const step = this.activeFocusChain.steps[i]
-			const isCurrent = i === this.activeFocusChain.currentStepIndex
-
-			let icon = "⬜"
-			let statusText = ""
-
-			switch (step.status) {
-				case "completed":
-					icon = "✅"
-					statusText = " [DONE]"
-					break
-				case "in_progress":
-					icon = "🔄"
-					statusText = " [IN PROGRESS]"
-					break
-				case "skipped":
-					icon = "⏭️"
-					statusText = " [SKIPPED]"
-					break
-				default:
-					icon = "⬜"
-					statusText = " [PENDING]"
-			}
-
-			const currentMarker = isCurrent ? " ◀──" : ""
-			lines.push(`${icon} Step ${i + 1}: ${step.description}${statusText}${currentMarker}`)
-
-			if (step.result && (step.status === "completed" || step.status === "skipped")) {
-				lines.push(`   └─ ${step.result}`)
-			}
-
+		// Convert steps to the format expected by formatFocusChain
+		const formattedSteps = this.activeFocusChain.steps.map((step) => {
+			let duration: number | undefined
 			if (step.startTime && step.endTime) {
-				const duration = Math.round((step.endTime - step.startTime) / 1000)
-				lines.push(`   └─ Duration: ${duration}s`)
+				duration = Math.round((step.endTime - step.startTime) / 1000)
 			}
-		}
 
-		lines.push("")
-		const completedCount = this.activeFocusChain.steps.filter((s) => s.status === "completed").length
-		const progress = Math.round((completedCount / this.activeFocusChain.steps.length) * 100)
-		lines.push(`Progress: ${completedCount}/${this.activeFocusChain.steps.length} steps (${progress}%)`)
-		lines.push("═".repeat(80) + "\n")
+			return {
+				description: step.description,
+				status: step.status,
+				result: step.result,
+				duration,
+			}
+		})
 
-		return lines.join("\n")
+		// Use the enhanced formatter
+		return formatFocusChain({
+			title: this.activeFocusChain.title,
+			steps: formattedSteps,
+			currentStepIndex: this.activeFocusChain.currentStepIndex,
+		})
 	}
 
 	/**

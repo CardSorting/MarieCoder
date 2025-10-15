@@ -1,12 +1,17 @@
 /**
  * CLI Webview Provider
  * Handles output and interactions in CLI mode
+ *
+ * Enhanced with webview-ui improvements:
+ * - Better visual formatting
+ * - Enhanced message display
  */
 
 import type * as vscode from "vscode"
 import { WebviewProvider } from "@/core/webview"
 import type { ClineMessage } from "@/shared/ExtensionMessage"
 import { getInteractionHandler } from "./cli_interaction_handler"
+import { formatCommandExecution, formatMessageBox, TerminalColors } from "./cli_message_formatter"
 
 export class CliWebviewProvider extends WebviewProvider {
 	private visible = true
@@ -153,6 +158,7 @@ export class CliWebviewProvider extends WebviewProvider {
 
 	/**
 	 * Handle say messages (AI output) in CLI
+	 * Enhanced with better formatting
 	 */
 	private handleSayMessage(message: ClineMessage): void {
 		const sayType = message.say
@@ -160,29 +166,36 @@ export class CliWebviewProvider extends WebviewProvider {
 
 		switch (sayType) {
 			case "text": {
-				console.log("\n🤖 AI:", text)
+				if (text) {
+					console.log(`\n${TerminalColors.cyan}🤖 AI:${TerminalColors.reset} ${text}`)
+				}
 				break
 			}
 
 			case "command": {
-				console.log("\n⚡ Executing command:", text)
+				if (text) {
+					console.log(formatCommandExecution(text, "pending"))
+				}
 				break
 			}
 
 			case "command_output": {
 				if (text) {
-					console.log("Output:", text)
+					console.log(`\n${TerminalColors.gray}Output:${TerminalColors.reset}`)
+					console.log(text)
 				}
 				break
 			}
 
 			case "completion_result": {
-				console.log("\n✅ Result:", text)
+				if (text) {
+					console.log(formatMessageBox("Task Completion", text, { type: "success" }))
+				}
 				break
 			}
 
 			case "api_req_started": {
-				console.log("\n🌐 API request started...")
+				console.log(`\n${TerminalColors.magenta}🧠 AI is thinking...${TerminalColors.reset}`)
 				break
 			}
 
@@ -192,19 +205,23 @@ export class CliWebviewProvider extends WebviewProvider {
 			}
 
 			case "error": {
-				console.error("\n❌ Error:", text)
+				if (text) {
+					console.log(formatMessageBox("Error", text, { type: "error" }))
+				}
 				break
 			}
 
 			case "user_feedback": {
-				console.log("\n💬 User feedback:", text)
+				if (text) {
+					console.log(`\n${TerminalColors.blue}💬 User feedback:${TerminalColors.reset} ${text}`)
+				}
 				break
 			}
 
 			default: {
 				// Show other message types in verbose mode
 				if (text) {
-					console.log(`\n[${sayType}]`, text)
+					console.log(`\n${TerminalColors.gray}[${sayType}]${TerminalColors.reset} ${text}`)
 				}
 			}
 		}

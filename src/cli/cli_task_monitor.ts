@@ -1,16 +1,23 @@
 /**
- * CLI Task Monitor
- * Monitors task state and handles approvals in CLI mode
+ * CLI Task Monitor - Simplified
+ * Monitors task messages and handles user approvals
  */
 
 import type { Task } from "@/core/task"
 import type { ClineMessage } from "@/shared/ExtensionMessage"
 import { getInteractionHandler } from "./cli_interaction_handler"
+import { formatCommandExecution, formatMessageBox, TerminalColors } from "./cli_message_formatter"
+import { getStreamHandler } from "./cli_stream_handler"
 
 export interface TerminalOutputConfig {
 	lineLimit?: number // Maximum lines to display per output
-	shellIntegrationTimeout?: number // Timeout for shell commands (ms)
-	terminalReuseEnabled?: boolean // Whether to reuse terminal sessions
+}
+
+interface ApprovalResult {
+	approved: boolean
+	feedbackText?: string
+	feedbackImages?: string[]
+	feedbackFiles?: string[]
 }
 
 export class CliTaskMonitor {
@@ -18,66 +25,37 @@ export class CliTaskMonitor {
 	private lastProcessedMessageIndex = -1
 	private monitorInterval: NodeJS.Timeout | null = null
 	private isProcessingApproval = false
-	private terminalOutputConfig: TerminalOutputConfig
-	private commandOutputBuffer: Map<string, string[]> = new Map()
+	private lineLimit: number
+	private streamHandler = getStreamHandler()
 
 	constructor(
 		private autoApprove: boolean = false,
-		terminalConfig?: TerminalOutputConfig,
+		config?: TerminalOutputConfig,
 	) {
-		this.terminalOutputConfig = {
-			lineLimit: terminalConfig?.lineLimit || 500,
-			shellIntegrationTimeout: terminalConfig?.shellIntegrationTimeout || 30000,
-			terminalReuseEnabled: terminalConfig?.terminalReuseEnabled ?? true,
-		}
+		this.lineLimit = config?.lineLimit || 500
 	}
 
 	/**
-	 * Truncate output to line limit with summary
+	 * Truncate output if too long
 	 */
-	private truncateOutput(output: string, maxLines?: number): string {
+	private truncateOutput(output: string): string {
 		if (!output) {
 			return ""
 		}
 
 		const lines = output.split("\n")
-		const limit = maxLines || this.terminalOutputConfig.lineLimit || 500
-
-		if (lines.length <= limit) {
+		if (lines.length <= this.lineLimit) {
 			return output
 		}
 
-		const keepLines = Math.floor(limit / 2)
-		const topLines = lines.slice(0, keepLines)
-		const bottomLines = lines.slice(-keepLines)
-		const truncatedCount = lines.length - limit
-
+		const keepLines = Math.floor(this.lineLimit / 2)
 		return [
-			...topLines,
+			...lines.slice(0, keepLines),
 			"",
-			`... ${truncatedCount} lines truncated (total: ${lines.length} lines) ...`,
+			`... ${lines.length - this.lineLimit} lines truncated ...`,
 			"",
-			...bottomLines,
+			...lines.slice(-keepLines),
 		].join("\n")
-	}
-
-	/**
-	 * Format terminal output with prefix and line limiting
-	 */
-	private formatTerminalOutput(output: string, prefix: string = ""): string {
-		if (!output) {
-			return ""
-		}
-
-		const truncated = this.truncateOutput(output)
-		if (!prefix) {
-			return truncated
-		}
-
-		return truncated
-			.split("\n")
-			.map((line) => `${prefix}${line}`)
-			.join("\n")
 	}
 
 	/**
@@ -87,12 +65,8 @@ export class CliTaskMonitor {
 		this.task = task
 		this.lastProcessedMessageIndex = -1
 		this.isProcessingApproval = false
-		this.commandOutputBuffer.clear()
 
-		// Start monitoring loop
-		this.monitorInterval = setInterval(() => {
-			this.checkForNewMessages()
-		}, 100)
+		this.monitorInterval = setInterval(() => this.checkForNewMessages(), 100)
 	}
 
 	/**
@@ -103,68 +77,45 @@ export class CliTaskMonitor {
 			clearInterval(this.monitorInterval)
 			this.monitorInterval = null
 		}
+		this.streamHandler.endStream()
 		this.task = null
 		this.lastProcessedMessageIndex = -1
 	}
 
 	/**
-	 * Check for new messages that need handling
+	 * Check for new messages
 	 */
 	private async checkForNewMessages(): Promise<void> {
 		if (!this.task || this.isProcessingApproval) {
 			return
 		}
 
-		try {
-			// Get current messages
-			const messages = (this.task as any).clineMessages || []
+		const messages = (this.task as any).clineMessages || []
+		if (!Array.isArray(messages)) {
+			return
+		}
 
-			// Validate messages is an array
-			if (!Array.isArray(messages)) {
-				return
+		for (let i = this.lastProcessedMessageIndex + 1; i < messages.length; i++) {
+			const message = messages[i]
+			if (!message || typeof message !== "object") {
+				continue
 			}
 
-			// Process any new messages
-			for (let i = this.lastProcessedMessageIndex + 1; i < messages.length; i++) {
-				const message = messages[i]
-
-				// Skip invalid messages
-				if (!message || typeof message !== "object") {
-					continue
+			try {
+				if (message.type === "ask" && message.ask && !message.partial) {
+					await this.handleAskMessage(message)
+				} else if (message.type === "say") {
+					this.handleSayMessage(message)
 				}
-
-				try {
-					await this.handleMessage(message)
-					this.lastProcessedMessageIndex = i
-				} catch (error) {
-					// Log individual message errors but continue processing
-					console.error("Error processing message:", error)
-				}
-			}
-		} catch (_error) {
-			// Silently ignore errors during monitoring
-			if (this.task) {
-				// Only log if verbose mode is on (we'd need to pass this in)
+				this.lastProcessedMessageIndex = i
+			} catch (error) {
+				console.error("Error processing message:", error)
 			}
 		}
 	}
 
 	/**
-	 * Handle a single message
-	 */
-	private async handleMessage(message: ClineMessage): Promise<void> {
-		// Handle "ask" messages (approval requests)
-		if (message.type === "ask" && message.ask && !message.partial) {
-			await this.handleAskMessage(message)
-		}
-		// Handle "say" messages (AI output)
-		else if (message.type === "say") {
-			this.handleSayMessage(message)
-		}
-	}
-
-	/**
-	 * Handle ask messages (approval requests)
+	 * Handle approval requests
 	 */
 	private async handleAskMessage(message: ClineMessage): Promise<void> {
 		if (!this.task || this.isProcessingApproval) {
@@ -172,155 +123,141 @@ export class CliTaskMonitor {
 		}
 
 		this.isProcessingApproval = true
-
-		// Set a timeout to prevent hanging indefinitely
-		const timeoutId = setTimeout(
-			() => {
-				console.log("\n⚠️  Approval timeout - auto-rejecting after 5 minutes of no response")
-				if (this.task) {
-					this.task.handleWebviewAskResponse("noButtonClicked").catch(() => {})
-				}
-				this.isProcessingApproval = false
-			},
-			5 * 60 * 1000,
-		) // 5 minute timeout
+		const timeoutId = setTimeout(() => this.handleTimeout(), 5 * 60 * 1000)
 
 		try {
-			const interactionHandler = getInteractionHandler()
-			const askType = message.ask
-			const text = message.text || ""
+			const result = this.autoApprove ? await this.autoApproveRequest(message) : await this.manualApproveRequest(message)
 
-			let approved = false
-			let feedbackText: string | undefined
-			let feedbackImages: string[] | undefined
-			let feedbackFiles: string[] | undefined
-
-			if (this.autoApprove) {
-				// Auto-approve mode
-				console.log(`\n✓ Auto-approved: ${askType}`)
-				approved = true
-			} else {
-				// Manual approval mode
-				switch (askType) {
-					case "command": {
-						approved = await interactionHandler.showCommandExecution(text)
-						break
-					}
-
-					case "tool": {
-						// Parse tool information from JSON
-						try {
-							const toolInfo = JSON.parse(text)
-
-							if (toolInfo.tool === "editedExistingFile" || toolInfo.tool === "newFileCreated") {
-								// Show file edit approval with diff
-								console.log("\n" + "─".repeat(80))
-								console.log(
-									`📝 ${toolInfo.tool === "editedExistingFile" ? "Editing File" : "Creating New File"}: ${toolInfo.path}`,
-								)
-								console.log("─".repeat(80))
-
-								if (toolInfo.content) {
-									// Show content/diff (truncate if too long)
-									const content = toolInfo.content
-									const lines = content.split("\n")
-									const maxLines = 50
-
-									if (lines.length > maxLines) {
-										console.log(lines.slice(0, maxLines).join("\n"))
-										console.log(`\n... (${lines.length - maxLines} more lines)`)
-									} else {
-										console.log(content)
-									}
-								}
-
-								console.log("─".repeat(80))
-								approved = await interactionHandler.askApproval("Approve this file change?", true)
-							} else {
-								// Generic tool execution
-								approved = await interactionHandler.showToolExecution(toolInfo.tool || "tool", toolInfo)
-							}
-						} catch (_parseError) {
-							// If JSON parsing fails, fall back to generic approval
-							approved = await interactionHandler.showToolExecution("tool", { operation: text })
-						}
-						break
-					}
-
-					case "completion_result": {
-						console.log("\n" + "═".repeat(80))
-						console.log("✅ Task Completion")
-						console.log("═".repeat(80))
-						console.log(text)
-						console.log("═".repeat(80))
-
-						const wantsFeedback = await interactionHandler.askApproval("Do you want to provide feedback?", false)
-						if (wantsFeedback) {
-							feedbackText = await interactionHandler.askInput("Enter your feedback (or press Enter to skip)")
-							approved = !feedbackText // If feedback provided, don't approve (continue task)
-						} else {
-							approved = true
-						}
-						break
-					}
-
-					case "use_mcp_server": {
-						try {
-							const mcpData = JSON.parse(text)
-							console.log("\n" + "─".repeat(80))
-							console.log(`🔌 MCP Server Request`)
-							console.log("─".repeat(80))
-							console.log(`  Server: ${mcpData.serverName || "unknown"}`)
-							console.log(`  Tool: ${mcpData.toolName || "unknown"}`)
-							if (mcpData.uri) {
-								console.log(`  Resource: ${mcpData.uri}`)
-							}
-							console.log("─".repeat(80))
-							approved = await interactionHandler.askApproval("Approve this MCP operation?", true)
-						} catch (_e) {
-							approved = await interactionHandler.showToolExecution("use_mcp_server", { request: text })
-						}
-						break
-					}
-
-					case "followup": {
-						console.log("\n💬 AI Question:", text)
-						feedbackText = await interactionHandler.askInput("Your response")
-						approved = false // Treat as feedback
-						break
-					}
-
-					case "api_req_failed": {
-						console.log("\n⚠️  API request failed:", text)
-						approved = await interactionHandler.askApproval("Do you want to retry?", false)
-						break
-					}
-
-					default: {
-						console.log(`\n❓ Approval needed (${askType}):`, text)
-						approved = await interactionHandler.askApproval("Approve?", true)
-					}
-				}
-			}
-
-			// Clear timeout since we got a response
 			clearTimeout(timeoutId)
-
-			// Send response back to task
-			const response = approved ? "yesButtonClicked" : "noButtonClicked"
-			await this.task.handleWebviewAskResponse(response, feedbackText, feedbackImages, feedbackFiles)
+			await this.task.handleWebviewAskResponse(
+				result.approved ? "yesButtonClicked" : "noButtonClicked",
+				result.feedbackText,
+				result.feedbackImages,
+				result.feedbackFiles,
+			)
 		} catch (error) {
 			console.error("Error handling approval:", error)
-			// Clear timeout
 			clearTimeout(timeoutId)
-			// Default to rejection on error
-			if (this.task) {
-				await this.task.handleWebviewAskResponse("noButtonClicked").catch(() => {
-					// Ignore errors in error handler
-				})
-			}
+			await this.task.handleWebviewAskResponse("noButtonClicked").catch(() => {})
 		} finally {
 			this.isProcessingApproval = false
+		}
+	}
+
+	/**
+	 * Handle approval timeout
+	 */
+	private handleTimeout(): void {
+		console.log("\n⚠️  Approval timeout - auto-rejecting after 5 minutes")
+		if (this.task) {
+			this.task.handleWebviewAskResponse("noButtonClicked").catch(() => {})
+		}
+		this.isProcessingApproval = false
+	}
+
+	/**
+	 * Auto-approve request
+	 */
+	private async autoApproveRequest(message: ClineMessage): Promise<ApprovalResult> {
+		console.log(`\n✓ Auto-approved: ${message.ask}`)
+		return { approved: true }
+	}
+
+	/**
+	 * Handle manual approval
+	 */
+	private async manualApproveRequest(message: ClineMessage): Promise<ApprovalResult> {
+		const handler = getInteractionHandler()
+		const askType = message.ask
+		const text = message.text || ""
+
+		switch (askType) {
+			case "command":
+				return { approved: await handler.showCommandExecution(text) }
+
+			case "tool":
+				return await this.handleToolApproval(text, handler)
+
+			case "completion_result":
+				return await this.handleCompletionApproval(text, handler)
+
+			case "use_mcp_server":
+				return await this.handleMcpApproval(text, handler)
+
+			case "followup":
+				const feedbackText = await handler.askInput(`\n💬 ${text}\nYour response:`)
+				return { approved: false, feedbackText }
+
+			case "api_req_failed":
+				console.log(`\n⚠️  API request failed: ${text}`)
+				return { approved: await handler.askApproval("Retry?", false) }
+
+			default:
+				console.log(`\n❓ ${askType}: ${text}`)
+				return { approved: await handler.askApproval("Approve?", true) }
+		}
+	}
+
+	/**
+	 * Handle tool approval
+	 */
+	private async handleToolApproval(text: string, handler: any): Promise<ApprovalResult> {
+		try {
+			const tool = JSON.parse(text)
+			if (tool.tool === "editedExistingFile" || tool.tool === "newFileCreated") {
+				const action = tool.tool === "editedExistingFile" ? "Editing" : "Creating"
+				console.log(`\n${"─".repeat(80)}\n📝 ${action} File: ${tool.path}\n${"─".repeat(80)}`)
+
+				if (tool.content) {
+					const lines = tool.content.split("\n")
+					if (lines.length > 50) {
+						console.log(lines.slice(0, 50).join("\n"))
+						console.log(`\n... (${lines.length - 50} more lines)`)
+					} else {
+						console.log(tool.content)
+					}
+				}
+
+				console.log("─".repeat(80))
+				return { approved: await handler.askApproval("Approve?", true) }
+			}
+			return { approved: await handler.showToolExecution(tool.tool || "tool", tool) }
+		} catch {
+			return { approved: await handler.showToolExecution("tool", { operation: text }) }
+		}
+	}
+
+	/**
+	 * Handle completion approval
+	 */
+	private async handleCompletionApproval(text: string, handler: any): Promise<ApprovalResult> {
+		console.log(`\n${"═".repeat(80)}\n✅ Task Completion\n${"═".repeat(80)}`)
+		console.log(text)
+		console.log("═".repeat(80))
+
+		if (await handler.askApproval("Provide feedback?", false)) {
+			const feedbackText = await handler.askInput("Feedback (or Enter to skip):")
+			return { approved: !feedbackText, feedbackText }
+		}
+		return { approved: true }
+	}
+
+	/**
+	 * Handle MCP server approval
+	 */
+	private async handleMcpApproval(text: string, handler: any): Promise<ApprovalResult> {
+		try {
+			const mcp = JSON.parse(text)
+			console.log(`\n${"─".repeat(80)}\n🔌 MCP Server Request\n${"─".repeat(80)}`)
+			console.log(`  Server: ${mcp.serverName || "unknown"}`)
+			console.log(`  Tool: ${mcp.toolName || "unknown"}`)
+			if (mcp.uri) {
+				console.log(`  Resource: ${mcp.uri}`)
+			}
+			console.log("─".repeat(80))
+			return { approved: await handler.askApproval("Approve?", true) }
+		} catch {
+			return { approved: await handler.showToolExecution("use_mcp_server", { request: text }) }
 		}
 	}
 
@@ -328,74 +265,53 @@ export class CliTaskMonitor {
 	 * Handle say messages (AI output)
 	 */
 	private handleSayMessage(message: ClineMessage): void {
-		const sayType = message.say
-		const text = message.text || ""
+		const { say: type, text = "", partial = false } = message
 
-		// Skip partial messages
-		if (message.partial) {
+		// Let stream handler manage streaming
+		if (partial || type === "api_req_started" || type === "api_req_finished") {
+			this.streamHandler.handleMessage(message)
 			return
 		}
 
-		switch (sayType) {
-			case "text": {
+		// Handle non-streaming messages
+		switch (type) {
+			case "text":
 				if (text) {
-					console.log("\n🤖 AI:", text)
+					console.log(`\n${TerminalColors.cyan}🤖 AI:${TerminalColors.reset} ${text}`)
 				}
 				break
-			}
 
-			case "command": {
-				console.log("\n⚡ Executing command:", text)
-				break
-			}
-
-			case "command_output": {
+			case "command":
 				if (text) {
-					// Apply line limiting for command output
-					const formattedOutput = this.formatTerminalOutput(text)
-					console.log(formattedOutput)
+					console.log(formatCommandExecution(text, "pending"))
+				}
+				break
 
-					// Track output statistics
+			case "command_output":
+				if (text) {
+					const output = this.truncateOutput(text)
+					console.log(output)
 					const lineCount = text.split("\n").length
-					if (lineCount > (this.terminalOutputConfig.lineLimit || 500)) {
-						console.log(
-							`\n💡 Output was truncated. Total lines: ${lineCount}, Limit: ${this.terminalOutputConfig.lineLimit}`,
-						)
+					if (lineCount > this.lineLimit) {
+						console.log(`\n${TerminalColors.dim}💡 Truncated: ${lineCount} lines${TerminalColors.reset}`)
 					}
 				}
 				break
-			}
 
-			case "completion_result": {
-				// Handled in ask
-				break
-			}
-
-			case "api_req_started": {
-				console.log("\n🌐 Thinking...")
-				break
-			}
-
-			case "error": {
-				console.error("\n❌ Error:", text)
-				break
-			}
-
-			case "user_feedback": {
-				// Don't echo user feedback
-				break
-			}
-
-			case "api_req_finished": {
-				// Silent
-				break
-			}
-
-			default: {
+			case "error":
 				if (text) {
-					console.log(`\n[${sayType}]`, text)
+					console.log(formatMessageBox("Error", text, { type: "error" }))
 				}
-			}
+				break
+
+			case "user_feedback":
+				// Don't echo
+				break
+
+			default:
+				if (text) {
+					console.log(`\n${TerminalColors.gray}[${type}]${TerminalColors.reset} ${text}`)
+				}
 		}
 	}
 }
