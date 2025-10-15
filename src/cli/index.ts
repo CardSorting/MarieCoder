@@ -416,7 +416,13 @@ class MarieCli {
 		output.log("  • Type 'help' for more options")
 		output.log("─".repeat(80))
 
+		// Flush output before starting interactive loop
+		output.flush()
+
 		const prompt = async (): Promise<void> => {
+			// Ensure output is flushed before each prompt
+			output.flush()
+
 			this.rl.question("\n💬 You: ", async (input) => {
 				const trimmed = input.trim()
 
@@ -887,6 +893,8 @@ async function main() {
 		// Handle --reset-config
 		if (resetConfig) {
 			output.log("\n⚠️  This will delete all MarieCoder CLI configuration.")
+			output.flush() // Ensure message is displayed before prompting
+
 			const rl = readline.createInterface({
 				input: process.stdin,
 				output: process.stdout,

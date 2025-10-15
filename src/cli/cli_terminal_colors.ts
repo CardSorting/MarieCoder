@@ -274,9 +274,27 @@ export const TerminalCapabilities = {
 
 	/**
 	 * Get terminal width (columns)
+	 * Provides safer fallback for terminal width detection
 	 */
 	getWidth(): number {
-		return process.stdout.columns || 80
+		// Try to get actual terminal width
+		if (process.stdout.isTTY && process.stdout.columns) {
+			// Ensure we have a reasonable width (not too small, not too large)
+			const columns = process.stdout.columns
+			return Math.max(40, Math.min(200, columns))
+		}
+
+		// Fallback to environment variable
+		const envCols = process.env.COLUMNS
+		if (envCols) {
+			const parsed = Number.parseInt(envCols, 10)
+			if (!Number.isNaN(parsed) && parsed > 0) {
+				return Math.max(40, Math.min(200, parsed))
+			}
+		}
+
+		// Safe default fallback
+		return 80
 	},
 
 	/**

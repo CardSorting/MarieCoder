@@ -366,13 +366,16 @@ export function formatBanner(
 
 /**
  * Word wrap helper (shared utility)
+ * Properly handles ANSI escape codes by stripping them for length calculation
  */
 function wordWrap(text: string, width: number): string[] {
 	const lines: string[] = []
 	const paragraphs = text.split("\n")
 
 	for (const paragraph of paragraphs) {
-		if (paragraph.length <= width) {
+		// Check visual length (without ANSI codes) not actual string length
+		const visualLength = stripAnsi(paragraph).length
+		if (visualLength <= width) {
 			lines.push(paragraph)
 			continue
 		}
@@ -381,13 +384,24 @@ function wordWrap(text: string, width: number): string[] {
 		let currentLine = ""
 
 		for (const word of words) {
-			if ((currentLine + " " + word).trim().length <= width) {
-				currentLine = (currentLine + " " + word).trim()
+			const testLine = (currentLine + " " + word).trim()
+			const testVisualLength = stripAnsi(testLine).length
+
+			if (testVisualLength <= width) {
+				currentLine = testLine
 			} else {
 				if (currentLine) {
 					lines.push(currentLine)
 				}
-				currentLine = word
+				// If a single word is too long, we still need to add it
+				const wordVisualLength = stripAnsi(word).length
+				if (wordVisualLength > width) {
+					// Split long word
+					lines.push(word.substring(0, width))
+					currentLine = word.substring(width)
+				} else {
+					currentLine = word
+				}
 			}
 		}
 

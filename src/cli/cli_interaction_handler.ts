@@ -17,16 +17,25 @@ export class CliInteractionHandler {
 	private rl: readline.Interface
 
 	constructor() {
+		// Create readline with muted output to prevent conflicts
+		// We'll handle output ourselves for better control
 		this.rl = readline.createInterface({
 			input: process.stdin,
 			output: process.stdout,
+			terminal: process.stdout.isTTY,
 		})
+
+		// Disable automatic echoing of input for better control
+		// This prevents readline from interfering with styled prompts
 	}
 
 	/**
 	 * Ask for user approval with yes/no prompt - Enhanced with better formatting
 	 */
 	async askApproval(message: string, defaultYes = false, timeoutMs = 300000): Promise<boolean> {
+		// Ensure output is flushed before prompting
+		output.flush()
+
 		// Format prompt with visual styling
 		const promptIcon = style("?", SemanticColors.prompt, TerminalColors.bright)
 		const suffix = defaultYes ? style("[Y/n]", SemanticColors.metadata) : style("[y/N]", SemanticColors.metadata)
@@ -52,6 +61,7 @@ export class CliInteractionHandler {
 						cleanup()
 						const timeoutMsg = style("⏱  Timeout - using default response", SemanticColors.warning)
 						output.log(`\n${timeoutMsg}\n`)
+						output.flush()
 						resolve(defaultYes)
 					}
 				}, timeoutMs)
@@ -62,6 +72,8 @@ export class CliInteractionHandler {
 					answered = true
 					cleanup()
 					const normalized = answer.trim().toLowerCase()
+					// Clear the line after input for cleaner output
+					process.stdout.write("\r\x1b[K")
 					if (!normalized) {
 						resolve(defaultYes)
 					} else {
@@ -76,6 +88,9 @@ export class CliInteractionHandler {
 	 * Ask for text input - Enhanced with better formatting
 	 */
 	async askInput(prompt: string, defaultValue?: string, timeoutMs = 300000): Promise<string> {
+		// Ensure output is flushed before prompting
+		output.flush()
+
 		// Format prompt with visual styling
 		const promptIcon = style("✎", SemanticColors.prompt, TerminalColors.bright)
 		const suffix = defaultValue ? style(` (default: ${defaultValue})`, SemanticColors.metadata) : ""
@@ -101,6 +116,7 @@ export class CliInteractionHandler {
 						cleanup()
 						const timeoutMsg = style("⏱  Timeout - using default value", SemanticColors.warning)
 						output.log(`\n${timeoutMsg}\n`)
+						output.flush()
 						resolve(defaultValue || "")
 					}
 				}, timeoutMs)
@@ -120,6 +136,9 @@ export class CliInteractionHandler {
 	 * Ask user to choose from a list - Enhanced with better formatting
 	 */
 	async askChoice(message: string, choices: string[]): Promise<string | undefined> {
+		// Ensure output is flushed before prompting
+		output.flush()
+
 		// Display message with visual styling
 		output.log(`\n${style(message, TerminalColors.bright)}\n`)
 
@@ -128,6 +147,9 @@ export class CliInteractionHandler {
 			const number = style(`${index + 1}.`, SemanticColors.info, TerminalColors.bright)
 			output.log(`  ${number} ${choice}`)
 		})
+
+		// Flush choices before prompting
+		output.flush()
 
 		const promptIcon = style("›", SemanticColors.prompt, TerminalColors.bright)
 		const formattedPrompt = `\n${promptIcon} ${style("Enter number", TerminalColors.bright)}: `
@@ -138,6 +160,7 @@ export class CliInteractionHandler {
 				if (index >= 0 && index < choices.length) {
 					const selectedIcon = style("✓", SemanticColors.complete)
 					output.log(`${selectedIcon} ${style("Selected:", TerminalColors.dim)} ${choices[index]}\n`)
+					output.flush()
 				}
 				resolve(choices[index])
 			})
@@ -148,6 +171,9 @@ export class CliInteractionHandler {
 	 * Display a message and wait for user to press Enter - Enhanced with better formatting
 	 */
 	async waitForEnter(message?: string): Promise<void> {
+		// Ensure output is flushed before prompting
+		output.flush()
+
 		const defaultMsg = "Press Enter to continue..."
 		const displayMsg = message || defaultMsg
 		const pauseIcon = style("⏸", SemanticColors.info)

@@ -351,8 +351,8 @@ export class CliTaskMonitor {
 
 			case "command_output":
 				if (text) {
-					const output = this.truncateOutput(text)
-					output.log(output)
+					const truncatedOutput = this.truncateOutput(text)
+					output.log(truncatedOutput)
 					const lineCount = text.split("\n").length
 					if (lineCount > this.lineLimit) {
 						output.log(`\n${TerminalColors.dim}💡 Truncated: ${lineCount} lines${TerminalColors.reset}`)

@@ -234,6 +234,9 @@ class CliWindowService implements WindowServiceClientInterface {
 	}
 
 	async showInputBox(_params: any): Promise<{ response?: string }> {
+		// Flush output before prompting to prevent conflicts
+		output.flush()
+
 		const rl = readline.createInterface({
 			input: process.stdin,
 			output: process.stdout,
@@ -249,9 +252,13 @@ class CliWindowService implements WindowServiceClientInterface {
 
 	async showQuickPick(_params: any): Promise<{ value: string | undefined }> {
 		output.log(_params.placeholder || "Select an option:")
+		output.flush() // Flush before showing options
 		_params.items?.forEach((item: string, index: number) => {
 			output.log(`  ${index + 1}. ${item}`)
 		})
+
+		// Flush all items before prompting
+		output.flush()
 
 		const rl = readline.createInterface({
 			input: process.stdin,
