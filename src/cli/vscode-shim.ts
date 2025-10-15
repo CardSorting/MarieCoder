@@ -13,6 +13,14 @@ export const workspace = {
 	}),
 }
 
+export const commands = {
+	executeCommand: (..._args: any[]) => {
+		// Stub for CLI mode - commands are not available outside VSCode
+		return Promise.resolve()
+	},
+}
+
 export default {
 	workspace,
+	commands,
 }
