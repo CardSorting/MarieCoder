@@ -5,6 +5,7 @@
 
 import { Controller } from "@/core/controller"
 import type { HistoryItem } from "@/shared/HistoryItem"
+import { output } from "./cli_output"
 
 export class CliTaskHistoryManager {
 	constructor(
@@ -16,16 +17,16 @@ export class CliTaskHistoryManager {
 	 * Display recent task history
 	 */
 	async displayHistory(limit: number = 10): Promise<void> {
-		console.log("\n📜 Task History")
-		console.log("─".repeat(80))
+		output.log("\n📜 Task History")
+		output.log("─".repeat(80))
 
 		try {
 			const taskHistory = this.controller.stateManager.getGlobalStateKey("taskHistory") || []
 
 			if (taskHistory.length === 0) {
-				console.log("  No task history found")
-				console.log("  Start a task to build your history")
-				console.log("─".repeat(80))
+				output.log("  No task history found")
+				output.log("  Start a task to build your history")
+				output.log("─".repeat(80))
 				return
 			}
 
@@ -35,7 +36,7 @@ export class CliTaskHistoryManager {
 				.sort((a, b) => b.ts - a.ts)
 				.slice(0, limit)
 
-			console.log(`  Showing ${sortedHistory.length} most recent task${sortedHistory.length !== 1 ? "s" : ""}:\n`)
+			output.log(`  Showing ${sortedHistory.length} most recent task${sortedHistory.length !== 1 ? "s" : ""}:\n`)
 
 			for (const item of sortedHistory) {
 				const date = new Date(item.ts)
@@ -43,21 +44,21 @@ export class CliTaskHistoryManager {
 				const taskPreview = this.truncateText(item.task, 60)
 				const status = this.getTaskStatusEmoji(item)
 
-				console.log(`  ${status} ${item.id}`)
-				console.log(`     ${dateStr}`)
-				console.log(`     "${taskPreview}"`)
-				console.log()
+				output.log(`  ${status} ${item.id}`)
+				output.log(`     ${dateStr}`)
+				output.log(`     "${taskPreview}"`)
+				output.log()
 			}
 
-			console.log("─".repeat(80))
-			console.log(`\nCommands:`)
-			console.log(`  • history export <id>  - Export task as markdown`)
-			console.log(`  • history resume <id>  - Resume a previous task`)
-			console.log(`  • history delete <id>  - Delete a task from history`)
-			console.log("─".repeat(80))
+			output.log("─".repeat(80))
+			output.log(`\nCommands:`)
+			output.log(`  • history export <id>  - Export task as markdown`)
+			output.log(`  • history resume <id>  - Resume a previous task`)
+			output.log(`  • history delete <id>  - Delete a task from history`)
+			output.log("─".repeat(80))
 		} catch (error) {
 			console.error("  Error retrieving task history:", error instanceof Error ? error.message : String(error))
-			console.log("─".repeat(80))
+			output.log("─".repeat(80))
 		}
 	}
 
@@ -65,20 +66,20 @@ export class CliTaskHistoryManager {
 	 * Display detailed task information
 	 */
 	async displayTaskDetails(taskId: string): Promise<void> {
-		console.log(`\n📄 Task Details: ${taskId}`)
-		console.log("─".repeat(80))
+		output.log(`\n📄 Task Details: ${taskId}`)
+		output.log("─".repeat(80))
 
 		try {
 			const taskData = await this.controller.getTaskWithId(taskId)
 
-			console.log(`  Task: ${taskData.historyItem.task}`)
-			console.log(`  Created: ${new Date(taskData.historyItem.ts).toLocaleString()}`)
-			console.log(`  Status: ${this.getTaskStatus(taskData.historyItem)}`)
-			console.log(`  Messages: ${taskData.apiConversationHistory.length}`)
-			console.log("─".repeat(80))
+			output.log(`  Task: ${taskData.historyItem.task}`)
+			output.log(`  Created: ${new Date(taskData.historyItem.ts).toLocaleString()}`)
+			output.log(`  Status: ${this.getTaskStatus(taskData.historyItem)}`)
+			output.log(`  Messages: ${taskData.apiConversationHistory.length}`)
+			output.log("─".repeat(80))
 		} catch (_error) {
 			console.error(`  Task not found: ${taskId}`)
-			console.log("─".repeat(80))
+			output.log("─".repeat(80))
 		}
 	}
 
@@ -86,19 +87,19 @@ export class CliTaskHistoryManager {
 	 * Export task as markdown
 	 */
 	async exportTask(taskId: string, outputPath?: string): Promise<void> {
-		console.log(`\n📤 Exporting Task: ${taskId}`)
-		console.log("─".repeat(80))
+		output.log(`\n📤 Exporting Task: ${taskId}`)
+		output.log("─".repeat(80))
 
 		try {
 			await this.controller.exportTaskWithId(taskId)
-			console.log(`  ✓ Task exported successfully`)
+			output.log(`  ✓ Task exported successfully`)
 			if (outputPath) {
-				console.log(`  Location: ${outputPath}`)
+				output.log(`  Location: ${outputPath}`)
 			}
-			console.log("─".repeat(80))
+			output.log("─".repeat(80))
 		} catch (error) {
 			console.error(`  ✗ Export failed: ${error instanceof Error ? error.message : String(error)}`)
-			console.log("─".repeat(80))
+			output.log("─".repeat(80))
 		}
 	}
 
@@ -106,21 +107,21 @@ export class CliTaskHistoryManager {
 	 * Resume a previous task
 	 */
 	async resumeTask(taskId: string): Promise<void> {
-		console.log(`\n🔄 Resuming Task: ${taskId}`)
-		console.log("─".repeat(80))
+		output.log(`\n🔄 Resuming Task: ${taskId}`)
+		output.log("─".repeat(80))
 
 		try {
 			const taskData = await this.controller.getTaskWithId(taskId)
-			console.log(`  Task: "${this.truncateText(taskData.historyItem.task, 60)}"`)
-			console.log(`  Messages: ${taskData.apiConversationHistory.length}`)
-			console.log()
+			output.log(`  Task: "${this.truncateText(taskData.historyItem.task, 60)}"`)
+			output.log(`  Messages: ${taskData.apiConversationHistory.length}`)
+			output.log()
 
 			await this.controller.reinitExistingTaskFromId(taskId)
-			console.log("  ✓ Task resumed successfully")
-			console.log("─".repeat(80))
+			output.log("  ✓ Task resumed successfully")
+			output.log("─".repeat(80))
 		} catch (error) {
 			console.error(`  ✗ Resume failed: ${error instanceof Error ? error.message : String(error)}`)
-			console.log("─".repeat(80))
+			output.log("─".repeat(80))
 		}
 	}
 
@@ -128,16 +129,16 @@ export class CliTaskHistoryManager {
 	 * Delete a task from history
 	 */
 	async deleteTask(taskId: string): Promise<void> {
-		console.log(`\n🗑️  Deleting Task: ${taskId}`)
-		console.log("─".repeat(80))
+		output.log(`\n🗑️  Deleting Task: ${taskId}`)
+		output.log("─".repeat(80))
 
 		try {
 			await this.controller.deleteTaskFromState(taskId)
-			console.log("  ✓ Task deleted successfully")
-			console.log("─".repeat(80))
+			output.log("  ✓ Task deleted successfully")
+			output.log("─".repeat(80))
 		} catch (error) {
 			console.error(`  ✗ Delete failed: ${error instanceof Error ? error.message : String(error)}`)
-			console.log("─".repeat(80))
+			output.log("─".repeat(80))
 		}
 	}
 
@@ -145,8 +146,8 @@ export class CliTaskHistoryManager {
 	 * Search task history
 	 */
 	async searchHistory(query: string): Promise<void> {
-		console.log(`\n🔍 Searching Task History: "${query}"`)
-		console.log("─".repeat(80))
+		output.log(`\n🔍 Searching Task History: "${query}"`)
+		output.log("─".repeat(80))
 
 		try {
 			const taskHistory = this.controller.stateManager.getGlobalStateKey("taskHistory") || []
@@ -157,12 +158,12 @@ export class CliTaskHistoryManager {
 			)
 
 			if (results.length === 0) {
-				console.log("  No matching tasks found")
-				console.log("─".repeat(80))
+				output.log("  No matching tasks found")
+				output.log("─".repeat(80))
 				return
 			}
 
-			console.log(`  Found ${results.length} matching task${results.length !== 1 ? "s" : ""}:\n`)
+			output.log(`  Found ${results.length} matching task${results.length !== 1 ? "s" : ""}:\n`)
 
 			for (const item of results.slice(0, 10)) {
 				const date = new Date(item.ts)
@@ -170,20 +171,20 @@ export class CliTaskHistoryManager {
 				const taskPreview = this.truncateText(item.task, 60)
 				const status = this.getTaskStatusEmoji(item)
 
-				console.log(`  ${status} ${item.id}`)
-				console.log(`     ${dateStr}`)
-				console.log(`     "${taskPreview}"`)
-				console.log()
+				output.log(`  ${status} ${item.id}`)
+				output.log(`     ${dateStr}`)
+				output.log(`     "${taskPreview}"`)
+				output.log()
 			}
 
 			if (results.length > 10) {
-				console.log(`  ... and ${results.length - 10} more`)
+				output.log(`  ... and ${results.length - 10} more`)
 			}
 
-			console.log("─".repeat(80))
+			output.log("─".repeat(80))
 		} catch (error) {
 			console.error("  Error searching history:", error instanceof Error ? error.message : String(error))
-			console.log("─".repeat(80))
+			output.log("─".repeat(80))
 		}
 	}
 

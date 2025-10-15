@@ -2,86 +2,43 @@
  * CLI Message Formatter - Enhanced terminal output with visual styling
  *
  * Inspired by webview-ui ThinkingBlock component improvements:
+ * - Responsive width based on terminal size
  * - Visual hierarchy with colors and borders
  * - Enhanced thinking block presentation
  * - Progressive disclosure patterns
  * - Better task state visualization
+ * - Improved typography and spacing
  */
+
+import {
+	BoxChars,
+	centerText,
+	SemanticColors,
+	stripAnsi,
+	style,
+	TerminalCapabilities,
+	TerminalColors,
+	truncate,
+} from "./cli_terminal_colors"
 
 /**
- * Terminal color codes (ANSI escape sequences)
+ * Get responsive content width based on terminal size
+ * Leaves margin on both sides for better readability
  */
-export const TerminalColors = {
-	// Basic colors
-	reset: "\x1b[0m",
-	bright: "\x1b[1m",
-	dim: "\x1b[2m",
+function getContentWidth(): number {
+	const termWidth = TerminalCapabilities.getWidth()
+	const minWidth = 60
+	const maxWidth = 120
+	const margin = 4
 
-	// Foreground colors
-	black: "\x1b[30m",
-	red: "\x1b[31m",
-	green: "\x1b[32m",
-	yellow: "\x1b[33m",
-	blue: "\x1b[34m",
-	magenta: "\x1b[35m",
-	cyan: "\x1b[36m",
-	white: "\x1b[37m",
-	gray: "\x1b[90m",
-
-	// Background colors
-	bgBlack: "\x1b[40m",
-	bgRed: "\x1b[41m",
-	bgGreen: "\x1b[42m",
-	bgYellow: "\x1b[43m",
-	bgBlue: "\x1b[44m",
-	bgMagenta: "\x1b[45m",
-	bgCyan: "\x1b[46m",
-	bgWhite: "\x1b[47m",
-} as const
-
-/**
- * Box drawing characters for terminal UI
- */
-export const BoxChars = {
-	// Single line
-	topLeft: "┌",
-	topRight: "┐",
-	bottomLeft: "└",
-	bottomRight: "┘",
-	horizontal: "─",
-	vertical: "│",
-	verticalRight: "├",
-	verticalLeft: "┤",
-	horizontalDown: "┬",
-	horizontalUp: "┴",
-	cross: "┼",
-
-	// Double line
-	doubleTopLeft: "╔",
-	doubleTopRight: "╗",
-	doubleBottomLeft: "╚",
-	doubleBottomRight: "╝",
-	doubleHorizontal: "═",
-	doubleVertical: "║",
-
-	// Heavy line
-	heavyHorizontal: "━",
-	heavyVertical: "┃",
-
-	// Misc
-	bulletPoint: "•",
-	rightArrow: "→",
-	leftArrow: "←",
-	upArrow: "↑",
-	downArrow: "↓",
-	checkMark: "✓",
-	crossMark: "✗",
-	spinner: ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"],
-} as const
+	// Use 90% of terminal width, with margins
+	const calculatedWidth = Math.min(maxWidth, Math.max(minWidth, termWidth - margin))
+	return calculatedWidth
+}
 
 /**
  * Format a thinking block with enhanced visual styling
- * Inspired by webview ThinkingBlock component
+ * Now responsive to terminal width with improved visual hierarchy
  */
 export function formatThinkingBlock(
 	text: string,
@@ -94,94 +51,137 @@ export function formatThinkingBlock(
 	const { expanded = true, partial = false, showCopyHint = true } = options
 	const lines: string[] = []
 
-	// Top border with badge
-	const statusBadge = partial ? " [STREAMING] " : " [AI THINKING] "
-	const badge = `${TerminalColors.bgMagenta}${TerminalColors.white}${TerminalColors.bright}${statusBadge}${TerminalColors.reset}`
+	const contentWidth = getContentWidth()
+	const borderWidth = contentWidth - 2
 
-	lines.push("")
+	// Top border with enhanced visual hierarchy
+	const statusBadge = partial ? " STREAMING " : " THINKING "
+	const badgeColor = partial ? TerminalColors.bgBrightYellow : TerminalColors.bgMagenta
+	const badge = style(statusBadge, badgeColor, TerminalColors.black, TerminalColors.bright)
+
+	lines.push("") // Breathing room
 	lines.push(
-		`${TerminalColors.magenta}${BoxChars.doubleTopLeft}${BoxChars.doubleHorizontal.repeat(78)}${BoxChars.doubleTopRight}${TerminalColors.reset}`,
+		style(
+			`${BoxChars.doubleTopLeft}${BoxChars.doubleHorizontal.repeat(borderWidth)}${BoxChars.doubleTopRight}`,
+			SemanticColors.thinking,
+		),
 	)
 
-	// Header with icon and label
-	const icon = "💡"
-	const label = `${TerminalColors.bright}${TerminalColors.magenta}THINKING PROCESS${TerminalColors.reset}`
-	const headerPadding = " ".repeat(Math.max(0, 72 - label.length - 2))
-	lines.push(
-		`${TerminalColors.magenta}${BoxChars.doubleVertical}${TerminalColors.reset} ${icon} ${label}${headerPadding}${badge}`,
+	// Header with icon and label - centered for emphasis
+	const icon = "💭"
+	const label = partial ? "AI Processing" : "AI Thought Process"
+	const headerContent = `${icon}  ${label}`
+	const centeredHeader = centerText(
+		style(headerContent, TerminalColors.bright, SemanticColors.thinking),
+		borderWidth - badge.length - 4,
 	)
 
-	// Separator
 	lines.push(
-		`${TerminalColors.magenta}${BoxChars.verticalRight}${BoxChars.horizontal.repeat(78)}${BoxChars.verticalLeft}${TerminalColors.reset}`,
+		`${style(BoxChars.doubleVertical, SemanticColors.thinking)} ${centeredHeader} ${badge} ${style(BoxChars.doubleVertical, SemanticColors.thinking)}`,
+	)
+
+	// Separator with subtle style
+	lines.push(
+		style(
+			`${BoxChars.verticalRight}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.verticalLeft}`,
+			SemanticColors.thinking,
+		),
 	)
 
 	if (expanded) {
-		// Content with word wrap
-		const contentLines = wordWrap(text, 76)
+		// Content with word wrap and improved spacing
+		const contentLines = wordWrap(text, borderWidth - 2)
 		for (const line of contentLines) {
-			const padding = " ".repeat(Math.max(0, 76 - line.length))
+			const padding = " ".repeat(Math.max(0, borderWidth - 2 - stripAnsi(line).length))
 			lines.push(
-				`${TerminalColors.magenta}${BoxChars.vertical}${TerminalColors.reset} ${TerminalColors.dim}${line}${padding}${TerminalColors.reset} ${TerminalColors.magenta}${BoxChars.vertical}${TerminalColors.reset}`,
+				`${style(BoxChars.vertical, SemanticColors.thinking)} ${style(line, TerminalColors.dim)}${padding} ${style(BoxChars.vertical, SemanticColors.thinking)}`,
 			)
 		}
 
-		// Copy hint at bottom
+		// Add spacing before footer
+		if (contentLines.length > 0) {
+			const emptyLine = " ".repeat(borderWidth - 2)
+			lines.push(
+				`${style(BoxChars.vertical, SemanticColors.thinking)} ${emptyLine} ${style(BoxChars.vertical, SemanticColors.thinking)}`,
+			)
+		}
+
+		// Copy hint at bottom (only when complete)
 		if (showCopyHint && !partial) {
 			lines.push(
-				`${TerminalColors.magenta}${BoxChars.verticalRight}${BoxChars.horizontal.repeat(78)}${BoxChars.verticalLeft}${TerminalColors.reset}`,
+				style(
+					`${BoxChars.verticalRight}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.verticalLeft}`,
+					SemanticColors.thinking,
+				),
 			)
-			const hint = `${TerminalColors.dim}💡 Tip: Content is copy-friendly - select and copy as needed${TerminalColors.reset}`
-			const hintPadding = " ".repeat(Math.max(0, 76 - stripAnsi(hint).length))
+			const hint = "💡 Tip: Select and copy text as needed"
+			const hintStyled = style(hint, TerminalColors.dim)
+			const hintPadding = " ".repeat(Math.max(0, borderWidth - 2 - hint.length))
 			lines.push(
-				`${TerminalColors.magenta}${BoxChars.vertical}${TerminalColors.reset} ${hint}${hintPadding} ${TerminalColors.magenta}${BoxChars.vertical}${TerminalColors.reset}`,
+				`${style(BoxChars.vertical, SemanticColors.thinking)} ${hintStyled}${hintPadding} ${style(BoxChars.vertical, SemanticColors.thinking)}`,
 			)
 		}
 	} else {
-		// Collapsed preview
-		const preview = text.slice(0, 70) + (text.length > 70 ? "..." : "")
-		const padding = " ".repeat(Math.max(0, 76 - preview.length))
+		// Collapsed preview with clear indication
+		const previewWidth = borderWidth - 4
+		const preview = truncate(text, previewWidth, "end")
+		const padding = " ".repeat(Math.max(0, borderWidth - 2 - stripAnsi(preview).length))
 		lines.push(
-			`${TerminalColors.magenta}${BoxChars.vertical}${TerminalColors.reset} ${TerminalColors.dim}${preview}${padding}${TerminalColors.reset} ${TerminalColors.magenta}${BoxChars.vertical}${TerminalColors.reset}`,
+			`${style(BoxChars.vertical, SemanticColors.thinking)} ${style(preview, TerminalColors.dim)}${padding} ${style(BoxChars.vertical, SemanticColors.thinking)}`,
 		)
 
-		// Expand hint
-		const expandHint = `${TerminalColors.dim}[Collapsed - ${text.length} chars total]${TerminalColors.reset}`
-		const expandPadding = " ".repeat(Math.max(0, 76 - stripAnsi(expandHint).length))
+		// Expand hint with metadata
+		const wordCount = text.split(/\s+/).length
+		const expandHint = `[Collapsed - ${text.length} chars, ~${wordCount} words]`
+		const expandPadding = " ".repeat(Math.max(0, borderWidth - 2 - expandHint.length))
 		lines.push(
-			`${TerminalColors.magenta}${BoxChars.vertical}${TerminalColors.reset} ${expandHint}${expandPadding} ${TerminalColors.magenta}${BoxChars.vertical}${TerminalColors.reset}`,
+			`${style(BoxChars.vertical, SemanticColors.thinking)} ${style(expandHint, SemanticColors.metadata)}${expandPadding} ${style(BoxChars.vertical, SemanticColors.thinking)}`,
 		)
 	}
 
 	// Bottom border
 	lines.push(
-		`${TerminalColors.magenta}${BoxChars.doubleBottomLeft}${BoxChars.doubleHorizontal.repeat(78)}${BoxChars.doubleBottomRight}${TerminalColors.reset}`,
+		style(
+			`${BoxChars.doubleBottomLeft}${BoxChars.doubleHorizontal.repeat(borderWidth)}${BoxChars.doubleBottomRight}`,
+			SemanticColors.thinking,
+		),
 	)
-	lines.push("")
+	lines.push("") // Breathing room
 
 	return lines.join("\n")
 }
 
 /**
- * Format a task progress indicator
+ * Format a task progress indicator with improved visual design
  */
 export function formatTaskProgress(current: number, total: number, label: string = "Progress"): string {
 	const percentage = Math.round((current / total) * 100)
-	const barWidth = 40
+	const contentWidth = getContentWidth()
+	const statsText = `${current}/${total} (${percentage}%)`
+	const barWidth = Math.max(20, contentWidth - label.length - statsText.length - 6)
+
 	const filledWidth = Math.round((current / total) * barWidth)
 	const emptyWidth = barWidth - filledWidth
+
+	// Use different colors based on progress
+	let barColor: string = SemanticColors.progress
+	if (percentage === 100) {
+		barColor = SemanticColors.complete
+	} else if (percentage < 25) {
+		barColor = SemanticColors.pending
+	}
 
 	const filled = BoxChars.heavyHorizontal.repeat(filledWidth)
 	const empty = BoxChars.horizontal.repeat(emptyWidth)
 
-	const bar = `${TerminalColors.green}${filled}${TerminalColors.reset}${TerminalColors.dim}${empty}${TerminalColors.reset}`
-	const stats = `${TerminalColors.bright}${current}/${total}${TerminalColors.reset} ${TerminalColors.dim}(${percentage}%)${TerminalColors.reset}`
+	const bar = `${barColor}${filled}${TerminalColors.reset}${style(empty, TerminalColors.dim)}`
+	const stats = `${style(statsText, TerminalColors.bright)}`
 
-	return `\n${label}: [${bar}] ${stats}\n`
+	return `\n${style(label, TerminalColors.bright)}: [${bar}] ${stats}\n`
 }
 
 /**
- * Format a message box with colored border
+ * Format a message box with colored border and improved hierarchy
  */
 export function formatMessageBox(
 	title: string,
@@ -194,21 +194,21 @@ export function formatMessageBox(
 ): string {
 	const { icon, type = "info" } = options
 
-	// Determine color based on type
-	let color: string = options.color || TerminalColors.cyan
+	// Determine color and icon based on type with improved semantic colors
+	let color: string = options.color || SemanticColors.info
 	let defaultIcon = "ℹ️"
 
 	switch (type) {
 		case "success":
-			color = TerminalColors.green
+			color = SemanticColors.success
 			defaultIcon = "✅"
 			break
 		case "warning":
-			color = TerminalColors.yellow
+			color = SemanticColors.warning
 			defaultIcon = "⚠️"
 			break
 		case "error":
-			color = TerminalColors.red
+			color = SemanticColors.error
 			defaultIcon = "❌"
 			break
 	}
@@ -216,39 +216,38 @@ export function formatMessageBox(
 	const actualIcon = icon || defaultIcon
 	const lines: string[] = []
 
-	lines.push("")
-	lines.push(`${color}${BoxChars.topLeft}${BoxChars.horizontal.repeat(78)}${BoxChars.topRight}${TerminalColors.reset}`)
+	const contentWidth = getContentWidth()
+	const borderWidth = contentWidth - 2
 
-	// Title
-	const titleText = `${actualIcon} ${title}`
-	const titlePadding = " ".repeat(Math.max(0, 76 - titleText.length))
+	lines.push("") // Breathing room
+	lines.push(style(`${BoxChars.topLeft}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.topRight}`, color))
+
+	// Title with improved typography
+	const titleText = `${actualIcon}  ${title}`
+	const titlePadding = " ".repeat(Math.max(0, borderWidth - 2 - stripAnsi(titleText).length))
 	lines.push(
-		`${color}${BoxChars.vertical}${TerminalColors.reset} ${TerminalColors.bright}${titleText}${titlePadding}${TerminalColors.reset} ${color}${BoxChars.vertical}${TerminalColors.reset}`,
+		`${style(BoxChars.vertical, color)} ${style(titleText, TerminalColors.bright)}${titlePadding} ${style(BoxChars.vertical, color)}`,
 	)
 
 	if (content) {
-		lines.push(
-			`${color}${BoxChars.verticalRight}${BoxChars.horizontal.repeat(78)}${BoxChars.verticalLeft}${TerminalColors.reset}`,
-		)
+		lines.push(style(`${BoxChars.verticalRight}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.verticalLeft}`, color))
 
-		// Content with word wrap
-		const contentLines = wordWrap(content, 76)
+		// Content with word wrap and improved readability
+		const contentLines = wordWrap(content, borderWidth - 2)
 		for (const line of contentLines) {
-			const padding = " ".repeat(Math.max(0, 76 - line.length))
-			lines.push(
-				`${color}${BoxChars.vertical}${TerminalColors.reset} ${line}${padding} ${color}${BoxChars.vertical}${TerminalColors.reset}`,
-			)
+			const padding = " ".repeat(Math.max(0, borderWidth - 2 - stripAnsi(line).length))
+			lines.push(`${style(BoxChars.vertical, color)} ${line}${padding} ${style(BoxChars.vertical, color)}`)
 		}
 	}
 
-	lines.push(`${color}${BoxChars.bottomLeft}${BoxChars.horizontal.repeat(78)}${BoxChars.bottomRight}${TerminalColors.reset}`)
-	lines.push("")
+	lines.push(style(`${BoxChars.bottomLeft}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.bottomRight}`, color))
+	lines.push("") // Breathing room
 
 	return lines.join("\n")
 }
 
 /**
- * Format a focus chain display with better visual hierarchy
+ * Format a focus chain display with improved visual hierarchy and responsive design
  */
 export function formatFocusChain(chain: {
 	title: string
@@ -262,97 +261,108 @@ export function formatFocusChain(chain: {
 }): string {
 	const lines: string[] = []
 
-	// Header
-	lines.push("")
+	const contentWidth = getContentWidth()
+	const borderWidth = contentWidth - 2
+
+	// Header with enhanced styling
+	lines.push("") // Breathing room
 	lines.push(
-		`${TerminalColors.cyan}${BoxChars.doubleTopLeft}${BoxChars.doubleHorizontal.repeat(78)}${BoxChars.doubleTopRight}${TerminalColors.reset}`,
+		style(
+			`${BoxChars.doubleTopLeft}${BoxChars.doubleHorizontal.repeat(borderWidth)}${BoxChars.doubleTopRight}`,
+			SemanticColors.info,
+		),
 	)
-	const titleText = `📋 FOCUS CHAIN: ${chain.title}`
-	const titlePadding = " ".repeat(Math.max(0, 76 - titleText.length))
+	const titleText = `📋  ${chain.title.toUpperCase()}`
+	const titlePadding = " ".repeat(Math.max(0, borderWidth - 2 - stripAnsi(titleText).length))
 	lines.push(
-		`${TerminalColors.cyan}${BoxChars.doubleVertical}${TerminalColors.reset} ${TerminalColors.bright}${titleText}${titlePadding}${TerminalColors.reset} ${TerminalColors.cyan}${BoxChars.doubleVertical}${TerminalColors.reset}`,
+		`${style(BoxChars.doubleVertical, SemanticColors.info)} ${style(titleText, TerminalColors.bright, SemanticColors.header)}${titlePadding} ${style(BoxChars.doubleVertical, SemanticColors.info)}`,
 	)
 	lines.push(
-		`${TerminalColors.cyan}${BoxChars.verticalRight}${BoxChars.horizontal.repeat(78)}${BoxChars.verticalLeft}${TerminalColors.reset}`,
+		style(`${BoxChars.verticalRight}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.verticalLeft}`, SemanticColors.info),
 	)
 
-	// Steps
+	// Steps with improved visual indicators
 	for (let i = 0; i < chain.steps.length; i++) {
 		const step = chain.steps[i]
 		const isCurrent = i === chain.currentStepIndex
 
-		let icon = "⬜"
-		let statusColor: string = TerminalColors.gray
+		let icon = "○"
+		let statusColor: string = SemanticColors.pending
 		let statusText = "PENDING"
 
 		switch (step.status) {
 			case "completed":
-				icon = "✅"
-				statusColor = TerminalColors.green
+				icon = "●"
+				statusColor = SemanticColors.complete
 				statusText = "DONE"
 				break
 			case "in_progress":
-				icon = "🔄"
-				statusColor = TerminalColors.yellow
+				icon = "◐"
+				statusColor = SemanticColors.progress
 				statusText = "IN PROGRESS"
 				break
 			case "skipped":
-				icon = "⏭️"
-				statusColor = TerminalColors.dim
+				icon = "⊝"
+				statusColor = SemanticColors.metadata
 				statusText = "SKIPPED"
 				break
 			case "failed":
-				icon = "❌"
-				statusColor = TerminalColors.red
+				icon = "✗"
+				statusColor = SemanticColors.error
 				statusText = "FAILED"
 				break
 		}
 
-		const currentMarker = isCurrent ? ` ${TerminalColors.bright}${TerminalColors.yellow}◄${TerminalColors.reset}` : ""
+		const currentMarker = isCurrent ? ` ${style("◀", TerminalColors.bright, SemanticColors.highlight)}` : ""
 		const stepNum = `Step ${i + 1}`
-		const stepText = `${icon} ${TerminalColors.bright}${stepNum}:${TerminalColors.reset} ${step.description} ${statusColor}[${statusText}]${TerminalColors.reset}${currentMarker}`
-		const padding = " ".repeat(Math.max(0, 76 - stripAnsi(stepText).length))
+		const stepText = `${icon} ${style(stepNum, TerminalColors.bright)}: ${step.description} ${style(`[${statusText}]`, statusColor)}${currentMarker}`
+		const padding = " ".repeat(Math.max(0, borderWidth - 2 - stripAnsi(stepText).length))
 
 		lines.push(
-			`${TerminalColors.cyan}${BoxChars.vertical}${TerminalColors.reset} ${stepText}${padding} ${TerminalColors.cyan}${BoxChars.vertical}${TerminalColors.reset}`,
+			`${style(BoxChars.vertical, SemanticColors.info)} ${stepText}${padding} ${style(BoxChars.vertical, SemanticColors.info)}`,
 		)
 
-		// Result
+		// Result with indentation for hierarchy
 		if (step.result && (step.status === "completed" || step.status === "skipped" || step.status === "failed")) {
-			const resultText = `  ${BoxChars.verticalRight}${BoxChars.horizontal} ${TerminalColors.dim}${step.result}${TerminalColors.reset}`
-			const resultPadding = " ".repeat(Math.max(0, 76 - stripAnsi(resultText).length))
+			const resultText = `   ${BoxChars.rightArrow} ${step.result}`
+			const resultStyled = style(resultText, TerminalColors.dim)
+			const resultPadding = " ".repeat(Math.max(0, borderWidth - 2 - stripAnsi(resultText).length))
 			lines.push(
-				`${TerminalColors.cyan}${BoxChars.vertical}${TerminalColors.reset} ${resultText}${resultPadding} ${TerminalColors.cyan}${BoxChars.vertical}${TerminalColors.reset}`,
+				`${style(BoxChars.vertical, SemanticColors.info)} ${resultStyled}${resultPadding} ${style(BoxChars.vertical, SemanticColors.info)}`,
 			)
 		}
 
-		// Duration
+		// Duration with subtle styling
 		if (step.duration !== undefined) {
-			const durationText = `  ${BoxChars.verticalRight}${BoxChars.horizontal} ${TerminalColors.dim}Duration: ${step.duration}s${TerminalColors.reset}`
-			const durationPadding = " ".repeat(Math.max(0, 76 - stripAnsi(durationText).length))
+			const durationText = `   ⏱  ${step.duration.toFixed(2)}s`
+			const durationStyled = style(durationText, SemanticColors.metadata)
+			const durationPadding = " ".repeat(Math.max(0, borderWidth - 2 - durationText.length))
 			lines.push(
-				`${TerminalColors.cyan}${BoxChars.vertical}${TerminalColors.reset} ${durationText}${durationPadding} ${TerminalColors.cyan}${BoxChars.vertical}${TerminalColors.reset}`,
+				`${style(BoxChars.vertical, SemanticColors.info)} ${durationStyled}${durationPadding} ${style(BoxChars.vertical, SemanticColors.info)}`,
 			)
 		}
 	}
 
-	// Progress summary
+	// Progress summary with visual bar
 	lines.push(
-		`${TerminalColors.cyan}${BoxChars.verticalRight}${BoxChars.horizontal.repeat(78)}${BoxChars.verticalLeft}${TerminalColors.reset}`,
+		style(`${BoxChars.verticalRight}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.verticalLeft}`, SemanticColors.info),
 	)
 	const completedCount = chain.steps.filter((s) => s.status === "completed").length
 	const progress = Math.round((completedCount / chain.steps.length) * 100)
-	const progressText = `Progress: ${TerminalColors.bright}${completedCount}/${chain.steps.length}${TerminalColors.reset} steps ${TerminalColors.dim}(${progress}%)${TerminalColors.reset}`
-	const progressPadding = " ".repeat(Math.max(0, 76 - stripAnsi(progressText).length))
+	const progressText = `Progress: ${style(`${completedCount}/${chain.steps.length}`, TerminalColors.bright)} steps ${style(`(${progress}%)`, SemanticColors.metadata)}`
+	const progressPadding = " ".repeat(Math.max(0, borderWidth - 2 - stripAnsi(progressText).length))
 	lines.push(
-		`${TerminalColors.cyan}${BoxChars.doubleVertical}${TerminalColors.reset} ${progressText}${progressPadding} ${TerminalColors.cyan}${BoxChars.doubleVertical}${TerminalColors.reset}`,
+		`${style(BoxChars.doubleVertical, SemanticColors.info)} ${progressText}${progressPadding} ${style(BoxChars.doubleVertical, SemanticColors.info)}`,
 	)
 
 	// Footer
 	lines.push(
-		`${TerminalColors.cyan}${BoxChars.doubleBottomLeft}${BoxChars.doubleHorizontal.repeat(78)}${BoxChars.doubleBottomRight}${TerminalColors.reset}`,
+		style(
+			`${BoxChars.doubleBottomLeft}${BoxChars.doubleHorizontal.repeat(borderWidth)}${BoxChars.doubleBottomRight}`,
+			SemanticColors.info,
+		),
 	)
-	lines.push("")
+	lines.push("") // Breathing room
 
 	return lines.join("\n")
 }
@@ -401,70 +411,321 @@ function wordWrap(text: string, width: number): string[] {
 }
 
 /**
- * Strip ANSI color codes from string for length calculation
- */
-function stripAnsi(str: string): string {
-	// eslint-disable-next-line no-control-regex
-	return str.replace(/\x1b\[[0-9;]*m/g, "")
-}
-
-/**
- * Create a horizontal separator line
+ * Create a horizontal separator line with responsive width
  */
 export function formatSeparator(char: string = BoxChars.horizontal, color: string = TerminalColors.gray): string {
-	return `${color}${char.repeat(80)}${TerminalColors.reset}`
+	const contentWidth = getContentWidth()
+	return `${color}${char.repeat(contentWidth)}${TerminalColors.reset}`
 }
 
 /**
- * Format command execution display
+ * Format command execution display with improved status visualization
  */
 export function formatCommandExecution(command: string, status: "pending" | "running" | "success" | "error" = "pending"): string {
 	let icon = "⚡"
-	let color: string = TerminalColors.cyan
-	let statusText = "EXECUTING"
+	let color: string = SemanticColors.command
+	let statusText = "READY"
 
 	switch (status) {
 		case "running":
-			icon = "🔄"
-			color = TerminalColors.yellow
+			icon = "▶"
+			color = SemanticColors.progress
 			statusText = "RUNNING"
 			break
 		case "success":
-			icon = "✅"
-			color = TerminalColors.green
+			icon = "✓"
+			color = SemanticColors.complete
 			statusText = "COMPLETED"
 			break
 		case "error":
-			icon = "❌"
-			color = TerminalColors.red
+			icon = "✗"
+			color = SemanticColors.error
 			statusText = "FAILED"
 			break
 	}
 
 	const lines: string[] = []
-	lines.push("")
-	lines.push(`${color}${BoxChars.topLeft}${BoxChars.horizontal.repeat(78)}${BoxChars.topRight}${TerminalColors.reset}`)
+	const contentWidth = getContentWidth()
+	const borderWidth = contentWidth - 2
 
-	const title = `${icon} COMMAND ${statusText}`
-	const titlePadding = " ".repeat(Math.max(0, 76 - title.length))
+	lines.push("") // Breathing room
+	lines.push(style(`${BoxChars.topLeft}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.topRight}`, color))
+
+	const title = `${icon}  COMMAND  ${statusText}`
+	const titlePadding = " ".repeat(Math.max(0, borderWidth - 2 - stripAnsi(title).length))
 	lines.push(
-		`${color}${BoxChars.vertical}${TerminalColors.reset} ${TerminalColors.bright}${title}${titlePadding}${TerminalColors.reset} ${color}${BoxChars.vertical}${TerminalColors.reset}`,
+		`${style(BoxChars.vertical, color)} ${style(title, TerminalColors.bright)}${titlePadding} ${style(BoxChars.vertical, color)}`,
 	)
 
-	lines.push(
-		`${color}${BoxChars.verticalRight}${BoxChars.horizontal.repeat(78)}${BoxChars.verticalLeft}${TerminalColors.reset}`,
-	)
+	lines.push(style(`${BoxChars.verticalRight}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.verticalLeft}`, color))
 
-	const cmdLines = wordWrap(command, 76)
+	const cmdLines = wordWrap(command, borderWidth - 2)
 	for (const line of cmdLines) {
-		const padding = " ".repeat(Math.max(0, 76 - line.length))
+		const padding = " ".repeat(Math.max(0, borderWidth - 2 - stripAnsi(line).length))
 		lines.push(
-			`${color}${BoxChars.vertical}${TerminalColors.reset} ${TerminalColors.cyan}${line}${padding}${TerminalColors.reset} ${color}${BoxChars.vertical}${TerminalColors.reset}`,
+			`${style(BoxChars.vertical, color)} ${style(line, SemanticColors.code)}${padding} ${style(BoxChars.vertical, color)}`,
 		)
 	}
 
-	lines.push(`${color}${BoxChars.bottomLeft}${BoxChars.horizontal.repeat(78)}${BoxChars.bottomRight}${TerminalColors.reset}`)
+	lines.push(style(`${BoxChars.bottomLeft}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.bottomRight}`, color))
+	lines.push("") // Breathing room
+
+	return lines.join("\n")
+}
+
+/**
+ * Format a code block with syntax highlighting hints
+ */
+export function formatCodeBlock(code: string, language?: string): string {
+	const lines: string[] = []
+	const contentWidth = getContentWidth()
+	const borderWidth = contentWidth - 2
+
+	// Header with language badge
+	const langBadge = language ? ` ${language.toUpperCase()} ` : " CODE "
+	const badge = style(langBadge, TerminalColors.bgGray, TerminalColors.white, TerminalColors.bright)
+
+	lines.push("") // Breathing room
+	lines.push(style(`${BoxChars.topLeft}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.topRight}`, SemanticColors.code))
+
+	const title = `${badge}`
+	const titlePadding = " ".repeat(Math.max(0, borderWidth - 2 - stripAnsi(title).length))
+	lines.push(
+		`${style(BoxChars.vertical, SemanticColors.code)} ${title}${titlePadding} ${style(BoxChars.vertical, SemanticColors.code)}`,
+	)
+
+	lines.push(
+		style(`${BoxChars.verticalRight}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.verticalLeft}`, SemanticColors.code),
+	)
+
+	// Code content with monospace appearance
+	const codeLines = code.split("\n")
+	for (const line of codeLines) {
+		const displayLine = truncate(line, borderWidth - 4, "end")
+		const padding = " ".repeat(Math.max(0, borderWidth - 4 - stripAnsi(displayLine).length))
+		lines.push(
+			`${style(BoxChars.vertical, SemanticColors.code)}  ${style(displayLine, TerminalColors.brightCyan)}${padding}  ${style(BoxChars.vertical, SemanticColors.code)}`,
+		)
+	}
+
+	lines.push(
+		style(`${BoxChars.bottomLeft}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.bottomRight}`, SemanticColors.code),
+	)
+	lines.push("") // Breathing room
+
+	return lines.join("\n")
+}
+
+/**
+ * Format a file path with visual distinction
+ */
+export function formatFilePath(path: string, status?: "created" | "modified" | "deleted" | "unchanged"): string {
+	let icon = "📄"
+	let color: string = SemanticColors.path
+
+	if (status) {
+		switch (status) {
+			case "created":
+				icon = "+"
+				color = SemanticColors.complete
+				break
+			case "modified":
+				icon = "~"
+				color = SemanticColors.progress
+				break
+			case "deleted":
+				icon = "-"
+				color = SemanticColors.error
+				break
+			case "unchanged":
+				icon = "="
+				color = SemanticColors.metadata
+				break
+		}
+	}
+
+	return `${icon} ${style(path, color)}`
+}
+
+/**
+ * Format a list of items with proper indentation
+ */
+export function formatList(
+	items: string[],
+	options: {
+		ordered?: boolean
+		bulletChar?: string
+		indent?: number
+	} = {},
+): string {
+	const { ordered = false, bulletChar = "•", indent = 2 } = options
+	const lines: string[] = []
+
+	items.forEach((item, index) => {
+		const prefix = ordered ? `${index + 1}.` : bulletChar
+		const indentation = " ".repeat(indent)
+		lines.push(`${indentation}${style(prefix, SemanticColors.info)} ${item}`)
+	})
+
+	return lines.join("\n")
+}
+
+/**
+ * Format a simple table with columns
+ */
+export function formatTable(
+	headers: string[],
+	rows: string[][],
+	_options: {
+		align?: ("left" | "right" | "center")[]
+	} = {},
+): string {
+	const lines: string[] = []
+	const contentWidth = getContentWidth()
+
+	// Calculate column widths
+	const numCols = headers.length
+	const colWidths: number[] = []
+
+	for (let i = 0; i < numCols; i++) {
+		let maxWidth = stripAnsi(headers[i]).length
+		for (const row of rows) {
+			if (row[i]) {
+				maxWidth = Math.max(maxWidth, stripAnsi(row[i]).length)
+			}
+		}
+		colWidths.push(maxWidth)
+	}
+
+	// Adjust column widths to fit terminal
+	const totalWidth = colWidths.reduce((sum, w) => sum + w, 0) + (numCols - 1) * 3 + 4
+	if (totalWidth > contentWidth) {
+		const ratio = (contentWidth - (numCols - 1) * 3 - 4) / totalWidth
+		colWidths.forEach((w, i) => {
+			colWidths[i] = Math.max(8, Math.floor(w * ratio))
+		})
+	}
+
+	const borderWidth = colWidths.reduce((sum, w) => sum + w, 0) + (numCols - 1) * 3 + 2
+
+	// Top border
+	lines.push("")
+	lines.push(style(`${BoxChars.topLeft}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.topRight}`, SemanticColors.info))
+
+	// Headers
+	const headerCells: string[] = []
+	headers.forEach((header, i) => {
+		const truncated = truncate(header, colWidths[i], "end")
+		const padded = truncated + " ".repeat(Math.max(0, colWidths[i] - stripAnsi(truncated).length))
+		headerCells.push(style(padded, TerminalColors.bright))
+	})
+	lines.push(
+		`${style(BoxChars.vertical, SemanticColors.info)} ${headerCells.join(" │ ")} ${style(BoxChars.vertical, SemanticColors.info)}`,
+	)
+
+	// Separator
+	lines.push(
+		style(`${BoxChars.verticalRight}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.verticalLeft}`, SemanticColors.info),
+	)
+
+	// Rows
+	for (const row of rows) {
+		const rowCells: string[] = []
+		row.forEach((cell, i) => {
+			const truncated = truncate(cell || "", colWidths[i], "end")
+			const padded = truncated + " ".repeat(Math.max(0, colWidths[i] - stripAnsi(truncated).length))
+			rowCells.push(padded)
+		})
+		lines.push(
+			`${style(BoxChars.vertical, SemanticColors.info)} ${rowCells.join(" │ ")} ${style(BoxChars.vertical, SemanticColors.info)}`,
+		)
+	}
+
+	// Bottom border
+	lines.push(
+		style(`${BoxChars.bottomLeft}${BoxChars.horizontal.repeat(borderWidth)}${BoxChars.bottomRight}`, SemanticColors.info),
+	)
 	lines.push("")
 
 	return lines.join("\n")
 }
+
+/**
+ * Format an inline badge/tag
+ */
+export function formatBadge(
+	text: string,
+	options: {
+		color?: string
+		background?: string
+	} = {},
+): string {
+	const { color = TerminalColors.white, background = TerminalColors.bgBlue } = options
+	return style(` ${text} `, background, color, TerminalColors.bright)
+}
+
+/**
+ * Format a key-value pair
+ */
+export function formatKeyValue(key: string, value: string, options: { separator?: string } = {}): string {
+	const { separator = ":" } = options
+	return `${style(key, TerminalColors.bright)}${separator} ${value}`
+}
+
+/**
+ * Format a status indicator
+ */
+export function formatStatus(status: "active" | "inactive" | "pending" | "success" | "error" | "warning"): string {
+	let icon = "●"
+	let color = SemanticColors.pending as string
+
+	switch (status) {
+		case "active":
+			icon = "●"
+			color = SemanticColors.complete as string
+			break
+		case "inactive":
+			icon = "○"
+			color = SemanticColors.metadata as string
+			break
+		case "pending":
+			icon = "◐"
+			color = SemanticColors.pending as string
+			break
+		case "success":
+			icon = "✓"
+			color = SemanticColors.complete as string
+			break
+		case "error":
+			icon = "✗"
+			color = SemanticColors.error as string
+			break
+		case "warning":
+			icon = "⚠"
+			color = SemanticColors.warning as string
+			break
+	}
+
+	return `${style(icon, color)} ${style(status.toUpperCase(), color)}`
+}
+
+/**
+ * Format a header/section title
+ */
+export function formatSectionHeader(title: string, icon?: string): string {
+	const contentWidth = getContentWidth()
+	const displayIcon = icon || "▸"
+	const headerText = `${displayIcon}  ${title.toUpperCase()}`
+
+	const lines: string[] = []
+	lines.push("")
+	lines.push(style(headerText, TerminalColors.bright, SemanticColors.header))
+	lines.push(style(BoxChars.horizontal.repeat(contentWidth), SemanticColors.metadata))
+
+	return lines.join("\n")
+}
+
+/**
+ * Export re-used utilities
+ */
+export { TerminalColors, BoxChars, stripAnsi, SemanticColors, style }

@@ -6,6 +6,7 @@
 import type { Controller } from "@/core/controller"
 import { McpHub } from "@/services/mcp/McpHub"
 import type { McpServer } from "@/shared/mcp"
+import { output } from "./cli_output"
 
 export class CliMcpManager {
 	private mcpHub: McpHub
@@ -25,7 +26,7 @@ export class CliMcpManager {
 		await new Promise((resolve) => setTimeout(resolve, 1000))
 
 		if (this.verbose) {
-			console.log("\n🔌 Checking MCP servers...")
+			output.log("\n🔌 Checking MCP servers...")
 		}
 
 		try {
@@ -33,7 +34,7 @@ export class CliMcpManager {
 
 			if (mcpServers.length === 0) {
 				if (this.verbose) {
-					console.log("  No MCP servers configured")
+					output.log("  No MCP servers configured")
 				}
 				return
 			}
@@ -43,14 +44,14 @@ export class CliMcpManager {
 			const failedServers = mcpServers.filter((s) => s.status === "disconnected" && !s.disabled)
 
 			if (connectedServers.length > 0) {
-				console.log(`✓ MCP: ${connectedServers.length} server${connectedServers.length !== 1 ? "s" : ""} connected`)
+				output.log(`✓ MCP: ${connectedServers.length} server${connectedServers.length !== 1 ? "s" : ""} connected`)
 			}
 			if (failedServers.length > 0 && this.verbose) {
-				console.log(`  ⚠️  ${failedServers.length} server${failedServers.length !== 1 ? "s" : ""} failed to connect`)
+				output.log(`  ⚠️  ${failedServers.length} server${failedServers.length !== 1 ? "s" : ""} failed to connect`)
 			}
 		} catch (error) {
 			if (this.verbose) {
-				console.warn("⚠️  MCP initialization check failed:", error instanceof Error ? error.message : String(error))
+				output.warn("⚠️  MCP initialization check failed:", error instanceof Error ? error.message : String(error))
 			}
 		}
 	}
@@ -63,7 +64,7 @@ export class CliMcpManager {
 			return this.mcpHub.getServers()
 		} catch (error) {
 			if (this.verbose) {
-				console.warn("Could not load MCP servers:", error)
+				output.warn("Could not load MCP servers:", error)
 			}
 			return []
 		}
@@ -73,54 +74,54 @@ export class CliMcpManager {
 	 * Display available MCP tools and resources
 	 */
 	async displayAvailableTools(): Promise<void> {
-		console.log("\n🔧 Available MCP Tools")
-		console.log("─".repeat(80))
+		output.log("\n🔧 Available MCP Tools")
+		output.log("─".repeat(80))
 
 		try {
 			const servers = this.mcpHub.getServers()
 			const connectedServers = servers.filter((s) => s.status === "connected")
 
 			if (connectedServers.length === 0) {
-				console.log("  No MCP servers connected")
-				console.log("  Configure MCP servers in your settings to extend capabilities")
-				console.log("─".repeat(80))
+				output.log("  No MCP servers connected")
+				output.log("  Configure MCP servers in your settings to extend capabilities")
+				output.log("─".repeat(80))
 				return
 			}
 
 			for (const server of connectedServers) {
-				console.log(`\n  Server: ${server.name}`)
+				output.log(`\n  Server: ${server.name}`)
 
 				// Get tools from server (already loaded in server object)
 				if (server.tools && server.tools.length > 0) {
-					console.log(`    Tools (${server.tools.length}):`)
+					output.log(`    Tools (${server.tools.length}):`)
 					for (const tool of server.tools.slice(0, 5)) {
 						// Show first 5 tools
-						console.log(
+						output.log(
 							`      • ${tool.name}${tool.description ? ` - ${tool.description.slice(0, 60)}${tool.description.length > 60 ? "..." : ""}` : ""}`,
 						)
 					}
 					if (server.tools.length > 5) {
-						console.log(`      ... and ${server.tools.length - 5} more`)
+						output.log(`      ... and ${server.tools.length - 5} more`)
 					}
 				}
 
 				// Get resources from server (already loaded in server object)
 				if (server.resources && server.resources.length > 0) {
-					console.log(`    Resources (${server.resources.length}):`)
+					output.log(`    Resources (${server.resources.length}):`)
 					for (const resource of server.resources.slice(0, 3)) {
 						// Show first 3 resources
-						console.log(`      • ${resource.name || resource.uri}`)
+						output.log(`      • ${resource.name || resource.uri}`)
 					}
 					if (server.resources.length > 3) {
-						console.log(`      ... and ${server.resources.length - 3} more`)
+						output.log(`      ... and ${server.resources.length - 3} more`)
 					}
 				}
 			}
 
-			console.log("\n─".repeat(80))
+			output.log("\n─".repeat(80))
 		} catch (error) {
 			console.error("  Error retrieving MCP tools:", error instanceof Error ? error.message : String(error))
-			console.log("─".repeat(80))
+			output.log("─".repeat(80))
 		}
 	}
 
@@ -128,41 +129,41 @@ export class CliMcpManager {
 	 * Show MCP server status
 	 */
 	async displayStatus(): Promise<void> {
-		console.log("\n🔌 MCP Server Status")
-		console.log("─".repeat(80))
+		output.log("\n🔌 MCP Server Status")
+		output.log("─".repeat(80))
 
 		try {
 			const servers = this.mcpHub.getServers()
 
 			if (servers.length === 0) {
-				console.log("  No MCP servers configured")
-				console.log("\n  💡 Tip: Configure MCP servers to extend MarieCoder's capabilities")
-				console.log("     - File system access")
-				console.log("     - Database connections")
-				console.log("     - API integrations")
-				console.log("     - Custom tools and workflows")
+				output.log("  No MCP servers configured")
+				output.log("\n  💡 Tip: Configure MCP servers to extend MarieCoder's capabilities")
+				output.log("     - File system access")
+				output.log("     - Database connections")
+				output.log("     - API integrations")
+				output.log("     - Custom tools and workflows")
 			} else {
 				for (const server of servers) {
 					const statusIcon = this.getStatusIcon(server.status)
-					console.log(`  ${statusIcon} ${server.name} - ${server.status || "unknown"}`)
+					output.log(`  ${statusIcon} ${server.name} - ${server.status || "unknown"}`)
 					if (server.disabled) {
-						console.log(`      (disabled)`)
+						output.log(`      (disabled)`)
 					}
 					if (server.error) {
-						console.log(`      Error: ${server.error}`)
+						output.log(`      Error: ${server.error}`)
 					}
 				}
 
 				const connectedCount = servers.filter((s) => s.status === "connected").length
 				const disabledCount = servers.filter((s) => s.disabled).length
 
-				console.log(`\n  Summary: ${connectedCount}/${servers.length - disabledCount} servers connected`)
+				output.log(`\n  Summary: ${connectedCount}/${servers.length - disabledCount} servers connected`)
 			}
 
-			console.log("─".repeat(80))
+			output.log("─".repeat(80))
 		} catch (error) {
 			console.error("  Error retrieving MCP status:", error instanceof Error ? error.message : String(error))
-			console.log("─".repeat(80))
+			output.log("─".repeat(80))
 		}
 	}
 
@@ -191,11 +192,11 @@ export class CliMcpManager {
 		try {
 			// MCP hub cleanup is handled by the controller
 			if (this.verbose) {
-				console.log("✓ MCP cleanup initiated")
+				output.log("✓ MCP cleanup initiated")
 			}
 		} catch (error) {
 			if (this.verbose) {
-				console.warn("⚠️  Error during MCP cleanup:", error)
+				output.warn("⚠️  Error during MCP cleanup:", error)
 			}
 		}
 	}

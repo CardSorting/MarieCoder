@@ -5,6 +5,7 @@
 
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
+import { output } from "./cli_output"
 
 export interface WorkflowStep {
 	name: string
@@ -39,7 +40,7 @@ export class CliWorkflowManager {
 		try {
 			await fs.mkdir(this.workflowsDir, { recursive: true })
 			if (this.verbose) {
-				console.log(`[Workflow] Initialized directory: ${this.workflowsDir}`)
+				output.log(`[Workflow] Initialized directory: ${this.workflowsDir}`)
 			}
 		} catch (error) {
 			console.error("Failed to initialize workflows directory:", error)
@@ -73,7 +74,7 @@ export class CliWorkflowManager {
 		try {
 			await fs.writeFile(workflowPath, JSON.stringify(workflow, null, 2))
 			if (this.verbose) {
-				console.log(`[Workflow] Created: ${workflow.name} (${workflow.id})`)
+				output.log(`[Workflow] Created: ${workflow.name} (${workflow.id})`)
 			}
 			return workflow
 		} catch (error) {
@@ -154,7 +155,7 @@ export class CliWorkflowManager {
 		try {
 			await fs.unlink(workflowPath)
 			if (this.verbose) {
-				console.log(`[Workflow] Deleted: ${workflow.name}`)
+				output.log(`[Workflow] Deleted: ${workflow.name}`)
 			}
 			return true
 		} catch (error) {
@@ -179,19 +180,19 @@ export class CliWorkflowManager {
 		// Merge variables
 		const variables = { ...workflow.variables, ...variableOverrides }
 
-		console.log(`\n${"═".repeat(80)}`)
-		console.log(`⚡ Executing Workflow: ${workflow.name}`)
-		console.log(`${"═".repeat(80)}`)
-		console.log(`Description: ${workflow.description}`)
-		console.log(`Steps: ${workflow.steps.length}`)
-		console.log(`${"═".repeat(80)}\n`)
+		output.log(`\n${"═".repeat(80)}`)
+		output.log(`⚡ Executing Workflow: ${workflow.name}`)
+		output.log(`${"═".repeat(80)}`)
+		output.log(`Description: ${workflow.description}`)
+		output.log(`Steps: ${workflow.steps.length}`)
+		output.log(`${"═".repeat(80)}\n`)
 
 		// Execute each step
 		for (let i = 0; i < workflow.steps.length; i++) {
 			const step = workflow.steps[i]
-			console.log(`\n${"─".repeat(80)}`)
-			console.log(`📍 Step ${i + 1}/${workflow.steps.length}: ${step.name}`)
-			console.log(`${"─".repeat(80)}\n`)
+			output.log(`\n${"─".repeat(80)}`)
+			output.log(`📍 Step ${i + 1}/${workflow.steps.length}: ${step.name}`)
+			output.log(`${"─".repeat(80)}\n`)
 
 			// Substitute variables in prompt
 			const prompt = this.substituteVariables(step.prompt, { ...variables, ...step.variables })
@@ -201,12 +202,12 @@ export class CliWorkflowManager {
 			}
 
 			// Execute the step (handled by caller)
-			console.log(`Prompt: ${prompt}\n`)
+			output.log(`Prompt: ${prompt}\n`)
 		}
 
-		console.log(`\n${"═".repeat(80)}`)
-		console.log(`✅ Workflow "${workflow.name}" completed!`)
-		console.log(`${"═".repeat(80)}\n`)
+		output.log(`\n${"═".repeat(80)}`)
+		output.log(`✅ Workflow "${workflow.name}" completed!`)
+		output.log(`${"═".repeat(80)}\n`)
 	}
 
 	/**
@@ -299,7 +300,7 @@ export class CliWorkflowManager {
 		}
 
 		if (this.verbose) {
-			console.log("[Workflow] Created template workflows")
+			output.log("[Workflow] Created template workflows")
 		}
 	}
 

@@ -18,6 +18,7 @@ import type { ClineMessage } from "@/shared/ExtensionMessage"
 import { OUTPUT_LIMITS, TIMEOUTS } from "./cli_constants"
 import { getInteractionHandler } from "./cli_interaction_handler"
 import { formatCommandExecution, formatMessageBox, TerminalColors } from "./cli_message_formatter"
+import { output } from "./cli_output"
 import { getStreamHandler } from "./cli_stream_handler"
 
 export interface TerminalOutputConfig {
@@ -209,7 +210,7 @@ export class CliTaskMonitor {
 	 * Handle approval timeout
 	 */
 	private handleTimeout(): void {
-		console.log("\n⚠️  Approval timeout - auto-rejecting after 5 minutes")
+		output.log("\n⚠️  Approval timeout - auto-rejecting after 5 minutes")
 		if (this.task) {
 			this.task.handleWebviewAskResponse("noButtonClicked").catch(() => {})
 		}
@@ -220,7 +221,7 @@ export class CliTaskMonitor {
 	 * Auto-approve request
 	 */
 	private async autoApproveRequest(message: ClineMessage): Promise<ApprovalResult> {
-		console.log(`\n✓ Auto-approved: ${message.ask}`)
+		output.log(`\n✓ Auto-approved: ${message.ask}`)
 		return { approved: true }
 	}
 
@@ -250,11 +251,11 @@ export class CliTaskMonitor {
 				return { approved: false, feedbackText }
 
 			case "api_req_failed":
-				console.log(`\n⚠️  API request failed: ${text}`)
+				output.log(`\n⚠️  API request failed: ${text}`)
 				return { approved: await handler.askApproval("Retry?", false) }
 
 			default:
-				console.log(`\n❓ ${askType}: ${text}`)
+				output.log(`\n❓ ${askType}: ${text}`)
 				return { approved: await handler.askApproval("Approve?", true) }
 		}
 	}
@@ -267,19 +268,19 @@ export class CliTaskMonitor {
 			const tool = JSON.parse(text)
 			if (tool.tool === "editedExistingFile" || tool.tool === "newFileCreated") {
 				const action = tool.tool === "editedExistingFile" ? "Editing" : "Creating"
-				console.log(`\n${"─".repeat(80)}\n📝 ${action} File: ${tool.path}\n${"─".repeat(80)}`)
+				output.log(`\n${"─".repeat(80)}\n📝 ${action} File: ${tool.path}\n${"─".repeat(80)}`)
 
 				if (tool.content) {
 					const lines = tool.content.split("\n")
 					if (lines.length > 50) {
-						console.log(lines.slice(0, 50).join("\n"))
-						console.log(`\n... (${lines.length - 50} more lines)`)
+						output.log(lines.slice(0, 50).join("\n"))
+						output.log(`\n... (${lines.length - 50} more lines)`)
 					} else {
-						console.log(tool.content)
+						output.log(tool.content)
 					}
 				}
 
-				console.log("─".repeat(80))
+				output.log("─".repeat(80))
 				return { approved: await handler.askApproval("Approve?", true) }
 			}
 			return { approved: await handler.showToolExecution(tool.tool || "tool", tool) }
@@ -292,9 +293,9 @@ export class CliTaskMonitor {
 	 * Handle completion approval
 	 */
 	private async handleCompletionApproval(text: string, handler: any): Promise<ApprovalResult> {
-		console.log(`\n${"═".repeat(80)}\n✅ Task Completion\n${"═".repeat(80)}`)
-		console.log(text)
-		console.log("═".repeat(80))
+		output.log(`\n${"═".repeat(80)}\n✅ Task Completion\n${"═".repeat(80)}`)
+		output.log(text)
+		output.log("═".repeat(80))
 
 		if (await handler.askApproval("Provide feedback?", false)) {
 			const feedbackText = await handler.askInput("Feedback (or Enter to skip):")
@@ -309,13 +310,13 @@ export class CliTaskMonitor {
 	private async handleMcpApproval(text: string, handler: any): Promise<ApprovalResult> {
 		try {
 			const mcp = JSON.parse(text)
-			console.log(`\n${"─".repeat(80)}\n🔌 MCP Server Request\n${"─".repeat(80)}`)
-			console.log(`  Server: ${mcp.serverName || "unknown"}`)
-			console.log(`  Tool: ${mcp.toolName || "unknown"}`)
+			output.log(`\n${"─".repeat(80)}\n🔌 MCP Server Request\n${"─".repeat(80)}`)
+			output.log(`  Server: ${mcp.serverName || "unknown"}`)
+			output.log(`  Tool: ${mcp.toolName || "unknown"}`)
 			if (mcp.uri) {
-				console.log(`  Resource: ${mcp.uri}`)
+				output.log(`  Resource: ${mcp.uri}`)
 			}
-			console.log("─".repeat(80))
+			output.log("─".repeat(80))
 			return { approved: await handler.askApproval("Approve?", true) }
 		} catch {
 			return { approved: await handler.showToolExecution("use_mcp_server", { request: text }) }
@@ -338,30 +339,30 @@ export class CliTaskMonitor {
 		switch (type) {
 			case "text":
 				if (text) {
-					console.log(`\n${TerminalColors.cyan}🤖 AI:${TerminalColors.reset} ${text}`)
+					output.log(`\n${TerminalColors.cyan}🤖 AI:${TerminalColors.reset} ${text}`)
 				}
 				break
 
 			case "command":
 				if (text) {
-					console.log(formatCommandExecution(text, "pending"))
+					output.log(formatCommandExecution(text, "pending"))
 				}
 				break
 
 			case "command_output":
 				if (text) {
 					const output = this.truncateOutput(text)
-					console.log(output)
+					output.log(output)
 					const lineCount = text.split("\n").length
 					if (lineCount > this.lineLimit) {
-						console.log(`\n${TerminalColors.dim}💡 Truncated: ${lineCount} lines${TerminalColors.reset}`)
+						output.log(`\n${TerminalColors.dim}💡 Truncated: ${lineCount} lines${TerminalColors.reset}`)
 					}
 				}
 				break
 
 			case "error":
 				if (text) {
-					console.log(formatMessageBox("Error", text, { type: "error" }))
+					output.log(formatMessageBox("Error", text, { type: "error" }))
 				}
 				break
 
@@ -371,7 +372,7 @@ export class CliTaskMonitor {
 
 			default:
 				if (text) {
-					console.log(`\n${TerminalColors.gray}[${type}]${TerminalColors.reset} ${text}`)
+					output.log(`\n${TerminalColors.gray}[${type}]${TerminalColors.reset} ${text}`)
 				}
 		}
 	}

@@ -1,11 +1,14 @@
 /**
  * CLI Interaction Handler
- * Handles user approvals and interactions in CLI mode
+ * Handles user approvals and interactions in CLI mode with enhanced formatting
  */
 
 import * as readline from "node:readline"
 import { getLogger } from "./cli_logger"
+import { formatKeyValue, formatMessageBox } from "./cli_message_formatter"
+import { output } from "./cli_output"
 import { getProgressManager } from "./cli_progress_manager"
+import { SemanticColors, style, TerminalColors } from "./cli_terminal_colors"
 
 const logger = getLogger()
 const progressManager = getProgressManager()
@@ -21,10 +24,15 @@ export class CliInteractionHandler {
 	}
 
 	/**
-	 * Ask for user approval with yes/no prompt
+	 * Ask for user approval with yes/no prompt - Enhanced with better formatting
 	 */
 	async askApproval(message: string, defaultYes = false, timeoutMs = 300000): Promise<boolean> {
-		const suffix = defaultYes ? "[Y/n]" : "[y/N]"
+		// Format prompt with visual styling
+		const promptIcon = style("?", SemanticColors.prompt, TerminalColors.bright)
+		const suffix = defaultYes ? style("[Y/n]", SemanticColors.metadata) : style("[y/N]", SemanticColors.metadata)
+
+		const formattedPrompt = `\n${promptIcon} ${style(message, TerminalColors.bright)} ${suffix}: `
+
 		return new Promise((resolve) => {
 			let timeout: NodeJS.Timeout | null = null
 			let answered = false
@@ -42,13 +50,14 @@ export class CliInteractionHandler {
 					if (!answered) {
 						answered = true
 						cleanup()
-						console.log("\n⏱️  Timeout - using default response")
+						const timeoutMsg = style("⏱  Timeout - using default response", SemanticColors.warning)
+						output.log(`\n${timeoutMsg}\n`)
 						resolve(defaultYes)
 					}
 				}, timeoutMs)
 			}
 
-			this.rl.question(`${message} ${suffix}: `, (answer) => {
+			this.rl.question(formattedPrompt, (answer) => {
 				if (!answered) {
 					answered = true
 					cleanup()
@@ -64,10 +73,15 @@ export class CliInteractionHandler {
 	}
 
 	/**
-	 * Ask for text input
+	 * Ask for text input - Enhanced with better formatting
 	 */
 	async askInput(prompt: string, defaultValue?: string, timeoutMs = 300000): Promise<string> {
-		const suffix = defaultValue ? ` (default: ${defaultValue})` : ""
+		// Format prompt with visual styling
+		const promptIcon = style("✎", SemanticColors.prompt, TerminalColors.bright)
+		const suffix = defaultValue ? style(` (default: ${defaultValue})`, SemanticColors.metadata) : ""
+
+		const formattedPrompt = `\n${promptIcon} ${style(prompt, TerminalColors.bright)}${suffix}: `
+
 		return new Promise((resolve) => {
 			let timeout: NodeJS.Timeout | null = null
 			let answered = false
@@ -85,13 +99,14 @@ export class CliInteractionHandler {
 					if (!answered) {
 						answered = true
 						cleanup()
-						console.log("\n⏱️  Timeout - using default value")
+						const timeoutMsg = style("⏱  Timeout - using default value", SemanticColors.warning)
+						output.log(`\n${timeoutMsg}\n`)
 						resolve(defaultValue || "")
 					}
 				}, timeoutMs)
 			}
 
-			this.rl.question(`${prompt}${suffix}: `, (answer) => {
+			this.rl.question(formattedPrompt, (answer) => {
 				if (!answered) {
 					answered = true
 					cleanup()
@@ -102,51 +117,67 @@ export class CliInteractionHandler {
 	}
 
 	/**
-	 * Ask user to choose from a list
+	 * Ask user to choose from a list - Enhanced with better formatting
 	 */
 	async askChoice(message: string, choices: string[]): Promise<string | undefined> {
-		console.log(message)
+		// Display message with visual styling
+		output.log(`\n${style(message, TerminalColors.bright)}\n`)
+
+		// Display choices with improved formatting
 		choices.forEach((choice, index) => {
-			console.log(`  ${index + 1}. ${choice}`)
+			const number = style(`${index + 1}.`, SemanticColors.info, TerminalColors.bright)
+			output.log(`  ${number} ${choice}`)
 		})
 
+		const promptIcon = style("›", SemanticColors.prompt, TerminalColors.bright)
+		const formattedPrompt = `\n${promptIcon} ${style("Enter number", TerminalColors.bright)}: `
+
 		return new Promise((resolve) => {
-			this.rl.question("Enter number: ", (answer) => {
+			this.rl.question(formattedPrompt, (answer) => {
 				const index = Number.parseInt(answer.trim(), 10) - 1
+				if (index >= 0 && index < choices.length) {
+					const selectedIcon = style("✓", SemanticColors.complete)
+					output.log(`${selectedIcon} ${style("Selected:", TerminalColors.dim)} ${choices[index]}\n`)
+				}
 				resolve(choices[index])
 			})
 		})
 	}
 
 	/**
-	 * Display a message and wait for user to press Enter
+	 * Display a message and wait for user to press Enter - Enhanced with better formatting
 	 */
 	async waitForEnter(message?: string): Promise<void> {
+		const defaultMsg = "Press Enter to continue..."
+		const displayMsg = message || defaultMsg
+		const pauseIcon = style("⏸", SemanticColors.info)
+		const formattedPrompt = `\n${pauseIcon} ${style(displayMsg, TerminalColors.dim)} `
+
 		return new Promise((resolve) => {
-			this.rl.question(message || "Press Enter to continue...", () => {
+			this.rl.question(formattedPrompt, () => {
 				resolve()
 			})
 		})
 	}
 
 	/**
-	 * Show a formatted tool execution request
+	 * Show a formatted tool execution request - Enhanced with better formatting
 	 */
 	async showToolExecution(toolName: string, params: any): Promise<boolean> {
-		console.log("\n" + "─".repeat(80))
-		console.log(`🔧 Tool Execution Request: ${toolName}`)
-		console.log("─".repeat(80))
-
-		// Format parameters nicely
+		// Format parameters
+		const paramLines: string[] = []
 		for (const [key, value] of Object.entries(params)) {
 			if (typeof value === "string" && value.length > 100) {
-				console.log(`  ${key}: ${value.substring(0, 100)}...`)
+				paramLines.push(formatKeyValue(key, `${value.substring(0, 100)}...`))
 			} else {
-				console.log(`  ${key}:`, value)
+				paramLines.push(formatKeyValue(key, typeof value === "object" ? JSON.stringify(value, null, 2) : String(value)))
 			}
 		}
 
-		console.log("─".repeat(80))
+		const content = paramLines.length > 0 ? paramLines.join("\n") : "No parameters"
+
+		// Display as message box
+		output.log(formatMessageBox(`Tool Execution: ${toolName}`, content, { icon: "🔧", type: "info" }))
 
 		return this.askApproval("Approve this action?", true)
 	}
@@ -155,9 +186,9 @@ export class CliInteractionHandler {
 	 * Show file changes for approval
 	 */
 	async showFileChange(filePath: string, oldContent: string, newContent: string): Promise<boolean> {
-		console.log("\n" + "─".repeat(80))
-		console.log(`📝 File Change: ${filePath}`)
-		console.log("─".repeat(80))
+		output.log("\n" + "─".repeat(80))
+		output.log(`📝 File Change: ${filePath}`)
+		output.log("─".repeat(80))
 
 		// Show diff
 		const oldLines = oldContent.split("\n")
@@ -172,23 +203,23 @@ export class CliInteractionHandler {
 
 			if (oldLine !== newLine) {
 				if (oldLine && !newLine) {
-					console.log(`-  ${oldLine}`)
+					output.log(`-  ${oldLine}`)
 				} else if (!oldLine && newLine) {
-					console.log(`+  ${newLine}`)
+					output.log(`+  ${newLine}`)
 				} else {
-					console.log(`-  ${oldLine}`)
-					console.log(`+  ${newLine}`)
+					output.log(`-  ${oldLine}`)
+					output.log(`+  ${newLine}`)
 				}
 			} else if (oldLine) {
-				console.log(`   ${oldLine}`)
+				output.log(`   ${oldLine}`)
 			}
 		}
 
 		if (maxLines > linesToShow) {
-			console.log(`\n  ... (${maxLines - linesToShow} more lines)`)
+			output.log(`\n  ... (${maxLines - linesToShow} more lines)`)
 		}
 
-		console.log("─".repeat(80))
+		output.log("─".repeat(80))
 
 		return this.askApproval("Approve these changes?", true)
 	}
@@ -197,14 +228,14 @@ export class CliInteractionHandler {
 	 * Show command execution request
 	 */
 	async showCommandExecution(command: string, cwd?: string): Promise<boolean> {
-		console.log("\n" + "─".repeat(80))
-		console.log("⚡ Command Execution Request")
-		console.log("─".repeat(80))
-		console.log(`  Command: ${command}`)
+		output.log("\n" + "─".repeat(80))
+		output.log("⚡ Command Execution Request")
+		output.log("─".repeat(80))
+		output.log(`  Command: ${command}`)
 		if (cwd) {
-			console.log(`  Working Directory: ${cwd}`)
+			output.log(`  Working Directory: ${cwd}`)
 		}
-		console.log("─".repeat(80))
+		output.log("─".repeat(80))
 
 		return this.askApproval("Execute this command?", true)
 	}

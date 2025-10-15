@@ -31,6 +31,7 @@
 import * as fs from "node:fs"
 import * as os from "node:os"
 import * as path from "node:path"
+import { output } from "./cli_output"
 
 export interface CliConfiguration {
 	apiProvider?: string
@@ -139,7 +140,7 @@ export class CliConfigManager {
 				const fileConfig = JSON.parse(fs.readFileSync(this.configPath, "utf-8"))
 				Object.assign(config, fileConfig)
 			} catch (error) {
-				console.warn(`⚠️  Failed to load config from ${this.configPath}:`, error)
+				output.warn(`⚠️  Failed to load config from ${this.configPath}:`, error)
 			}
 		}
 
@@ -161,7 +162,7 @@ export class CliConfigManager {
 					config.apiKey = secrets.api_key
 				}
 			} catch (error) {
-				console.warn(`⚠️  Failed to load secrets from ${this.secretsPath}:`, error)
+				output.warn(`⚠️  Failed to load secrets from ${this.secretsPath}:`, error)
 			}
 		}
 
@@ -403,67 +404,67 @@ export class CliConfigManager {
 	displayConfig(config?: CliConfiguration): void {
 		const currentConfig = config || this.loadConfig()
 
-		console.log("\n📋 Current Configuration")
-		console.log("─".repeat(80))
-		console.log(`  Config Directory: ${this.configDir}`)
-		console.log(`  Provider: ${currentConfig.apiProvider || "not set"}`)
-		console.log(`  Model: ${currentConfig.apiModelId || "not set"}`)
-		console.log(`  API Key: ${currentConfig.apiKey ? this.maskApiKey(currentConfig.apiKey) : "not set"}`)
+		output.log("\n📋 Current Configuration")
+		output.log("─".repeat(80))
+		output.log(`  Config Directory: ${this.configDir}`)
+		output.log(`  Provider: ${currentConfig.apiProvider || "not set"}`)
+		output.log(`  Model: ${currentConfig.apiModelId || "not set"}`)
+		output.log(`  API Key: ${currentConfig.apiKey ? this.maskApiKey(currentConfig.apiKey) : "not set"}`)
 
 		if (currentConfig.temperature !== undefined) {
-			console.log(`  Temperature: ${currentConfig.temperature}`)
+			output.log(`  Temperature: ${currentConfig.temperature}`)
 		}
 		if (currentConfig.maxTokens !== undefined) {
-			console.log(`  Max Tokens: ${currentConfig.maxTokens}`)
+			output.log(`  Max Tokens: ${currentConfig.maxTokens}`)
 		}
 
 		// Plan/Act Mode Configuration
 		if (currentConfig.planActSeparateModelsSetting) {
-			console.log(`\n  Plan/Act Mode: Separate Models Enabled`)
-			console.log(`  Current Mode: ${currentConfig.mode || "act"} mode`)
+			output.log(`\n  Plan/Act Mode: Separate Models Enabled`)
+			output.log(`  Current Mode: ${currentConfig.mode || "act"} mode`)
 			if (currentConfig.planModeApiProvider || currentConfig.planModeApiModelId) {
-				console.log(
+				output.log(
 					`  Plan Mode: ${currentConfig.planModeApiProvider || "not set"} / ${currentConfig.planModeApiModelId || "not set"}`,
 				)
 			}
 			if (currentConfig.actModeApiProvider || currentConfig.actModeApiModelId) {
-				console.log(
+				output.log(
 					`  Act Mode: ${currentConfig.actModeApiProvider || "not set"} / ${currentConfig.actModeApiModelId || "not set"}`,
 				)
 			}
 		} else {
-			console.log(`  Mode: ${currentConfig.mode || "act"}`)
+			output.log(`  Mode: ${currentConfig.mode || "act"}`)
 		}
 
 		if (currentConfig.workspace) {
-			console.log(`\n  Workspace: ${currentConfig.workspace}`)
+			output.log(`\n  Workspace: ${currentConfig.workspace}`)
 		}
 		if (currentConfig.verbose) {
-			console.log(`  Verbose: ${currentConfig.verbose}`)
+			output.log(`  Verbose: ${currentConfig.verbose}`)
 		}
 		if (currentConfig.autoApprove) {
-			console.log(`  Auto-Approve: ${currentConfig.autoApprove}`)
+			output.log(`  Auto-Approve: ${currentConfig.autoApprove}`)
 		}
 
-		console.log("─".repeat(80) + "\n")
+		output.log("─".repeat(80) + "\n")
 	}
 
 	/**
 	 * Get helpful error messages for missing configuration
 	 */
 	getConfigurationHelp(): void {
-		console.log("\n❌ Configuration incomplete!")
-		console.log("\nTo configure MarieCoder CLI, you can:")
-		console.log("\n1. Run the setup wizard:")
-		console.log("   mariecoder --setup")
-		console.log("\n2. Use command-line options:")
-		console.log('   mariecoder --api-key YOUR_KEY --provider anthropic "Your task"')
-		console.log("\n3. Set environment variables:")
-		console.log("   export ANTHROPIC_API_KEY=your-key")
-		console.log('   mariecoder "Your task"')
-		console.log("\n4. Edit the config file directly:")
-		console.log(`   ${this.configPath}`)
-		console.log("\nFor more help, run: mariecoder --help\n")
+		output.log("\n❌ Configuration incomplete!")
+		output.log("\nTo configure MarieCoder CLI, you can:")
+		output.log("\n1. Run the setup wizard:")
+		output.log("   mariecoder --setup")
+		output.log("\n2. Use command-line options:")
+		output.log('   mariecoder --api-key YOUR_KEY --provider anthropic "Your task"')
+		output.log("\n3. Set environment variables:")
+		output.log("   export ANTHROPIC_API_KEY=your-key")
+		output.log('   mariecoder "Your task"')
+		output.log("\n4. Edit the config file directly:")
+		output.log(`   ${this.configPath}`)
+		output.log("\nFor more help, run: mariecoder --help\n")
 	}
 
 	/**
@@ -491,7 +492,7 @@ export class CliConfigManager {
 				fs.unlinkSync(this.secretsPath)
 			}
 			this.clearCache()
-			console.log("✅ Configuration reset successfully")
+			output.log("✅ Configuration reset successfully")
 		} catch (error) {
 			console.error(`❌ Failed to reset configuration: ${error}`)
 		}

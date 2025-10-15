@@ -6,6 +6,7 @@ import * as fs from "node:fs/promises"
 import * as os from "node:os"
 import * as path from "node:path"
 import type * as vscode from "vscode"
+import { output } from "./cli_output"
 
 export class CliContext implements vscode.ExtensionContext {
 	subscriptions: Array<{ dispose(): any }> = []
@@ -34,7 +35,7 @@ export class CliContext implements vscode.ExtensionContext {
 
 		// Ensure storage directory exists
 		fs.mkdir(this.globalStoragePath, { recursive: true }).catch((err) => {
-			console.warn("Failed to create storage directory:", err)
+			output.warn("Failed to create storage directory:", err)
 		})
 
 		this.asAbsolutePath = (relativePath: string) => path.join(this.extensionPath, relativePath)

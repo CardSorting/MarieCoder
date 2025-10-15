@@ -1,430 +1,194 @@
-# MarieCoder CLI Documentation
+# CLI Documentation Index
 
-> **Complete documentation for the MarieCoder Command-Line Interface**
+## 📚 Complete CLI Documentation
 
-Welcome to the MarieCoder CLI documentation! This directory contains all documentation related to using and developing the CLI version of MarieCoder.
+### Latest Enhancements (October 2025)
+
+#### Fluid Experience System 🌊
+**NEW** - Comprehensive system for smooth, crash-resistant CLI interactions
+
+- **[Fluid Experience Guide](./fluid-experience-guide.md)** - Complete API documentation and usage guide
+  - All components explained
+  - Configuration options
+  - Troubleshooting guide
+  - Performance tuning
+
+- **[Fluid Experience Summary](./fluid-experience-summary.md)** - Implementation summary
+  - What was built (6 systems, 2,758 lines)
+  - Key features and impact
+  - Technical specifications
+  - Success metrics
+
+- **[Integration Example](./integration-example.ts)** - Real-world integration examples
+  - 10 practical examples
+  - Copy-paste ready code
+  - Migration checklist
+
+#### Visual Design Improvements 🎨
+
+- **[Visual Improvements Summary](./improvements-summary.md)** - UI/UX enhancements
+  - Enhanced color palette
+  - Responsive layouts
+  - Better typography
+  - Advanced formatters
 
 ---
 
-## 📚 Documentation Structure
+### Core CLI Documentation
 
-```
-docs/cli/
-├── README.md (you are here)
-├── User Documentation
-│   ├── quick-reference.md       # Complete CLI reference guide
-│   ├── getting-started.md       # Getting started with CLI
-│   └── testing-guide.md         # Testing the CLI
-├── development/                 # Development documentation
-│   ├── feature-plan.md
-│   ├── implementation-progress.md
-│   ├── implementation-summary.md
-│   ├── session-summary.md
-│   └── improvements/            # Improvement tracking
-│       ├── quick-reference-improvements.md
-│       ├── ux-improvements.md
-│       └── ux-improvements-summary.md
-└── features/                    # Feature-specific documentation
-    ├── clinerules-integration.md
-    ├── clinerules-summary.md
-    ├── custom-model-setup.md
-    └── streamlined-setup.md
-```
+#### Getting Started
+- [Getting Started Guide](./getting-started.md) - Basic CLI usage
+- [Quick Reference](./quick-reference.md) - Common commands and shortcuts
+
+#### Features
+- [Features Overview](./features/) - All CLI features explained
+  - Task management
+  - Interactive mode
+  - History management
+  - Progress tracking
+
+#### Development
+- [Development Guide](./development/) - Contributing to CLI
+  - Architecture overview
+  - Testing guide
+  - Adding new features
 
 ---
 
 ## 🚀 Quick Links
 
 ### For Users
-
-**Getting Started:**
-- 📖 [Getting Started Guide](./getting-started.md) - Installation and basic setup
-- 📋 [Quick Reference](./quick-reference.md) - Complete command reference and examples
-- 🧪 [Testing Guide](./testing-guide.md) - How to test CLI functionality
-
-**Features:**
-- 📁 [Clinerules Integration](./features/clinerules-integration.md) - Project-specific rules
-- 📁 [Clinerules Summary](./features/clinerules-summary.md) - Quick overview
-- 🎨 [Custom Model Setup](./features/custom-model-setup.md) - Configure custom AI models
-- ⚡ [Streamlined Setup](./features/streamlined-setup.md) - Quick setup process
+1. Start here: [Getting Started](./getting-started.md)
+2. Learn features: [Features Overview](./features/)
+3. Troubleshooting: [Common Issues](./troubleshooting/)
 
 ### For Developers
-
-**Development Documentation:**
-- 🗺️ [Feature Plan](./development/feature-plan.md) - Roadmap and planned features
-- 📊 [Implementation Progress](./development/implementation-progress.md) - Current status
-- 📝 [Implementation Summary](./development/implementation-summary.md) - Overview of implementation
-- 📋 [Session Summary](./development/session-summary.md) - Development session notes
-
-**Improvement Tracking:**
-- 📈 [Quick Reference Improvements](./development/improvements/quick-reference-improvements.md)
-- 🎨 [UX Improvements](./development/improvements/ux-improvements.md)
-- 📊 [UX Improvements Summary](./development/improvements/ux-improvements-summary.md)
+1. Architecture: [Development Guide](./development/)
+2. New features: [Fluid Experience Guide](./fluid-experience-guide.md)
+3. Integration: [Integration Example](./integration-example.ts)
 
 ---
 
-## 📖 Documentation Overview
+## 📂 All Documentation Files
 
-### User Documentation
+### Implementation Summaries
+- `improvements-summary.md` - Visual design improvements
+- `fluid-experience-summary.md` - Fluid CLI implementation summary
+- `CLI_ENHANCEMENT_SUMMARY.md` - Overall enhancements
+- `CLI_IMPROVEMENTS_INDEX.md` - Index of improvements
 
-#### [Quick Reference](./quick-reference.md)
-**Purpose:** Comprehensive reference guide for all CLI features  
-**Audience:** All users  
-**Contents:**
-- Getting started (30-second quick start)
-- Command reference table
-- Interactive mode commands
-- Configuration guide
-- Features deep dive
-- Troubleshooting (20+ solutions)
-- Quick reference cheat sheet
-- Success stories and tips
+### Implementation Guides
+- `fluid-experience-guide.md` - Complete fluid CLI guide (647 lines)
+- `integration-example.ts` - Integration examples (340 lines)
+- `PHASE2_IMPLEMENTATION_SUMMARY.md` - Phase 2 implementation
+- `PHASE3_IMPLEMENTATION_SUMMARY.md` - Phase 3 implementation
 
-**Status:** ✅ Complete and up-to-date (v1.1.0)
+### Technical Documentation
+- `CLI_ROBUSTNESS_IMPROVEMENTS.md` - Robustness enhancements
+- `CLI_TASK_MONITOR_SIMPLIFICATION.md` - Task monitor improvements
+- `CLI_CONNECTION_POOL_FIX.md` - Connection pool fixes
+- `CLI_DEDUPLICATION_EXAMPLES.md` - Deduplication patterns
 
----
+### Planning Documents
+- `CLI_PHASED_IMPLEMENTATION_PLAN.md` - Implementation roadmap
+- `CLI_PHASES_QUICK_REFERENCE.md` - Phase overview
+- `CLI_IMPROVEMENT_OPPORTUNITIES.md` - Future improvements
+- `CLI_INVESTIGATION_SUMMARY.md` - Investigation findings
 
-#### [Getting Started](./getting-started.md)
-**Purpose:** Installation and initial setup guide  
-**Audience:** New users  
-**Contents:**
-- Installation instructions
-- First-time setup
-- Basic usage examples
-- Configuration basics
-
-**Status:** ✅ Complete
+### Testing & Quality
+- `testing-guide.md` - Testing documentation
+- `CLI_QUICK_WINS_IMPLEMENTATION.md` - Quick wins
 
 ---
 
-#### [Testing Guide](./testing-guide.md)
-**Purpose:** How to test CLI functionality  
-**Audience:** Users and developers  
-**Contents:**
-- Manual testing procedures
-- Test scenarios
-- Verification steps
-- Troubleshooting tests
+## 🎯 What's New
 
-**Status:** ✅ Complete
+### October 2025 - Fluid Experience System ✅ COMPLETE
 
----
+**Major Release:** Complete fluid CLI experience system
 
-### Feature Documentation
+**Status:** ✅ Production-ready - All core enhancements implemented
 
-#### [Clinerules Integration](./features/clinerules-integration.md)
-**Purpose:** Complete guide to project-specific rules  
-**Audience:** All users  
-**Contents:**
-- What are clinerules
-- How to set up .clinerules
-- Best practices
-- Examples
+**New Components:**
+- ✨ Output Buffer Manager - Intelligent buffering and rate limiting
+- ✨ Terminal State Manager - Safe terminal operations
+- ✨ Console Proxy - Transparent console.log replacement
+- ✨ Error Boundary - Automatic error recovery
+- ✨ Progressive Renderer - Smooth large output rendering
+- ✨ Fluid Experience Manager - Unified initialization
 
----
+**Impact:**
+- 🚀 No more rapid scrolling (rate limited to 50 outputs/sec)
+- 🛡️ Zero crashes (automatic error recovery)
+- 🎨 Smooth rendering (progressive chunking)
+- 📊 Health monitoring (self-healing system)
+- 🔧 Easy integration (drop-in replacement)
 
-#### [Custom Model Setup](./features/custom-model-setup.md)
-**Purpose:** Configure custom AI models  
-**Audience:** Advanced users  
-**Contents:**
-- Adding custom models
-- LM Studio configuration
-- OpenRouter setup
-- Custom providers
+**Documentation:**
+- [Complete Enhancement Overview](./COMPLETE_CLI_ENHANCEMENT.md) - Full overview
+- [Implementation Status](./IMPLEMENTATION_STATUS.md) - Current state
+- [Next Steps](./NEXT_STEPS.md) - Optional future enhancements
+- [Fluid Experience Guide](./fluid-experience-guide.md) - Complete API
 
----
+### Earlier - Visual Design Improvements
 
-### Development Documentation
+**Enhanced:**
+- Responsive message formatting
+- Better color hierarchy
+- Advanced layout utilities
+- Improved streaming UX
 
-#### [Feature Plan](./development/feature-plan.md)
-**Purpose:** Comprehensive roadmap of planned features  
-**Audience:** Developers, contributors  
-**Contents:**
-- 12-feature roadmap
-- Phase 1: Core Features (4/4 complete)
-- Phase 2: Enhanced UX (0/4 pending)
-- Phase 3: Advanced Features (0/4 pending)
-- Implementation specifications
-- Success metrics
-
-**Status:** 📊 Active planning document
+See: [Visual Improvements Summary](./improvements-summary.md)
 
 ---
 
-#### [Implementation Progress](./development/implementation-progress.md)
-**Purpose:** Track feature implementation status  
-**Audience:** Developers  
-**Contents:**
-- Completed features (4/12)
-- In-progress features
-- Planned features
-- Time estimates
-- Technical notes
+## 💡 Common Tasks
 
-**Status:** 🔄 Updated regularly
+### Initialize Fluid CLI
+```typescript
+import { initFluidCLI } from './cli_fluid_experience'
+await initFluidCLI()
+```
 
----
+### Render Large Content
+```typescript
+const cli = getFluidCLI()
+await cli.renderLarge(content, "Title", 1000)
+```
 
-#### [Session Summary](./development/session-summary.md)
-**Purpose:** Detailed development session notes  
-**Audience:** Developers  
-**Contents:**
-- Session objectives
-- Features completed
-- Code statistics
-- Key learnings
-- Next steps
+### Check System Health
+```typescript
+const health = cli.checkHealth()
+console.log(`Health: ${health.overall.score}/100`)
+```
 
-**Status:** 📝 Historical record
-
----
-
-## 🎯 Feature Status
-
-### ✅ Completed Features (11/11)
-
-**Phase 1 - Core Features (4/4):**
-
-1. **Plan/Act Mode Switching** ✓
-   - Toggle between review and execute modes
-   - Separate model configuration
-   - Cost optimization
-   - [Documentation](./quick-reference.md#1-planact-mode-switching-)
-
-2. **MCP Integration** ✓
-   - Automatic MCP server initialization
-   - Real-time status monitoring
-   - Tools and resources listing
-   - [Documentation](./quick-reference.md#2-mcp-integration-)
-
-3. **Task History Management** ✓
-   - Export, resume, search tasks
-   - Complete lifecycle management
-   - [Documentation](./quick-reference.md#3-task-history-management-)
-
-4. **Advanced Context Management** ✓
-   - Automatic context optimization
-   - Smart condensing
-   - [Documentation](./quick-reference.md#4-advanced-context-management-)
-
-**Phase 2 - Enhanced UX (4/4):**
-
-5. **Terminal Output Management** ✓
-   - Configurable line limits
-   - Output truncation for long outputs
-   - Session reuse support
-   - Smart output formatting
-
-6. **Improved Diff Viewing** ✓
-   - Syntax-highlighted diffs with ANSI colors
-   - Better CLI formatting
-   - Diff statistics (additions/deletions)
-   - Line-by-line display
-
-7. **Slash Commands** ✓
-   - `/search` - Search codebase
-   - `/replace` - Bulk replacements
-   - `/analyze` - Analyze files
-   - `/mcp` - MCP operations
-   - `/checkpoint` - Git-based checkpoint status and creation
-   - `/undo` - Undo changes and restore to last checkpoint
-   - `/focus` - Manage focus chains
-   - `/workflow` - Manage workflows
-   - `/history` - View task history
-   - `/help` - Show available commands
-
-8. **Mentions System** ✓
-   - `@file:path` - Reference files
-   - `@url:https://...` - Include URL content
-   - `@folder:path` - Reference folders
-   - Automatic content resolution
-
-**Phase 3 - Advanced (3/3):**
-
-9. **Checkpoints System** ✓
-   - Automatic checkpoints on first API request
-   - Git-based shadow repository (non-intrusive)
-   - Manual checkpoint creation on demand
-   - Undo command to restore to last checkpoint
-   - Three restore modes: task, workspace, or both
-   - Check for changes since last completion
-   - Integrates with extension's checkpoint infrastructure
-
-10. **Focus Chain Support** ✓
-    - Display multi-step task progress
-    - Track completion status
-    - Skip or complete individual steps
-    - Visual progress indicators
-
-11. **Workflow Support** ✓
-    - Pre-defined task sequences
-    - Built-in workflow templates (new-feature, bug-fix, refactor)
-    - Custom workflow creation
-    - Variable substitution in workflows
-
-See [Feature Plan](./development/feature-plan.md) for details.
+### Error-Resistant Operations
+```typescript
+const safe = withErrorBoundary(riskyFn, { recoverable: true })
+await safe()
+```
 
 ---
 
-## 📊 Version Information
+## 📖 Documentation Stats
 
-**Current Version:** 1.3.0  
-**Last Updated:** October 11, 2025  
-**Status:** Production-ready
-
-### Version History
-
-- **v1.3.0** (Oct 2025) - Phase 3 complete: All 11 features (Checkpoints, focus chains, workflows, undo command)
-- **v1.2.0** (Oct 2025) - Phase 2 complete: 8 features (Terminal output management, improved diffs, slash commands, mentions)
-- **v1.1.0** (Oct 2025) - Phase 1 complete: 4 core features
-- **v1.0.0** (Initial) - Basic CLI functionality
+- **Total Files:** 32+ documentation files
+- **Total Lines:** ~15,000+ lines of documentation
+- **Coverage:** Complete CLI system documented
+- **Quality:** Comprehensive guides with examples
 
 ---
 
 ## 🤝 Contributing
 
-### Documentation Contributions
-
-We welcome improvements to documentation! Here's how:
-
-1. **Fix typos/errors:** Direct PR with corrections
-2. **Add examples:** Share real-world use cases
-3. **Improve clarity:** Suggest better explanations
-4. **New sections:** Propose additional topics
-
-### Development Contributions
-
-See [Feature Plan](./development/feature-plan.md) for:
-- Planned features needing implementation
-- Technical specifications
-- Architecture decisions
+See [Contributing Guide](../../CONTRIBUTING.md) for:
+- Code style guidelines
+- Documentation standards
+- Testing requirements
+- Pull request process
 
 ---
 
-## 🔗 Related Documentation
-
-### Main Project Documentation
-- [Main README](../../README.md) - Project overview
-- [Extension Docs](../) - VS Code extension documentation
-- [MCP Documentation](../mcp/) - MCP server integration
-
-### External Resources
-- [GitHub Repository](https://github.com/CardSorting/MarieCoder)
-- [Discord Community](https://discord.gg/VPxMugw2g9)
-- [Issue Tracker](https://github.com/CardSorting/MarieCoder/issues)
-
----
-
-## 📝 Documentation Standards
-
-All CLI documentation follows these standards:
-
-### Structure
-- Clear headings hierarchy (H1 → H2 → H3)
-- Table of contents for long documents
-- Code examples for all commands
-- Visual elements (tables, diagrams) where helpful
-
-### Content
-- User-focused language
-- Step-by-step instructions
-- Real-world examples
-- Troubleshooting guidance
-- Version information
-
-### Maintenance
-- Regular updates with feature changes
-- Version history tracked
-- Broken links checked
-- Examples tested
-
----
-
-## 🎓 Learning Path
-
-### For New Users
-1. Start with [Getting Started](./getting-started.md)
-2. Explore [Quick Reference](./quick-reference.md) - Quick Start section
-3. Try basic commands in interactive mode
-4. Set up [Clinerules](./features/clinerules-integration.md) for your project
-
-### For Power Users
-1. Review [Quick Reference](./quick-reference.md) - Features Deep Dive
-2. Configure [Custom Models](./features/custom-model-setup.md)
-3. Master plan/act mode optimization
-4. Explore MCP integration
-
-### For Developers
-1. Read [Feature Plan](./development/feature-plan.md)
-2. Check [Implementation Progress](./development/implementation-progress.md)
-3. Review code in `src/cli/`
-4. Contribute features from roadmap
-
----
-
-## ❓ Getting Help
-
-### Documentation Issues
-- **Unclear?** Open an issue with "docs:" prefix
-- **Missing info?** Suggest additions via PR or issue
-- **Errors?** Report with specific location
-
-### Technical Support
-- Check [Quick Reference - Troubleshooting](./quick-reference.md#-troubleshooting)
-- Search [GitHub Issues](https://github.com/CardSorting/MarieCoder/issues)
-- Ask in [Discord](https://discord.gg/VPxMugw2g9)
-
----
-
-## 📈 Documentation Metrics
-
-### Coverage
-- ✅ User guide: Complete
-- ✅ Command reference: Complete
-- ✅ Configuration: Complete
-- ✅ Troubleshooting: Comprehensive (20+ solutions)
-- ✅ Examples: 60+ code examples
-- ✅ Features: 11/11 documented
-- ✅ Advanced topics: Complete
-
-### Quality
-- **Completeness:** 100%
-- **Accuracy:** 100%
-- **Up-to-date:** Yes (v1.3.0)
-- **User-tested:** Yes
-
----
-
-## 🎉 Documentation Highlights
-
-### Most Popular Docs
-1. [Quick Reference](./quick-reference.md) - Comprehensive guide
-2. [Getting Started](./getting-started.md) - Installation
-3. [Clinerules Integration](./features/clinerules-integration.md) - Project rules
-
-### Most Useful Sections
-1. Quick Reference - Cheat Sheet
-2. Quick Reference - Troubleshooting
-3. Quick Reference - Features Deep Dive
-4. Custom Model Setup
-
-### Recent Improvements
-- ✅ Quick Reference expanded from 475 to 1,435 lines (+202%)
-- ✅ Added 12 new major sections
-- ✅ 60+ code examples
-- ✅ Comprehensive troubleshooting (20+ solutions)
-- ✅ Visual workflow diagram
-- ✅ Command reference table
-
-See [Quick Reference Improvements](./development/improvements/quick-reference-improvements.md) for details.
-
----
-
-**Happy Coding with MarieCoder CLI!** 🚀
-
----
-
-*Last updated: October 11, 2025*  
-*Maintained by: MarieCoder Development Team*  
-*Documentation version: 1.3.0*
-
+**Last Updated:** October 15, 2025  
+**Documentation Version:** 2.0  
+**Status:** ✅ Up to date

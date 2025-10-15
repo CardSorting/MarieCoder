@@ -19,6 +19,7 @@
  * ```
  */
 
+import { output } from "./cli_output"
 export enum LogLevel {
 	DEBUG = 0,
 	INFO = 1,
@@ -154,7 +155,7 @@ export class CliLogger {
 	debug(message: string, ...args: unknown[]): void {
 		if (this.level <= LogLevel.DEBUG) {
 			const formatted = this.formatMessage("DEBUG", message, "gray")
-			console.log(formatted, ...args)
+			output.log(formatted, ...args)
 		}
 	}
 
@@ -164,7 +165,7 @@ export class CliLogger {
 	info(message: string, ...args: unknown[]): void {
 		if (this.level <= LogLevel.INFO) {
 			const formatted = this.formatMessage("INFO", message, "blue")
-			console.log(formatted, ...args)
+			output.log(formatted, ...args)
 		}
 	}
 
@@ -174,7 +175,7 @@ export class CliLogger {
 	warn(message: string, ...args: unknown[]): void {
 		if (this.level <= LogLevel.WARN) {
 			const formatted = this.formatMessage("WARN", message, "yellow")
-			console.warn(formatted, ...args)
+			output.warn(formatted, ...args)
 		}
 	}
 
@@ -205,7 +206,7 @@ export class CliLogger {
 	success(message: string, ...args: unknown[]): void {
 		if (this.level < LogLevel.SILENT) {
 			const formatted = this.formatMessage("SUCCESS", message, "green")
-			console.log(formatted, ...args)
+			output.log(formatted, ...args)
 		}
 	}
 
@@ -251,7 +252,7 @@ export class CliLogger {
 	 */
 	separator(char: string = "─", length: number = 80): void {
 		if (this.level < LogLevel.SILENT) {
-			console.log(this.applyColor(char.repeat(length), "dim"))
+			output.log(this.applyColor(char.repeat(length), "dim"))
 		}
 	}
 

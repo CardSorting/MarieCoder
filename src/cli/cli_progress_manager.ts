@@ -5,6 +5,7 @@
 
 import { FORMATTING, STREAMING } from "./cli_constants"
 import { getLogger } from "./cli_logger"
+import { output } from "./cli_output"
 
 const _logger = getLogger()
 
@@ -287,7 +288,7 @@ export class Spinner implements ISpinner {
 	 */
 	succeed(message?: string): void {
 		this.stop()
-		console.log(`✓ ${message || this.label}`)
+		output.log(`✓ ${message || this.label}`)
 	}
 
 	/**
@@ -295,7 +296,7 @@ export class Spinner implements ISpinner {
 	 */
 	fail(message?: string): void {
 		this.stop()
-		console.log(`✗ ${message || this.label}`)
+		output.log(`✗ ${message || this.label}`)
 	}
 
 	/**
@@ -303,7 +304,7 @@ export class Spinner implements ISpinner {
 	 */
 	warn(message?: string): void {
 		this.stop()
-		console.log(`⚠ ${message || this.label}`)
+		output.log(`⚠ ${message || this.label}`)
 	}
 
 	/**
@@ -311,7 +312,7 @@ export class Spinner implements ISpinner {
 	 */
 	info(message?: string): void {
 		this.stop()
-		console.log(`ℹ ${message || this.label}`)
+		output.log(`ℹ ${message || this.label}`)
 	}
 
 	/**

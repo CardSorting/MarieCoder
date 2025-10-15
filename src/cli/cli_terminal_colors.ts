@@ -13,13 +13,13 @@
  * import { TerminalColors, SemanticColors, colorize } from './cli_terminal_colors'
  *
  * // Use colors directly
- * console.log(`${TerminalColors.green}Success!${TerminalColors.reset}`)
+ * output.log(`${TerminalColors.green}Success!${TerminalColors.reset}`)
  *
  * // Use semantic colors
- * console.log(`${SemanticColors.error}Error occurred${TerminalColors.reset}`)
+ * output.log(`${SemanticColors.error}Error occurred${TerminalColors.reset}`)
  *
  * // Use helper function
- * console.log(colorize('Warning', TerminalColors.yellow))
+ * output.log(colorize('Warning', TerminalColors.yellow))
  * ```
  */
 
@@ -42,8 +42,14 @@ export const TerminalColors = {
 	bright: "\x1b[1m",
 	/** Dimmed text */
 	dim: "\x1b[2m",
+	/** Italic text (not widely supported) */
+	italic: "\x1b[3m",
+	/** Underline text */
+	underline: "\x1b[4m",
+	/** Reverse colors (swap foreground/background) */
+	reverse: "\x1b[7m",
 
-	// Foreground colors
+	// Foreground colors - Standard
 	/** Black text */
 	black: "\x1b[30m",
 	/** Red text */
@@ -63,6 +69,22 @@ export const TerminalColors = {
 	/** Gray text */
 	gray: "\x1b[90m",
 
+	// Foreground colors - Bright variants
+	/** Bright red text */
+	brightRed: "\x1b[91m",
+	/** Bright green text */
+	brightGreen: "\x1b[92m",
+	/** Bright yellow text */
+	brightYellow: "\x1b[93m",
+	/** Bright blue text */
+	brightBlue: "\x1b[94m",
+	/** Bright magenta text */
+	brightMagenta: "\x1b[95m",
+	/** Bright cyan text */
+	brightCyan: "\x1b[96m",
+	/** Bright white text */
+	brightWhite: "\x1b[97m",
+
 	// Background colors
 	/** Black background */
 	bgBlack: "\x1b[40m",
@@ -80,6 +102,24 @@ export const TerminalColors = {
 	bgCyan: "\x1b[46m",
 	/** White background */
 	bgWhite: "\x1b[47m",
+	/** Gray background */
+	bgGray: "\x1b[100m",
+
+	// Background colors - Bright variants
+	/** Bright red background */
+	bgBrightRed: "\x1b[101m",
+	/** Bright green background */
+	bgBrightGreen: "\x1b[102m",
+	/** Bright yellow background */
+	bgBrightYellow: "\x1b[103m",
+	/** Bright blue background */
+	bgBrightBlue: "\x1b[104m",
+	/** Bright magenta background */
+	bgBrightMagenta: "\x1b[105m",
+	/** Bright cyan background */
+	bgBrightCyan: "\x1b[106m",
+	/** Bright white background */
+	bgBrightWhite: "\x1b[107m",
 } as const
 
 /**
@@ -89,7 +129,7 @@ export const TerminalColors = {
  * ```typescript
  * import { BoxChars } from "./cli_terminal_colors"
  *
- * console.log(`${BoxChars.topLeft}${BoxChars.horizontal.repeat(10)}${BoxChars.topRight}`)
+ * output.log(`${BoxChars.topLeft}${BoxChars.horizontal.repeat(10)}${BoxChars.topRight}`)
  * ```
  */
 export const BoxChars = {
@@ -181,6 +221,22 @@ export const SemanticColors = {
 	path: TerminalColors.blue,
 	/** Color for thinking/processing */
 	thinking: TerminalColors.magenta,
+	/** Color for headers and titles */
+	header: TerminalColors.brightCyan,
+	/** Color for metadata and secondary info */
+	metadata: TerminalColors.dim,
+	/** Color for highlights and emphasis */
+	highlight: TerminalColors.brightYellow,
+	/** Color for code and technical content */
+	code: TerminalColors.brightMagenta,
+	/** Color for links and references */
+	link: TerminalColors.brightBlue,
+	/** Color for completion and done states */
+	complete: TerminalColors.brightGreen,
+	/** Color for in-progress indicators */
+	progress: TerminalColors.brightYellow,
+	/** Color for pending/queued items */
+	pending: TerminalColors.gray,
 } as const
 
 /**
@@ -255,4 +311,71 @@ export function colorize(text: string, color: string): string {
 		return text
 	}
 	return `${color}${text}${TerminalColors.reset}`
+}
+
+/**
+ * Helper function to apply multiple styles (color, bright, dim, etc.)
+ *
+ * @param text - Text to style
+ * @param styles - Array of ANSI codes to apply
+ * @returns Styled text if supported, plain text otherwise
+ */
+export function style(text: string, ...styles: string[]): string {
+	if (!TerminalCapabilities.supportsColors()) {
+		return text
+	}
+	return `${styles.join("")}${text}${TerminalColors.reset}`
+}
+
+/**
+ * Pad text to center it within a given width
+ *
+ * @param text - Text to center
+ * @param width - Total width to center within
+ * @returns Centered text with padding
+ */
+export function centerText(text: string, width: number): string {
+	const plainText = stripAnsi(text)
+	const padding = Math.max(0, width - plainText.length)
+	const leftPad = Math.floor(padding / 2)
+	const rightPad = padding - leftPad
+	return " ".repeat(leftPad) + text + " ".repeat(rightPad)
+}
+
+/**
+ * Pad text to align it to the right within a given width
+ *
+ * @param text - Text to align
+ * @param width - Total width to align within
+ * @returns Right-aligned text with padding
+ */
+export function rightAlign(text: string, width: number): string {
+	const plainText = stripAnsi(text)
+	const padding = Math.max(0, width - plainText.length)
+	return " ".repeat(padding) + text
+}
+
+/**
+ * Truncate text to fit within a given width, adding ellipsis if needed
+ *
+ * @param text - Text to truncate
+ * @param width - Maximum width
+ * @param position - Where to place ellipsis ('end', 'middle', 'start')
+ * @returns Truncated text
+ */
+export function truncate(text: string, width: number, position: "end" | "middle" | "start" = "end"): string {
+	if (text.length <= width) {
+		return text
+	}
+
+	const ellipsis = "..."
+	if (position === "end") {
+		return text.slice(0, width - ellipsis.length) + ellipsis
+	}
+	if (position === "start") {
+		return ellipsis + text.slice(text.length - width + ellipsis.length)
+	}
+	// middle
+	const halfWidth = Math.floor((width - ellipsis.length) / 2)
+	return text.slice(0, halfWidth) + ellipsis + text.slice(text.length - halfWidth)
 }

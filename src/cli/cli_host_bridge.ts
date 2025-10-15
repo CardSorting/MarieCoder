@@ -16,6 +16,7 @@ import {
 	WorkspaceServiceClientInterface,
 } from "@generated/hosts/host-bridge-client-types"
 import { HostBridgeClientProvider } from "@/hosts/host-provider-types"
+import { output } from "./cli_output"
 
 const execAsync = promisify(exec)
 
@@ -101,12 +102,12 @@ class CliWorkspaceService implements WorkspaceServiceClientInterface {
 	}
 
 	async openProblemsPanel(): Promise<{}> {
-		console.log("Problems panel not available in CLI mode")
+		output.log("Problems panel not available in CLI mode")
 		return {}
 	}
 
 	async openInFileExplorerPanel(_params: { path: string }): Promise<{}> {
-		console.log("File explorer not available in CLI mode")
+		output.log("File explorer not available in CLI mode")
 		return {}
 	}
 
@@ -151,7 +152,7 @@ class CliEnvService implements EnvServiceClientInterface {
 				return { value: stdout }
 			}
 		} catch (error) {
-			console.warn("Failed to read clipboard:", error)
+			output.warn("Failed to read clipboard:", error)
 		}
 		return { value: "" }
 	}
@@ -168,7 +169,7 @@ class CliEnvService implements EnvServiceClientInterface {
 				await execAsync(`echo "${text}" | clip`)
 			}
 		} catch (error) {
-			console.warn("Failed to write clipboard:", error)
+			output.warn("Failed to write clipboard:", error)
 		}
 		return {}
 	}
@@ -182,7 +183,7 @@ class CliEnvService implements EnvServiceClientInterface {
 	}
 
 	async openUrl(_params: { url: string }): Promise<{}> {
-		console.log(`Open URL: ${_params.url}`)
+		output.log(`Open URL: ${_params.url}`)
 		return {}
 	}
 
@@ -228,7 +229,7 @@ class CliWindowService implements WindowServiceClientInterface {
 				2: "❌", // ERROR
 			}[_params.type as number] || "ℹ️"
 
-		console.log(`${prefix} ${_params.message}`)
+		output.log(`${prefix} ${_params.message}`)
 		return {}
 	}
 
@@ -247,9 +248,9 @@ class CliWindowService implements WindowServiceClientInterface {
 	}
 
 	async showQuickPick(_params: any): Promise<{ value: string | undefined }> {
-		console.log(_params.placeholder || "Select an option:")
+		output.log(_params.placeholder || "Select an option:")
 		_params.items?.forEach((item: string, index: number) => {
-			console.log(`  ${index + 1}. ${item}`)
+			output.log(`  ${index + 1}. ${item}`)
 		})
 
 		const rl = readline.createInterface({
@@ -267,12 +268,12 @@ class CliWindowService implements WindowServiceClientInterface {
 	}
 
 	async showOpenDialogue(_params: any): Promise<{ paths: string[] }> {
-		console.log("File selection not supported in CLI mode")
+		output.log("File selection not supported in CLI mode")
 		return { paths: [] }
 	}
 
 	async showSaveDialog(_params: any): Promise<{ selectedPath?: string }> {
-		console.log("Save dialog not supported in CLI mode")
+		output.log("Save dialog not supported in CLI mode")
 		return { selectedPath: undefined }
 	}
 
@@ -281,12 +282,12 @@ class CliWindowService implements WindowServiceClientInterface {
 	}
 
 	async openFile(_params: any): Promise<{}> {
-		console.log(`Open file: ${_params.path}`)
+		output.log(`Open file: ${_params.path}`)
 		return {}
 	}
 
 	async openSettings(): Promise<{}> {
-		console.log("Settings not available in CLI mode")
+		output.log("Settings not available in CLI mode")
 		return {}
 	}
 
@@ -299,7 +300,7 @@ class CliWindowService implements WindowServiceClientInterface {
 	}
 
 	async showInformationMessage(_params: any): Promise<{ selection: string | undefined }> {
-		console.log(`ℹ️  ${_params.message}`)
+		output.log(`ℹ️  ${_params.message}`)
 		return { selection: undefined }
 	}
 
@@ -400,7 +401,7 @@ class CliDiffService implements DiffServiceClientInterface {
 
 			// Write file with proper error handling
 			await fs.writeFile(diff.path, diff.modifiedContent, "utf-8")
-			console.log(`✅ Saved: ${diff.path}`)
+			output.log(`✅ Saved: ${diff.path}`)
 
 			// Clean up the diff after successful save
 			this.diffs.delete(params.diffId)
@@ -431,7 +432,7 @@ class CliDiffService implements DiffServiceClientInterface {
 	}
 
 	async openMultiFileDiff(_params: any): Promise<{ diffId: string }> {
-		console.log("Multi-file diff not yet supported in CLI mode")
+		output.log("Multi-file diff not yet supported in CLI mode")
 		return { diffId: "multi-diff-1" }
 	}
 
@@ -441,8 +442,8 @@ class CliDiffService implements DiffServiceClientInterface {
 			return
 		}
 
-		console.log(`\n📄 Diff for ${diff.path}:`)
-		console.log("─".repeat(80))
+		output.log(`\n📄 Diff for ${diff.path}:`)
+		output.log("─".repeat(80))
 
 		const originalLines = diff.originalContent.split("\n")
 		const modifiedLines = diff.modifiedContent.split("\n")
@@ -454,17 +455,17 @@ class CliDiffService implements DiffServiceClientInterface {
 
 			if (original !== modified) {
 				if (original && !modified) {
-					console.log(`- ${original}`)
+					output.log(`- ${original}`)
 				} else if (!original && modified) {
-					console.log(`+ ${modified}`)
+					output.log(`+ ${modified}`)
 				} else {
-					console.log(`- ${original}`)
-					console.log(`+ ${modified}`)
+					output.log(`- ${original}`)
+					output.log(`+ ${modified}`)
 				}
 			}
 		}
 
-		console.log("─".repeat(80))
+		output.log("─".repeat(80))
 	}
 }
 

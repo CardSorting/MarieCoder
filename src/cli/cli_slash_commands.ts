@@ -4,6 +4,7 @@
  */
 
 import type { Task } from "@/core/task"
+import { output } from "./cli_output"
 import type { CliWebviewProvider } from "./cli_webview_provider"
 
 export interface SlashCommand {
@@ -40,16 +41,16 @@ export class CliSlashCommandsHandler {
 			aliases: ["find", "grep"],
 			handler: async (args, _context) => {
 				if (args.length === 0) {
-					console.log("❌ Usage: /search <query>")
+					output.log("❌ Usage: /search <query>")
 					return
 				}
 
 				const query = args.join(" ")
-				console.log(`\n🔍 Searching for: "${query}"`)
-				console.log("─".repeat(80))
-				console.log("💡 This would execute a codebase search.")
-				console.log("   Results would be displayed here with file paths and line numbers.")
-				console.log("─".repeat(80) + "\n")
+				output.log(`\n🔍 Searching for: "${query}"`)
+				output.log("─".repeat(80))
+				output.log("💡 This would execute a codebase search.")
+				output.log("   Results would be displayed here with file paths and line numbers.")
+				output.log("─".repeat(80) + "\n")
 			},
 		})
 
@@ -61,17 +62,17 @@ export class CliSlashCommandsHandler {
 			aliases: ["sub"],
 			handler: async (args, _context) => {
 				if (args.length < 2) {
-					console.log("❌ Usage: /replace <pattern> <replacement>")
+					output.log("❌ Usage: /replace <pattern> <replacement>")
 					return
 				}
 
 				const pattern = args[0]
 				const replacement = args.slice(1).join(" ")
-				console.log(`\n🔄 Replace: "${pattern}" → "${replacement}"`)
-				console.log("─".repeat(80))
-				console.log("💡 This would perform a bulk find-and-replace.")
-				console.log("   Affected files and preview would be shown here.")
-				console.log("─".repeat(80) + "\n")
+				output.log(`\n🔄 Replace: "${pattern}" → "${replacement}"`)
+				output.log("─".repeat(80))
+				output.log("💡 This would perform a bulk find-and-replace.")
+				output.log("   Affected files and preview would be shown here.")
+				output.log("─".repeat(80) + "\n")
 			},
 		})
 
@@ -83,16 +84,16 @@ export class CliSlashCommandsHandler {
 			aliases: ["check", "inspect"],
 			handler: async (args, _context) => {
 				if (args.length === 0) {
-					console.log("❌ Usage: /analyze <path>")
+					output.log("❌ Usage: /analyze <path>")
 					return
 				}
 
 				const filePath = args.join(" ")
-				console.log(`\n📊 Analyzing: ${filePath}`)
-				console.log("─".repeat(80))
-				console.log("💡 This would perform static analysis on the file.")
-				console.log("   Code metrics, issues, and suggestions would be displayed.")
-				console.log("─".repeat(80) + "\n")
+				output.log(`\n📊 Analyzing: ${filePath}`)
+				output.log("─".repeat(80))
+				output.log("💡 This would perform static analysis on the file.")
+				output.log("   Code metrics, issues, and suggestions would be displayed.")
+				output.log("─".repeat(80) + "\n")
 			},
 		})
 
@@ -106,30 +107,30 @@ export class CliSlashCommandsHandler {
 
 				switch (subcommand) {
 					case "status": {
-						console.log("\n🔌 MCP Server Status")
-						console.log("─".repeat(80))
-						console.log("💡 MCP server status would be displayed here.")
-						console.log("─".repeat(80) + "\n")
+						output.log("\n🔌 MCP Server Status")
+						output.log("─".repeat(80))
+						output.log("💡 MCP server status would be displayed here.")
+						output.log("─".repeat(80) + "\n")
 						break
 					}
 					case "tools": {
-						console.log("\n🔧 Available MCP Tools")
-						console.log("─".repeat(80))
-						console.log("💡 List of available MCP tools would be shown here.")
-						console.log("─".repeat(80) + "\n")
+						output.log("\n🔧 Available MCP Tools")
+						output.log("─".repeat(80))
+						output.log("💡 List of available MCP tools would be shown here.")
+						output.log("─".repeat(80) + "\n")
 						break
 					}
 					case "servers":
 					case "list": {
-						console.log("\n📋 MCP Servers")
-						console.log("─".repeat(80))
-						console.log("💡 List of configured MCP servers would be shown here.")
-						console.log("─".repeat(80) + "\n")
+						output.log("\n📋 MCP Servers")
+						output.log("─".repeat(80))
+						output.log("💡 List of configured MCP servers would be shown here.")
+						output.log("─".repeat(80) + "\n")
 						break
 					}
 					default: {
-						console.log("❌ Unknown MCP subcommand:", subcommand)
-						console.log("   Usage: /mcp [status|tools|servers]")
+						output.log("❌ Unknown MCP subcommand:", subcommand)
+						output.log("   Usage: /mcp [status|tools|servers]")
 					}
 				}
 			},
@@ -155,76 +156,76 @@ export class CliSlashCommandsHandler {
 					switch (subcommand) {
 						case "status":
 						case "info": {
-							console.log(checkpointIntegration.formatCheckpointInfo(task))
+							output.log(checkpointIntegration.formatCheckpointInfo(task))
 							break
 						}
 						case "create":
 						case "save": {
 							if (!task) {
-								console.log("\n❌ No active task. Start a task first.\n")
+								output.log("\n❌ No active task. Start a task first.\n")
 								break
 							}
 
-							console.log("\n💾 Creating checkpoint...")
-							console.log("─".repeat(80))
+							output.log("\n💾 Creating checkpoint...")
+							output.log("─".repeat(80))
 
 							const commitHash = await checkpointIntegration.createCheckpoint(task)
 
 							if (commitHash) {
-								console.log("✅ Checkpoint created successfully!")
-								console.log(`   Git commit: ${commitHash.substring(0, 8)}...`)
-								console.log("   Saved to shadow Git repository")
+								output.log("✅ Checkpoint created successfully!")
+								output.log(`   Git commit: ${commitHash.substring(0, 8)}...`)
+								output.log("   Saved to shadow Git repository")
 							} else {
-								console.log("⚠️  Checkpoint created but no commit hash returned.")
+								output.log("⚠️  Checkpoint created but no commit hash returned.")
 							}
-							console.log("─".repeat(80) + "\n")
+							output.log("─".repeat(80) + "\n")
 							break
 						}
 						case "changes":
 						case "check": {
 							if (!task) {
-								console.log("\n❌ No active task.\n")
+								output.log("\n❌ No active task.\n")
 								break
 							}
 
-							console.log("\n🔍 Checking for changes since last completion...")
-							console.log("─".repeat(80))
+							output.log("\n🔍 Checking for changes since last completion...")
+							output.log("─".repeat(80))
 
 							const hasChanges = await checkpointIntegration.hasNewChangesSinceCompletion(task)
 
 							if (hasChanges) {
-								console.log("📝 Yes, there are new changes since last task completion.")
+								output.log("📝 Yes, there are new changes since last task completion.")
 							} else {
-								console.log("✓ No new changes since last task completion.")
+								output.log("✓ No new changes since last task completion.")
 							}
-							console.log("─".repeat(80) + "\n")
+							output.log("─".repeat(80) + "\n")
 							break
 						}
 						case "restore": {
-							console.log("\n💡 Checkpoint restoration is available through the extension UI.")
-							console.log("   This allows you to visually review changes before restoring.")
-							console.log("   Use the 'View Changes' button in the chat to access this feature.\n")
+							output.log("\n💡 Checkpoint restoration is available through the extension UI.")
+							output.log("   This allows you to visually review changes before restoring.")
+							output.log("   Use the 'View Changes' button in the chat to access this feature.\n")
 							break
 						}
 						case "diff": {
-							console.log("\n💡 Checkpoint diffs are available through the extension UI.")
-							console.log("   This provides a visual comparison of file changes.")
-							console.log("   Use the 'View Changes' button in the chat to see diffs.\n")
+							output.log("\n💡 Checkpoint diffs are available through the extension UI.")
+							output.log("   This provides a visual comparison of file changes.")
+							output.log("   Use the 'View Changes' button in the chat to see diffs.\n")
 							break
 						}
 						default: {
-							console.log("❌ Unknown checkpoint subcommand:", subcommand)
-							console.log("   Usage: /checkpoint [status|create|changes]")
-							console.log("\n   status  - Show checkpoint system status")
-							console.log("   create  - Create a checkpoint manually")
-							console.log("   changes - Check for new changes since last completion\n")
+							output.log("❌ Unknown checkpoint subcommand:", subcommand)
+							output.log("   Usage: /checkpoint [status|create|changes]")
+							output.log("\n   status  - Show checkpoint system status")
+							output.log("   create  - Create a checkpoint manually")
+							output.log("   changes - Check for new changes since last completion\n")
 						}
 					}
 				} catch (error) {
-					console.log("❌ Error executing checkpoint command:", error)
+					output.log("❌ Error executing checkpoint command:", error)
 					if (error instanceof Error && error.message.includes("not available")) {
-						console.log("\n💡 Tip: Enable checkpoints in settings:")
-						console.log('   "enableCheckpointsSetting": true\n')
+						output.log("\n💡 Tip: Enable checkpoints in settings:")
+						output.log('   "enableCheckpointsSetting": true\n')
 					}
 				}
 			},
@@ -247,7 +248,7 @@ export class CliSlashCommandsHandler {
 				const task = controller.task
 
 				if (!task) {
-					console.log("\n❌ No active task. Start a task first.\n")
+					output.log("\n❌ No active task. Start a task first.\n")
 					return
 				}
 
@@ -273,49 +274,49 @@ export class CliSlashCommandsHandler {
 					// Get last checkpoint info
 					const lastCheckpointTs = checkpointIntegration.getLastCheckpointTimestamp(task)
 					if (!lastCheckpointTs) {
-						console.log("\n❌ No checkpoint found to restore from.")
-						console.log("   Checkpoints are created automatically on the first API request.")
-						console.log("   Make sure you have executed at least one task.\n")
+						output.log("\n❌ No checkpoint found to restore from.")
+						output.log("   Checkpoints are created automatically on the first API request.")
+						output.log("   Make sure you have executed at least one task.\n")
 						return
 					}
 
-					console.log("\n⏮️  Undoing changes...")
-					console.log("─".repeat(80))
-					console.log(`Restoring to checkpoint: ${new Date(lastCheckpointTs).toLocaleString()}`)
-					console.log(`Restore type: ${restoreType}`)
-					console.log("─".repeat(80))
+					output.log("\n⏮️  Undoing changes...")
+					output.log("─".repeat(80))
+					output.log(`Restoring to checkpoint: ${new Date(lastCheckpointTs).toLocaleString()}`)
+					output.log(`Restore type: ${restoreType}`)
+					output.log("─".repeat(80))
 
 					// Perform the undo
 					await checkpointIntegration.undoToLastCheckpoint(task, restoreType)
 
-					console.log("\n✅ Successfully restored to last checkpoint!")
+					output.log("\n✅ Successfully restored to last checkpoint!")
 
 					switch (restoreType) {
 						case "task":
-							console.log("   ✓ Task messages restored")
-							console.log("   ✓ Conversation history rolled back")
+							output.log("   ✓ Task messages restored")
+							output.log("   ✓ Conversation history rolled back")
 							break
 						case "workspace":
-							console.log("   ✓ Workspace files restored")
-							console.log("   ✓ File changes reverted")
+							output.log("   ✓ Workspace files restored")
+							output.log("   ✓ File changes reverted")
 							break
 						case "taskAndWorkspace":
-							console.log("   ✓ Task messages restored")
-							console.log("   ✓ Workspace files restored")
-							console.log("   ✓ All changes reverted")
+							output.log("   ✓ Task messages restored")
+							output.log("   ✓ Workspace files restored")
+							output.log("   ✓ All changes reverted")
 							break
 					}
 
-					console.log("\n💡 Tip: You can now continue the task from this point.\n")
+					output.log("\n💡 Tip: You can now continue the task from this point.\n")
 				} catch (error) {
-					console.log("❌ Error during undo:", error)
+					output.log("❌ Error during undo:", error)
 					if (error instanceof Error) {
 						if (error.message.includes("not available")) {
-							console.log("\n💡 Tip: Enable checkpoints in settings:")
-							console.log('   "enableCheckpointsSetting": true\n')
+							output.log("\n💡 Tip: Enable checkpoints in settings:")
+							output.log('   "enableCheckpointsSetting": true\n')
 						} else if (error.message.includes("No checkpoint found")) {
-							console.log("\n💡 Tip: Checkpoints are created automatically after the first API request.")
-							console.log("   Start a task to create your first checkpoint.\n")
+							output.log("\n💡 Tip: Checkpoints are created automatically after the first API request.")
+							output.log("   Start a task to create your first checkpoint.\n")
 						}
 					}
 				}
@@ -333,23 +334,23 @@ export class CliSlashCommandsHandler {
 
 				switch (subcommand) {
 					case "list": {
-						console.log("\n📜 Task History")
-						console.log("─".repeat(80))
-						console.log("💡 Recent tasks would be listed here.")
-						console.log("─".repeat(80) + "\n")
+						output.log("\n📜 Task History")
+						output.log("─".repeat(80))
+						output.log("💡 Recent tasks would be listed here.")
+						output.log("─".repeat(80) + "\n")
 						break
 					}
 					case "export": {
 						const taskId = args[1]
-						console.log(`\n📤 Exporting task: ${taskId || "latest"}`)
-						console.log("─".repeat(80))
-						console.log("💡 Task would be exported as markdown.")
-						console.log("─".repeat(80) + "\n")
+						output.log(`\n📤 Exporting task: ${taskId || "latest"}`)
+						output.log("─".repeat(80))
+						output.log("💡 Task would be exported as markdown.")
+						output.log("─".repeat(80) + "\n")
 						break
 					}
 					default: {
-						console.log("❌ Unknown history subcommand:", subcommand)
-						console.log("   Usage: /history [list|export]")
+						output.log("❌ Unknown history subcommand:", subcommand)
+						output.log("   Usage: /history [list|export]")
 					}
 				}
 			},
@@ -375,54 +376,54 @@ export class CliSlashCommandsHandler {
 				try {
 					switch (subcommand) {
 						case "create": {
-							console.log("\n📋 Creating Focus Chain...")
-							console.log("─".repeat(80))
-							console.log("Enter steps (one per line, empty line to finish):")
+							output.log("\n📋 Creating Focus Chain...")
+							output.log("─".repeat(80))
+							output.log("Enter steps (one per line, empty line to finish):")
 
 							// This is a placeholder - in interactive mode, we'd need proper input handling
-							console.log("💡 Focus chain creation from CLI coming soon.")
-							console.log("   For now, focus chains are created automatically by the AI.")
-							console.log("─".repeat(80) + "\n")
+							output.log("💡 Focus chain creation from CLI coming soon.")
+							output.log("   For now, focus chains are created automatically by the AI.")
+							output.log("─".repeat(80) + "\n")
 							break
 						}
 						case "show":
 						case "status": {
 							const display = focusChainManager.displayFocusChain()
-							console.log(display)
+							output.log(display)
 							break
 						}
 						case "next": {
 							const moved = focusChainManager.nextStep()
 							if (moved) {
-								console.log("\n✅ Moved to next step!")
-								console.log(focusChainManager.getCurrentStepSummary() + "\n")
+								output.log("\n✅ Moved to next step!")
+								output.log(focusChainManager.getCurrentStepSummary() + "\n")
 							} else {
-								console.log("\n❌ No next step available or no active focus chain.\n")
+								output.log("\n❌ No next step available or no active focus chain.\n")
 							}
 							break
 						}
 						case "skip": {
 							const skipped = focusChainManager.skipCurrentStep()
 							if (skipped) {
-								console.log("\n⏭️  Skipped current step!")
-								console.log(focusChainManager.getCurrentStepSummary() + "\n")
+								output.log("\n⏭️  Skipped current step!")
+								output.log(focusChainManager.getCurrentStepSummary() + "\n")
 							} else {
-								console.log("\n❌ Cannot skip or no active focus chain.\n")
+								output.log("\n❌ Cannot skip or no active focus chain.\n")
 							}
 							break
 						}
 						case "clear": {
 							focusChainManager.clearFocusChain()
-							console.log("\n✅ Focus chain cleared.\n")
+							output.log("\n✅ Focus chain cleared.\n")
 							break
 						}
 						default: {
-							console.log("❌ Unknown focus command:", subcommand)
-							console.log("   Usage: /focus [create|show|next|skip|clear]")
+							output.log("❌ Unknown focus command:", subcommand)
+							output.log("   Usage: /focus [create|show|next|skip|clear]")
 						}
 					}
 				} catch (error) {
-					console.log("❌ Error executing focus command:", error)
+					output.log("❌ Error executing focus command:", error)
 				}
 			},
 		})
@@ -443,84 +444,84 @@ export class CliSlashCommandsHandler {
 				try {
 					switch (subcommand) {
 						case "list": {
-							console.log("\n📋 Available Workflows")
-							console.log("─".repeat(80))
+							output.log("\n📋 Available Workflows")
+							output.log("─".repeat(80))
 
 							const workflows = await workflowManager.listWorkflows()
-							console.log(workflowManager.formatWorkflowList(workflows, false))
-							console.log("─".repeat(80) + "\n")
+							output.log(workflowManager.formatWorkflowList(workflows, false))
+							output.log("─".repeat(80) + "\n")
 							break
 						}
 						case "show": {
 							const workflowName = args[1]
 							if (!workflowName) {
-								console.log("❌ Please specify a workflow name.")
-								console.log("   Usage: /workflow show <workflow-name>\n")
+								output.log("❌ Please specify a workflow name.")
+								output.log("   Usage: /workflow show <workflow-name>\n")
 								break
 							}
 
-							console.log("\n📋 Workflow Details")
-							console.log("─".repeat(80))
+							output.log("\n📋 Workflow Details")
+							output.log("─".repeat(80))
 
 							const workflow = await workflowManager.getWorkflow(workflowName)
 							if (!workflow) {
-								console.log(`❌ Workflow "${workflowName}" not found.`)
+								output.log(`❌ Workflow "${workflowName}" not found.`)
 							} else {
-								console.log(workflowManager.formatWorkflow(workflow, true))
+								output.log(workflowManager.formatWorkflow(workflow, true))
 							}
-							console.log("─".repeat(80) + "\n")
+							output.log("─".repeat(80) + "\n")
 							break
 						}
 						case "run":
 						case "execute": {
 							const workflowName = args[1]
 							if (!workflowName) {
-								console.log("❌ Please specify a workflow name.")
-								console.log("   Usage: /workflow run <workflow-name>\n")
+								output.log("❌ Please specify a workflow name.")
+								output.log("   Usage: /workflow run <workflow-name>\n")
 								break
 							}
 
-							console.log("💡 Workflow execution from slash command coming soon.")
-							console.log("   For now, use: mariecoder --workflow <workflow-name>\n")
+							output.log("💡 Workflow execution from slash command coming soon.")
+							output.log("   For now, use: mariecoder --workflow <workflow-name>\n")
 							break
 						}
 						case "delete":
 						case "remove": {
 							const workflowName = args[1]
 							if (!workflowName) {
-								console.log("❌ Please specify a workflow name.")
-								console.log("   Usage: /workflow delete <workflow-name>\n")
+								output.log("❌ Please specify a workflow name.")
+								output.log("   Usage: /workflow delete <workflow-name>\n")
 								break
 							}
 
 							const success = await workflowManager.deleteWorkflow(workflowName)
 							if (success) {
-								console.log(`✅ Workflow "${workflowName}" deleted successfully.\n`)
+								output.log(`✅ Workflow "${workflowName}" deleted successfully.\n`)
 							} else {
-								console.log(`❌ Failed to delete workflow "${workflowName}" or workflow not found.\n`)
+								output.log(`❌ Failed to delete workflow "${workflowName}" or workflow not found.\n`)
 							}
 							break
 						}
 						case "templates":
 						case "init": {
-							console.log("\n📋 Creating Template Workflows...")
-							console.log("─".repeat(80))
+							output.log("\n📋 Creating Template Workflows...")
+							output.log("─".repeat(80))
 
 							await workflowManager.createTemplates()
-							console.log("✅ Template workflows created!")
-							console.log("   • new-feature: Standard feature implementation workflow")
-							console.log("   • bug-fix: Standard bug fixing workflow")
-							console.log("   • refactor: Standard refactoring workflow")
-							console.log("─".repeat(80) + "\n")
+							output.log("✅ Template workflows created!")
+							output.log("   • new-feature: Standard feature implementation workflow")
+							output.log("   • bug-fix: Standard bug fixing workflow")
+							output.log("   • refactor: Standard refactoring workflow")
+							output.log("─".repeat(80) + "\n")
 							break
 						}
 						default: {
-							console.log("❌ Unknown workflow subcommand:", subcommand)
-							console.log("   Usage: /workflow [list|show|run|create|delete|templates]")
+							output.log("❌ Unknown workflow subcommand:", subcommand)
+							output.log("   Usage: /workflow [list|show|run|create|delete|templates]")
 						}
 					}
 				} catch (error) {
-					console.log("❌ Error executing workflow command:", error)
+					output.log("❌ Error executing workflow command:", error)
 				}
 			},
 		})
@@ -537,17 +538,17 @@ export class CliSlashCommandsHandler {
 					const command = this.commands.get(commandName)
 
 					if (command) {
-						console.log(`\n📚 Help: /${command.name}`)
-						console.log("─".repeat(80))
-						console.log(`Description: ${command.description}`)
-						console.log(`Usage: ${command.usage}`)
+						output.log(`\n📚 Help: /${command.name}`)
+						output.log("─".repeat(80))
+						output.log(`Description: ${command.description}`)
+						output.log(`Usage: ${command.usage}`)
 						if (command.aliases && command.aliases.length > 0) {
-							console.log(`Aliases: ${command.aliases.map((a) => `/${a}`).join(", ")}`)
+							output.log(`Aliases: ${command.aliases.map((a) => `/${a}`).join(", ")}`)
 						}
-						console.log("─".repeat(80) + "\n")
+						output.log("─".repeat(80) + "\n")
 					} else {
-						console.log(`❌ Unknown command: /${commandName}`)
-						console.log("   Type /help to see all available commands.")
+						output.log(`❌ Unknown command: /${commandName}`)
+						output.log("   Type /help to see all available commands.")
 					}
 				} else {
 					this.showHelp()
@@ -599,8 +600,8 @@ export class CliSlashCommandsHandler {
 		}
 
 		// Unknown command
-		console.log(`\n❌ Unknown command: /${commandName}`)
-		console.log("   Type /help to see available commands.\n")
+		output.log(`\n❌ Unknown command: /${commandName}`)
+		output.log("   Type /help to see available commands.\n")
 		return true
 	}
 
@@ -626,22 +627,22 @@ export class CliSlashCommandsHandler {
 	 * Show help for all commands
 	 */
 	private showHelp(): void {
-		console.log("\n📚 Available Slash Commands")
-		console.log("═".repeat(80))
+		output.log("\n📚 Available Slash Commands")
+		output.log("═".repeat(80))
 
 		const commands = this.getCommands()
 		for (const command of commands) {
-			console.log(`\n/${command.name.padEnd(15)} ${command.description}`)
-			console.log(`${"".padEnd(17)}${command.usage}`)
+			output.log(`\n/${command.name.padEnd(15)} ${command.description}`)
+			output.log(`${"".padEnd(17)}${command.usage}`)
 
 			if (command.aliases && command.aliases.length > 0) {
-				console.log(`${"".padEnd(17)}Aliases: ${command.aliases.map((a) => `/${a}`).join(", ")}`)
+				output.log(`${"".padEnd(17)}Aliases: ${command.aliases.map((a) => `/${a}`).join(", ")}`)
 			}
 		}
 
-		console.log("\n" + "═".repeat(80))
-		console.log("💡 Tip: Use /help <command> for detailed help on a specific command.")
-		console.log("═".repeat(80) + "\n")
+		output.log("\n" + "═".repeat(80))
+		output.log("💡 Tip: Use /help <command> for detailed help on a specific command.")
+		output.log("═".repeat(80) + "\n")
 	}
 
 	/**

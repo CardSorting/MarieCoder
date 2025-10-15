@@ -6,6 +6,7 @@
 import { HostProvider } from "@/hosts/host-provider"
 import { DiffViewProvider } from "@/integrations/editor/DiffViewProvider"
 import { FORMATTING } from "./cli_constants"
+import { output } from "./cli_output"
 import { TerminalColors } from "./cli_terminal_colors"
 
 export interface DiffStats {
@@ -138,23 +139,23 @@ export class CliDiffViewProvider extends DiffViewProvider {
 		const diff = this.generateUnifiedDiff(originalContent, newContent, filePath)
 		const stats = this.calculateDiffStats(diff)
 
-		console.log("\n" + "═".repeat(FORMATTING.SEPARATOR_LENGTH))
-		console.log(`${TerminalColors.bright}Diff: ${filePath}${TerminalColors.reset}`)
-		console.log(FORMATTING.SEPARATOR_CHAR.repeat(FORMATTING.SEPARATOR_LENGTH))
+		output.log("\n" + "═".repeat(FORMATTING.SEPARATOR_LENGTH))
+		output.log(`${TerminalColors.bright}Diff: ${filePath}${TerminalColors.reset}`)
+		output.log(FORMATTING.SEPARATOR_CHAR.repeat(FORMATTING.SEPARATOR_LENGTH))
 
 		// Display diff statistics
-		console.log(
+		output.log(
 			`${TerminalColors.green}+${stats.additions}${TerminalColors.reset} ${TerminalColors.red}-${stats.deletions}${TerminalColors.reset} (${stats.totalLines} lines)`,
 		)
-		console.log(FORMATTING.SEPARATOR_CHAR.repeat(FORMATTING.SEPARATOR_LENGTH))
+		output.log(FORMATTING.SEPARATOR_CHAR.repeat(FORMATTING.SEPARATOR_LENGTH))
 
 		// Display formatted diff
 		const lines = diff.split("\n")
 		for (const line of lines) {
-			console.log(this.formatDiffLine(line))
+			output.log(this.formatDiffLine(line))
 		}
 
-		console.log("═".repeat(FORMATTING.SEPARATOR_LENGTH) + "\n")
+		output.log("═".repeat(FORMATTING.SEPARATOR_LENGTH) + "\n")
 	}
 
 	/**

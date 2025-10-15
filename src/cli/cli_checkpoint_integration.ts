@@ -6,6 +6,7 @@
 
 import type { ICheckpointManager } from "@integrations/checkpoints/types"
 import type { Task } from "@/core/task"
+import { output } from "./cli_output"
 
 /**
  * Manages checkpoint operations in CLI mode
@@ -46,7 +47,7 @@ export class CliCheckpointIntegration {
 			const commitHash = await manager.commit()
 
 			if (this.verbose && commitHash) {
-				console.log(`[Checkpoint] Created with hash: ${commitHash}`)
+				output.log(`[Checkpoint] Created with hash: ${commitHash}`)
 			}
 
 			return commitHash
@@ -152,7 +153,7 @@ export class CliCheckpointIntegration {
 			await this.restoreCheckpoint(task, lastCheckpointTs, restoreType)
 
 			if (this.verbose) {
-				console.log(`[Checkpoint] Restored to checkpoint at ${new Date(lastCheckpointTs).toLocaleString()}`)
+				output.log(`[Checkpoint] Restored to checkpoint at ${new Date(lastCheckpointTs).toLocaleString()}`)
 			}
 
 			return true

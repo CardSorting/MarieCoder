@@ -9,6 +9,7 @@
  */
 
 import { formatFocusChain } from "./cli_message_formatter"
+import { output } from "./cli_output"
 
 export interface FocusChainStep {
 	id: string
@@ -58,7 +59,7 @@ export class CliFocusChainManager {
 		this.activeFocusChain = focusChain
 
 		if (this.verbose) {
-			console.log(`[FocusChain] Created: ${focusChain.id} with ${steps.length} steps`)
+			output.log(`[FocusChain] Created: ${focusChain.id} with ${steps.length} steps`)
 		}
 
 		return focusChain
@@ -102,7 +103,7 @@ export class CliFocusChainManager {
 		this.activeFocusChain.updatedAt = Date.now()
 
 		if (this.verbose) {
-			console.log(`[FocusChain] Step ${stepIndex + 1} status: ${previousStatus} -> ${status}`)
+			output.log(`[FocusChain] Step ${stepIndex + 1} status: ${previousStatus} -> ${status}`)
 		}
 	}
 
@@ -164,7 +165,7 @@ export class CliFocusChainManager {
 	clearFocusChain(): void {
 		this.activeFocusChain = null
 		if (this.verbose) {
-			console.log("[FocusChain] Cleared active focus chain")
+			output.log("[FocusChain] Cleared active focus chain")
 		}
 	}
 

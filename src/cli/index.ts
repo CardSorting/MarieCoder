@@ -25,6 +25,7 @@ import { CliContext } from "./cli_context"
 import { CliDiffViewProvider } from "./cli_diff_provider"
 import { CliHostBridgeClient } from "./cli_host_bridge"
 import { getLogger, LogLevel } from "./cli_logger"
+import { output } from "./cli_output"
 import { getProgressManager } from "./cli_progress_manager"
 import { getDeduplicationManager } from "./cli_request_deduplicator"
 import { CliTaskMonitor } from "./cli_task_monitor"
@@ -112,7 +113,7 @@ class MarieCli {
 			cliHostBridge,
 			(message: string) => {
 				if (this.options.verbose) {
-					console.log(`[LOG] ${message}`)
+					output.log(`[LOG] ${message}`)
 				}
 			},
 			async () => "cli://mariecoder",
@@ -163,7 +164,7 @@ class MarieCli {
 
 		logger.success("MarieCoder CLI initialized")
 		logger.separator()
-		console.log()
+		output.log()
 	}
 
 	/**
@@ -185,20 +186,20 @@ class MarieCli {
 
 			if (localRules) {
 				const ruleCount = Object.keys(allToggles.localClineRules).length
-				console.log(`📝 Loaded ${ruleCount} local rule file${ruleCount !== 1 ? "s" : ""} from .clinerules/`)
+				output.log(`📝 Loaded ${ruleCount} local rule file${ruleCount !== 1 ? "s" : ""} from .clinerules/`)
 			}
 
 			if (globalRules && this.options.verbose) {
 				const globalRuleCount = Object.keys(allToggles.globalClineRules).length
-				console.log(`📝 Loaded ${globalRuleCount} global rule file${globalRuleCount !== 1 ? "s" : ""}`)
+				output.log(`📝 Loaded ${globalRuleCount} global rule file${globalRuleCount !== 1 ? "s" : ""}`)
 			}
 
 			if (!localRules && !globalRules) {
-				console.log("💡 Tip: Create .clinerules/ to add project coding standards")
+				output.log("💡 Tip: Create .clinerules/ to add project coding standards")
 			}
 		} catch (error) {
 			if (this.options.verbose) {
-				console.warn("⚠ Could not sync cline rules:", error)
+				output.warn("⚠ Could not sync cline rules:", error)
 			}
 			// Non-fatal error - continue initialization
 		}
@@ -208,9 +209,9 @@ class MarieCli {
 	 * Execute a task with the given prompt
 	 */
 	async executeTask(prompt: string): Promise<void> {
-		console.log("\n" + "=".repeat(80))
-		console.log("📝 Task:", prompt)
-		console.log("=".repeat(80) + "\n")
+		output.log("\n" + "=".repeat(80))
+		output.log("📝 Task:", prompt)
+		output.log("=".repeat(80) + "\n")
 
 		try {
 			// Get the controller
@@ -228,7 +229,7 @@ class MarieCli {
 			// Display resolved mentions if any
 			if (mentions.length > 0) {
 				const formatted = this.mentionsParser.formatResolvedMentions(mentions)
-				console.log(formatted)
+				output.log(formatted)
 			}
 
 			// Enhance prompt with mention content
@@ -243,11 +244,11 @@ class MarieCli {
 			await controller.clearTask()
 
 			// Create task with the prompt
-			console.log("🤖 Starting task execution...\n")
+			output.log("🤖 Starting task execution...\n")
 
 			// Initialize and execute the task
 			const taskId = await controller.initTask(enhancedPrompt)
-			console.log(`✓ Task initialized with ID: ${taskId}\n`)
+			output.log(`✓ Task initialized with ID: ${taskId}\n`)
 
 			// Start monitoring the task for approvals
 			if (controller.task) {
@@ -285,7 +286,7 @@ class MarieCli {
 					// 3. Current task item is no longer in state
 					if (!controller.task || !state.currentTaskItem || controller.task?.taskState?.abort) {
 						clearInterval(checkInterval)
-						console.log("\n✅ Task completed")
+						output.log("\n✅ Task completed")
 						resolve()
 					}
 				} catch (_error) {
@@ -366,30 +367,30 @@ class MarieCli {
 		// Validate API key exists
 		if (!config.apiKey) {
 			console.error("\n❌ API key not configured!")
-			console.log("\n" + "─".repeat(80))
-			console.log("To configure your API key, you have several options:")
-			console.log("\n1. Run the setup wizard (recommended for first-time users):")
-			console.log("   mariecoder --setup")
-			console.log("\n2. Provide via command line:")
-			console.log('   mariecoder --api-key YOUR_KEY "Your task"')
-			console.log("\n3. Set environment variable:")
-			console.log("   export ANTHROPIC_API_KEY=your-key")
-			console.log('   mariecoder "Your task"')
-			console.log("\n4. Edit configuration file:")
-			console.log("   ~/.mariecoder/cli/secrets.json")
-			console.log("\nExample:")
-			console.log('   mariecoder --api-key sk-ant-... "Create a React component"')
-			console.log("─".repeat(80) + "\n")
+			output.log("\n" + "─".repeat(80))
+			output.log("To configure your API key, you have several options:")
+			output.log("\n1. Run the setup wizard (recommended for first-time users):")
+			output.log("   mariecoder --setup")
+			output.log("\n2. Provide via command line:")
+			output.log('   mariecoder --api-key YOUR_KEY "Your task"')
+			output.log("\n3. Set environment variable:")
+			output.log("   export ANTHROPIC_API_KEY=your-key")
+			output.log('   mariecoder "Your task"')
+			output.log("\n4. Edit configuration file:")
+			output.log("   ~/.mariecoder/cli/secrets.json")
+			output.log("\nExample:")
+			output.log('   mariecoder --api-key sk-ant-... "Create a React component"')
+			output.log("─".repeat(80) + "\n")
 			return false
 		}
 
 		// Display configuration
-		console.log(`✓ Provider: ${provider}`)
-		console.log(`✓ Model: ${model}`)
-		console.log(`✓ Mode: ${mode}`)
+		output.log(`✓ Provider: ${provider}`)
+		output.log(`✓ Model: ${model}`)
+		output.log(`✓ Mode: ${mode}`)
 
 		if (config.planActSeparateModelsSetting) {
-			console.log(`✓ Separate Plan/Act Models: Enabled`)
+			output.log(`✓ Separate Plan/Act Models: Enabled`)
 		}
 
 		return true
@@ -399,21 +400,21 @@ class MarieCli {
 	 * Interactive mode - keep asking for prompts
 	 */
 	async interactiveMode(): Promise<void> {
-		console.log("\n" + "═".repeat(80))
-		console.log("🎯 Interactive Mode")
-		console.log("═".repeat(80))
-		console.log("\nEnter your coding tasks and I'll help you accomplish them.")
-		console.log("Commands:")
-		console.log("  • Type your task and press Enter to start")
-		console.log("  • Use @mentions to reference files (@file:path), URLs (@url:...), folders (@folder:path)")
-		console.log("  • Type 'exit' or 'quit' to end the session")
-		console.log("  • Type 'config' to show current configuration")
-		console.log("  • Type 'mode' or 'toggle' to switch between plan/act modes")
-		console.log("  • Type 'mcp' to show MCP server status")
-		console.log("  • Type 'history' to view task history")
-		console.log("  • Type '/help' to see slash commands (e.g., /search, /analyze)")
-		console.log("  • Type 'help' for more options")
-		console.log("─".repeat(80))
+		output.log("\n" + "═".repeat(80))
+		output.log("🎯 Interactive Mode")
+		output.log("═".repeat(80))
+		output.log("\nEnter your coding tasks and I'll help you accomplish them.")
+		output.log("Commands:")
+		output.log("  • Type your task and press Enter to start")
+		output.log("  • Use @mentions to reference files (@file:path), URLs (@url:...), folders (@folder:path)")
+		output.log("  • Type 'exit' or 'quit' to end the session")
+		output.log("  • Type 'config' to show current configuration")
+		output.log("  • Type 'mode' or 'toggle' to switch between plan/act modes")
+		output.log("  • Type 'mcp' to show MCP server status")
+		output.log("  • Type 'history' to view task history")
+		output.log("  • Type '/help' to see slash commands (e.g., /search, /analyze)")
+		output.log("  • Type 'help' for more options")
+		output.log("─".repeat(80))
 
 		const prompt = async (): Promise<void> => {
 			this.rl.question("\n💬 You: ", async (input) => {
@@ -439,7 +440,7 @@ class MarieCli {
 				const command = trimmed.toLowerCase()
 
 				if (command === "exit" || command === "quit") {
-					console.log("\n👋 Thanks for using MarieCoder CLI!")
+					output.log("\n👋 Thanks for using MarieCoder CLI!")
 					this.cleanup()
 					process.exit(0)
 				} else if (command === "config") {
@@ -470,7 +471,7 @@ class MarieCli {
 					return
 				} else if (command === "clear") {
 					console.clear()
-					console.log("🎯 Interactive Mode - Ready for your next task")
+					output.log("🎯 Interactive Mode - Ready for your next task")
 					await prompt()
 					return
 				} else {
@@ -502,8 +503,8 @@ class MarieCli {
 		switch (subcommand) {
 			case "export":
 				if (!arg) {
-					console.log("\n❌ Task ID required")
-					console.log("Usage: history export <task-id>\n")
+					output.log("\n❌ Task ID required")
+					output.log("Usage: history export <task-id>\n")
 					return
 				}
 				await this.taskHistoryManager.exportTask(arg)
@@ -511,8 +512,8 @@ class MarieCli {
 
 			case "resume":
 				if (!arg) {
-					console.log("\n❌ Task ID required")
-					console.log("Usage: history resume <task-id>\n")
+					output.log("\n❌ Task ID required")
+					output.log("Usage: history resume <task-id>\n")
 					return
 				}
 				await this.taskHistoryManager.resumeTask(arg)
@@ -520,8 +521,8 @@ class MarieCli {
 
 			case "delete":
 				if (!arg) {
-					console.log("\n❌ Task ID required")
-					console.log("Usage: history delete <task-id>\n")
+					output.log("\n❌ Task ID required")
+					output.log("Usage: history delete <task-id>\n")
 					return
 				}
 				await this.taskHistoryManager.deleteTask(arg)
@@ -529,8 +530,8 @@ class MarieCli {
 
 			case "search":
 				if (!arg) {
-					console.log("\n❌ Search query required")
-					console.log("Usage: history search <query>\n")
+					output.log("\n❌ Search query required")
+					output.log("Usage: history search <query>\n")
 					return
 				}
 				// Join remaining parts as query
@@ -540,16 +541,16 @@ class MarieCli {
 
 			case "details":
 				if (!arg) {
-					console.log("\n❌ Task ID required")
-					console.log("Usage: history details <task-id>\n")
+					output.log("\n❌ Task ID required")
+					output.log("Usage: history details <task-id>\n")
 					return
 				}
 				await this.taskHistoryManager.displayTaskDetails(arg)
 				break
 
 			default:
-				console.log(`\n❌ Unknown history command: ${subcommand}`)
-				console.log("Available commands: export, resume, delete, search, details\n")
+				output.log(`\n❌ Unknown history command: ${subcommand}`)
+				output.log("Available commands: export, resume, delete, search, details\n")
 		}
 	}
 
@@ -561,9 +562,9 @@ class MarieCli {
 		const currentMode = stateManager.getGlobalSettingsKey("mode")
 		const newMode = currentMode === "plan" ? "act" : "plan"
 
-		console.log("\n" + "─".repeat(80))
-		console.log(`🔄 Mode Switch: ${currentMode} → ${newMode}`)
-		console.log("─".repeat(80))
+		output.log("\n" + "─".repeat(80))
+		output.log(`🔄 Mode Switch: ${currentMode} → ${newMode}`)
+		output.log("─".repeat(80))
 
 		// Update state manager
 		await this.webviewProvider.controller.togglePlanActMode(newMode)
@@ -572,50 +573,50 @@ class MarieCli {
 		const configManager = new CliConfigManager()
 		configManager.updateConfig({ mode: newMode })
 
-		console.log(`✓ Now in ${newMode} mode`)
+		output.log(`✓ Now in ${newMode} mode`)
 
 		if (newMode === "plan") {
-			console.log("\n💡 Plan Mode: AI will propose changes for your review")
+			output.log("\n💡 Plan Mode: AI will propose changes for your review")
 		} else {
-			console.log("\n⚡ Act Mode: AI will execute approved changes directly")
+			output.log("\n⚡ Act Mode: AI will execute approved changes directly")
 		}
 
-		console.log("─".repeat(80))
+		output.log("─".repeat(80))
 	}
 
 	/**
 	 * Show help for interactive mode
 	 */
 	private showInteractiveModeHelp(): void {
-		console.log("\n" + "─".repeat(80))
-		console.log("📚 Interactive Mode Help")
-		console.log("─".repeat(80))
-		console.log("\nAvailable Commands:")
-		console.log("  • exit, quit   - Exit interactive mode")
-		console.log("  • config       - Show current configuration")
-		console.log("  • mode, toggle - Switch between plan and act modes")
-		console.log("  • mcp          - Show MCP server status")
-		console.log("  • mcp tools    - Show available MCP tools and resources")
-		console.log("  • history      - Show task history")
-		console.log("  • history export <id>   - Export task as markdown")
-		console.log("  • history resume <id>   - Resume a previous task")
-		console.log("  • history delete <id>   - Delete task from history")
-		console.log("  • history search <query> - Search task history")
-		console.log("  • help         - Show this help message")
-		console.log("  • clear        - Clear the screen")
-		console.log("\nModes:")
-		console.log("  • plan mode    - AI proposes changes for your review (safer)")
-		console.log("  • act mode     - AI executes changes directly (faster)")
-		console.log("\nMCP (Model Context Protocol):")
-		console.log("  • Extends MarieCoder with custom tools and capabilities")
-		console.log("  • Configure servers in extension settings or .mcp directory")
-		console.log("  • Access databases, file systems, APIs, and custom workflows")
-		console.log("\nTips:")
-		console.log("  • Be specific with your tasks for best results")
-		console.log("  • You can iterate on previous tasks by providing feedback")
-		console.log("  • Use Ctrl+C to interrupt a running task")
-		console.log("  • Use plan mode for complex/risky changes")
-		console.log("─".repeat(80))
+		output.log("\n" + "─".repeat(80))
+		output.log("📚 Interactive Mode Help")
+		output.log("─".repeat(80))
+		output.log("\nAvailable Commands:")
+		output.log("  • exit, quit   - Exit interactive mode")
+		output.log("  • config       - Show current configuration")
+		output.log("  • mode, toggle - Switch between plan and act modes")
+		output.log("  • mcp          - Show MCP server status")
+		output.log("  • mcp tools    - Show available MCP tools and resources")
+		output.log("  • history      - Show task history")
+		output.log("  • history export <id>   - Export task as markdown")
+		output.log("  • history resume <id>   - Resume a previous task")
+		output.log("  • history delete <id>   - Delete task from history")
+		output.log("  • history search <query> - Search task history")
+		output.log("  • help         - Show this help message")
+		output.log("  • clear        - Clear the screen")
+		output.log("\nModes:")
+		output.log("  • plan mode    - AI proposes changes for your review (safer)")
+		output.log("  • act mode     - AI executes changes directly (faster)")
+		output.log("\nMCP (Model Context Protocol):")
+		output.log("  • Extends MarieCoder with custom tools and capabilities")
+		output.log("  • Configure servers in extension settings or .mcp directory")
+		output.log("  • Access databases, file systems, APIs, and custom workflows")
+		output.log("\nTips:")
+		output.log("  • Be specific with your tasks for best results")
+		output.log("  • You can iterate on previous tasks by providing feedback")
+		output.log("  • Use Ctrl+C to interrupt a running task")
+		output.log("  • Use plan mode for complex/risky changes")
+		output.log("─".repeat(80))
 	}
 
 	/**
@@ -712,7 +713,7 @@ function parseArgs(args: string[]): {
 			process.exit(0)
 		} else if (arg === "--version" || arg === "-v") {
 			const pkg = require("../../package.json")
-			console.log(`MarieCoder CLI v${pkg.version}`)
+			output.log(`MarieCoder CLI v${pkg.version}`)
 			process.exit(0)
 		} else if (arg === "--setup") {
 			runSetup = true
@@ -748,7 +749,7 @@ function parseArgs(args: string[]): {
 			prompt = args.slice(i).join(" ")
 			break
 		} else {
-			console.warn(`⚠️  Unknown option: ${arg}`)
+			output.warn(`⚠️  Unknown option: ${arg}`)
 		}
 
 		i++
@@ -790,7 +791,7 @@ function parseArgs(args: string[]): {
  * Show help message
  */
 function showHelp(): void {
-	console.log(`
+	output.log(`
 ╔═══════════════════════════════════════════════════════════════╗
 ║               MarieCoder CLI - Quick Reference                ║
 ╚═══════════════════════════════════════════════════════════════╝
@@ -885,7 +886,7 @@ async function main() {
 
 		// Handle --reset-config
 		if (resetConfig) {
-			console.log("\n⚠️  This will delete all MarieCoder CLI configuration.")
+			output.log("\n⚠️  This will delete all MarieCoder CLI configuration.")
 			const rl = readline.createInterface({
 				input: process.stdin,
 				output: process.stdout,
@@ -897,7 +898,7 @@ async function main() {
 					if (answer.trim().toLowerCase() === "y") {
 						configManager.resetConfig()
 					} else {
-						console.log("Cancelled.")
+						output.log("Cancelled.")
 					}
 					resolve()
 				})
@@ -906,7 +907,7 @@ async function main() {
 		}
 
 		// Show banner
-		console.log(`
+		output.log(`
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
 ║   ███╗   ███╗ █████╗ ██████╗ ██╗███████╗ ██████╗██╗     ██╗  ║
@@ -935,7 +936,7 @@ async function main() {
 			wizard.close()
 
 			if (!config) {
-				console.log("\n❌ Setup cancelled or failed.")
+				output.log("\n❌ Setup cancelled or failed.")
 				process.exit(1)
 			}
 
@@ -951,7 +952,7 @@ async function main() {
 					const wantsToContinue = !answer.trim() || answer.trim().toLowerCase() === "y"
 
 					if (!wantsToContinue) {
-						console.log("\n✅ Setup complete! Run 'mariecoder' to start coding.\n")
+						output.log("\n✅ Setup complete! Run 'mariecoder' to start coding.\n")
 						process.exit(0)
 					}
 
@@ -969,11 +970,11 @@ async function main() {
 
 		// Check if first run (and not --setup)
 		if (!runSetup && !configManager.hasCompletedSetup()) {
-			console.log("\n👋 Welcome to MarieCoder CLI!")
-			console.log("\n" + "─".repeat(80))
-			console.log("It looks like this is your first time running MarieCoder CLI.")
-			console.log("Let's get you set up with a quick configuration wizard.")
-			console.log("─".repeat(80) + "\n")
+			output.log("\n👋 Welcome to MarieCoder CLI!")
+			output.log("\n" + "─".repeat(80))
+			output.log("It looks like this is your first time running MarieCoder CLI.")
+			output.log("Let's get you set up with a quick configuration wizard.")
+			output.log("─".repeat(80) + "\n")
 
 			const rl = readline.createInterface({
 				input: process.stdin,
@@ -994,8 +995,8 @@ async function main() {
 				wizard.close()
 
 				if (!config) {
-					console.log("\n❌ Setup cancelled or failed.")
-					console.log("You can run setup later with: mariecoder --setup\n")
+					output.log("\n❌ Setup cancelled or failed.")
+					output.log("You can run setup later with: mariecoder --setup\n")
 					process.exit(1)
 				}
 
@@ -1006,8 +1007,8 @@ async function main() {
 				options.temperature = config.temperature
 				options.maxTokens = config.maxTokens
 			} else {
-				console.log("\n💡 You can run setup later with: mariecoder --setup")
-				console.log("For now, you'll need to provide configuration via command-line options.\n")
+				output.log("\n💡 You can run setup later with: mariecoder --setup")
+				output.log("For now, you'll need to provide configuration via command-line options.\n")
 
 				// Check if we have minimum required config
 				if (!options.apiKey) {
@@ -1040,7 +1041,7 @@ async function main() {
 			cleanupCalled = true
 
 			if (signal) {
-				console.log(`\n\n👋 Received ${signal}, shutting down gracefully...`)
+				output.log(`\n\n👋 Received ${signal}, shutting down gracefully...`)
 			}
 
 			try {

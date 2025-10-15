@@ -8,6 +8,7 @@ import * as os from "node:os"
 import * as path from "node:path"
 import { type AnthropicModelId, anthropicDefaultModelId, anthropicModels, openRouterDefaultModelId } from "@/shared/api"
 import { CliInteractionHandler } from "./cli_interaction_handler"
+import { output } from "./cli_output"
 
 export interface SetupConfig {
 	apiProvider: string
@@ -55,10 +56,10 @@ export class CliSetupWizard {
 	 * Run the interactive setup wizard (streamlined 3-step process)
 	 */
 	async runSetupWizard(): Promise<SetupConfig | null> {
-		console.log("\n" + "═".repeat(80))
-		console.log("🎉 Welcome to MarieCoder CLI")
-		console.log("═".repeat(80))
-		console.log("\nQuick setup - just 3 steps to get started!\n")
+		output.log("\n" + "═".repeat(80))
+		output.log("🎉 Welcome to MarieCoder CLI")
+		output.log("═".repeat(80))
+		output.log("\nQuick setup - just 3 steps to get started!\n")
 
 		try {
 			// Step 1: Provider & API Key (combined)
@@ -91,7 +92,7 @@ export class CliSetupWizard {
 			// Show setup summary
 			this.showSetupSummary(config)
 
-			console.log("\n✅ Setup complete! You're ready to start coding with MarieCoder.\n")
+			output.log("\n✅ Setup complete! You're ready to start coding with MarieCoder.\n")
 
 			return config
 		} catch (error) {
@@ -107,14 +108,14 @@ export class CliSetupWizard {
 	 * Quick setup for users who already have partial config
 	 */
 	async quickSetup(existingApiKey?: string, existingProvider?: string): Promise<SetupConfig | null> {
-		console.log("\n⚡ Quick Setup")
-		console.log("─".repeat(80))
+		output.log("\n⚡ Quick Setup")
+		output.log("─".repeat(80))
 
 		const provider = existingProvider || "anthropic"
 		const apiKey = existingApiKey || ""
 
 		if (!apiKey) {
-			console.log("API key required for quick setup")
+			output.log("API key required for quick setup")
 			return null
 		}
 
@@ -129,7 +130,7 @@ export class CliSetupWizard {
 		}
 
 		this.saveConfig(config)
-		console.log("✅ Configuration saved!\n")
+		output.log("✅ Configuration saved!\n")
 
 		return config
 	}
@@ -138,8 +139,8 @@ export class CliSetupWizard {
 	 * Step 1: Configure provider and API key (combined for efficiency)
 	 */
 	private async configureProviderAndKey(): Promise<{ provider: string; apiKey: string } | { provider: null; apiKey: null }> {
-		console.log("🔑 Step 1: Provider & API Key")
-		console.log("─".repeat(80))
+		output.log("🔑 Step 1: Provider & API Key")
+		output.log("─".repeat(80))
 
 		// Check for existing environment variables
 		const anthropicEnvKey = process.env.ANTHROPIC_API_KEY
@@ -147,42 +148,42 @@ export class CliSetupWizard {
 
 		// Auto-detect provider from environment
 		if (anthropicEnvKey) {
-			console.log("✓ Found ANTHROPIC_API_KEY in environment")
+			output.log("✓ Found ANTHROPIC_API_KEY in environment")
 			const useIt = await this.interactionHandler.askApproval("Use Anthropic with this key?", true)
 			if (useIt) {
-				console.log("✓ Using Anthropic\n")
+				output.log("✓ Using Anthropic\n")
 				return { provider: "anthropic", apiKey: anthropicEnvKey }
 			}
 		}
 
 		if (openRouterEnvKey) {
-			console.log("✓ Found OPENROUTER_API_KEY in environment")
+			output.log("✓ Found OPENROUTER_API_KEY in environment")
 			const useIt = await this.interactionHandler.askApproval("Use OpenRouter with this key?", true)
 			if (useIt) {
-				console.log("✓ Using OpenRouter\n")
+				output.log("✓ Using OpenRouter\n")
 				return { provider: "openrouter", apiKey: openRouterEnvKey }
 			}
 		}
 
 		// Manual selection
-		console.log("\nSelect your AI provider:")
-		console.log("  1. Anthropic Claude (Recommended) - Best for coding")
-		console.log("  2. OpenRouter - Access to 100+ models")
-		console.log("  3. LM Studio - Run models locally")
-		console.log()
+		output.log("\nSelect your AI provider:")
+		output.log("  1. Anthropic Claude (Recommended) - Best for coding")
+		output.log("  2. OpenRouter - Access to 100+ models")
+		output.log("  3. LM Studio - Run models locally")
+		output.log()
 
 		const choice = await this.interactionHandler.askChoice("Select provider:", ["anthropic", "openrouter", "lmstudio"])
 
 		if (!choice) {
-			console.log("\n❌ No provider selected. Setup cancelled.")
+			output.log("\n❌ No provider selected. Setup cancelled.")
 			return { provider: null, apiKey: null }
 		}
 
-		console.log(`✓ Selected: ${choice}`)
+		output.log(`✓ Selected: ${choice}`)
 
 		// LM Studio doesn't need an API key
 		if (choice === "lmstudio") {
-			console.log("✓ LM Studio uses local models (no API key needed)\n")
+			output.log("✓ LM Studio uses local models (no API key needed)\n")
 			return { provider: "lmstudio", apiKey: "local" }
 		}
 
@@ -191,20 +192,20 @@ export class CliSetupWizard {
 		const apiKey = await this.interactionHandler.askInput("\nEnter your API key (stored securely)")
 
 		if (!apiKey || apiKey.trim().length < 10) {
-			console.log("\n❌ Invalid API key. Setup cancelled.")
+			output.log("\n❌ Invalid API key. Setup cancelled.")
 			return { provider: null, apiKey: null }
 		}
 
 		// Quick format validation
 		if (!this.validateApiKeyFormat(apiKey, choice)) {
-			console.log("\n⚠️  Warning: API key format looks unusual.")
+			output.log("\n⚠️  Warning: API key format looks unusual.")
 			const continueAnyway = await this.interactionHandler.askApproval("Continue anyway?", false)
 			if (!continueAnyway) {
 				return { provider: null, apiKey: null }
 			}
 		}
 
-		console.log("✓ API key configured\n")
+		output.log("✓ API key configured\n")
 		return { provider: choice, apiKey: apiKey.trim() }
 	}
 
@@ -212,25 +213,25 @@ export class CliSetupWizard {
 	 * Step 2: Select model (streamlined with smart defaults + custom entry)
 	 */
 	private async selectModel(provider: string): Promise<string | null> {
-		console.log("🤖 Step 2: Select Model")
-		console.log("─".repeat(80))
+		output.log("🤖 Step 2: Select Model")
+		output.log("─".repeat(80))
 
 		const defaultModel = this.getDefaultModel(provider)
 
 		// For most users, the default is perfect
-		console.log(`\nRecommended: ${defaultModel}`)
+		output.log(`\nRecommended: ${defaultModel}`)
 		const useDefault = await this.interactionHandler.askApproval("Use recommended model?", true)
 
 		if (useDefault) {
-			console.log(`✓ Using: ${defaultModel}\n`)
+			output.log(`✓ Using: ${defaultModel}\n`)
 			return defaultModel
 		}
 
 		// Offer custom model entry or list selection
-		console.log("\nOptions:")
-		console.log("  1. Enter a custom model code (e.g., openai/gpt-4-turbo, anthropic/claude-3.5-sonnet)")
-		console.log("  2. Choose from popular models list")
-		console.log()
+		output.log("\nOptions:")
+		output.log("  1. Enter a custom model code (e.g., openai/gpt-4-turbo, anthropic/claude-3.5-sonnet)")
+		output.log("  2. Choose from popular models list")
+		output.log()
 
 		const wantsCustom = await this.interactionHandler.askApproval("Enter custom model code?", false)
 
@@ -246,31 +247,31 @@ export class CliSetupWizard {
 	 * Enter a custom model code
 	 */
 	private async enterCustomModel(provider: string, defaultModel: string): Promise<string | null> {
-		console.log("\nEnter model code:")
+		output.log("\nEnter model code:")
 
 		// Show helpful examples based on provider
 		if (provider === "openrouter") {
-			console.log("  Examples:")
-			console.log("    • openai/gpt-4-turbo")
-			console.log("    • anthropic/claude-3.5-sonnet")
-			console.log("    • google/gemini-pro-1.5")
-			console.log("    • meta-llama/llama-3.3-70b-instruct")
-			console.log("    • openai/gpt-oss-20b:free (free models)")
-			console.log("\n  Find models at: https://openrouter.ai/models")
+			output.log("  Examples:")
+			output.log("    • openai/gpt-4-turbo")
+			output.log("    • anthropic/claude-3.5-sonnet")
+			output.log("    • google/gemini-pro-1.5")
+			output.log("    • meta-llama/llama-3.3-70b-instruct")
+			output.log("    • openai/gpt-oss-20b:free (free models)")
+			output.log("\n  Find models at: https://openrouter.ai/models")
 		} else if (provider === "anthropic") {
-			console.log("  Examples:")
-			console.log("    • claude-sonnet-4-5-20250929")
-			console.log("    • claude-opus-4-1-20250805")
-			console.log("    • claude-3-5-sonnet-20241022")
+			output.log("  Examples:")
+			output.log("    • claude-sonnet-4-5-20250929")
+			output.log("    • claude-opus-4-1-20250805")
+			output.log("    • claude-3-5-sonnet-20241022")
 		} else if (provider === "lmstudio") {
-			console.log("  Enter the exact model name from your LM Studio")
-			console.log("  Example: llama-3.1-8b-instruct")
+			output.log("  Enter the exact model name from your LM Studio")
+			output.log("  Example: llama-3.1-8b-instruct")
 		}
 
 		const customModel = await this.interactionHandler.askInput("\nModel code", "")
 
 		if (!customModel || customModel.trim().length === 0) {
-			console.log(`Using default: ${defaultModel}`)
+			output.log(`Using default: ${defaultModel}`)
 			return defaultModel
 		}
 
@@ -278,14 +279,14 @@ export class CliSetupWizard {
 
 		// Basic validation
 		if (provider === "openrouter" && !trimmedModel.includes("/")) {
-			console.log("\n⚠️  OpenRouter models should include provider prefix (e.g., 'anthropic/claude-3.5-sonnet')")
+			output.log("\n⚠️  OpenRouter models should include provider prefix (e.g., 'anthropic/claude-3.5-sonnet')")
 			const continueAnyway = await this.interactionHandler.askApproval("Use anyway?", false)
 			if (!continueAnyway) {
 				return defaultModel
 			}
 		}
 
-		console.log(`✓ Using custom model: ${trimmedModel}\n`)
+		output.log(`✓ Using custom model: ${trimmedModel}\n`)
 		return trimmedModel
 	}
 
@@ -294,17 +295,17 @@ export class CliSetupWizard {
 	 */
 	private async selectFromModelList(provider: string, defaultModel: string): Promise<string | null> {
 		const models = this.getAvailableModels(provider)
-		console.log("\nPopular models:")
+		output.log("\nPopular models:")
 		models.forEach((model, index) => {
 			const tag = model === defaultModel ? " (recommended)" : ""
-			console.log(`  ${index + 1}. ${model}${tag}`)
+			output.log(`  ${index + 1}. ${model}${tag}`)
 		})
-		console.log()
+		output.log()
 
 		const choice = await this.interactionHandler.askChoice("Select a model:", models)
 		const selectedModel = choice || defaultModel
 
-		console.log(`✓ Selected: ${selectedModel}\n`)
+		output.log(`✓ Selected: ${selectedModel}\n`)
 		return selectedModel
 	}
 
@@ -321,8 +322,8 @@ export class CliSetupWizard {
 		actModeApiProvider?: string
 		actModeApiModelId?: string
 	}> {
-		console.log("⚙️  Step 3: Optional Configuration")
-		console.log("─".repeat(80))
+		output.log("⚙️  Step 3: Optional Configuration")
+		output.log("─".repeat(80))
 
 		const wantsExtras = await this.interactionHandler.askApproval(
 			"Configure optional features? (plan/act mode, rules, advanced settings)",
@@ -330,14 +331,14 @@ export class CliSetupWizard {
 		)
 
 		if (!wantsExtras) {
-			console.log("✓ Using defaults (you can configure these later)\n")
+			output.log("✓ Using defaults (you can configure these later)\n")
 			return { mode: "act" }
 		}
 
 		// Plan/Act Mode Configuration
-		console.log("\nPlan/Act Mode:")
-		console.log("  • Plan Mode: AI proposes changes for your review (safer)")
-		console.log("  • Act Mode: AI executes changes directly (faster)")
+		output.log("\nPlan/Act Mode:")
+		output.log("  • Plan Mode: AI proposes changes for your review (safer)")
+		output.log("  • Act Mode: AI executes changes directly (faster)")
 
 		const wantsPlanActSetup = await this.interactionHandler.askApproval(
 			"  Configure separate models for plan and act modes?",
@@ -356,7 +357,7 @@ export class CliSetupWizard {
 		await this.offerClineRulesSetup()
 
 		// Advanced settings
-		console.log("\nAdvanced Settings:")
+		output.log("\nAdvanced Settings:")
 		const wantsAdvanced = await this.interactionHandler.askApproval("  Configure temperature/tokens?", false)
 
 		if (!wantsAdvanced) {
@@ -366,7 +367,7 @@ export class CliSetupWizard {
 		const temperature = await this.interactionHandler.askInput("  Temperature (0.0-1.0)", "0.0")
 		const maxTokens = await this.interactionHandler.askInput("  Max tokens (leave empty for default)", "")
 
-		console.log("✓ Settings configured\n")
+		output.log("✓ Settings configured\n")
 
 		return {
 			...planActConfig,
@@ -386,12 +387,12 @@ export class CliSetupWizard {
 		actModeApiProvider?: string
 		actModeApiModelId?: string
 	}> {
-		console.log("\n⚙️  Plan/Act Mode Setup")
-		console.log("─".repeat(80))
+		output.log("\n⚙️  Plan/Act Mode Setup")
+		output.log("─".repeat(80))
 
 		// Select plan mode configuration
-		console.log("\nPlan Mode Configuration:")
-		console.log("  (Use a cheaper/faster model for planning)")
+		output.log("\nPlan Mode Configuration:")
+		output.log("  (Use a cheaper/faster model for planning)")
 		const planProvider = await this.interactionHandler.askChoice("Plan mode provider:", [
 			"anthropic",
 			"openrouter",
@@ -404,8 +405,8 @@ export class CliSetupWizard {
 			: await this.interactionHandler.askInput("Plan mode model:", planDefaultModel)
 
 		// Select act mode configuration
-		console.log("\nAct Mode Configuration:")
-		console.log("  (Use a powerful model for execution)")
+		output.log("\nAct Mode Configuration:")
+		output.log("  (Use a powerful model for execution)")
 		const actProvider = await this.interactionHandler.askChoice("Act mode provider:", ["anthropic", "openrouter", "lmstudio"])
 		const actDefaultModel = this.getDefaultModel(actProvider || "anthropic")
 		const useActDefault = await this.interactionHandler.askApproval(`Use ${actDefaultModel} for act mode?`, true)
@@ -416,10 +417,10 @@ export class CliSetupWizard {
 		// Default mode
 		const startInPlanMode = await this.interactionHandler.askApproval("Start in plan mode (safer)?", true)
 
-		console.log("\n✓ Plan/Act mode configured:")
-		console.log(`  Plan: ${planProvider} / ${planModel}`)
-		console.log(`  Act: ${actProvider} / ${actModel}`)
-		console.log(`  Default: ${startInPlanMode ? "plan" : "act"} mode\n`)
+		output.log("\n✓ Plan/Act mode configured:")
+		output.log(`  Plan: ${planProvider} / ${planModel}`)
+		output.log(`  Act: ${actProvider} / ${actModel}`)
+		output.log(`  Default: ${startInPlanMode ? "plan" : "act"} mode\n`)
 
 		return {
 			mode: startInPlanMode ? "plan" : "act",
@@ -438,7 +439,7 @@ export class CliSetupWizard {
 		const hasLocalRules = fs.existsSync(".clinerules")
 
 		if (hasLocalRules) {
-			console.log("✓ You already have .clinerules/ setup\n")
+			output.log("✓ You already have .clinerules/ setup\n")
 			return
 		}
 
@@ -468,9 +469,9 @@ export class CliSetupWizard {
 Customize this file to match your project's standards.
 `
 			fs.writeFileSync(".clinerules/standards.md", exampleRule)
-			console.log("  ✓ Created .clinerules/standards.md\n")
+			output.log("  ✓ Created .clinerules/standards.md\n")
 		} catch (error) {
-			console.log(`  ⚠️  Could not create .clinerules: ${error}\n`)
+			output.log(`  ⚠️  Could not create .clinerules: ${error}\n`)
 		}
 	}
 
@@ -478,27 +479,27 @@ Customize this file to match your project's standards.
 	 * Show setup summary
 	 */
 	private showSetupSummary(config: SetupConfig): void {
-		console.log("\n" + "═".repeat(80))
-		console.log("📋 Setup Summary")
-		console.log("═".repeat(80))
-		console.log(`  Provider: ${config.apiProvider}`)
-		console.log(`  Model: ${config.apiModelId}`)
-		console.log(`  API Key: ${this.maskApiKey(config.apiKey)}`)
+		output.log("\n" + "═".repeat(80))
+		output.log("📋 Setup Summary")
+		output.log("═".repeat(80))
+		output.log(`  Provider: ${config.apiProvider}`)
+		output.log(`  Model: ${config.apiModelId}`)
+		output.log(`  API Key: ${this.maskApiKey(config.apiKey)}`)
 		if (config.temperature !== undefined) {
-			console.log(`  Temperature: ${config.temperature}`)
+			output.log(`  Temperature: ${config.temperature}`)
 		}
 		if (config.maxTokens !== undefined) {
-			console.log(`  Max Tokens: ${config.maxTokens}`)
+			output.log(`  Max Tokens: ${config.maxTokens}`)
 		}
 		if (config.planActSeparateModelsSetting) {
-			console.log(`  Mode: ${config.mode || "act"} (Plan/Act configured separately)`)
-			console.log(`  Plan Mode: ${config.planModeApiProvider} / ${config.planModeApiModelId}`)
-			console.log(`  Act Mode: ${config.actModeApiProvider} / ${config.actModeApiModelId}`)
+			output.log(`  Mode: ${config.mode || "act"} (Plan/Act configured separately)`)
+			output.log(`  Plan Mode: ${config.planModeApiProvider} / ${config.planModeApiModelId}`)
+			output.log(`  Act Mode: ${config.actModeApiProvider} / ${config.actModeApiModelId}`)
 		} else {
-			console.log(`  Mode: ${config.mode || "act"}`)
+			output.log(`  Mode: ${config.mode || "act"}`)
 		}
-		console.log(`  Config saved to: ${this.configDir}/config.json`)
-		console.log("═".repeat(80))
+		output.log(`  Config saved to: ${this.configDir}/config.json`)
+		output.log("═".repeat(80))
 	}
 
 	/**
@@ -560,33 +561,33 @@ Customize this file to match your project's standards.
 	 * Show instructions for getting an API key
 	 */
 	private showApiKeyInstructions(provider: string): void {
-		console.log("\nTo get your API key:\n")
+		output.log("\nTo get your API key:\n")
 
 		switch (provider) {
 			case "anthropic":
-				console.log("  1. Visit: https://console.anthropic.com/")
-				console.log("  2. Sign up or log in")
-				console.log("  3. Go to API Keys section")
-				console.log("  4. Create a new API key")
-				console.log("\n  Format: sk-ant-...")
+				output.log("  1. Visit: https://console.anthropic.com/")
+				output.log("  2. Sign up or log in")
+				output.log("  3. Go to API Keys section")
+				output.log("  4. Create a new API key")
+				output.log("\n  Format: sk-ant-...")
 				break
 
 			case "openai":
-				console.log("  1. Visit: https://platform.openai.com/api-keys")
-				console.log("  2. Sign up or log in")
-				console.log("  3. Create a new API key")
-				console.log("\n  Format: sk-...")
+				output.log("  1. Visit: https://platform.openai.com/api-keys")
+				output.log("  2. Sign up or log in")
+				output.log("  3. Create a new API key")
+				output.log("\n  Format: sk-...")
 				break
 
 			case "openrouter":
-				console.log("  1. Visit: https://openrouter.ai/keys")
-				console.log("  2. Sign up or log in")
-				console.log("  3. Generate an API key")
-				console.log("\n  Format: sk-...")
+				output.log("  1. Visit: https://openrouter.ai/keys")
+				output.log("  2. Sign up or log in")
+				output.log("  3. Generate an API key")
+				output.log("\n  Format: sk-...")
 				break
 
 			default:
-				console.log("  Please refer to your provider's documentation")
+				output.log("  Please refer to your provider's documentation")
 		}
 	}
 

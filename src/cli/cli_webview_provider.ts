@@ -12,6 +12,7 @@ import { WebviewProvider } from "@/core/webview"
 import type { ClineMessage } from "@/shared/ExtensionMessage"
 import { getInteractionHandler } from "./cli_interaction_handler"
 import { formatCommandExecution, formatMessageBox, TerminalColors } from "./cli_message_formatter"
+import { output } from "./cli_output"
 
 export class CliWebviewProvider extends WebviewProvider {
 	private visible = true
@@ -80,11 +81,11 @@ export class CliWebviewProvider extends WebviewProvider {
 
 				case "completion_result": {
 					// Task completion
-					console.log("\n" + "═".repeat(80))
-					console.log("✅ Task Completion")
-					console.log("═".repeat(80))
-					console.log(text)
-					console.log("═".repeat(80))
+					output.log("\n" + "═".repeat(80))
+					output.log("✅ Task Completion")
+					output.log("═".repeat(80))
+					output.log(text)
+					output.log("═".repeat(80))
 
 					const continueWork = await interactionHandler.askApproval(
 						"Do you want to provide feedback or continue?",
@@ -107,15 +108,15 @@ export class CliWebviewProvider extends WebviewProvider {
 					// MCP server usage approval
 					try {
 						const mcpData = JSON.parse(text)
-						console.log("\n" + "─".repeat(80))
-						console.log(`🔌 MCP Server Request`)
-						console.log("─".repeat(80))
-						console.log(`  Server: ${mcpData.serverName || "unknown"}`)
-						console.log(`  Tool: ${mcpData.toolName || "unknown"}`)
+						output.log("\n" + "─".repeat(80))
+						output.log(`🔌 MCP Server Request`)
+						output.log("─".repeat(80))
+						output.log(`  Server: ${mcpData.serverName || "unknown"}`)
+						output.log(`  Tool: ${mcpData.toolName || "unknown"}`)
 						if (mcpData.uri) {
-							console.log(`  Resource: ${mcpData.uri}`)
+							output.log(`  Resource: ${mcpData.uri}`)
 						}
-						console.log("─".repeat(80))
+						output.log("─".repeat(80))
 						approved = await interactionHandler.askApproval("Approve this MCP operation?", true)
 					} catch (_e) {
 						// If not JSON, show as regular tool
@@ -126,7 +127,7 @@ export class CliWebviewProvider extends WebviewProvider {
 
 				case "followup": {
 					// Followup question
-					console.log("\n💬 AI Question:", text)
+					output.log("\n💬 AI Question:", text)
 					feedbackText = await interactionHandler.askInput("Your response")
 					approved = false // Always treat as feedback
 					break
@@ -134,14 +135,14 @@ export class CliWebviewProvider extends WebviewProvider {
 
 				case "api_req_failed": {
 					// API request failed
-					console.log("\n⚠️  API request failed:", text)
+					output.log("\n⚠️  API request failed:", text)
 					approved = await interactionHandler.askApproval("Do you want to retry?", false)
 					break
 				}
 
 				default: {
 					// Generic approval
-					console.log(`\n❓ Approval needed (${askType}):`, text)
+					output.log(`\n❓ Approval needed (${askType}):`, text)
 					approved = await interactionHandler.askApproval("Approve?", true)
 				}
 			}
@@ -167,35 +168,35 @@ export class CliWebviewProvider extends WebviewProvider {
 		switch (sayType) {
 			case "text": {
 				if (text) {
-					console.log(`\n${TerminalColors.cyan}🤖 AI:${TerminalColors.reset} ${text}`)
+					output.log(`\n${TerminalColors.cyan}🤖 AI:${TerminalColors.reset} ${text}`)
 				}
 				break
 			}
 
 			case "command": {
 				if (text) {
-					console.log(formatCommandExecution(text, "pending"))
+					output.log(formatCommandExecution(text, "pending"))
 				}
 				break
 			}
 
 			case "command_output": {
 				if (text) {
-					console.log(`\n${TerminalColors.gray}Output:${TerminalColors.reset}`)
-					console.log(text)
+					output.log(`\n${TerminalColors.gray}Output:${TerminalColors.reset}`)
+					output.log(text)
 				}
 				break
 			}
 
 			case "completion_result": {
 				if (text) {
-					console.log(formatMessageBox("Task Completion", text, { type: "success" }))
+					output.log(formatMessageBox("Task Completion", text, { type: "success" }))
 				}
 				break
 			}
 
 			case "api_req_started": {
-				console.log(`\n${TerminalColors.magenta}🧠 AI is thinking...${TerminalColors.reset}`)
+				output.log(`\n${TerminalColors.magenta}🧠 AI is thinking...${TerminalColors.reset}`)
 				break
 			}
 
@@ -206,14 +207,14 @@ export class CliWebviewProvider extends WebviewProvider {
 
 			case "error": {
 				if (text) {
-					console.log(formatMessageBox("Error", text, { type: "error" }))
+					output.log(formatMessageBox("Error", text, { type: "error" }))
 				}
 				break
 			}
 
 			case "user_feedback": {
 				if (text) {
-					console.log(`\n${TerminalColors.blue}💬 User feedback:${TerminalColors.reset} ${text}`)
+					output.log(`\n${TerminalColors.blue}💬 User feedback:${TerminalColors.reset} ${text}`)
 				}
 				break
 			}
@@ -221,7 +222,7 @@ export class CliWebviewProvider extends WebviewProvider {
 			default: {
 				// Show other message types in verbose mode
 				if (text) {
-					console.log(`\n${TerminalColors.gray}[${sayType}]${TerminalColors.reset} ${text}`)
+					output.log(`\n${TerminalColors.gray}[${sayType}]${TerminalColors.reset} ${text}`)
 				}
 			}
 		}
@@ -251,6 +252,6 @@ export class CliWebviewProvider extends WebviewProvider {
 			error: "❌",
 		}[type]
 
-		console.log(`${prefix} ${message}`)
+		output.log(`${prefix} ${message}`)
 	}
 }

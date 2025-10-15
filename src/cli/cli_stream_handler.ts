@@ -1,17 +1,19 @@
 /**
  * CLI Stream Handler - Real-time streaming message display
  *
- * Inspired by webview-ui streaming improvements:
+ * Enhanced with improved visual feedback:
  * - Throttled updates for better performance
- * - Progressive content display
- * - Smooth thinking block streaming
- * - Efficient terminal rendering
+ * - Progressive content display with smooth transitions
+ * - Animated thinking blocks with elegant streaming
+ * - Efficient terminal rendering with cursor management
+ * - Better feedback for long-running operations
  */
 
 import type { ClineMessage } from "@/shared/ExtensionMessage"
 import { OUTPUT_LIMITS, STREAMING } from "./cli_constants"
 import { getLogger } from "./cli_logger"
-import { formatStreamingIndicator, formatThinkingBlock, TerminalColors } from "./cli_message_formatter"
+import { BoxChars, formatThinkingBlock, SemanticColors, style, TerminalColors } from "./cli_message_formatter"
+import { output } from "./cli_output"
 
 const logger = getLogger()
 
@@ -66,13 +68,13 @@ export class CliStreamHandler {
 	}
 
 	/**
-	 * Start a new streaming session
+	 * Start a new streaming session with enhanced visual feedback
 	 */
 	startStream(type: "text" | "thinking" | "command"): void {
 		// Check terminal capabilities and warn if limited
 		const supportsAnsi = process.stdout.isTTY === true && !process.env.NO_COLOR && process.env.TERM !== "dumb"
 		if (!supportsAnsi) {
-			logger.debug("Terminal does not support ANSI codes. " + "Stream clearing disabled. Output may accumulate.")
+			logger.debug("Terminal does not support ANSI codes. Stream clearing disabled. Output may accumulate.")
 		}
 
 		// End any existing session
@@ -87,14 +89,18 @@ export class CliStreamHandler {
 			isThinking: type === "thinking",
 		}
 
-		// Start spinner for thinking
+		// Start spinner for thinking with elegant animation
 		if (type === "thinking") {
 			this.startSpinner()
 		}
 
-		// Show initial indicator
+		// Show initial indicator with better styling
 		if (type === "thinking") {
-			console.log(formatStreamingIndicator("AI thinking"))
+			const indicator = `\n${style("●", SemanticColors.thinking)} ${style("AI is processing your request...", TerminalColors.dim)}\n`
+			output.log(indicator)
+		} else if (type === "text") {
+			const indicator = `${style(BoxChars.rightArrow, SemanticColors.ai)} ${style("Streaming response...", TerminalColors.dim)}`
+			output.log(indicator)
 		}
 	}
 
@@ -184,7 +190,8 @@ export class CliStreamHandler {
 				} else {
 					this.endStream()
 					if (text) {
-						console.log(`\n${TerminalColors.cyan}🤖 AI:${TerminalColors.reset} ${text}`)
+						const aiLabel = style("🤖 AI", SemanticColors.ai, TerminalColors.bright)
+						output.log(`\n${aiLabel}: ${text}\n`)
 					}
 				}
 				break
@@ -192,7 +199,9 @@ export class CliStreamHandler {
 
 			case "command": {
 				this.endStream()
-				console.log(`\n${TerminalColors.yellow}⚡ Command:${TerminalColors.reset} ${text}`)
+				const commandIcon = style("⚡", SemanticColors.command)
+				const commandLabel = style("Command", TerminalColors.bright)
+				output.log(`\n${commandIcon} ${commandLabel}: ${style(text, SemanticColors.code)}`)
 				break
 			}
 
@@ -215,7 +224,9 @@ export class CliStreamHandler {
 
 			case "error": {
 				this.endStream()
-				console.error(`\n${TerminalColors.red}❌ Error:${TerminalColors.reset} ${text}`)
+				const errorIcon = style("✗", SemanticColors.error)
+				const errorLabel = style("Error", SemanticColors.error, TerminalColors.bright)
+				console.error(`\n${errorIcon} ${errorLabel}: ${text}\n`)
 				break
 			}
 
@@ -227,14 +238,14 @@ export class CliStreamHandler {
 	}
 
 	/**
-	 * Render streaming content (partial)
+	 * Render streaming content (partial) with enhanced visual feedback
 	 */
 	private renderStreamingContent(): void {
 		if (!this.activeSession) {
 			return
 		}
 
-		const { type, accumulatedText } = this.activeSession
+		const { type, accumulatedText, startTime } = this.activeSession
 
 		// Clear previous line(s) if needed
 		this.clearPreviousOutput()
@@ -243,22 +254,39 @@ export class CliStreamHandler {
 			// Show abbreviated thinking content while streaming
 			const preview = accumulatedText.slice(0, this.config.maxPartialLength)
 			const truncated = accumulatedText.length > this.config.maxPartialLength
+			const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
 
-			if (this.config.showPartialContent) {
-				console.log(
-					formatThinkingBlock(preview + (truncated ? "\n\n[Streaming more content...]" : ""), {
+			if (this.config.showPartialContent && preview) {
+				// Show preview with streaming indicator
+				const statusLine = truncated
+					? `[Streaming... ${accumulatedText.length} chars, ${elapsed}s]`
+					: `[Processing... ${elapsed}s]`
+
+				output.log(
+					formatThinkingBlock(preview + (truncated ? `\n\n${statusLine}` : ""), {
 						expanded: false,
 						partial: true,
 						showCopyHint: false,
 					}),
 				)
+			} else {
+				// Show minimal spinner indicator
+				const spinner = BoxChars.spinner[Math.floor(Date.now() / 100) % BoxChars.spinner.length]
+				const indicator = `${style(spinner, SemanticColors.thinking)} ${style(`Processing (${elapsed}s)...`, TerminalColors.dim)}`
+				output.log(indicator)
 			}
 		} else if (type === "text") {
-			// Show partial text
+			// Show partial text with streaming indicator
 			const preview = accumulatedText.slice(0, this.config.maxPartialLength)
-			console.log(
-				`\n${TerminalColors.cyan}🤖 AI:${TerminalColors.reset} ${TerminalColors.dim}${preview}${accumulatedText.length > this.config.maxPartialLength ? "..." : ""}${TerminalColors.reset}`,
-			)
+			const truncated = accumulatedText.length > this.config.maxPartialLength
+			const streamingDot = BoxChars.bulletPoint
+
+			const aiLabel = style("🤖 AI", SemanticColors.ai, TerminalColors.bright)
+			const textContent = style(preview, TerminalColors.dim)
+			const ellipsis = truncated ? style("...", TerminalColors.dim) : ""
+			const streamIndicator = style(` ${streamingDot}`, SemanticColors.thinking)
+
+			output.log(`\n${aiLabel}:${streamIndicator} ${textContent}${ellipsis}`)
 		}
 
 		// Update line count for clearing
@@ -266,14 +294,14 @@ export class CliStreamHandler {
 	}
 
 	/**
-	 * Render final content (complete)
+	 * Render final content (complete) with improved presentation
 	 */
 	private renderFinalContent(): void {
 		if (!this.activeSession) {
 			return
 		}
 
-		const { type, accumulatedText } = this.activeSession
+		const { type, accumulatedText, startTime } = this.activeSession
 
 		// Clear previous output
 		this.clearPreviousOutput()
@@ -284,19 +312,30 @@ export class CliStreamHandler {
 			this.spinnerTimer = null
 		}
 
+		// Calculate elapsed time for context
+		const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)
+
 		// Render final content based on type
 		if (type === "thinking") {
-			console.log(formatThinkingBlock(accumulatedText, { expanded: this.config.autoExpandThinking, partial: false }))
+			output.log(formatThinkingBlock(accumulatedText, { expanded: this.config.autoExpandThinking, partial: false }))
+			// Optionally show duration for long operations
+			if (parseFloat(elapsed) > 2) {
+				const durationText = style(`⏱  Completed in ${elapsed}s`, SemanticColors.metadata)
+				output.log(`${durationText}\n`)
+			}
 		} else if (type === "text") {
-			console.log(`\n${TerminalColors.cyan}🤖 AI:${TerminalColors.reset} ${accumulatedText}`)
+			const aiLabel = style("🤖 AI", SemanticColors.ai, TerminalColors.bright)
+			const completionMark = style("✓", SemanticColors.complete)
+			output.log(`\n${aiLabel}:${completionMark} ${accumulatedText}\n`)
 		}
 	}
 
 	/**
-	 * Handle a complete non-partial message
+	 * Handle a complete non-partial message with improved styling
 	 */
 	private handleCompleteMessage(text: string): void {
-		console.log(`\n${TerminalColors.cyan}🤖 AI:${TerminalColors.reset} ${text}`)
+		const aiLabel = style("🤖 AI", SemanticColors.ai, TerminalColors.bright)
+		output.log(`\n${aiLabel}: ${text}\n`)
 	}
 
 	/**
