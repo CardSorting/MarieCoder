@@ -55,6 +55,10 @@ export const TaskStateContextProvider: React.FC<{
 	const partialMessageUnsubscribeRef = useRef<(() => void) | null>(null)
 	const stateSubscriptionRef = useRef<(() => void) | null>(null)
 
+	// Track the timestamp of the last partial message update to prevent race conditions
+	const lastPartialUpdateTimeRef = useRef<number>(0)
+	const PARTIAL_UPDATE_DEBOUNCE_MS = 100 // Debounce window for state updates
+
 	// Subscribe to state updates to sync full message state
 	useEffect(() => {
 		stateSubscriptionRef.current = StateServiceClient.subscribeToState(EmptyRequest.create({}), {
@@ -62,9 +66,18 @@ export const TaskStateContextProvider: React.FC<{
 				if (response.stateJson) {
 					try {
 						const stateData = JSON.parse(response.stateJson)
-						if (stateData.clineMessages) {
+
+						// Prevent full state updates from overwriting recent partial updates
+						// This avoids race conditions during streaming
+						const timeSinceLastPartialUpdate = Date.now() - lastPartialUpdateTimeRef.current
+						const shouldSkipMessagesUpdate = timeSinceLastPartialUpdate < PARTIAL_UPDATE_DEBOUNCE_MS
+
+						if (stateData.clineMessages && !shouldSkipMessagesUpdate) {
 							setClineMessages(stateData.clineMessages)
+						} else if (shouldSkipMessagesUpdate) {
+							debug.log("[DEBUG] Skipping full state update - recent partial update detected")
 						}
+
 						if (stateData.taskHistory) {
 							setTaskHistory(stateData.taskHistory)
 						}
@@ -122,6 +135,10 @@ export const TaskStateContextProvider: React.FC<{
 						debug.log("[DEBUG] Ignoring empty handshake message")
 						return
 					}
+
+					// Update timestamp to track when partial updates occur
+					// This helps prevent race conditions with full state updates
+					lastPartialUpdateTimeRef.current = Date.now()
 
 					setClineMessages((prevMessages) => {
 						const lastIndex = findLastIndex(prevMessages, (msg) => msg.ts === partialMessage.ts)

@@ -96,10 +96,11 @@ export default defineConfig({
 		sourcemap: isDevBuild ? "inline" : false,
 		rollupOptions: {
 			output: {
-				// Enable code splitting by removing inlineDynamicImports
-				// This allows lazy-loaded components to be split into separate chunks
+				// Disable code splitting to avoid CSP issues with lazy-loaded chunks
+				// All code bundled into single file to match cline-main behavior
+				inlineDynamicImports: true,
 				entryFileNames: `assets/[name].js`,
-				chunkFileNames: `assets/[name]-[hash].js`,
+				chunkFileNames: `assets/[name].js`,
 				assetFileNames: `assets/[name].[ext]`,
 				// Disable compact output for dev build
 				compact: !isDevBuild,
@@ -111,22 +112,6 @@ export default defineConfig({
 						arrowFunctions: false,
 					},
 				}),
-				// Configure manual chunks for better code splitting
-				manualChunks: (id) => {
-					// Split vendor dependencies
-					if (id.includes("node_modules")) {
-						if (id.includes("react") || id.includes("react-dom")) {
-							return "vendor-react"
-						}
-						if (id.includes("@xterm")) {
-							return "vendor-xterm"
-						}
-						if (id.includes("react-virtuoso")) {
-							return "vendor-virtuoso"
-						}
-						return "vendor"
-					}
-				},
 			},
 		},
 		chunkSizeWarningLimit: 100000,
