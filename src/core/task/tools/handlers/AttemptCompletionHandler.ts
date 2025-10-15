@@ -27,7 +27,9 @@ export class AttemptCompletionHandler implements IToolHandler, IPartialBlockHand
 		const result = block.params.result
 		const command = block.params.command
 
-		if (!command) {
+		// Only show streaming completion result if result parameter is actually provided
+		// This prevents creating empty/undefined messages when the model forgets the result parameter
+		if (!command && result) {
 			// no command, still outputting partial result
 			await uiHelpers.say(
 				"completion_result",
