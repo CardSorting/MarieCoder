@@ -13,11 +13,11 @@
  */
 
 import { EventEmitter } from "node:events"
-import { getLogger } from "./infrastructure/logger"
-import { formatSectionHeader } from "./ui/output/message_formatter"
-import { getOutputBuffer } from "./ui/output/output_buffer"
-import { SemanticColors, style, TerminalColors } from "./ui/output/terminal_colors"
-import { getTerminalState } from "./ui/output/terminal_state"
+import { getLogger } from "../../infrastructure/logger"
+import { formatSectionHeader } from "../output/message_formatter"
+import { getOutputBuffer } from "../output/output_buffer"
+import { SemanticColors, style, TerminalColors } from "../output/terminal_colors"
+import { getTerminalState } from "../output/terminal_state"
 
 const logger = getLogger()
 

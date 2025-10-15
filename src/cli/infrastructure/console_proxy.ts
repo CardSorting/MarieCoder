@@ -12,8 +12,8 @@
  * - Compatible with existing code
  */
 
-import { getLogger } from "../infrastructure/logger"
-import { type CliOutputBuffer, getOutputBuffer } from "./ui/output/output_buffer"
+import { type CliOutputBuffer, getOutputBuffer } from "../ui/output/output_buffer"
+import { getLogger } from "./logger"
 
 const logger = getLogger()
 

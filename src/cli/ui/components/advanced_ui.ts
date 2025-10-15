@@ -24,7 +24,7 @@ import {
 	style,
 	TerminalCapabilities,
 	TerminalColors,
-} from "./cli_terminal_colors"
+} from "../output/terminal_colors"
 
 /**
  * Get responsive content width (shared utility)

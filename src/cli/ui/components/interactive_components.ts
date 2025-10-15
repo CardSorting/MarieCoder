@@ -13,15 +13,7 @@
  * @module cli_interactive_components
  */
 
-import {
-	BoxChars,
-	Colors256,
-	RoundedBoxChars,
-	SemanticColors,
-	stripAnsi,
-	style,
-	TerminalColors,
-} from "./ui/output/terminal_colors"
+import { BoxChars, Colors256, RoundedBoxChars, SemanticColors, stripAnsi, style, TerminalColors } from "../output/terminal_colors"
 
 /**
  * Get responsive content width

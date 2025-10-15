@@ -4,8 +4,8 @@
  */
 
 import type { Task } from "@/core/task"
+import type { CliWebviewProvider } from "../providers/webview_provider"
 import { output } from "../ui/output/output"
-import type { CliWebviewProvider } from "./providers/webview_provider"
 
 export interface SlashCommand {
 	name: string

@@ -31,12 +31,12 @@ import {
 	installConsoleProxy,
 	resetConsoleProxy,
 	uninstallConsoleProxy,
-} from "./cli_console_proxy"
-import { CliErrorBoundary, getErrorBoundary, resetErrorBoundary } from "./infrastructure/error_boundary"
-import { getLogger } from "./infrastructure/logger"
-import { CliProgressiveRenderer, getProgressiveRenderer, resetProgressiveRenderer } from "./ui/feedback/progressive_renderer"
-import { CliOutputBuffer, getOutputBuffer, resetOutputBuffer } from "./ui/output/output_buffer"
-import { CliTerminalState, getTerminalState, resetTerminalState } from "./ui/output/terminal_state"
+} from "../../infrastructure/console_proxy"
+import { CliErrorBoundary, getErrorBoundary, resetErrorBoundary } from "../../infrastructure/error_boundary"
+import { getLogger } from "../../infrastructure/logger"
+import { CliOutputBuffer, getOutputBuffer, resetOutputBuffer } from "../output/output_buffer"
+import { CliTerminalState, getTerminalState, resetTerminalState } from "../output/terminal_state"
+import { CliProgressiveRenderer, getProgressiveRenderer, resetProgressiveRenderer } from "./progressive_renderer"
 
 const logger = getLogger()
 
@@ -303,24 +303,24 @@ export class FluidCLIManager extends EventEmitter {
 	 */
 	private setupEventForwarding(): void {
 		// Buffer events
-		this.outputBuffer.on("message-dropped", (msg) => {
-			logger.warn("Message dropped:", msg.id)
+		this.outputBuffer.on("message-dropped", (msg: unknown) => {
+			logger.warn("Message dropped:", (msg as { id: string }).id)
 			this.emit("message-dropped", msg)
 		})
 
-		this.outputBuffer.on("error", (err) => {
+		this.outputBuffer.on("error", (err: Error) => {
 			logger.error("Buffer error:", err)
 			this.emit("buffer-error", err)
 		})
 
 		// Terminal events
-		this.terminalState.on("resize", (dims) => {
+		this.terminalState.on("resize", (dims: { width: number; height: number }) => {
 			logger.debug("Terminal resized:", dims)
 			this.emit("terminal-resize", dims)
 		})
 
 		// Error boundary events
-		this.errorBoundary.on("error", ({ error, context }) => {
+		this.errorBoundary.on("error", ({ error, context }: { error: Error; context: string }) => {
 			logger.error("Error caught by boundary:", error)
 			this.emit("error-caught", { error, context })
 		})
@@ -331,7 +331,7 @@ export class FluidCLIManager extends EventEmitter {
 		})
 
 		// Renderer events
-		this.progressiveRenderer.on("render-complete", (stats) => {
+		this.progressiveRenderer.on("render-complete", (stats: unknown) => {
 			logger.debug("Render complete:", stats)
 			this.emit("render-complete", stats)
 		})
@@ -392,7 +392,7 @@ export class FluidCLIManager extends EventEmitter {
 			}
 
 			// Flush pending output
-			this.outputBuffer.flush().catch((err) => {
+			this.outputBuffer.flush().catch((err: Error) => {
 				logger.error("Error flushing buffer during cleanup:", err)
 			})
 

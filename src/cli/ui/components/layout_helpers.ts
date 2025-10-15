@@ -17,7 +17,7 @@ import {
 	TerminalCapabilities,
 	TerminalColors,
 	truncate,
-} from "./cli_terminal_colors"
+} from "../output/terminal_colors"
 
 /**
  * Get responsive content width (shared utility)

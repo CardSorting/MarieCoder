@@ -14,10 +14,10 @@
  */
 
 import { EventEmitter } from "node:events"
-import { getLogger } from "../infrastructure/logger"
 import { formatMessageBox } from "../ui/output/message_formatter"
-import { getOutputBuffer } from "./ui/output/output_buffer"
-import { getTerminalState } from "./ui/output/terminal_state"
+import { getOutputBuffer } from "../ui/output/output_buffer"
+import { getTerminalState } from "../ui/output/terminal_state"
+import { getLogger } from "./logger"
 
 const logger = getLogger()
 

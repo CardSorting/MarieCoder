@@ -297,7 +297,7 @@ describe("CliTaskMonitor", () => {
 			monitor = new CliTaskMonitor(false)
 
 			// Mock the interaction handler to never respond
-			const interactionHandlerModule = await import("../cli_interaction_handler")
+			const interactionHandlerModule = await import("../commands/interaction_handler")
 			const mockInteractionHandler = {
 				askApproval: () => new Promise(() => {}), // Never resolves
 				askInput: sinon.stub().resolves(""),
@@ -369,7 +369,7 @@ describe("CliTaskMonitor", () => {
 
 	describe("MCP Server Requests", () => {
 		it("should handle MCP server approval requests", async () => {
-			const interactionHandlerModule = await import("../cli_interaction_handler")
+			const interactionHandlerModule = await import("../commands/interaction_handler")
 			const askApprovalStub = sinon.stub().resolves(true)
 
 			sinon.stub(interactionHandlerModule, "getInteractionHandler").returns({
@@ -403,7 +403,7 @@ describe("CliTaskMonitor", () => {
 
 	describe("Completion Result Handling", () => {
 		it("should handle completion_result ask type", async () => {
-			const interactionHandlerModule = await import("../cli_interaction_handler")
+			const interactionHandlerModule = await import("../commands/interaction_handler")
 			const askApprovalStub = sinon.stub().resolves(false) // No feedback
 
 			sinon.stub(interactionHandlerModule, "getInteractionHandler").returns({

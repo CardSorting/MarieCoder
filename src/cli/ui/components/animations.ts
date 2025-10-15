@@ -12,7 +12,7 @@
  * @module cli_animations
  */
 
-import { Colors256, EffectChars, SemanticColors, stripAnsi, style, TerminalColors } from "./ui/output/terminal_colors"
+import { Colors256, EffectChars, SemanticColors, stripAnsi, style, TerminalColors } from "../output/terminal_colors"
 
 /**
  * Typewriter effect - renders text character by character

@@ -14,8 +14,8 @@
  */
 
 import { EventEmitter } from "node:events"
-import { getLogger } from "./infrastructure/logger"
-import { TerminalCapabilities } from "./ui/output/terminal_colors"
+import { getLogger } from "../../infrastructure/logger"
+import { TerminalCapabilities } from "./terminal_colors"
 
 const logger = getLogger()
 

@@ -14,7 +14,7 @@
  */
 
 import { EventEmitter } from "node:events"
-import { getLogger } from "./infrastructure/logger"
+import { getLogger } from "../../infrastructure/logger"
 
 const logger = getLogger()
 
