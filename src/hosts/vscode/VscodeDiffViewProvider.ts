@@ -12,8 +12,70 @@ export class VscodeDiffViewProvider extends DiffViewProvider {
 
 	private fadedOverlayController?: DecorationController
 	private activeLineController?: DecorationController
+	private isOpeningEditor = false // Track editor opening state to prevent race conditions
 
 	override async openDiffEditor(): Promise<void> {
+		if (!this.absolutePath) {
+			throw new Error("No file path set")
+		}
+
+		// Prevent concurrent editor opening attempts
+		if (this.isOpeningEditor) {
+			console.warn("[VscodeDiffViewProvider] Editor opening already in progress, waiting...")
+			await this.waitForEditorToOpen()
+			return
+		}
+
+		this.isOpeningEditor = true
+		try {
+			await this.openDiffEditorWithRetry()
+		} finally {
+			this.isOpeningEditor = false
+		}
+	}
+
+	/**
+	 * Waits for the current editor opening operation to complete
+	 */
+	private async waitForEditorToOpen(maxWait: number = 5000): Promise<void> {
+		const startTime = Date.now()
+		while (this.isOpeningEditor && Date.now() - startTime < maxWait) {
+			await new Promise((resolve) => setTimeout(resolve, 100))
+		}
+	}
+
+	/**
+	 * Opens diff editor with retry logic for improved fault tolerance
+	 */
+	private async openDiffEditorWithRetry(maxRetries: number = 2): Promise<void> {
+		let lastError: Error | undefined
+
+		for (let attempt = 0; attempt < maxRetries; attempt++) {
+			try {
+				await this.performDiffEditorOpen()
+				return // Success!
+			} catch (error) {
+				lastError = error instanceof Error ? error : new Error(String(error))
+				console.warn(`[VscodeDiffViewProvider] Attempt ${attempt + 1}/${maxRetries} failed: ${lastError.message}`)
+
+				// Don't retry on the last attempt
+				if (attempt < maxRetries - 1) {
+					// Exponential backoff: wait 500ms, then 1000ms
+					const backoffMs = 500 * (attempt + 1)
+					console.log(`[VscodeDiffViewProvider] Retrying in ${backoffMs}ms...`)
+					await new Promise((resolve) => setTimeout(resolve, backoffMs))
+				}
+			}
+		}
+
+		// All retries failed
+		throw new Error(`Failed to open diff editor after ${maxRetries} attempts. Last error: ${lastError?.message}`)
+	}
+
+	/**
+	 * Performs the actual diff editor opening logic
+	 */
+	private async performDiffEditorOpen(): Promise<void> {
 		if (!this.absolutePath) {
 			throw new Error("No file path set")
 		}
@@ -76,10 +138,15 @@ export class VscodeDiffViewProvider extends DiffViewProvider {
 					},
 				)
 				// This may happen on very slow machines ie project idx
+				// Increased timeout to 15 seconds to accommodate slower file systems
 				setTimeout(() => {
 					disposable.dispose()
-					reject(new Error("Failed to open diff editor, please try again..."))
-				}, 10_000)
+					reject(
+						new Error(
+							"Failed to open diff editor within 15 seconds. The file may not be ready or VSCode is experiencing issues. Please try again.",
+						),
+					)
+				}, 15_000)
 			})
 		}
 

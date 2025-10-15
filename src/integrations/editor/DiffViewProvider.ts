@@ -28,6 +28,17 @@ export abstract class DiffViewProvider {
 	constructor() {}
 
 	public async open(relPath: string, options?: { displayPath?: string; autoFocus?: boolean }): Promise<void> {
+		// Pre-flight validation
+		if (!relPath || relPath.trim() === "") {
+			throw new Error("File path cannot be empty")
+		}
+
+		// Validate path doesn't contain invalid characters
+		const invalidChars = /[<>:"|?*\x00-\x1f]/g
+		if (invalidChars.test(relPath)) {
+			throw new Error(`File path contains invalid characters: ${relPath}`)
+		}
+
 		this.isEditing = true
 		this.autoFocusEditor = options?.autoFocus ?? false
 		const cwd = await getCwd()
@@ -35,6 +46,8 @@ export abstract class DiffViewProvider {
 		this.absolutePath = typeof absolutePathResolved === "string" ? absolutePathResolved : absolutePathResolved.absolutePath
 		this.relPath = options?.displayPath ?? relPath
 		const fileExists = this.editType === "modify"
+
+		console.log(`[DiffViewProvider] Opening ${fileExists ? "existing" : "new"} file: ${this.relPath}`)
 
 		// CRITICAL: Always read the file from disk to get the most up-to-date content
 		// This ensures that subsequent edits to the same file work correctly
@@ -51,16 +64,59 @@ export abstract class DiffViewProvider {
 			this.fileEncoding = "utf8"
 		}
 		// for new files, create any necessary directories and keep track of new directories to delete if the user denies the operation
-		this.createdDirs = await createDirectoriesForFile(this.absolutePath)
+		try {
+			this.createdDirs = await createDirectoriesForFile(this.absolutePath)
+		} catch (error) {
+			this.isEditing = false
+			throw new Error(`Failed to create directories for file: ${error instanceof Error ? error.message : String(error)}`)
+		}
+
 		// make sure the file exists before we open it
 		if (!fileExists) {
-			await fs.writeFile(this.absolutePath, "")
+			try {
+				await fs.writeFile(this.absolutePath, "")
+				console.log(`[DiffViewProvider] Created empty file at: ${this.absolutePath}`)
+			} catch (error) {
+				this.isEditing = false
+				// Clean up created directories
+				for (let i = this.createdDirs.length - 1; i >= 0; i--) {
+					try {
+						await fs.rmdir(this.createdDirs[i])
+					} catch {
+						// Silently fail
+					}
+				}
+				throw new Error(`Failed to create file: ${error instanceof Error ? error.message : String(error)}`)
+			}
 		}
+
 		// get diagnostics before editing the file, we'll compare to diagnostics after editing to see if cline needs to fix anything
 		this.preDiagnostics = (await HostProvider.workspace.getDiagnostics({})).fileDiagnostics
-		await this.openDiffEditor()
-		await this.scrollEditorToLine(0)
-		this.streamedLines = []
+
+		try {
+			await this.openDiffEditor()
+			await this.scrollEditorToLine(0)
+			this.streamedLines = []
+			console.log(`[DiffViewProvider] Successfully opened diff editor for: ${this.relPath}`)
+		} catch (error) {
+			this.isEditing = false
+			// Clean up created file and directories if editor failed to open
+			if (!fileExists) {
+				try {
+					await fs.rm(this.absolutePath, { force: true })
+					for (let i = this.createdDirs.length - 1; i >= 0; i--) {
+						try {
+							await fs.rmdir(this.createdDirs[i])
+						} catch {
+							// Silently fail
+						}
+					}
+				} catch (cleanupError) {
+					console.error(`[DiffViewProvider] Failed to clean up after error: ${cleanupError}`)
+				}
+			}
+			throw error
+		}
 	}
 
 	/**
@@ -162,6 +218,11 @@ export abstract class DiffViewProvider {
 			throw new Error("Not editing any file")
 		}
 
+		// Validate we have a valid absolute path
+		if (!this.absolutePath) {
+			throw new Error("No file path set for update operation")
+		}
+
 		// --- Fix to prevent duplicate BOM ---
 		// Strip potential BOM from incoming content. VS Code's `applyEdit` might implicitly handle the BOM
 		// when replacing from the start (0,0), and we want to avoid duplication.
@@ -187,26 +248,42 @@ export abstract class DiffViewProvider {
 			// on previous lines are auto closed for example
 			const contentToReplace = accumulatedLines.slice(0, currentLine + 1).join("\n") + "\n"
 			const rangeToReplace = { startLine: 0, endLine: currentLine + 1 }
-			await this.replaceText(contentToReplace, rangeToReplace, currentLine)
+
+			try {
+				await this.replaceText(contentToReplace, rangeToReplace, currentLine)
+			} catch (error) {
+				console.error(
+					`[DiffViewProvider] Failed to replace text at line ${currentLine}: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				// Re-throw to allow upstream error handling
+				throw new Error(`Failed to update editor content: ${error instanceof Error ? error.message : String(error)}`)
+			}
 
 			// Scroll to the actual change location if provided.
-			if (changeLocation) {
-				// We have the actual location of the change, scroll to it
-				const targetLine = changeLocation.startLine
-				await this.scrollEditorToLine(targetLine)
-			} else {
-				// Fallback to the old logic for non-replacement updates
-				if (diffLines.length <= 5) {
-					// For small changes, just jump directly to the line
-					await this.scrollEditorToLine(currentLine)
+			try {
+				if (changeLocation) {
+					// We have the actual location of the change, scroll to it
+					const targetLine = changeLocation.startLine
+					await this.scrollEditorToLine(targetLine)
 				} else {
-					// For larger changes, create a quick scrolling animation
-					const startLine = this.streamedLines.length
-					const endLine = currentLine
-					await this.scrollAnimation(startLine, endLine)
-					// Ensure we end at the final line
-					await this.scrollEditorToLine(currentLine)
+					// Fallback to the old logic for non-replacement updates
+					if (diffLines.length <= 5) {
+						// For small changes, just jump directly to the line
+						await this.scrollEditorToLine(currentLine)
+					} else {
+						// For larger changes, create a quick scrolling animation
+						const startLine = this.streamedLines.length
+						const endLine = currentLine
+						await this.scrollAnimation(startLine, endLine)
+						// Ensure we end at the final line
+						await this.scrollEditorToLine(currentLine)
+					}
 				}
+			} catch (scrollError) {
+				// Scrolling errors are non-fatal - log but continue
+				console.warn(
+					`[DiffViewProvider] Failed to scroll editor: ${scrollError instanceof Error ? scrollError.message : String(scrollError)}`,
+				)
 			}
 		}
 

@@ -89,6 +89,25 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 			// Reset diff view on error
 			await config.services.diffViewProvider.revertChanges()
 			await config.services.diffViewProvider.reset()
+			// Remove any partial tool message to prevent code streaming into chat instead of editor
+			await uiHelpers.removeLastPartialMessageIfExistsWithType("ask", "tool")
+			await uiHelpers.removeLastPartialMessageIfExistsWithType("say", "tool")
+
+			// Provide user-friendly error feedback
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			console.error(`[WriteToFileToolHandler] Failed to open diff editor during partial block: ${errorMessage}`)
+
+			// Show user notification with actionable guidance
+			const fileName = block.params.path || "file"
+			await config.callbacks
+				.say(
+					"error",
+					`Failed to open editor for ${fileName}. ${errorMessage}. The operation will be retried automatically.`,
+				)
+				.catch(() => {
+					// Silently fail if notification fails
+				})
+
 			throw error
 		}
 	}
@@ -289,6 +308,20 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 			// Reset diff view on error
 			await config.services.diffViewProvider.revertChanges()
 			await config.services.diffViewProvider.reset()
+			// Remove any partial tool message to prevent code streaming into chat instead of editor
+			await config.callbacks.removeLastPartialMessageIfExistsWithType("ask", "tool")
+			await config.callbacks.removeLastPartialMessageIfExistsWithType("say", "tool")
+
+			// Provide user-friendly error feedback
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			console.error(`[WriteToFileToolHandler] Failed to complete file operation: ${errorMessage}`)
+
+			// Show user notification with actionable guidance
+			const fileName = rawRelPath || "file"
+			await config.callbacks.say("error", `Failed to complete operation on ${fileName}. ${errorMessage}`).catch(() => {
+				// Silently fail if notification fails
+			})
+
 			throw error
 		}
 	}
