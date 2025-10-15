@@ -23,38 +23,30 @@ interface ChatRowProps {
  * ChatRow component - handles height tracking and wraps ChatRowContent
  * This is the main container for each message in the chat
  */
-const ChatRow = memo(
-	(props: ChatRowProps) => {
-		const { isLast, onHeightChange } = props
-		// Store the previous height to compare with the current height
-		// This allows us to detect changes without causing re-renders
-		const prevHeightRef = useRef(0)
+const ChatRow = memo((props: ChatRowProps) => {
+	const { isLast, onHeightChange } = props
+	const prevHeightRef = useRef(0)
+	const chatrowRef = useRef<HTMLDivElement>(null)
+	const height = useSize(chatrowRef).height
 
-		const chatrowRef = useRef<HTMLDivElement>(null)
-		const chatrowSize = useSize(chatrowRef)
-		const height = chatrowSize.height
+	useEffect(() => {
+		if (!isLast || height === 0 || height === Infinity || height === prevHeightRef.current) {
+			return
+		}
 
-		useEffect(() => {
-			// Track height changes for last message to handle auto-scroll
-			const isInitialRender = prevHeightRef.current === 0
-			if (isLast && height !== 0 && height !== Infinity && height !== prevHeightRef.current) {
-				if (!isInitialRender && prevHeightRef.current > 0) {
-					onHeightChange(height > prevHeightRef.current)
-				}
-				prevHeightRef.current = height
-			}
-		}, [height, isLast, onHeightChange])
+		const isInitialRender = prevHeightRef.current === 0
+		if (!isInitialRender) {
+			onHeightChange(height > prevHeightRef.current)
+		}
+		prevHeightRef.current = height
+	}, [height, isLast, onHeightChange])
 
-		return (
-			<div className="group py-2.5 pr-1.5 pl-[15px] relative [&:hover_.checkpoint-controls]:opacity-100" ref={chatrowRef}>
-				<ChatRowContent {...props} />
-			</div>
-		)
-	},
-	// memo does shallow comparison of props, so we need to do deep comparison
-	// of arrays/objects whose properties might change
-	deepEqual,
-)
+	return (
+		<div className="group py-2.5 pr-1.5 pl-[15px] relative [&:hover_.checkpoint-controls]:opacity-100" ref={chatrowRef}>
+			<ChatRowContent {...props} />
+		</div>
+	)
+}, deepEqual)
 
 export default ChatRow
 

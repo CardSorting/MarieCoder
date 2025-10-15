@@ -1,7 +1,7 @@
 import { findLast } from "@shared/array"
 import { combineApiRequests } from "@shared/combineApiRequests"
 import { combineCommandSequences } from "@shared/combineCommandSequences"
-import type { ClineApiReqInfo, ClineMessage } from "@shared/ExtensionMessage"
+import type { ClineApiReqInfo } from "@shared/ExtensionMessage"
 import { getApiMetrics } from "@shared/getApiMetrics"
 import { BooleanRequest, StringRequest } from "@shared/proto/cline/common"
 import { useCallback, useEffect, useMemo } from "react"
@@ -42,23 +42,14 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 	const apiMetrics = useMemo(() => getApiMetrics(modifiedMessages), [modifiedMessages])
 
 	const lastApiReqTotalTokens = useMemo(() => {
-		const getTotalTokensFromApiReqMessage = (msg: ClineMessage) => {
-			if (!msg.text) {
-				return 0
-			}
-			const { tokensIn, tokensOut, cacheWrites, cacheReads }: ClineApiReqInfo = JSON.parse(msg.text)
-			return (tokensIn || 0) + (tokensOut || 0) + (cacheWrites || 0) + (cacheReads || 0)
-		}
-		const lastApiReqMessage = findLast(modifiedMessages, (msg) => {
-			if (msg.say !== "api_req_started") {
-				return false
-			}
-			return getTotalTokensFromApiReqMessage(msg) > 0
-		})
-		if (!lastApiReqMessage) {
+		const lastApiReq = findLast(modifiedMessages, (msg) => msg.say === "api_req_started" && Boolean(msg.text))
+		if (!lastApiReq?.text) {
 			return undefined
 		}
-		return getTotalTokensFromApiReqMessage(lastApiReqMessage)
+
+		const { tokensIn = 0, tokensOut = 0, cacheWrites = 0, cacheReads = 0 } = JSON.parse(lastApiReq.text) as ClineApiReqInfo
+		const total = tokensIn + tokensOut + cacheWrites + cacheReads
+		return total > 0 ? total : undefined
 	}, [modifiedMessages])
 
 	// Use custom hooks for state management
@@ -79,20 +70,20 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 	useEffect(() => {
 		const handleCopy = async (e: ClipboardEvent) => {
 			const target = e.target as HTMLElement | null
-			// Let default behavior handle input/textarea
 			if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
 				return
 			}
 
-			const selection = window.getSelection()
-			const text = selection?.toString()
-			if (text) {
-				try {
-					await FileServiceClient.copyToClipboard(StringRequest.create({ value: text }))
-					e.preventDefault()
-				} catch (error) {
-					debug.error("Error copying to clipboard:", error)
-				}
+			const text = window.getSelection()?.toString()
+			if (!text) {
+				return
+			}
+
+			try {
+				await FileServiceClient.copyToClipboard(StringRequest.create({ value: text }))
+				e.preventDefault()
+			} catch (error) {
+				debug.error("Error copying to clipboard:", error)
 			}
 		}
 
@@ -116,9 +107,7 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 				return
 			}
 
-			const currentTotal = selectedImages.length + selectedFiles.length
-			const availableSlots = MAX_IMAGES_AND_FILES_PER_MESSAGE - currentTotal
-
+			const availableSlots = MAX_IMAGES_AND_FILES_PER_MESSAGE - selectedImages.length - selectedFiles.length
 			if (availableSlots <= 0) {
 				return
 			}
@@ -142,25 +131,31 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 	// Handle focus events and input subscription
 	useEffect(() => {
 		const handleFocusChatInput = () => {
-			if (!isHidden) {
-				textAreaRef.current?.focus()
+			if (isHidden) {
+				return
 			}
+			textAreaRef.current?.focus()
+		}
+
+		const handleAddToInput = (event: { value?: string }) => {
+			if (!event.value) {
+				return
+			}
+
+			setInputValue((prev) => (prev ? `${prev}\n${event.value}\n` : `${event.value}\n`))
+			if (!textAreaRef.current) {
+				return
+			}
+
+			textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight
+			textAreaRef.current.focus()
 		}
 
 		window.addEventListener("focusChatInput", handleFocusChatInput)
-
 		const cleanup = UiServiceClient.subscribeToAddToInput(
 			{},
 			{
-				onResponse: (event) => {
-					if (event.value) {
-						setInputValue((prev) => (prev ? `${prev}\n${event.value}\n` : `${event.value}\n`))
-						if (textAreaRef.current) {
-							textAreaRef.current.scrollTop = textAreaRef.current.scrollHeight
-							textAreaRef.current.focus()
-						}
-					}
-				},
+				onResponse: handleAddToInput,
 				onError: (error) => debug.error("Error in addToInput subscription:", error),
 				onComplete: () => debug.log("addToInput subscription completed"),
 			},
@@ -172,11 +167,11 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 		}
 	}, [isHidden])
 
-	// Auto-focus textarea when conditions are met
 	useEffect(() => {
-		if (!isHidden && !sendingDisabled && !enableButtons) {
-			textAreaRef.current?.focus()
+		if (isHidden || sendingDisabled || enableButtons) {
+			return
 		}
+		textAreaRef.current?.focus()
 	}, [isHidden, sendingDisabled, enableButtons])
 
 	const visibleMessages = useMemo(() => filterVisibleMessages(modifiedMessages), [modifiedMessages])
@@ -186,46 +181,39 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 	const lastProgressMessageText =
 		currentFocusChainChecklist || [...modifiedMessages].reverse().find((msg) => msg.say === "task_progress")?.text
 
-	const placeholderText = task ? "Type a message..." : "Type your task here..."
-
 	return (
 		<ChatLayout isHidden={isHidden}>
-			<div className="flex flex-col flex-1 overflow-hidden">
-				<main className="flex flex-col flex-1 overflow-hidden">
-					{task ? (
-						<TaskSection
-							apiMetrics={apiMetrics}
-							lastApiReqTotalTokens={lastApiReqTotalTokens}
-							lastProgressMessageText={lastProgressMessageText}
-							messageHandlers={messageHandlers}
-							scrollBehavior={scrollBehavior}
-							selectedModelInfo={{
-								supportsPromptCache: selectedModelInfo.supportsPromptCache,
-								supportsImages: selectedModelInfo.supportsImages || false,
-							}}
-							task={task}
-						/>
-					) : (
-						<WelcomeSection showHistoryView={showHistoryView} taskHistory={taskHistory} version={version} />
-					)}
-					{task && (
-						<MessagesArea
-							chatState={chatState}
-							groupedMessages={groupedMessages}
-							messageHandlers={messageHandlers}
-							modifiedMessages={modifiedMessages}
-							scrollBehavior={scrollBehavior}
-							task={task}
-						/>
-					)}
-				</main>
-			</div>
+			<main className="flex flex-col flex-1 overflow-hidden">
+				{task ? (
+					<TaskSection
+						apiMetrics={apiMetrics}
+						lastApiReqTotalTokens={lastApiReqTotalTokens}
+						lastProgressMessageText={lastProgressMessageText}
+						messageHandlers={messageHandlers}
+						scrollBehavior={scrollBehavior}
+						selectedModelInfo={{
+							supportsPromptCache: selectedModelInfo.supportsPromptCache,
+							supportsImages: selectedModelInfo.supportsImages || false,
+						}}
+						task={task}
+					/>
+				) : (
+					<WelcomeSection showHistoryView={showHistoryView} taskHistory={taskHistory} version={version} />
+				)}
+				{task && (
+					<MessagesArea
+						chatState={chatState}
+						groupedMessages={groupedMessages}
+						messageHandlers={messageHandlers}
+						modifiedMessages={modifiedMessages}
+						scrollBehavior={scrollBehavior}
+						task={task}
+					/>
+				)}
+			</main>
 			<footer
 				className="bg-[var(--vscode-editor-background)] border-t border-[var(--vscode-panel-border)]"
-				style={{
-					gridRow: "2",
-					boxShadow: "0 -2px 8px rgba(0, 0, 0, 0.05)",
-				}}>
+				style={{ gridRow: "2", boxShadow: "0 -2px 8px rgba(0, 0, 0, 0.05)" }}>
 				<ActionButtons
 					chatState={chatState}
 					messageHandlers={messageHandlers}
@@ -242,7 +230,7 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 				<InputSection
 					chatState={chatState}
 					messageHandlers={messageHandlers}
-					placeholderText={placeholderText}
+					placeholderText={task ? "Type a message..." : "Type your task here..."}
 					scrollBehavior={scrollBehavior}
 					selectFilesAndImages={selectFilesAndImages}
 					shouldDisableFilesAndImages={shouldDisableFilesAndImages}
