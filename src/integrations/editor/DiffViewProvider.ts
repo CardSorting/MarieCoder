@@ -23,11 +23,13 @@ export abstract class DiffViewProvider {
 	protected fileEncoding: string = "utf8"
 	private streamedLines: string[] = []
 	private newContent?: string
+	protected autoFocusEditor: boolean = false
 
 	constructor() {}
 
-	public async open(relPath: string, options?: { displayPath?: string }): Promise<void> {
+	public async open(relPath: string, options?: { displayPath?: string; autoFocus?: boolean }): Promise<void> {
 		this.isEditing = true
+		this.autoFocusEditor = options?.autoFocus ?? false
 		const cwd = await getCwd()
 		const absolutePathResolved = workspaceResolver.resolveWorkspacePath(cwd, relPath, "DiffViewProvider.open.absolutePath")
 		this.absolutePath = typeof absolutePathResolved === "string" ? absolutePathResolved : absolutePathResolved.absolutePath

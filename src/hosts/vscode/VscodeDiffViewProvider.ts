@@ -2,6 +2,7 @@ import { DiffViewProvider } from "@integrations/editor/DiffViewProvider"
 import * as path from "path"
 import * as vscode from "vscode"
 import { DecorationController } from "@/hosts/vscode/DecorationController"
+import { getEditorStreamingDecorator } from "@/hosts/vscode/EditorStreamingDecorator"
 import { arePathsEqual } from "@/utils/path"
 
 export const DIFF_VIEW_URI_SCHEME = "cline-diff"
@@ -48,7 +49,7 @@ export class VscodeDiffViewProvider extends DiffViewProvider {
 		if (diffTab && diffTab.input instanceof vscode.TabInputTextDiff) {
 			// Use already open diff editor.
 			this.activeDiffEditor = await vscode.window.showTextDocument(diffTab.input.modified, {
-				preserveFocus: true,
+				preserveFocus: !this.autoFocusEditor, // Focus if autoFocus is enabled
 			})
 		} else {
 			// Open new diff editor.
@@ -71,7 +72,7 @@ export class VscodeDiffViewProvider extends DiffViewProvider {
 					uri,
 					`${fileName}: ${fileExists ? "Original ↔ Cline's Changes" : "New File"} (Editable)`,
 					{
-						preserveFocus: true,
+						preserveFocus: !this.autoFocusEditor, // Focus if autoFocus is enabled
 					},
 				)
 				// This may happen on very slow machines ie project idx
@@ -86,6 +87,11 @@ export class VscodeDiffViewProvider extends DiffViewProvider {
 		this.activeLineController = new DecorationController("activeLine", this.activeDiffEditor)
 		// Apply faded overlay to all lines initially
 		this.fadedOverlayController.addLines(0, this.activeDiffEditor.document.lineCount)
+
+		// Start tab decoration for streaming indicator
+		if (this.autoFocusEditor) {
+			getEditorStreamingDecorator().startDecorating(this.activeDiffEditor)
+		}
 	}
 
 	override async replaceText(
@@ -111,6 +117,11 @@ export class VscodeDiffViewProvider extends DiffViewProvider {
 			// Update decorations for the entire changed section
 			this.activeLineController?.setActiveLine(currentLine)
 			this.fadedOverlayController?.updateOverlayAfterLine(currentLine, document.lineCount)
+
+			// Update tab decorator to show current streaming line
+			if (this.autoFocusEditor && this.activeDiffEditor) {
+				getEditorStreamingDecorator().updateDecorations(this.activeDiffEditor, currentLine)
+			}
 		}
 	}
 
@@ -119,22 +130,61 @@ export class VscodeDiffViewProvider extends DiffViewProvider {
 			return
 		}
 		const scrollLine = line + 4
-		this.activeDiffEditor.revealRange(new vscode.Range(scrollLine, 0, scrollLine, 0), vscode.TextEditorRevealType.InCenter)
+		// Use InCenterIfOutsideViewport for smoother, less jarring scrolling
+		// Only scroll if the line isn't already visible
+		this.activeDiffEditor.revealRange(
+			new vscode.Range(scrollLine, 0, scrollLine, 0),
+			vscode.TextEditorRevealType.InCenterIfOutsideViewport,
+		)
 	}
 
 	override async scrollAnimation(startLine: number, endLine: number): Promise<void> {
 		if (!this.activeDiffEditor) {
 			return
 		}
-		const totalLines = endLine - startLine
-		const numSteps = 10 // Adjust this number to control animation speed
-		const stepSize = Math.max(1, Math.floor(totalLines / numSteps))
 
-		// Create and await the smooth scrolling animation
-		for (let line = startLine; line <= endLine; line += stepSize) {
-			this.activeDiffEditor.revealRange(new vscode.Range(line, 0, line, 0), vscode.TextEditorRevealType.InCenter)
-			await new Promise((resolve) => setTimeout(resolve, 16)) // ~60fps
+		const totalLines = endLine - startLine
+		// Shorter, smoother duration for less jarring scroll
+		const duration = Math.min(800, Math.max(300, totalLines * 6)) // Reduced from 1200/400/8
+		const startTime = performance.now()
+
+		// Gentler ease-out-quad for more natural, comfortable motion
+		const easeOutQuad = (t: number): number => {
+			return t * (2 - t)
 		}
+
+		// Track last revealed line to avoid redundant reveal calls
+		let lastRevealedLine = -1
+
+		// Smooth animation using requestAnimationFrame
+		const animate = (currentTime: number) => {
+			const elapsed = currentTime - startTime
+			const progress = Math.min(elapsed / duration, 1)
+
+			// Apply easing for smooth, natural motion
+			const eased = easeOutQuad(progress)
+
+			const currentLine = Math.floor(startLine + totalLines * eased)
+
+			// Only reveal if line changed to reduce jank
+			if (currentLine !== lastRevealedLine) {
+				lastRevealedLine = currentLine
+				this.activeDiffEditor?.revealRange(
+					new vscode.Range(currentLine, 0, currentLine, 0),
+					vscode.TextEditorRevealType.InCenterIfOutsideViewport,
+				)
+			}
+
+			if (progress < 1) {
+				requestAnimationFrame(animate)
+			}
+		}
+
+		// Start animation
+		requestAnimationFrame(animate)
+
+		// Wait for animation to complete
+		await new Promise((resolve) => setTimeout(resolve, duration))
 	}
 
 	override async truncateDocument(lineNumber: number): Promise<void> {
@@ -188,6 +238,11 @@ export class VscodeDiffViewProvider extends DiffViewProvider {
 	}
 
 	protected override async resetDiffView(): Promise<void> {
+		// Clear tab decorations
+		if (this.absolutePath) {
+			getEditorStreamingDecorator().stopDecorating(this.absolutePath)
+		}
+
 		this.activeDiffEditor = undefined
 		this.fadedOverlayController = undefined
 		this.activeLineController = undefined

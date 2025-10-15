@@ -7,7 +7,7 @@ import * as fs from "node:fs"
 import * as path from "node:path"
 import { expect } from "chai"
 import sinon from "sinon"
-import { CliConfigManager } from "../cli_config_manager"
+import { CliConfigManager } from "../config/config_manager"
 
 describe("CLI Integration Tests", () => {
 	// For integration tests, we'll use a real config directory and clean it up

@@ -79,6 +79,8 @@ export interface ExtensionState {
 	multiRootSetting: ClineFeatureSetting
 	lastDismissedInfoBannerVersion: number
 	lastDismissedModelBannerVersion: number
+	compactToolDisplay?: boolean
+	toolDisplayPreferences?: import("./ToolDisplaySettings").ToolDisplayPreferences
 }
 
 export interface ClineMessage {

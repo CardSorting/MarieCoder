@@ -1,16 +1,20 @@
 import * as vscode from "vscode"
 
+// Use theme-aware colors for gentler, less jarring decorations
 const fadedOverlayDecorationType = vscode.window.createTextEditorDecorationType({
-	backgroundColor: "rgba(255, 255, 0, 0.1)",
-	opacity: "0.4",
+	backgroundColor: new vscode.ThemeColor("editor.findMatchBackground"),
+	opacity: "0.25", // Reduced from 0.4 for subtler effect
 	isWholeLine: true,
 })
 
 const activeLineDecorationType = vscode.window.createTextEditorDecorationType({
-	backgroundColor: "rgba(255, 255, 0, 0.3)",
-	opacity: "1",
+	backgroundColor: new vscode.ThemeColor("editor.wordHighlightBackground"),
+	opacity: "0.7", // Reduced from 1.0 for gentler highlight
 	isWholeLine: true,
-	border: "1px solid rgba(255, 255, 0, 0.5)",
+	border: "1px solid",
+	borderColor: new vscode.ThemeColor("editorInfo.border"),
+	// Note: VSCode doesn't support CSS transitions in decorations,
+	// but opacity changes will be smoother with the lower values
 })
 
 type DecorationType = "fadedOverlay" | "activeLine"

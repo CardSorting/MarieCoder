@@ -18,21 +18,21 @@ import * as readline from "node:readline"
 import { StateManager } from "@/core/storage/StateManager"
 import { HostProvider } from "@/hosts/host-provider"
 import type { TerminalManager } from "@/integrations/terminal/TerminalManager"
-import { getCancellationManager } from "./cli_cancellation"
-import { CliConfigManager } from "./cli_config_manager"
-import { getApiConnectionPoolManager } from "./cli_connection_pool"
-import { CliContext } from "./cli_context"
-import { CliDiffViewProvider } from "./cli_diff_provider"
-import { LiveActivityMonitor, MetricsDisplay } from "./cli_enhanced_feedback"
-import { CliHostBridgeClient } from "./cli_host_bridge"
-import { SplashScreen, SuccessAnimation, TutorialOverlay } from "./cli_immersive_experience"
-import { getLogger, LogLevel } from "./cli_logger"
-import { output } from "./cli_output"
-import { getProgressManager } from "./cli_progress_manager"
-import { getDeduplicationManager } from "./cli_request_deduplicator"
-import { CliTaskMonitor } from "./cli_task_monitor"
-import { CliTerminalManager } from "./cli_terminal_manager"
-import { CliWebviewProvider } from "./cli_webview_provider"
+import { CliConfigManager } from "./config/config_manager"
+import { CliContext } from "./core/context"
+import { getCancellationManager } from "./infrastructure/cancellation"
+import { getApiConnectionPoolManager } from "./infrastructure/connection_pool"
+import { getLogger, LogLevel } from "./infrastructure/logger"
+import { getDeduplicationManager } from "./infrastructure/request_deduplicator"
+import { getProgressManager } from "./monitoring/progress_manager"
+import { CliDiffViewProvider } from "./providers/diff_provider"
+import { CliHostBridgeClient } from "./providers/host_bridge"
+import { CliWebviewProvider } from "./providers/webview_provider"
+import { CliTaskMonitor } from "./tasks/task_monitor"
+import { CliTerminalManager } from "./terminal/terminal_manager"
+import { LiveActivityMonitor, MetricsDisplay } from "./ui/feedback/enhanced_feedback"
+import { SplashScreen, SuccessAnimation, TutorialOverlay } from "./ui/feedback/immersive_experience"
+import { output } from "./ui/output/output"
 
 const logger = getLogger()
 const progressManager = getProgressManager()
@@ -62,10 +62,10 @@ class MarieCli {
 	private webviewProvider!: CliWebviewProvider
 	private rl!: readline.Interface
 	private taskMonitor!: CliTaskMonitor
-	private mcpManager!: import("./cli_mcp_manager").CliMcpManager
-	private taskHistoryManager!: import("./cli_task_history_manager").CliTaskHistoryManager
-	private slashCommandsHandler!: import("./cli_slash_commands").CliSlashCommandsHandler
-	private mentionsParser!: import("./cli_mentions_parser").CliMentionsParser
+	private mcpManager!: import("./providers/mcp_manager").CliMcpManager
+	private taskHistoryManager!: import("./tasks/task_history_manager").CliTaskHistoryManager
+	private slashCommandsHandler!: import("./commands/slash_commands").CliSlashCommandsHandler
+	private mentionsParser!: import("./commands/mentions_parser").CliMentionsParser
 	private commandHistory: string[] = []
 	private readonly MAX_HISTORY = 100
 	private hasSeenInteractiveTutorial = false
@@ -148,7 +148,7 @@ class MarieCli {
 		await this.ensureClineRulesEnabled()
 
 		// Initialize MCP manager
-		const { CliMcpManager: McpManager } = await import("./cli_mcp_manager")
+		const { CliMcpManager: McpManager } = await import("./providers/mcp_manager")
 		this.mcpManager = new McpManager(this.webviewProvider.controller, this.options.verbose || false)
 		const mcpSpinner = progressManager.createSpinner("Initializing MCP manager")
 		mcpSpinner.start()
@@ -156,15 +156,15 @@ class MarieCli {
 		mcpSpinner.succeed("MCP manager initialized")
 
 		// Initialize task history manager
-		const { CliTaskHistoryManager: HistoryManager } = await import("./cli_task_history_manager")
+		const { CliTaskHistoryManager: HistoryManager } = await import("./tasks/task_history_manager")
 		this.taskHistoryManager = new HistoryManager(this.webviewProvider.controller, this.options.verbose || false)
 
 		// Initialize slash commands handler
-		const { CliSlashCommandsHandler: SlashCommandsHandler } = await import("./cli_slash_commands")
+		const { CliSlashCommandsHandler: SlashCommandsHandler } = await import("./commands/slash_commands")
 		this.slashCommandsHandler = new SlashCommandsHandler()
 
 		// Initialize mentions parser
-		const { CliMentionsParser: MentionsParser } = await import("./cli_mentions_parser")
+		const { CliMentionsParser: MentionsParser } = await import("./commands/mentions_parser")
 		this.mentionsParser = new MentionsParser(this.options.workspace)
 
 		logger.success("MarieCoder CLI initialized")
@@ -647,7 +647,7 @@ class MarieCli {
 					this.cleanup()
 					process.exit(0)
 				} else if (command === "config") {
-					const { CliConfigManager: ConfigManager } = await import("./cli_config_manager")
+					const { CliConfigManager: ConfigManager } = await import("./config/config_manager")
 					const configManager = new ConfigManager()
 					configManager.displayConfig()
 					await prompt()
@@ -791,7 +791,7 @@ class MarieCli {
 	 * Show help for interactive mode
 	 */
 	private showInteractiveModeHelp(): void {
-		import("./cli_terminal_colors").then(({ style, SemanticColors, TerminalColors }) => {
+		import("./ui/output/terminal_colors").then(({ style, SemanticColors, TerminalColors }) => {
 			output.log("\n" + style("═".repeat(80), SemanticColors.info))
 			output.log(style("📚 Command Palette - MarieCoder CLI", TerminalColors.bright))
 			output.log(style("═".repeat(80), SemanticColors.info))
@@ -1143,7 +1143,7 @@ async function main() {
 
 		// Handle --setup (run setup wizard)
 		if (runSetup) {
-			const { CliSetupWizard } = await import("./cli_setup_wizard")
+			const { CliSetupWizard } = await import("./config/setup_wizard")
 			const wizard = new CliSetupWizard()
 			const config = await wizard.runSetupWizard()
 			wizard.close()
@@ -1202,7 +1202,7 @@ async function main() {
 			})
 
 			if (shouldRunSetup) {
-				const { CliSetupWizard } = await import("./cli_setup_wizard")
+				const { CliSetupWizard } = await import("./config/setup_wizard")
 				const wizard = new CliSetupWizard()
 				const config = await wizard.runSetupWizard()
 				wizard.close()

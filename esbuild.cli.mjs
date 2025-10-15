@@ -44,7 +44,7 @@ global.__import_meta_url = 'file://' + __filename;
 		},
 		alias: {
 			// Replace vscode with our shim for CLI mode
-			vscode: "./src/cli/vscode-shim.ts",
+			vscode: "./src/cli/shims/vscode_shim.ts",
 		},
 		logLevel: "info",
 	})

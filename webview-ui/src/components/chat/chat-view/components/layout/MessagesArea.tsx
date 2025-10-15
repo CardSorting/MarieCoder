@@ -71,15 +71,22 @@ export const MessagesArea: React.FC<MessagesAreaProps> = ({
 						}
 						setShowScrollToBottom(disableAutoScrollRef.current && !isAtBottom)
 					}}
-					atBottomThreshold={10} // trick to make sure virtuoso re-renders when task changes, and we use initialTopMostItemIndex to start at the bottom
+					// Treat within ~1 line as bottom to avoid jitter when close to the end
+					atBottomThreshold={64}
 					className="scrollable"
 					components={{
 						Footer: () => <div style={{ height: 5 }} />, // Add empty padding at the bottom
 					}}
+					computeItemKey={(index, item) =>
+						Array.isArray(item) ? `group-${item[0]?.ts ?? index}` : `msg-${item.ts ?? index}`
+					}
+					// Keep item identity stable to prevent re-mount flicker on stream updates
 					data={groupedMessages}
 					// Optimized viewport buffering for better performance
 					// Top: 3000px to prevent jumping when user collapses rows
 					// Bottom: 10000px provides smooth scroll-to-bottom while using less memory than MAX_SAFE_INTEGER
+					followOutput={disableAutoScrollRef.current ? false : "smooth"}
+					// Smoothly follow new output when auto-scroll is enabled
 					increaseViewportBy={{
 						top: 3_000,
 						bottom: 10_000,

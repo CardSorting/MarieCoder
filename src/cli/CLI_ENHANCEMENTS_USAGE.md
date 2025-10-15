@@ -22,7 +22,7 @@ import {
   formatFocusChain,
   formatTaskProgress,
   TerminalColors,
-} from "./cli_message_formatter"
+} from "./ui/output/message_formatter"
 ```
 
 ### Thinking Blocks
@@ -149,7 +149,7 @@ console.log(formatTaskProgress(7, 10, "Tests"))
 Use colors directly:
 
 ```typescript
-import { TerminalColors } from "./cli_message_formatter"
+import { TerminalColors } from "./ui/output/message_formatter"
 
 console.log(
   `${TerminalColors.cyan}Info:${TerminalColors.reset} ` +
@@ -177,7 +177,7 @@ console.log(
 ### Basic Usage
 
 ```typescript
-import { getStreamHandler } from "./cli_stream_handler"
+import { getStreamHandler } from "./terminal/stream_handler"
 
 const streamHandler = getStreamHandler({
   throttleMs: 100,              // Update frequency
@@ -236,7 +236,7 @@ streamHandler.handleMessage(message)
 ### Complete Example
 
 ```typescript
-import { getStreamHandler } from "./cli_stream_handler"
+import { getStreamHandler } from "./terminal/stream_handler"
 
 const handler = getStreamHandler()
 
@@ -270,7 +270,7 @@ handler.endStream()
 The `CliTaskMonitor` automatically uses these features:
 
 ```typescript
-import { CliTaskMonitor } from "./cli_task_monitor"
+import { CliTaskMonitor } from "./tasks/task_monitor"
 
 const monitor = new CliTaskMonitor(
   false, // autoApprove
@@ -290,7 +290,7 @@ monitor.startMonitoring(task)
 The `CliFocusChainManager` uses enhanced formatters:
 
 ```typescript
-import { CliFocusChainManager } from "./cli_focus_chain_manager"
+import { CliFocusChainManager } from "./tasks/focus_chain_manager"
 
 const manager = new CliFocusChainManager(true) // verbose
 
@@ -377,7 +377,7 @@ formatMessageBox("Error", "Failed", { type: "error" })
 
 ```typescript
 // Test formatters
-import * as formatters from "./cli_message_formatter"
+import * as formatters from "./ui/output/message_formatter"
 
 // Test thinking block
 console.log(formatters.formatThinkingBlock("Test content", { expanded: true }))
@@ -386,7 +386,7 @@ console.log(formatters.formatThinkingBlock("Test content", { expanded: true }))
 console.log(formatters.formatMessageBox("Test", "Content", { type: "success" }))
 
 // Test stream handler
-import { getStreamHandler } from "./cli_stream_handler"
+import { getStreamHandler } from "./terminal/stream_handler"
 const handler = getStreamHandler()
 handler.startStream("text")
 handler.updateStream("Test", true)

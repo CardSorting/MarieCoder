@@ -72,6 +72,12 @@ const MessageRendererComponent: React.FC<MessageRendererProps> = ({
 	)
 }
 
+// Track last render time for smooth batching
+const lastRenderTimeMap = new Map<number, number>()
+const MIN_RENDER_INTERVAL_MS = 32 // ~30fps for smoother perception (less frequent but more substantial updates)
+const MIN_TEXT_DELTA = 15 // Reduced frequency but with more content per update
+const MIN_REASONING_DELTA = 8
+
 /**
  * Optimized memoization for message rendering with intelligent batching
  * Intelligently compares message content to minimize re-renders while ensuring
@@ -79,7 +85,8 @@ const MessageRendererComponent: React.FC<MessageRendererProps> = ({
  *
  * Performance optimizations:
  * - Skip re-renders when content hasn't changed
- * - Batch streaming updates for smooth 60fps rendering
+ * - Time-based batching for smooth, predictable updates (~30fps)
+ * - Larger batches for more fluid visual updates
  * - Optimize comparison checks for common scenarios
  */
 export const MessageRenderer = React.memo(MessageRendererComponent, (prevProps, nextProps) => {
@@ -99,22 +106,29 @@ export const MessageRenderer = React.memo(MessageRendererComponent, (prevProps, 
 		const prevReasoning = prevMessage?.reasoning || ""
 		const nextReasoning = nextMessage?.reasoning || ""
 
-		// Batch small changes for better perceived performance
-		// Only re-render if significant content change (>10 chars) or complete
+		// Batch based on both time AND content for smoother perception
 		const textDelta = Math.abs(nextText.length - prevText.length)
 		const reasoningDelta = Math.abs(nextReasoning.length - prevReasoning.length)
 
-		// Content changed during streaming - re-render with batching
-		if (textDelta > 10 || reasoningDelta > 5 || !nextMessage.partial) {
-			if (prevText !== nextText || prevReasoning !== nextReasoning) {
-				return false
-			}
+		const now = performance.now()
+		const lastRenderTime = lastRenderTimeMap.get(nextMessage.ts) || 0
+		const timeSinceLastRender = now - lastRenderTime
+
+		// Content changed during streaming - re-render with time-based batching
+		// Only update if enough time has passed OR significant content change OR complete
+		const shouldUpdate =
+			!nextMessage.partial || // Always update when complete
+			textDelta >= MIN_TEXT_DELTA || // Significant text change
+			reasoningDelta >= MIN_REASONING_DELTA || // Significant reasoning change
+			timeSinceLastRender >= MIN_RENDER_INTERVAL_MS // Enough time passed
+
+		if (shouldUpdate && (prevText !== nextText || prevReasoning !== nextReasoning)) {
+			lastRenderTimeMap.set(nextMessage.ts, now)
+			return false // Render
 		}
 
-		// Small changes - batch for next frame
-		if (textDelta <= 10 && reasoningDelta <= 5) {
-			return true // Skip this render, will catch up on next batch
-		}
+		// Batch this update for next interval
+		return true // Skip render
 	}
 
 	// Check if expansion state changed

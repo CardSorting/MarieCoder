@@ -40,14 +40,18 @@ export function useScrollBehavior(
 	const scrollToBottomSmooth = useMemo(
 		() =>
 			debounce(() => {
-				// Use requestAnimationFrame for smoother, more responsive scrolling
+				// Double requestAnimationFrame for even smoother scrolling
+				// First RAF ensures we're at the start of a frame
 				requestAnimationFrame(() => {
-					virtuosoRef.current?.scrollTo({
-						top: Number.MAX_SAFE_INTEGER,
-						behavior: "smooth",
+					// Second RAF ensures layout is complete before scrolling
+					requestAnimationFrame(() => {
+						virtuosoRef.current?.scrollTo({
+							top: Number.MAX_SAFE_INTEGER,
+							behavior: "smooth",
+						})
 					})
 				})
-			}, 10),
+			}, 16), // Increased from 10ms to align with frame timing
 		[],
 	)
 
@@ -181,9 +185,11 @@ export function useScrollBehavior(
 
 	useEffect(() => {
 		if (!disableAutoScrollRef.current) {
-			// Use requestAnimationFrame for instant, smooth scroll without delay
+			// Double RAF for smoother, jank-free scrolling on new messages
 			requestAnimationFrame(() => {
-				scrollToBottomSmooth()
+				requestAnimationFrame(() => {
+					scrollToBottomSmooth()
+				})
 			})
 		}
 	}, [groupedMessages.length, scrollToBottomSmooth])

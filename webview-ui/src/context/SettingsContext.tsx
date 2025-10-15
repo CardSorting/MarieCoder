@@ -90,6 +90,7 @@ export const SettingsContextProvider: React.FC<{
 		primaryRootIndex: 0,
 		isMultiRootWorkspace: false,
 		multiRootSetting: { user: false, featureFlag: false },
+		compactToolDisplay: true, // Default to true for improved UX
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)

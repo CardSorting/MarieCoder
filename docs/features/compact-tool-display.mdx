@@ -1,0 +1,311 @@
+# Compact Tool Display
+
+> **Feature Status**: ✅ Enabled by Default  
+> **Version**: 3.33.0+
+
+## Overview
+
+The **Compact Tool Display** feature provides a cleaner, more focused editing experience by showing code changes in the **VSCode editor** while keeping conversation and explanations in the **chat panel**.
+
+## The Problem We Solved
+
+Previously, when Marie edited files, you would see:
+- ❌ Large code blocks filling the chat
+- ❌ Difficult to scroll through conversation
+- ❌ Unclear where to focus attention
+- ❌ Performance issues with large files
+
+## The Solution
+
+Now when Marie edits files, you get:
+- ✅ **Compact status** in chat (e.g., "✏️ Editing Button.tsx...")
+- ✅ **Live code changes** streaming in the editor tab
+- ✅ **Auto-focused editor** showing exactly what's being changed
+- ✅ **Clean chat** for conversation and thinking
+- ✅ **Better performance** with large files
+
+## How It Works
+
+### Editing a File
+
+When Marie edits a file, you'll see a compact notification in chat:
+
+```
+✏️  Editing  components/Button.tsx ...
+```
+
+While this appears in chat, the actual code changes stream **line-by-line** in a VSCode diff editor that automatically opens and focuses.
+
+### After Editing
+
+Once editing is complete, the chat status updates with a button:
+
+```
+✏️  Editing  components/Button.tsx  [View in Editor ↗]
+```
+
+Click **"View in Editor"** to refocus the file if you've navigated away.
+
+### Other Tool Operations
+
+Tools that aren't about editing code (like reading files, searching, or listing directories) still show their full output in the chat for easy reference.
+
+## Benefits
+
+### For Your Workflow
+
+| Benefit | Description |
+|---------|-------------|
+| **Clear Focus** | Code in editor, conversation in chat - no more guessing where to look |
+| **Less Clutter** | Chat remains clean and readable, not filled with code blocks |
+| **Better Context** | See code in a proper editor with syntax highlighting and line numbers |
+| **Familiar** | Matches how developers naturally work - code goes in editors! |
+
+### For Performance
+
+| Metric | Improvement |
+|--------|-------------|
+| Chat Performance | Much faster scrolling, especially with large files |
+| Memory Usage | Lower webview memory consumption |
+| Rendering Speed | Faster updates as you don't parse large markdown code blocks |
+
+## Visual Examples
+
+### Before (Old Behavior)
+```
+Chat Panel:
+├─ Marie: "I'll update the button"
+├─ [Large code block with 200 lines]
+├─ [Another code block with edits]
+├─ Marie: "Done!"
+└─ [Scroll, scroll, scroll...]
+
+Editor:
+└─ (Also showing the same code)
+```
+
+### After (Compact Display)
+```
+Chat Panel:
+├─ Marie: "I'll update the button"
+├─ ✏️ Editing components/Button.tsx [View in Editor ↗]
+└─ Marie: "Done! I've added hover states and improved colors"
+
+Editor:
+└─ (Focused diff view showing live changes streaming in)
+```
+
+## Settings
+
+### Default Setting
+**Compact Tool Display**: ✅ Enabled
+
+This provides the best experience for most users.
+
+### Customization
+
+#### Disable Compact Display
+If you prefer seeing code in the chat (old behavior):
+
+1. Open Marie settings
+2. Find "Compact Tool Display"
+3. Toggle to **Off**
+
+Code will then appear in chat as before.
+
+#### When You Might Disable It
+
+Consider disabling if you:
+- Have a small screen and want everything in chat
+- Prefer to copy code from chat rather than editor
+- Are used to the old behavior and prefer it
+
+> **Note**: Even with compact display disabled, the editor still opens and shows changes - you just also get the code in chat.
+
+## Keyboard Shortcuts
+
+| Action | Shortcut | Description |
+|--------|----------|-------------|
+| Focus Editor | `Ctrl+1` (Win) / `Cmd+1` (Mac) | Switch to editor from chat |
+| Focus Chat | `Ctrl+0` (Win) / `Cmd+0` (Mac) | Switch to chat from editor |
+| Next Tab | `Ctrl+Tab` | Cycle through open editor tabs |
+
+## Use Cases
+
+### Scenario 1: Reviewing AI Changes
+
+**Goal**: Watch Marie edit a file and understand what's changing
+
+**With Compact Display**:
+1. Marie says "I'll update the authentication flow"
+2. Chat shows: `✏️ Editing auth/login.ts ...`
+3. Your eyes go to the **editor** automatically (it's focused)
+4. You watch the diff as changes stream in line-by-line
+5. Marie explains in chat: "Added token refresh logic"
+6. You see both: the code (editor) and explanation (chat)
+
+**Result**: ✅ Clear, focused review process
+
+### Scenario 2: Making Multiple File Changes
+
+**Goal**: Track changes across several files
+
+**With Compact Display**:
+1. Chat shows compact statuses:
+   ```
+   ✏️ Editing components/Button.tsx [View ↗]
+   ✏️ Editing components/Input.tsx [View ↗]
+   ✏️ Editing styles/theme.ts [View ↗]
+   ```
+2. Click any "View in Editor" to see that file's changes
+3. Editor tabs show all three files with their diffs
+4. Chat remains clean with Marie's explanations
+
+**Result**: ✅ Easy to track multi-file operations
+
+### Scenario 3: Large File Edits
+
+**Goal**: Marie needs to refactor a 500-line file
+
+**With Compact Display**:
+1. Chat: `✏️ Editing services/api.ts ...`
+2. Editor shows diff (handles large files efficiently)
+3. No lag in chat (not rendering 500 lines of markdown)
+4. Scroll through editor to see all changes
+5. Chat shows Marie's summary of what changed
+
+**Result**: ✅ Smooth performance, even with large files
+
+## Tips & Tricks
+
+### Tip 1: Use Editor Navigation
+While Marie is editing, use `Ctrl/Cmd + Click` on symbols in the diff to jump to definitions.
+
+### Tip 2: Review Multiple Files
+Keep multiple edited files open in tabs - click through them to review all changes before approving.
+
+### Tip 3: Split View
+Use VSCode's split view to see the chat and editor side-by-side:
+1. Drag Marie's panel to the side
+2. Editor on one side, chat on the other
+3. Watch both simultaneously
+
+### Tip 4: Focus Chat for Thinking
+When Marie shows a thinking block, you're already in the chat - no distraction from code edits.
+
+### Tip 5: Search in Editor
+Use `Ctrl/Cmd + F` in the editor to search within changes, not in the chat.
+
+## Frequently Asked Questions
+
+### Q: Can I still copy code from chat?
+**A**: While compact display doesn't show code in chat, you can:
+- Copy from the **editor** (which has better syntax highlighting anyway)
+- Click "View in Editor" to refocus the file
+- Disable compact display if you prefer copying from chat
+
+### Q: What if I close the editor tab?
+**A**: No problem! Click the "View in Editor" button in the chat status to reopen it.
+
+### Q: Does this work with all tools?
+**A**: Compact display applies to:
+- ✅ File editing (`write_to_file`)
+- ✅ File creation (new files)
+
+Full display remains for:
+- ✅ File reading
+- ✅ Directory listings
+- ✅ Search results
+- ✅ Other non-editing operations
+
+### Q: Can I disable auto-focus?
+**A**: The auto-focus helps you see changes immediately. If you prefer not to have the editor steal focus, this will be a separate setting in a future release.
+
+### Q: Does this affect my chat history?
+**A**: No! All your old conversations still render correctly. The compact display only affects new operations.
+
+### Q: Will Marie still explain changes?
+**A**: Yes! Marie still provides text explanations, thinking, and context in the chat. Only the raw code blocks are moved to the editor.
+
+## Troubleshooting
+
+### Issue: Editor Doesn't Auto-Focus
+
+**Symptoms**: Code changes happen but editor doesn't come to front
+
+**Solutions**:
+1. Click "View in Editor" button manually
+2. Check if another extension is preventing focus changes
+3. Try `Ctrl/Cmd + 1` to manually focus editor group
+
+### Issue: Compact Display Not Showing
+
+**Symptoms**: Still seeing full code in chat
+
+**Solutions**:
+1. Check settings - ensure "Compact Tool Display" is **On**
+2. Restart Marie
+3. Check if you're on version 3.33.0 or later
+
+### Issue: Can't Find the Code
+
+**Symptoms**: Compact status in chat but don't see editor changes
+
+**Solutions**:
+1. Click "View in Editor" button
+2. Check if editor tab is in a different group/window
+3. Look for file name in VSCode tabs at the top
+
+## Feedback
+
+We'd love to hear your thoughts on this feature!
+
+### Love It? 👍
+Let us know what you like most:
+- Cleaner chat?
+- Better focus?
+- Performance improvements?
+
+### Want Changes? 💡
+Suggestions for improvement:
+- Different compact format?
+- More/less information?
+- Additional settings?
+
+### Having Issues? 🐛
+Report problems with details:
+- What happened vs. what you expected
+- Steps to reproduce
+- Screenshots if applicable
+
+## Related Features
+
+- **Diff View**: The editor showing changes (already existed, now auto-focused)
+- **Thinking Blocks**: Collapsible reasoning in chat (unaffected)
+- **Auto Approval**: Works seamlessly with compact display
+
+## What's Next?
+
+Future enhancements planned:
+- 📊 Status bar indicator showing "Marie is editing..."
+- 🎨 Subtle editor tab animations during streaming
+- 📦 Grouped display for bulk file operations
+- ⚙️ More granular display preferences
+
+---
+
+## Quick Reference
+
+| What | Where | Why |
+|------|-------|-----|
+| **Code Changes** | Editor (diff view) | Better viewing, syntax highlighting, performance |
+| **Text Responses** | Chat | Explanations, context, conversation flow |
+| **Thinking** | Chat (collapsible) | Reasoning process, can expand/collapse |
+| **Compact Status** | Chat | Quick reference, "View in Editor" button |
+| **Search Results** | Chat (full) | Easy to scan, no need for editor |
+| **Directory Lists** | Chat (full) | Overview information, doesn't need editing context |
+
+---
+
+**Enjoy a cleaner, more focused coding experience with Marie! 🎯**
+

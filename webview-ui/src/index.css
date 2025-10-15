@@ -59,31 +59,22 @@ vscode-button::part(control):focus:not(:focus-visible) {
    Message Animations - Smooth Entry and Scroll
    ========================================================================== */
 
-@keyframes messageSlideIn {
-	from {
-		opacity: 0;
-		transform: translateY(8px) scale(0.98);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0) scale(1);
-	}
-}
-
 @keyframes messageFadeIn {
 	from {
 		opacity: 0;
+		transform: translateY(1px); /* Very subtle upward motion */
 	}
 	to {
 		opacity: 1;
+		transform: translateY(0);
 	}
 }
 
 @keyframes contentReveal {
 	from {
 		opacity: 0;
-		transform: translateY(4px);
-		filter: blur(2px);
+		transform: translateY(2px); /* Reduced from 4px */
+		filter: blur(1px); /* Reduced from 2px */
 	}
 	to {
 		opacity: 1;
@@ -95,57 +86,81 @@ vscode-button::part(control):focus:not(:focus-visible) {
 @keyframes staggerIn {
 	from {
 		opacity: 0;
-		transform: translateX(-8px);
+		transform: translateX(-2px) translateY(1px); /* Gentler motion - reduced from 4px/2px */
+	}
+	50% {
+		opacity: 0.6; /* Faster fade-in */
 	}
 	to {
 		opacity: 1;
-		transform: translateX(0);
+		transform: translateX(0) translateY(0);
 	}
 }
 
-/* Smooth message entry animation with subtle scale */
+@keyframes messageSlideIn {
+	from {
+		opacity: 0;
+		transform: translateX(-2px) translateY(2px); /* Gentler motion - reduced from 4px */
+	}
+	50% {
+		opacity: 0.7; /* Progressive fade - higher for less distraction */
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0) translateY(0);
+	}
+}
+
+/* Smooth message entry animation - softer and faster for less jarring effect */
 .message-enter {
-	animation: messageSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+	animation: messageSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1); /* Reduced from 0.35s */
 	will-change: transform, opacity;
 }
 
-/* Instant feedback for streaming messages */
+/* Gentle fade-in for streaming messages - barely perceptible */
 .message-streaming {
-	animation: messageFadeIn 0.1s ease-out;
+	animation: messageFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* Reduced from 0.3s */
+	will-change: opacity;
 }
 
 /* Progressive content reveal for smooth perception */
 .content-reveal {
-	animation: contentReveal 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+	animation: contentReveal 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Reduced from 0.4s */
+	will-change: opacity, transform;
 }
 
-/* Staggered animation for list items */
+/* Staggered animation for list items - faster, more natural */
 .stagger-item {
-	animation: staggerIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+	animation: staggerIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) backwards; /* Reduced from 0.2s */
 }
 
 .stagger-item:nth-child(1) {
 	animation-delay: 0ms;
 }
 .stagger-item:nth-child(2) {
-	animation-delay: 50ms;
+	animation-delay: 30ms; /* Reduced from 50ms */
 }
 .stagger-item:nth-child(3) {
-	animation-delay: 100ms;
+	animation-delay: 60ms; /* Reduced from 100ms */
 }
 .stagger-item:nth-child(4) {
-	animation-delay: 150ms;
+	animation-delay: 90ms; /* Reduced from 150ms */
 }
 .stagger-item:nth-child(5) {
-	animation-delay: 200ms;
+	animation-delay: 120ms; /* Reduced from 200ms */
 }
 .stagger-item:nth-child(n + 6) {
-	animation-delay: 250ms;
+	animation-delay: 150ms; /* Reduced from 250ms */
 }
 
 /* Smooth transitions for message state changes */
 .message-transition {
 	transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Shared transition helper for fluid state changes */
+.fluid-transition {
+	transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ==========================================================================
@@ -212,18 +227,24 @@ button:hover:not(:disabled) {
    Scroll Performance Optimizations
    ========================================================================== */
 
-/* GPU acceleration for smooth scrolling */
+/* GPU acceleration for smooth scrolling with comfort settings */
 .scrollable {
 	will-change: scroll-position;
 	-webkit-overflow-scrolling: touch;
 	transform: translateZ(0);
 	/* Use contain for better performance */
 	contain: layout style paint;
+	/* Prevent jarring bounce/rubber-band on scroll boundaries */
+	overscroll-behavior: contain;
+	/* Reserve space for scrollbar to prevent layout shift */
+	scrollbar-gutter: stable;
 }
 
-/* Smooth scroll behavior */
+/* Smooth scroll behavior with natural easing */
 html {
 	scroll-behavior: smooth;
+	/* Prevent bounce at document boundaries */
+	overscroll-behavior-y: contain;
 }
 
 /* Optimize rendering performance */

@@ -4,11 +4,13 @@ import React from "react"
 import SearchResultsDisplay from "@/components/chat/SearchResultsDisplay"
 import CodeAccordian, { cleanPathPrefix } from "@/components/common/CodeAccordian"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
+import { useSettingsState } from "@/context/SettingsContext"
 import { FileServiceClient, UiServiceClient } from "@/services/grpc-client"
 import { debug } from "@/utils/debug_logger"
 import { ToolIcon } from "../components/ToolIcon"
 import { isImageFile } from "../utils/file_type_utils"
 import { headerStyle, normalColor } from "../utils/style_constants"
+import { CompactToolDisplay } from "./CompactToolDisplay"
 
 interface ToolMessageRendererProps {
 	tool: ClineSayTool
@@ -21,6 +23,21 @@ interface ToolMessageRendererProps {
  * Renders tool-specific messages (file operations, searches, etc.)
  */
 export const ToolMessageRenderer: React.FC<ToolMessageRendererProps> = ({ tool, message, isExpanded, onToggleExpand }) => {
+	const { compactToolDisplay } = useSettingsState()
+
+	// Use compact display for file editing operations when enabled
+	const shouldUseCompactDisplay = compactToolDisplay && (tool.tool === "editedExistingFile" || tool.tool === "newFileCreated")
+
+	if (shouldUseCompactDisplay) {
+		return (
+			<CompactToolDisplay
+				isOutsideWorkspace={tool.operationIsLocatedInWorkspace === false}
+				isStreaming={!!message.partial}
+				tool={tool}
+			/>
+		)
+	}
+
 	switch (tool.tool) {
 		case "editedExistingFile":
 			return (
