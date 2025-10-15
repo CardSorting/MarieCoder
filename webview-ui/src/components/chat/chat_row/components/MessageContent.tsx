@@ -157,7 +157,10 @@ export const MessageContent = memo(
 					)
 
 				case "reasoning":
-					return message.text ? <ThinkingBlock isExpanded={isExpanded} onToggle={onToggle} text={message.text} /> : null
+					// Only render thinking block if text exists and is not empty after trimming
+					return message.text && message.text.trim() ? (
+						<ThinkingBlock isExpanded={isExpanded} onToggle={onToggle} text={message.text} />
+					) : null
 
 				case "user_feedback":
 					return (

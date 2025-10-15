@@ -72,7 +72,16 @@ export const TaskStateContextProvider: React.FC<{
 						case MessageUpdateType.FULL_SYNC:
 							// Replace entire message array with full state
 							if (update.fullState) {
-								const messages = update.fullState.map((protoMsg) => convertProtoToClineMessage(protoMsg))
+								const messages = update.fullState
+									.map((protoMsg) => convertProtoToClineMessage(protoMsg))
+									// Filter out empty reasoning/thinking blocks
+									.filter((msg) => {
+										if (msg.type === "say" && msg.say === "reasoning" && (!msg.text || !msg.text.trim())) {
+											debug.log("[DEBUG] Filtering empty reasoning message from full sync")
+											return false
+										}
+										return true
+									})
 								setClineMessages(messages)
 								debug.log("[DEBUG] Applied full state sync from unified stream")
 							}
@@ -95,6 +104,16 @@ export const TaskStateContextProvider: React.FC<{
 								// Filter out empty handshake messages
 								if (!partialMessage.ask && !partialMessage.say && !partialMessage.text) {
 									debug.log("[DEBUG] Ignoring empty handshake message")
+									return
+								}
+
+								// Filter out empty reasoning/thinking blocks
+								if (
+									partialMessage.type === "say" &&
+									partialMessage.say === "reasoning" &&
+									(!partialMessage.text || !partialMessage.text.trim())
+								) {
+									debug.log("[DEBUG] Ignoring empty reasoning message")
 									return
 								}
 
