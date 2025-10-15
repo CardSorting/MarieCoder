@@ -87,7 +87,16 @@ export class AttemptCompletionHandler implements IToolHandler, IPartialBlockHand
 		if (command) {
 			if (lastMessage && lastMessage.ask !== "command") {
 				// haven't sent a command message yet so first send completion_result then command
-				const completionMessageTs = await config.callbacks.say("completion_result", result, undefined, undefined, false)
+				// Use skipPostState=true since we'll immediately convert this to an ask message later
+				console.log("[DEBUG AttemptCompletion] Creating completion_result say before command (will skip postState)")
+				const completionMessageTs = await config.callbacks.say(
+					"completion_result",
+					result,
+					undefined,
+					undefined,
+					false,
+					true,
+				)
 				await config.callbacks.saveCheckpoint(true, completionMessageTs)
 				await addNewChangesFlagToLastCompletionResultMessage()
 			} else {
@@ -118,12 +127,29 @@ export class AttemptCompletionHandler implements IToolHandler, IPartialBlockHand
 			// Don't send a separate say message - we'll convert any existing partial say to an ask
 			// Only save checkpoint if we actually sent a message
 			const lastMessage = config.messageState.getClineMessages().at(-1)
+			console.log("[DEBUG AttemptCompletion] Last message before completion handling:", {
+				type: lastMessage?.type,
+				say: lastMessage?.say,
+				ask: lastMessage?.ask,
+				hasText: !!lastMessage?.text,
+			})
 			if (lastMessage && lastMessage.say === "completion_result") {
 				// We already have a completion_result say from streaming, just save checkpoint
+				console.log("[DEBUG AttemptCompletion] Found existing completion_result say from streaming")
 				await config.callbacks.saveCheckpoint(true, lastMessage.ts)
 			} else {
 				// No previous completion_result message, create one
-				const completionMessageTs = await config.callbacks.say("completion_result", result, undefined, undefined, false)
+				// Use skipPostState=true since we'll immediately convert this to an ask message
+				console.log("[DEBUG AttemptCompletion] Creating new completion_result say message (will skip postState)")
+				const completionMessageTs = await config.callbacks.say(
+					"completion_result",
+					result,
+					undefined,
+					undefined,
+					false,
+					true,
+				)
+				console.log("[DEBUG AttemptCompletion] Created completion_result say with ts:", completionMessageTs)
 				await config.callbacks.saveCheckpoint(true, completionMessageTs)
 			}
 			await addNewChangesFlagToLastCompletionResultMessage()
@@ -141,7 +167,9 @@ export class AttemptCompletionHandler implements IToolHandler, IPartialBlockHand
 
 		// Convert the completion_result say message to an ask message
 		// This will either finalize a partial say or convert a complete say to an ask
+		console.log("[DEBUG AttemptCompletion] Converting completion_result say to ask")
 		const { response, text, images, files: completionFiles } = await config.callbacks.ask("completion_result", result, false)
+		console.log("[DEBUG AttemptCompletion] Conversion complete")
 		if (response === "yesButtonClicked") {
 			return "" // signals to recursive loop to stop (for now this never happens since yesButtonClicked will trigger a new task)
 		}

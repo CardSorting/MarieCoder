@@ -159,8 +159,17 @@ export class TaskMessageService {
 			const lastMessageIndex = clineMessages.length - 1
 			const canConvertSayToAsk = lastMessage && lastMessage.type === "say" && lastMessage.say === type
 
+			console.log("[DEBUG TaskMessageService.ask] Standard non-partial ask:", {
+				type,
+				lastMessageType: lastMessage?.type,
+				lastMessageSay: lastMessage?.say,
+				canConvertSayToAsk,
+				messagesLength: clineMessages.length,
+			})
+
 			if (canConvertSayToAsk) {
 				// Convert the existing say message to an ask message
+				console.log("[DEBUG TaskMessageService.ask] Converting say to ask, ts:", lastMessage.ts)
 				askTs = lastMessage.ts
 				this.taskState.lastMessageTs = askTs
 				await this.messageStateHandler.updateClineMessage(lastMessageIndex, {
@@ -168,9 +177,11 @@ export class TaskMessageService {
 					ask: type,
 					text: text || lastMessage.text, // Use provided text or keep existing
 				})
+				console.log("[DEBUG TaskMessageService.ask] Calling postStateToWebview after conversion")
 				await this.postStateToWebview()
 			} else {
 				// Create new ask message
+				console.log("[DEBUG TaskMessageService.ask] Creating new ask message")
 				askTs = Date.now()
 				this.taskState.lastMessageTs = askTs
 				await this.messageStateHandler.addToClineMessages({
@@ -234,6 +245,7 @@ export class TaskMessageService {
 	 * @param images - Optional images to include
 	 * @param files - Optional files to include
 	 * @param partial - Whether this is a partial/streaming update
+	 * @param skipPostState - If true, skip postStateToWebview (useful when message will be immediately converted to ask)
 	 * @returns Message timestamp (or undefined for partial updates)
 	 */
 	async say(
@@ -242,6 +254,7 @@ export class TaskMessageService {
 		images?: string[],
 		files?: string[],
 		partial?: boolean,
+		skipPostState?: boolean,
 	): Promise<number | undefined> {
 		if (this.taskState.abort) {
 			throw new Error("Cline instance aborted")
@@ -296,6 +309,12 @@ export class TaskMessageService {
 					return undefined
 				} else {
 					// New non-partial message (not updating previous partial)
+					console.log(
+						"[DEBUG TaskMessageService.say] Creating new non-partial say message:",
+						type,
+						"skipPostState:",
+						skipPostState,
+					)
 					const sayTs = Date.now()
 					this.taskState.lastMessageTs = sayTs
 					await this.messageStateHandler.addToClineMessages({
@@ -306,12 +325,27 @@ export class TaskMessageService {
 						images,
 						files,
 					})
-					await this.postStateToWebview()
+					if (!skipPostState) {
+						console.log("[DEBUG TaskMessageService.say] Calling postStateToWebview after adding say message")
+						await this.postStateToWebview()
+					} else {
+						console.log(
+							"[DEBUG TaskMessageService.say] Skipping postStateToWebview (will be called after conversion)",
+						)
+						// Still save to disk even if we skip the webview update
+						await this.messageStateHandler.saveClineMessagesAndUpdateHistory()
+					}
 					return sayTs
 				}
 			}
 		} else {
 			// Standard non-partial message
+			console.log(
+				"[DEBUG TaskMessageService.say] Creating standard non-partial say message:",
+				type,
+				"skipPostState:",
+				skipPostState,
+			)
 			const sayTs = Date.now()
 			this.taskState.lastMessageTs = sayTs
 			await this.messageStateHandler.addToClineMessages({
@@ -322,7 +356,14 @@ export class TaskMessageService {
 				images,
 				files,
 			})
-			await this.postStateToWebview()
+			if (!skipPostState) {
+				console.log("[DEBUG TaskMessageService.say] Calling postStateToWebview after adding say message")
+				await this.postStateToWebview()
+			} else {
+				console.log("[DEBUG TaskMessageService.say] Skipping postStateToWebview (will be called after conversion)")
+				// Still save to disk even if we skip the webview update
+				await this.messageStateHandler.saveClineMessagesAndUpdateHistory()
+			}
 			return sayTs
 		}
 	}

@@ -69,14 +69,25 @@ export async function subscribeToMessageStream(
 export async function sendMessageStreamFullStateUpdate(state: ExtensionState): Promise<void> {
 	// Don't send full state updates during active streaming
 	if (isStreaming) {
+		console.log("[DEBUG MessageStream] Skipping FULL_SYNC - currently streaming")
 		return
 	}
 
 	// Check if streaming recently occurred (within timeout window)
 	const timeSinceLastPartial = Date.now() - lastPartialUpdateTime
 	if (timeSinceLastPartial < STREAMING_TIMEOUT_MS) {
+		console.log("[DEBUG MessageStream] Skipping FULL_SYNC - within streaming timeout (", timeSinceLastPartial, "ms)")
 		return
 	}
+
+	console.log("[DEBUG MessageStream] Sending FULL_SYNC with", state.clineMessages?.length, "messages")
+	const lastMessage = state.clineMessages?.at(-1)
+	console.log("[DEBUG MessageStream] Last message:", {
+		type: lastMessage?.type,
+		say: lastMessage?.say,
+		ask: lastMessage?.ask,
+		ts: lastMessage?.ts,
+	})
 
 	// Convert messages to proto format
 	const protoMessages = (state.clineMessages || []).map((msg) => convertClineMessageToProto(msg))
