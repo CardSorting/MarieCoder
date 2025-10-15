@@ -72,11 +72,13 @@ const MessageRendererComponent: React.FC<MessageRendererProps> = ({
 	)
 }
 
-// Track last render time for smooth batching
+// Track last render time for silky-smooth, comfortable batching
 const lastRenderTimeMap = new Map<number, number>()
-const MIN_RENDER_INTERVAL_MS = 32 // ~30fps for smoother perception (less frequent but more substantial updates)
-const MIN_TEXT_DELTA = 15 // Reduced frequency but with more content per update
-const MIN_REASONING_DELTA = 8
+// Optimized for human perception - 45fps sweet spot (smoother than 30fps, less jarring than 60fps)
+const MIN_RENDER_INTERVAL_MS = 22 // ~45fps for optimal visual comfort during streaming
+// Adaptive thresholds for natural, flowing updates
+const MIN_TEXT_DELTA = 12 // Smaller batches for smoother, more fluid perception
+const MIN_REASONING_DELTA = 6 // More granular reasoning updates for better flow
 
 /**
  * Optimized memoization for message rendering with intelligent batching

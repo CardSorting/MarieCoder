@@ -1,27 +1,29 @@
 import * as vscode from "vscode"
 
 /**
- * Creates decoration type for streaming indicator with gentler visuals
+ * Creates decoration type for streaming indicator with ultra-subtle, comfortable visuals
+ * Optimized for extended viewing without eye strain
  */
 const streamingDecorationType = vscode.window.createTextEditorDecorationType({
-	// Subtle border - lighter for less distraction
+	// Whisper-soft border - barely perceptible
 	border: "1px solid",
 	borderColor: new vscode.ThemeColor("editorInfo.border"),
 
-	// Very subtle background tint
+	// Ultra-subtle background tint for comfort
 	backgroundColor: new vscode.ThemeColor("editor.wordHighlightBackground"),
-	opacity: "0.5", // Reduced for gentler effect
+	opacity: "0.35", // Further reduced for maximum comfort during extended viewing
 
 	// Applies to entire range
 	isWholeLine: false,
 
-	// Gutter decoration with slower, smoother animation
+	// Gutter decoration with gentle, slow breathing animation
 	gutterIconPath: vscode.Uri.parse(
 		"data:image/svg+xml," +
 			encodeURIComponent(`
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-					<circle cx="8" cy="8" r="4" fill="#4EC9B0" opacity="0.8">
-						<animate attributeName="opacity" values="0.3;0.8;0.3" dur="2.5s" repeatCount="indefinite"/>
+					<circle cx="8" cy="8" r="4" fill="#4EC9B0" opacity="0.7">
+						<animate attributeName="opacity" values="0.25;0.7;0.25" dur="3.5s" repeatCount="indefinite" 
+							calcMode="spline" keySplines="0.25 0.46 0.45 0.94; 0.25 0.46 0.45 0.94"/>
 					</circle>
 				</svg>
 `),
@@ -45,7 +47,7 @@ export class EditorStreamingDecorator {
 	private static instance: EditorStreamingDecorator
 	private activeDecorations: Map<string, vscode.TextEditor>
 	private lastUpdateTime: Map<string, number>
-	private readonly throttleMs = 16 // ~60fps for smooth, non-jarring updates
+	private readonly throttleMs = 22 // ~45fps - optimal balance for smooth, comfortable updates
 
 	private constructor() {
 		this.activeDecorations = new Map()
@@ -87,21 +89,23 @@ export class EditorStreamingDecorator {
 	}
 
 	/**
-	 * Update decorations (called during streaming) - throttled to frame rate for smoothness
+	 * Update decorations (called during streaming) - throttled for silky-smooth, comfortable updates
+	 * Optimized for human perception at ~45fps sweet spot
 	 */
 	updateDecorations(editor: vscode.TextEditor, currentLine: number): void {
 		const filePath = editor.document.uri.fsPath
 		const now = Date.now()
 		const lastUpdate = this.lastUpdateTime.get(filePath) ?? 0
 
-		// Throttle updates to ~60fps to prevent jarring, rapid decoration changes
+		// Throttle to ~45fps - optimal balance between smoothness and visual comfort
+		// Prevents jarring rapid changes while maintaining fluid perception
 		if (now - lastUpdate < this.throttleMs) {
 			return
 		}
 
 		this.lastUpdateTime.set(filePath, now)
 
-		// Decorate currently active line with glow
+		// Decorate currently active line with ultra-subtle visual feedback
 		if (currentLine >= 0 && currentLine < editor.document.lineCount) {
 			const range = new vscode.Range(currentLine, 0, currentLine, Number.MAX_SAFE_INTEGER)
 			editor.setDecorations(streamingDecorationType, [range])

@@ -56,13 +56,17 @@ vscode-button::part(control):focus:not(:focus-visible) {
 }
 
 /* ==========================================================================
-   Message Animations - Smooth Entry and Scroll
+   Message Animations - Ultra-Smooth, Comfortable Streaming Experience
    ========================================================================== */
 
+/* Ultra-gentle fade for streaming - imperceptible motion, maximum comfort */
 @keyframes messageFadeIn {
 	from {
 		opacity: 0;
-		transform: translateY(1px); /* Very subtle upward motion */
+		transform: translateY(0.5px); /* Barely perceptible - halved from 1px */
+	}
+	50% {
+		opacity: 0.8; /* Faster fade-in for smoother perception */
 	}
 	to {
 		opacity: 1;
@@ -70,11 +74,15 @@ vscode-button::part(control):focus:not(:focus-visible) {
 	}
 }
 
+/* Whisper-soft content reveal - effortless to watch */
 @keyframes contentReveal {
 	from {
 		opacity: 0;
-		transform: translateY(2px); /* Reduced from 4px */
-		filter: blur(1px); /* Reduced from 2px */
+		transform: translateY(1px); /* Halved from 2px for gentler motion */
+		filter: blur(0.5px); /* Halved from 1px - almost imperceptible */
+	}
+	50% {
+		opacity: 0.75; /* Smoother mid-transition */
 	}
 	to {
 		opacity: 1;
@@ -83,13 +91,14 @@ vscode-button::part(control):focus:not(:focus-visible) {
 	}
 }
 
+/* Silky smooth stagger - natural cascade effect */
 @keyframes staggerIn {
 	from {
 		opacity: 0;
-		transform: translateX(-2px) translateY(1px); /* Gentler motion - reduced from 4px/2px */
+		transform: translateX(-1px) translateY(0.5px); /* Halved for ultra-subtle motion */
 	}
 	50% {
-		opacity: 0.6; /* Faster fade-in */
+		opacity: 0.7; /* Gentler mid-point for eye comfort */
 	}
 	to {
 		opacity: 1;
@@ -97,13 +106,14 @@ vscode-button::part(control):focus:not(:focus-visible) {
 	}
 }
 
+/* Feather-light entry - smooth as silk */
 @keyframes messageSlideIn {
 	from {
 		opacity: 0;
-		transform: translateX(-2px) translateY(2px); /* Gentler motion - reduced from 4px */
+		transform: translateX(-1px) translateY(1px); /* Halved from 2px for minimal distraction */
 	}
-	50% {
-		opacity: 0.7; /* Progressive fade - higher for less distraction */
+	40% {
+		opacity: 0.75; /* Smoother early fade for visual comfort */
 	}
 	to {
 		opacity: 1;
@@ -111,56 +121,72 @@ vscode-button::part(control):focus:not(:focus-visible) {
 	}
 }
 
-/* Smooth message entry animation - softer and faster for less jarring effect */
+/* Smooth message entry - effortless, natural perception */
 .message-enter {
-	animation: messageSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1); /* Reduced from 0.35s */
+	animation: messageSlideIn 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Natural ease - slightly faster with smoother curve */
 	will-change: transform, opacity;
 }
 
-/* Gentle fade-in for streaming messages - barely perceptible */
+/* Whisper-soft fade for streaming - maximum comfort for extended viewing */
 .message-streaming {
-	animation: messageFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* Reduced from 0.3s */
+	animation: messageFadeIn 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Faster, smoother easing */
 	will-change: opacity;
 }
 
-/* Progressive content reveal for smooth perception */
+/* Progressive reveal - easy on the eyes */
 .content-reveal {
-	animation: contentReveal 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Reduced from 0.4s */
+	animation: contentReveal 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Faster with natural easing */
 	will-change: opacity, transform;
 }
 
-/* Staggered animation for list items - faster, more natural */
+/* Staggered animation - cohesive, natural flow */
 .stagger-item {
-	animation: staggerIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) backwards; /* Reduced from 0.2s */
+	animation: staggerIn 0.13s cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards; /* Faster for more cohesive perception */
 }
 
+/* Ultra-tight stagger timing for seamless cascade */
 .stagger-item:nth-child(1) {
 	animation-delay: 0ms;
 }
 .stagger-item:nth-child(2) {
-	animation-delay: 30ms; /* Reduced from 50ms */
+	animation-delay: 20ms; /* Tightened from 30ms */
 }
 .stagger-item:nth-child(3) {
-	animation-delay: 60ms; /* Reduced from 100ms */
+	animation-delay: 40ms; /* Tightened from 60ms */
 }
 .stagger-item:nth-child(4) {
-	animation-delay: 90ms; /* Reduced from 150ms */
+	animation-delay: 60ms; /* Tightened from 90ms */
 }
 .stagger-item:nth-child(5) {
-	animation-delay: 120ms; /* Reduced from 200ms */
+	animation-delay: 80ms; /* Tightened from 120ms */
 }
 .stagger-item:nth-child(n + 6) {
-	animation-delay: 150ms; /* Reduced from 250ms */
+	animation-delay: 100ms; /* Tightened from 150ms */
 }
 
-/* Smooth transitions for message state changes */
+/* Silk-smooth transitions for state changes */
 .message-transition {
-	transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+	transition: all 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Shared transition helper for fluid state changes */
+/* Fluid helper for effortless state changes */
 .fluid-transition {
-	transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+	transition: all 0.16s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Accessibility: Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+	.message-enter,
+	.message-streaming,
+	.content-reveal,
+	.stagger-item {
+		animation: none !important;
+	}
+
+	.message-transition,
+	.fluid-transition {
+		transition: none !important;
+	}
 }
 
 /* ==========================================================================
@@ -224,27 +250,42 @@ button:hover:not(:disabled) {
 }
 
 /* ==========================================================================
-   Scroll Performance Optimizations
+   Scroll Performance - Buttery Smooth, Effortless Navigation
    ========================================================================== */
 
-/* GPU acceleration for smooth scrolling with comfort settings */
+/* GPU-accelerated scrolling with world-class comfort */
 .scrollable {
 	will-change: scroll-position;
 	-webkit-overflow-scrolling: touch;
 	transform: translateZ(0);
-	/* Use contain for better performance */
+	/* Optimize rendering performance */
 	contain: layout style paint;
-	/* Prevent jarring bounce/rubber-band on scroll boundaries */
+	/* Prevent jarring bounce/rubber-band at scroll boundaries */
 	overscroll-behavior: contain;
 	/* Reserve space for scrollbar to prevent layout shift */
 	scrollbar-gutter: stable;
+	/* Ultra-smooth momentum scrolling on touch devices */
+	scroll-behavior: smooth;
+	/* Snap to content for crisp, comfortable scrolling */
+	scroll-padding: 16px;
 }
 
-/* Smooth scroll behavior with natural easing */
+/* Silky smooth scroll with natural, human-perceived easing */
 html {
 	scroll-behavior: smooth;
 	/* Prevent bounce at document boundaries */
 	overscroll-behavior-y: contain;
+	/* Optimize text rendering for comfort during scroll */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* Accessibility: Instant scroll for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	.scrollable,
+	html {
+		scroll-behavior: auto !important;
+	}
 }
 
 /* Optimize rendering performance */

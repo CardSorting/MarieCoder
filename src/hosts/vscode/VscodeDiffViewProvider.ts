@@ -130,8 +130,8 @@ export class VscodeDiffViewProvider extends DiffViewProvider {
 			return
 		}
 		const scrollLine = line + 4
-		// Use InCenterIfOutsideViewport for smoother, less jarring scrolling
-		// Only scroll if the line isn't already visible
+		// Conditional reveal - only scroll if line isn't visible
+		// Prevents unnecessary, jarring scroll movements
 		this.activeDiffEditor.revealRange(
 			new vscode.Range(scrollLine, 0, scrollLine, 0),
 			vscode.TextEditorRevealType.InCenterIfOutsideViewport,
@@ -144,29 +144,31 @@ export class VscodeDiffViewProvider extends DiffViewProvider {
 		}
 
 		const totalLines = endLine - startLine
-		// Shorter, smoother duration for less jarring scroll
-		const duration = Math.min(800, Math.max(300, totalLines * 6)) // Reduced from 1200/400/8
+		// Optimized duration for natural, comfortable perception
+		// Slower for longer distances, faster for short jumps
+		const duration = Math.min(700, Math.max(250, totalLines * 5)) // Further optimized for smoothness
 		const startTime = performance.now()
 
-		// Gentler ease-out-quad for more natural, comfortable motion
-		const easeOutQuad = (t: number): number => {
-			return t * (2 - t)
+		// Natural ease-in-out-sine for buttery smooth, organic motion
+		// Mimics natural human eye tracking patterns
+		const easeInOutSine = (t: number): number => {
+			return -(Math.cos(Math.PI * t) - 1) / 2
 		}
 
-		// Track last revealed line to avoid redundant reveal calls
+		// Track last revealed line to avoid redundant, jarring reveal calls
 		let lastRevealedLine = -1
 
-		// Smooth animation using requestAnimationFrame
+		// Silky smooth animation using requestAnimationFrame
 		const animate = (currentTime: number) => {
 			const elapsed = currentTime - startTime
 			const progress = Math.min(elapsed / duration, 1)
 
-			// Apply easing for smooth, natural motion
-			const eased = easeOutQuad(progress)
+			// Apply natural, human-perceived easing curve
+			const eased = easeInOutSine(progress)
 
 			const currentLine = Math.floor(startLine + totalLines * eased)
 
-			// Only reveal if line changed to reduce jank
+			// Only reveal when line actually changes - prevents micro-jank
 			if (currentLine !== lastRevealedLine) {
 				lastRevealedLine = currentLine
 				this.activeDiffEditor?.revealRange(
@@ -180,10 +182,10 @@ export class VscodeDiffViewProvider extends DiffViewProvider {
 			}
 		}
 
-		// Start animation
+		// Start silky smooth animation
 		requestAnimationFrame(animate)
 
-		// Wait for animation to complete
+		// Wait for animation to complete naturally
 		await new Promise((resolve) => setTimeout(resolve, duration))
 	}
 
