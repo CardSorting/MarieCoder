@@ -45,6 +45,10 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 		// Creates file if it doesn't exist, and opens editor to stream content in. We don't want to handle this in the try/catch below since the error handler for it resets the diff view, which wouldn't be open if this failed.
 		const result = await this.validateAndPrepareFileOperation(config, block, rawRelPath, rawDiff, rawContent)
 		if (!result) {
+			// Validation failed (e.g., clineignore error, diff error)
+			// Remove any partial tool message to prevent infinite scroll loop in UI
+			await uiHelpers.removeLastPartialMessageIfExistsWithType("ask", "tool")
+			await uiHelpers.removeLastPartialMessageIfExistsWithType("say", "tool")
 			return
 		}
 

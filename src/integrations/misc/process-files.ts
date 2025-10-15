@@ -26,7 +26,7 @@ export async function selectFiles(imagesAllowed: boolean): Promise<{ images: str
 		return { images: [], files: [] }
 	}
 
-	const processFilesPromises = filePaths.map(async (filePath) => {
+	const processFilesPromises = filePaths.map(async (filePath: string) => {
 		const fileExtension = path.extname(filePath).toLowerCase().substring(1)
 
 		const isImage = IMAGE_EXTENSIONS.includes(fileExtension)
@@ -84,7 +84,7 @@ export async function selectFiles(imagesAllowed: boolean): Promise<{ images: str
 	const dataUrlsWithNulls = await Promise.all(processFilesPromises)
 	const dataUrlsWithoutNulls = dataUrlsWithNulls.filter(
 		(item): item is { type: "image" | "file"; data: string } => item !== null,
-	)
+	) as { type: "image" | "file"; data: string }[]
 
 	const images: string[] = []
 	const files: string[] = []
