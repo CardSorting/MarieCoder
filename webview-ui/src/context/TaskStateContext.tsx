@@ -74,16 +74,41 @@ export const TaskStateContextProvider: React.FC<{
 							if (update.fullState) {
 								const messages = update.fullState
 									.map((protoMsg) => convertProtoToClineMessage(protoMsg))
-									// Filter out empty reasoning/thinking blocks
+									// Filter out messages that shouldn't be in state
 									.filter((msg) => {
+										// Filter empty reasoning/thinking blocks
 										if (msg.type === "say" && msg.say === "reasoning" && (!msg.text || !msg.text.trim())) {
 											debug.log("[DEBUG] Filtering empty reasoning message from full sync")
 											return false
 										}
+
+										// Filter completion_result say messages (they should be converted to ask)
+										// This ensures consistency even if backend sends both
+										if (msg.type === "say" && msg.say === "completion_result") {
+											// Check if there's a corresponding ask message with same timestamp
+											const hasAskVersion = update.fullState.some((otherMsg) => {
+												const converted = convertProtoToClineMessage(otherMsg)
+												return (
+													converted.type === "ask" &&
+													converted.ask === "completion_result" &&
+													converted.ts === msg.ts
+												)
+											})
+
+											if (hasAskVersion) {
+												debug.log(
+													"[DEBUG] Filtering completion_result say from full sync (ask version exists)",
+												)
+												return false
+											}
+										}
+
 										return true
 									})
 								setClineMessages(messages)
-								debug.log("[DEBUG] Applied full state sync from unified stream")
+								debug.log("[DEBUG] Applied full state sync from unified stream", {
+									totalMessages: messages.length,
+								})
 							}
 							break
 
@@ -118,6 +143,43 @@ export const TaskStateContextProvider: React.FC<{
 								}
 
 								setClineMessages((prevMessages) => {
+									// Special handling for completion_result conversion (say -> ask)
+									// When we receive a completion_result ask, remove any completion_result say with the same timestamp
+									if (partialMessage.type === "ask" && partialMessage.ask === "completion_result") {
+										debug.log("[DEBUG] Processing completion_result ask - checking for say to replace")
+
+										// Find and remove the corresponding say message
+										const sayIndex = findLastIndex(
+											prevMessages,
+											(msg) => msg.say === "completion_result" && msg.ts === partialMessage.ts,
+										)
+
+										if (sayIndex !== -1) {
+											debug.log("[DEBUG] Replacing completion_result say with ask at same timestamp")
+											const newMessages = [...prevMessages]
+											newMessages[sayIndex] = partialMessage
+											return newMessages
+										}
+
+										// If no say found, check for existing ask with same timestamp
+										const askIndex = findLastIndex(
+											prevMessages,
+											(msg) => msg.ask === "completion_result" && msg.ts === partialMessage.ts,
+										)
+
+										if (askIndex !== -1) {
+											debug.log("[DEBUG] Updating existing completion_result ask")
+											const newMessages = [...prevMessages]
+											newMessages[askIndex] = partialMessage
+											return newMessages
+										}
+
+										// No existing message found - add as new
+										debug.log("[DEBUG] Adding new completion_result ask")
+										return [...prevMessages, partialMessage]
+									}
+
+									// Standard message update logic
 									const lastIndex = findLastIndex(prevMessages, (msg) => msg.ts === partialMessage.ts)
 									if (lastIndex !== -1) {
 										// Update existing message

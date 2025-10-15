@@ -33,28 +33,32 @@ const TaskTimelineComponent: React.FC<TaskTimelineProps> = ({ messages, onBlockC
 		const filtered = processed.filter((msg, _processedIndex) => {
 			const originalIndex = messages.findIndex((originalMsg, idx) => idx > 0 && originalMsg.ts === msg.ts)
 
-			// Filter out standard "say" events we don't want to show
-			if (
-				msg.type === "say" &&
-				(msg.say === "api_req_started" ||
-					msg.say === "api_req_finished" ||
-					msg.say === "api_req_retried" ||
-					msg.say === "deleted_api_reqs" ||
-					msg.say === "checkpoint_created" ||
-					msg.say === "task_progress" ||
-					msg.say === "text" ||
-					msg.say === "reasoning")
-			) {
-				return false
+			// Filter out internal "say" messages we don't show in timeline
+			if (msg.type === "say") {
+				switch (msg.say) {
+					case "api_req_started":
+					case "api_req_finished":
+					case "api_req_retried":
+					case "deleted_api_reqs":
+					case "checkpoint_created":
+					case "task_progress":
+					case "text":
+					case "reasoning":
+					case "completion_result": // Handled by state deduplication (converted to ask)
+						return false
+				}
 			}
 
-			// Filter out "ask" events we don't want to show, including the duplicate completion_result
-			if (
-				msg.type === "ask" &&
-				(msg.ask === "resume_task" || msg.ask === "resume_completed_task" || msg.ask === "completion_result") // Filter out the duplicate completion_result "ask" message
-			) {
-				return false
+			// Filter out internal "ask" messages we don't show in timeline
+			if (msg.type === "ask") {
+				switch (msg.ask) {
+					case "resume_task":
+					case "resume_completed_task":
+					case "completion_result": // Don't show in timeline - it's the final state
+						return false
+				}
 			}
+
 			if (originalIndex !== -1) {
 				indexMap.push(originalIndex)
 			}

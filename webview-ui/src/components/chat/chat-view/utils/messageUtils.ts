@@ -15,36 +15,51 @@ export function processMessages(messages: ClineMessage[]): ClineMessage[] {
 
 /**
  * Filter messages that should be visible in the chat
+ *
+ * Simplified logic:
+ * - Filters out internal/system messages
+ * - Filters out empty messages
+ * - completion_result say messages are handled by state deduplication (converted to ask)
  */
 export function filterVisibleMessages(messages: ClineMessage[]): ClineMessage[] {
 	return messages.filter((message) => {
-		switch (message.ask) {
-			case "completion_result":
-				// don't show a chat row for a completion_result ask without text. This specific type of message only occurs if cline wants to execute a command as part of its completion result, in which case we interject the completion_result tool with the execute_command tool.
-				if (message.text === "") {
+		// Filter ask messages
+		if (message.type === "ask") {
+			switch (message.ask) {
+				case "completion_result":
+					// Only show completion_result ask messages that have text
+					// Empty ones are used for internal control flow (e.g., executing commands)
+					return message.text !== ""
+				case "api_req_failed": // Updates latest api_req_started with failure status
+				case "resume_task": // Internal resume signals
+				case "resume_completed_task": // Internal resume signals
 					return false
-				}
-				break
-			case "api_req_failed": // this message is used to update the latest api_req_started that the request failed
-			case "resume_task":
-			case "resume_completed_task":
-				return false
+			}
 		}
-		switch (message.say) {
-			case "api_req_finished": // combineApiRequests removes this from modifiedMessages anyways
-			case "api_req_retried": // this message is used to update the latest api_req_started that the request was retried
-			case "deleted_api_reqs": // aggregated api_req metrics from deleted messages
-			case "task_progress": // task progress messages are displayed in TaskHeader, not in main chat
-				return false
-			case "text":
-				// Sometimes cline returns an empty text message, we don't want to render these. (We also use a say text for user messages, so in case they just sent images we still render that)
-				if ((message.text ?? "") === "" && (message.images?.length ?? 0) === 0) {
+
+		// Filter say messages
+		if (message.type === "say") {
+			switch (message.say) {
+				case "completion_result":
+					// Say completion_result messages are converted to ask in state management
+					// If we see one here, it means it hasn't been converted yet (should be rare)
+					// Don't show it to avoid duplication
 					return false
-				}
-				break
-			case "mcp_server_request_started":
-				return false
+				case "api_req_finished": // combineApiRequests handles this
+				case "api_req_retried": // Updates api_req_started with retry info
+				case "deleted_api_reqs": // Aggregated metrics
+				case "task_progress": // Displayed in TaskHeader, not chat
+				case "mcp_server_request_started": // Internal MCP tracking
+					return false
+				case "text":
+					// Filter empty text messages (but keep if images are present)
+					if ((message.text ?? "") === "" && (message.images?.length ?? 0) === 0) {
+						return false
+					}
+					break
+			}
 		}
+
 		return true
 	})
 }
