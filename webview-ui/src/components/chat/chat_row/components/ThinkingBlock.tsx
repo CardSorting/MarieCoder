@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { CopyButton } from "@/components/common/CopyButton"
-import { removeCodeBlocks } from "@/utils/chat/code_block_filter"
 
 interface ThinkingBlockProps {
 	text: string
@@ -14,21 +13,17 @@ interface ThinkingBlockProps {
  * - Copy button for easy text copying
  * - Smooth collapse/expand animations
  * - Visual separation with gradients and badges
- * - Filters out code blocks (code belongs in editor)
  */
 export const ThinkingBlock: React.FC<ThinkingBlockProps> = ({ text, isExpanded, onToggle }) => {
 	const contentRef = useRef<HTMLDivElement>(null)
 	const [contentHeight, setContentHeight] = useState<number | undefined>(undefined)
-
-	// Filter out code blocks from thinking text
-	const filteredText = useMemo(() => removeCodeBlocks(text), [text])
 
 	// Calculate content height for smooth animation
 	useEffect(() => {
 		if (contentRef.current) {
 			setContentHeight(contentRef.current.scrollHeight)
 		}
-	}, [filteredText, isExpanded])
+	}, [text, isExpanded])
 
 	return (
 		<div
@@ -151,7 +146,7 @@ export const ThinkingBlock: React.FC<ThinkingBlockProps> = ({ text, isExpanded, 
 								color: "var(--vscode-descriptionForeground)",
 								opacity: 0.85,
 							}}>
-							{filteredText + "\u200E"}
+							{text + "\u200E"}
 						</span>
 						<span
 							className="codicon codicon-chevron-right"
@@ -186,7 +181,7 @@ export const ThinkingBlock: React.FC<ThinkingBlockProps> = ({ text, isExpanded, 
 								right: "4px",
 								zIndex: 10,
 							}}>
-							<CopyButton ariaLabel="Copy thinking process" textToCopy={filteredText} />
+							<CopyButton ariaLabel="Copy thinking process" textToCopy={text} />
 						</div>
 					)}
 					<div
@@ -204,7 +199,7 @@ export const ThinkingBlock: React.FC<ThinkingBlockProps> = ({ text, isExpanded, 
 							paddingRight: "40px",
 							borderRadius: "4px",
 						}}>
-						{filteredText}
+						{text}
 					</div>
 				</div>
 			</div>

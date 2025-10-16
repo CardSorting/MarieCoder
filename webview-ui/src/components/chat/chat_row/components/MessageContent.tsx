@@ -1,5 +1,5 @@
 import type { ClineAskQuestion, ClineMessage, ClinePlanModeResponse, ClineSayTool } from "@shared/ExtensionMessage"
-import { memo, useMemo } from "react"
+import { memo } from "react"
 import NewTaskPreview from "@/components/chat/NewTaskPreview"
 import { OptionsButtons } from "@/components/chat/OptionsButtons"
 import QuoteButton from "@/components/chat/QuoteButton"
@@ -9,7 +9,6 @@ import { CheckmarkControl } from "@/components/common/CheckmarkControl"
 import CodeAccordian from "@/components/common/CodeAccordian"
 import { WithCopyButton } from "@/components/common/CopyButton"
 import McpResponseDisplay from "@/components/mcp/chat-display/McpResponseDisplay"
-import { removeCodeBlocks } from "@/utils/chat/code_block_filter"
 import { headerStyle } from "../utils/style_constants"
 import { ApiRequestDisplay } from "./ApiRequestDisplay"
 import { CompletionResult } from "./CompletionResult"
@@ -79,15 +78,6 @@ export const MessageContent = memo(
 		onMouseUp,
 		onToggle,
 	}: MessageContentProps) => {
-		// Filter code blocks from text responses
-		const filteredMessageText = useMemo(() => {
-			// Only filter text and reasoning messages, not tool outputs
-			if (message.say === "text" || message.say === "reasoning") {
-				return removeCodeBlocks(message.text || "")
-			}
-			return message.text || ""
-		}, [message.text, message.say])
-
 		// Handle "say" messages
 		if (message.type === "say") {
 			switch (message.say) {
@@ -148,8 +138,8 @@ export const MessageContent = memo(
 							onMouseUp={onMouseUp}
 							position="bottom-right"
 							ref={contentRef}
-							textToCopy={filteredMessageText}>
-							<Markdown markdown={filteredMessageText} />
+							textToCopy={message.text || ""}>
+							<Markdown markdown={message.text || ""} />
 							{quoteButtonState.visible && (
 								<QuoteButton left={quoteButtonState.left} onClick={onQuoteClick} top={quoteButtonState.top} />
 							)}
