@@ -219,8 +219,11 @@ export class ApiStreamManager {
 		} finally {
 			this.taskState.isStreaming = false
 
-			// Flush any pending throttled updates
-			await this.flushPendingUpdates(reasoningMessage, accumulatedThinkingText, assistantMessage)
+			// Flush any pending throttled updates only if not aborted or abandoned
+			// Attempting to flush when aborted will throw "Cline instance aborted" error
+			if (!this.taskState.abort && !this.taskState.abandoned) {
+				await this.flushPendingUpdates(reasoningMessage, accumulatedThinkingText, assistantMessage)
+			}
 		}
 
 		return {
