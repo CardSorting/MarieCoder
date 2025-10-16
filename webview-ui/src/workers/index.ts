@@ -6,9 +6,9 @@
  * This creates a Worker constructor that uses blob: URLs (CSP-compliant)
  */
 
-// Import worker with Vite's ?worker syntax (creates Worker constructor with blob URL)
-// This is CSP-compliant as it uses blob: URLs which are allowed in worker-src
-import MarkdownWorker from "./markdown_worker?worker"
+// Import worker with Vite's ?worker&inline syntax to force blob URL creation
+// Using &inline ensures workers are embedded as blob URLs even in dev mode (CSP-compliant)
+import MarkdownWorker from "./markdown_worker?worker&inline"
 
 /**
  * Markdown worker constructor for use with WebWorkerPool

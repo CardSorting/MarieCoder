@@ -33,21 +33,22 @@ When creating workers from this URL in the VSCode webview context with its `vsco
 
 ### Changed Import Strategy
 
-Switched from `?worker&url` to `?worker` syntax. The `?worker` import returns a **Worker constructor** that automatically creates blob URLs internally:
+Switched from `?worker&url` to `?worker&inline` syntax. The `?worker&inline` import returns a **Worker constructor** that automatically creates blob URLs internally, **even in development mode**:
 
 ```typescript
-// Before: Returns a URL string
+// Before: Returns a URL string (CSP violation)
 import MarkdownWorkerUrl from "./markdown_worker?worker&url"
 
-// After: Returns a Worker constructor
-import MarkdownWorker from "./markdown_worker?worker"
+// After: Returns a Worker constructor with inline blob URL
+import MarkdownWorker from "./markdown_worker?worker&inline"
 ```
 
 ### Why This Works
 
 1. **Blob URLs are CSP-compliant**: The CSP already includes `worker-src blob:` which allows blob: URLs
-2. **Automatic handling**: Vite's `?worker` import handles the blob URL creation internally
+2. **Automatic handling**: Vite's `?worker&inline` import handles the blob URL creation internally
 3. **No URL resolution needed**: No need to resolve paths relative to document base
+4. **Development mode compatible**: The `&inline` flag forces blob URLs even in dev mode, avoiding Vite's default behavior of loading workers as separate module scripts
 
 ---
 
@@ -71,7 +72,7 @@ export function getMarkdownWorkerScript(): string {
 
 **After:**
 ```typescript
-import MarkdownWorker from "./markdown_worker?worker"
+import MarkdownWorker from "./markdown_worker?worker&inline"
 
 export const MARKDOWN_WORKER_CONSTRUCTOR = MarkdownWorker
 
@@ -159,11 +160,13 @@ const { executeTask } = useWebWorker({
 
 ### Build Output
 
-The worker builds correctly as shown in build output:
+With `&inline`, the worker is embedded into the main bundle instead of being a separate file:
 
 ```
-build/workers/markdown_worker.js     83.14 kB
+build/assets/index.js   3,887.51 kB  (includes inlined worker)
 ```
+
+The worker code is approximately 85KB and is now inlined as a blob URL within the main JavaScript bundle.
 
 ### CSP Configuration
 
@@ -182,14 +185,17 @@ The existing CSP in `src/core/webview/WebviewProvider.ts` already allows blob: U
 
 If you're adding new workers or updating existing ones:
 
-### 1. Import Worker with `?worker` Syntax
+### 1. Import Worker with `?worker&inline` Syntax
 
 ```typescript
-// ✅ Correct (CSP-compliant)
-import MyWorker from "./my_worker?worker"
+// ✅ Correct (CSP-compliant, works in dev and prod)
+import MyWorker from "./my_worker?worker&inline"
 
 // ❌ Avoid (CSP issues in webview)
 import MyWorkerUrl from "./my_worker?worker&url"
+
+// ⚠️ Works in prod but has CSP issues in dev mode
+import MyWorker from "./my_worker?worker"
 ```
 
 ### 2. Export Worker Constructor
@@ -222,17 +228,26 @@ const { executeTask } = useWebWorker({
 
 ## Lessons Learned
 
-1. **Vite's `?worker` vs `?worker&url`**:
-   - `?worker` returns a Worker constructor (creates blob: URLs automatically)
-   - `?worker&url` returns a URL string (requires manual worker creation)
+1. **Vite's Worker Import Options**:
+   - `?worker&inline` → Returns a Worker constructor with inline blob URL (works in dev + prod)
+   - `?worker` → Returns a Worker constructor, but uses module workers in dev mode (CSP issues)
+   - `?worker&url` → Returns a URL string (requires manual worker creation, CSP issues)
 
-2. **CSP in VSCode Webviews**:
+2. **Development vs Production Differences**:
+   - In production, Vite bundles workers separately or inlines them
+   - In dev mode without `&inline`, Vite loads workers as separate module scripts
+   - VSCode webviews have strict CSP that blocks module script loading from dev server
+   - The `&inline` flag ensures consistent blob URL behavior in both modes
+
+3. **CSP in VSCode Webviews**:
    - The `vscode-webview://` scheme doesn't match standard URL patterns
    - Blob URLs are the most reliable way to load workers in webviews
+   - `worker-src` directive must explicitly allow blob: URLs
 
-3. **Worker Pool Design**:
+4. **Worker Pool Design**:
    - Provide both `workerConstructor` and `workerScript` options
    - Prefer constructor approach but maintain backward compatibility
+   - Constructor approach eliminates URL resolution complexities
 
 ---
 
