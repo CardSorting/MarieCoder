@@ -3,30 +3,31 @@
  * Centralized exports for all web workers with Vite bundling
  *
  * Vite automatically bundles workers imported with ?worker suffix
- * This eliminates CDN dependencies and enables faster cold starts
+ * This creates a Worker constructor that uses blob: URLs (CSP-compliant)
  */
 
-// Import worker with Vite's ?worker syntax for proper bundling
-import MarkdownWorkerUrl from "./markdown_worker?worker&url"
+// Import worker with Vite's ?worker syntax (creates Worker constructor with blob URL)
+// This is CSP-compliant as it uses blob: URLs which are allowed in worker-src
+import MarkdownWorker from "./markdown_worker?worker"
 
 /**
- * Markdown worker URL for use with WebWorkerPool
- * This is the bundled worker script URL that includes all dependencies
+ * Markdown worker constructor for use with WebWorkerPool
+ * This creates workers using blob: URLs which are CSP-compliant
  */
-export const MARKDOWN_WORKER_URL = MarkdownWorkerUrl
+export const MARKDOWN_WORKER_CONSTRUCTOR = MarkdownWorker
 
 /**
- * Get markdown worker script URL
+ * Create a markdown worker instance
  * Use this with WebWorkerPool configuration
  *
  * @example
  * ```typescript
  * const { executeTask } = useWebWorker({
- *   workerScript: getMarkdownWorkerScript(),
+ *   workerConstructor: createMarkdownWorker,
  *   debug: false
  * })
  * ```
  */
-export function getMarkdownWorkerScript(): string {
-	return MARKDOWN_WORKER_URL
+export function createMarkdownWorker(): Worker {
+	return new MarkdownWorker()
 }

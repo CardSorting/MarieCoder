@@ -1,7 +1,7 @@
 import type Fuse from "fuse.js"
 import { useEffect, useMemo, useState } from "react"
 import { useWebWorker, WorkerTasks } from "@/utils/web_worker_manager"
-import { getMarkdownWorkerScript } from "@/workers"
+import { createMarkdownWorker } from "@/workers"
 import { highlight } from "../utils/highlight_utils"
 import { type SortOption, sortTaskHistory } from "../utils/sort_utils"
 
@@ -15,8 +15,9 @@ export const useHistorySearch = (tasks: any[], searchQuery: string, sortOption: 
 	const [FuseConstructor, setFuseConstructor] = useState<typeof Fuse | null>(null)
 
 	// Initialize web worker for heavy search operations with bundled dependencies
+	// Uses workerConstructor for CSP compliance (creates blob: URLs)
 	const { executeTask } = useWebWorker({
-		workerScript: getMarkdownWorkerScript(),
+		workerConstructor: createMarkdownWorker,
 		debug: false,
 	})
 

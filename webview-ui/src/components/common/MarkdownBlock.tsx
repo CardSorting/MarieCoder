@@ -13,7 +13,7 @@ import { FileServiceClient, StateServiceClient } from "@/services/grpc-client"
 import { logError, logWarn } from "@/utils/debug_logger"
 import { renderMarkdown } from "@/utils/markdown_renderer"
 import { useWebWorker, WorkerTasks } from "@/utils/web_worker_manager"
-import { getMarkdownWorkerScript } from "@/workers"
+import { createMarkdownWorker } from "@/workers"
 
 interface MarkdownBlockProps {
 	markdown?: string
@@ -27,8 +27,9 @@ const MarkdownBlock = memo(({ markdown, compact }: MarkdownBlockProps) => {
 	const { mode } = useSettingsState()
 
 	// Initialize web worker for heavy markdown parsing with bundled dependencies
+	// Uses workerConstructor for CSP compliance (creates blob: URLs)
 	const { executeTask } = useWebWorker({
-		workerScript: getMarkdownWorkerScript(),
+		workerConstructor: createMarkdownWorker,
 		debug: false,
 	})
 

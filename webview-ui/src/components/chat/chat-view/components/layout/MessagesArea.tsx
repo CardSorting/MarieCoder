@@ -1,5 +1,5 @@
 import { ClineMessage } from "@shared/ExtensionMessage"
-import React, { useCallback } from "react"
+import React, { useMemo } from "react"
 import { Virtuoso } from "react-virtuoso"
 import { ChatState, MessageHandlers, ScrollBehavior } from "../../types/chatTypes"
 import { createMessageRenderer } from "../messages/MessageRenderer"
@@ -37,17 +37,18 @@ export const MessagesArea: React.FC<MessagesAreaProps> = ({
 
 	const { expandedRows, inputValue, setActiveQuote } = chatState
 
-	const itemContent = useCallback(
-		createMessageRenderer(
-			groupedMessages,
-			modifiedMessages,
-			expandedRows,
-			toggleRowExpansion,
-			handleRowHeightChange,
-			setActiveQuote,
-			inputValue,
-			messageHandlers,
-		),
+	const itemContent = useMemo(
+		() =>
+			createMessageRenderer(
+				groupedMessages,
+				modifiedMessages,
+				expandedRows,
+				toggleRowExpansion,
+				handleRowHeightChange,
+				setActiveQuote,
+				inputValue,
+				messageHandlers,
+			),
 		[
 			groupedMessages,
 			modifiedMessages,

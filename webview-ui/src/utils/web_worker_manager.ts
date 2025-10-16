@@ -56,7 +56,12 @@ export interface WorkerPoolConfig {
 	 */
 	minWorkers?: number
 	/**
-	 * Worker script URL or inline function
+	 * Worker constructor (preferred for CSP compliance)
+	 * Use Vite's ?worker import to get a constructor that creates blob: URLs
+	 */
+	workerConstructor?: () => Worker
+	/**
+	 * Worker script URL or inline function (legacy, use workerConstructor instead)
 	 */
 	workerScript?: string | (() => void)
 	/**
@@ -101,6 +106,7 @@ export class WebWorkerPool {
 	private taskTimeout: number
 	private workerIdleTimeout: number
 	private enablePreloading: boolean
+	private workerConstructor?: () => Worker
 	private workerScript?: string
 	private debug: boolean
 	private isInitialized = false
@@ -113,7 +119,10 @@ export class WebWorkerPool {
 		this.enablePreloading = config.enablePreloading !== false // Default true
 		this.debug = config.debug || false
 
-		if (config.workerScript) {
+		// Prefer workerConstructor (CSP-compliant) over workerScript
+		if (config.workerConstructor) {
+			this.workerConstructor = config.workerConstructor
+		} else if (config.workerScript) {
 			this.workerScript =
 				typeof config.workerScript === "string" ? config.workerScript : this.createWorkerFromFunction(config.workerScript)
 		}
@@ -123,7 +132,7 @@ export class WebWorkerPool {
 		}
 
 		// Preload workers if enabled
-		if (this.enablePreloading && this.workerScript) {
+		if (this.enablePreloading && (this.workerConstructor || this.workerScript)) {
 			this.preloadWorkers()
 		}
 	}
@@ -248,11 +257,18 @@ export class WebWorkerPool {
 	 * Initialize a new worker
 	 */
 	private initializeWorker(): Worker {
-		if (!this.workerScript) {
-			throw new Error("Worker script not provided. Please provide workerScript in configuration or use setWorkerScript()")
-		}
+		let worker: Worker
 
-		const worker = new Worker(this.workerScript)
+		// Prefer workerConstructor (CSP-compliant with blob: URLs)
+		if (this.workerConstructor) {
+			worker = this.workerConstructor()
+		} else if (this.workerScript) {
+			worker = new Worker(this.workerScript, { type: "module" })
+		} else {
+			throw new Error(
+				"Worker constructor or script not provided. Please provide workerConstructor or workerScript in configuration or use setWorkerScript()",
+			)
+		}
 
 		worker.onmessage = (event: MessageEvent<WorkerResult>) => {
 			this.handleWorkerMessage(worker, event.data)
@@ -273,7 +289,14 @@ export class WebWorkerPool {
 	}
 
 	/**
-	 * Set worker script dynamically
+	 * Set worker constructor dynamically (preferred for CSP compliance)
+	 */
+	setWorkerConstructor(constructor: () => Worker): void {
+		this.workerConstructor = constructor
+	}
+
+	/**
+	 * Set worker script dynamically (legacy, use setWorkerConstructor instead)
 	 */
 	setWorkerScript(script: string | (() => void)): void {
 		this.workerScript = typeof script === "string" ? script : this.createWorkerFromFunction(script)
