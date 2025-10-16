@@ -2,7 +2,7 @@
 	"name": "marie-coder",
 	"displayName": "MarieCoder",
 	"description": "AI coding agent for the rest of us. Built on Cline, Create files, run commands, browse the web - all with your permission every step of the way.",
-	"version": "3.33.5",
+	"version": "3.33.6",
 	"icon": "assets/icons/Marie-icon.png",
 	"engines": {
 		"vscode": "^1.84.0"
