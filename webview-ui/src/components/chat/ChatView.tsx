@@ -9,7 +9,9 @@ import { normalizeApiConfiguration } from "@/components/settings/utils/providerU
 import { useSettingsState } from "@/context/SettingsContext"
 import { useTaskState } from "@/context/TaskStateContext"
 import { FileServiceClient, UiServiceClient } from "@/services/grpc-client"
+import { type CodeBlock, extractCodeBlocks } from "@/utils/chat/extract_code_blocks"
 import { debug } from "@/utils/debug_logger"
+import { CodeBlockPreviewPanel } from "./CodeBlockPreviewPanel"
 import {
 	CHAT_CONSTANTS,
 	ChatLayout,
@@ -216,11 +218,26 @@ const ChatView = ({ isHidden, showHistoryView }: ChatViewProps) => {
 	const groupedMessages = useMemo(() => groupMessages(visibleMessages), [visibleMessages])
 	const scrollBehavior = useScrollBehavior(messages, visibleMessages, groupedMessages, expandedRows, setExpandedRows)
 
+	// Extract all code blocks from visible messages
+	const allCodeBlocks = useMemo(() => {
+		const blocks: CodeBlock[] = []
+		visibleMessages.forEach((msg) => {
+			if (msg.type === "say" && (msg.say === "text" || msg.say === "reasoning")) {
+				const { codeBlocks } = extractCodeBlocks(msg.text || "", String(msg.ts))
+				blocks.push(...codeBlocks)
+			}
+		})
+		return blocks
+	}, [visibleMessages])
+
 	const lastProgressMessageText =
 		currentFocusChainChecklist || [...modifiedMessages].reverse().find((msg) => msg.say === "task_progress")?.text
 
 	return (
 		<ChatLayout isHidden={isHidden}>
+			{/* Code block preview panel - stationary */}
+			{task && <CodeBlockPreviewPanel codeBlocks={allCodeBlocks} />}
+
 			<main className="flex flex-col flex-1 overflow-hidden">
 				{task ? (
 					<TaskSection

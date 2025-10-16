@@ -1,5 +1,5 @@
 import type { ClineAskQuestion, ClineMessage, ClinePlanModeResponse, ClineSayTool } from "@shared/ExtensionMessage"
-import { memo } from "react"
+import { memo, useMemo } from "react"
 import NewTaskPreview from "@/components/chat/NewTaskPreview"
 import { OptionsButtons } from "@/components/chat/OptionsButtons"
 import QuoteButton from "@/components/chat/QuoteButton"
@@ -9,6 +9,7 @@ import { CheckmarkControl } from "@/components/common/CheckmarkControl"
 import CodeAccordian from "@/components/common/CodeAccordian"
 import { WithCopyButton } from "@/components/common/CopyButton"
 import McpResponseDisplay from "@/components/mcp/chat-display/McpResponseDisplay"
+import { extractCodeBlocks } from "@/utils/chat/extract_code_blocks"
 import { headerStyle } from "../utils/style_constants"
 import { ApiRequestDisplay } from "./ApiRequestDisplay"
 import { CompletionResult } from "./CompletionResult"
@@ -78,6 +79,15 @@ export const MessageContent = memo(
 		onMouseUp,
 		onToggle,
 	}: MessageContentProps) => {
+		// Extract code blocks from text and reasoning messages
+		const processedText = useMemo(() => {
+			if (message.type === "say" && (message.say === "text" || message.say === "reasoning")) {
+				const { textWithMarkers } = extractCodeBlocks(message.text || "", String(message.ts))
+				return textWithMarkers
+			}
+			return message.text || ""
+		}, [message.text, message.ts, message.type, message.say])
+
 		// Handle "say" messages
 		if (message.type === "say") {
 			switch (message.say) {
@@ -134,12 +144,8 @@ export const MessageContent = memo(
 
 				case "text":
 					return (
-						<WithCopyButton
-							onMouseUp={onMouseUp}
-							position="bottom-right"
-							ref={contentRef}
-							textToCopy={message.text || ""}>
-							<Markdown markdown={message.text || ""} />
+						<WithCopyButton onMouseUp={onMouseUp} position="bottom-right" ref={contentRef} textToCopy={processedText}>
+							<Markdown markdown={processedText} />
 							{quoteButtonState.visible && (
 								<QuoteButton left={quoteButtonState.left} onClick={onQuoteClick} top={quoteButtonState.top} />
 							)}
@@ -149,7 +155,7 @@ export const MessageContent = memo(
 				case "reasoning":
 					// Only render thinking block if text exists and is not empty after trimming
 					return message.text && message.text.trim() ? (
-						<ThinkingBlock isExpanded={isExpanded} onToggle={onToggle} text={message.text} />
+						<ThinkingBlock isExpanded={isExpanded} onToggle={onToggle} text={processedText} />
 					) : null
 
 				case "user_feedback":
