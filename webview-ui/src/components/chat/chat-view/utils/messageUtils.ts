@@ -19,10 +19,18 @@ export function processMessages(messages: ClineMessage[]): ClineMessage[] {
  * Simplified logic:
  * - Filters out internal/system messages
  * - Filters out empty messages
+ * - Filters out partial/streaming messages (except ask messages that need user interaction)
  * - completion_result say messages are handled by state deduplication (converted to ask)
  */
 export function filterVisibleMessages(messages: ClineMessage[]): ClineMessage[] {
 	return messages.filter((message) => {
+		// Filter out partial/streaming messages UNLESS they need user interaction
+		// This hides all streaming content until it's complete
+		// But keeps approval prompts visible immediately
+		if (message.partial === true && message.type !== "ask") {
+			return false
+		}
+
 		// Filter ask messages
 		if (message.type === "ask") {
 			switch (message.ask) {
